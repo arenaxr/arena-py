@@ -7,7 +7,7 @@ import arena
 
 
 
-arena.init("oz.andrew.cmu.edu","/topic/render")
+arena.init("oz.andrew.cmu.edu","realm/s/render")
 
 arena.start()
 

@@ -89,6 +89,7 @@ class cube:
 
   def remove(self):
     client.publish(scene_path+"/cube_"+self.objName,'{"object_id": "cube_'+self.objName+'", "action": "delete"}',retain=True)
+    client.publish(scene_path+"/cube_"+self.objName,"",retain=True)
     # uncomment to have boxes all fall to the ground at exit
     #client.publish(scene_path+"/cube_"+self.objName,'{"object_id": "cube_'+self.objName+'", "action": "update", "type": "object", "data": {"dynamic-body": {"type": "dynamic"}}}', retain=False)
 

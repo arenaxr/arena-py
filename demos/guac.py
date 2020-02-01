@@ -36,6 +36,8 @@ def solved():
 
     if grid[0][0] == 0 and grid[1][1] == 0 and grid [2][2] == 0 : return True
     if grid[0][0] == 1 and grid[1][1] == 1 and grid [2][2] == 1 : return True
+    if grid[0][2] == 0 and grid[1][1] == 0 and grid [2][0] == 0 : return True
+    if grid[0][2] == 1 and grid[1][1] == 1 and grid [2][0] == 1 : return True
     
     return False
 
@@ -48,9 +50,14 @@ def stalemate():
 
 def drawCube(x,y,color):
     name="cube_"+str(x)+'_'+str(y)
-    MESSAGE='{"persist": true, "object_id":"'+name+'","action":"create","type":"object","data":{"object_type": "cube","position": {"x": '+"{0:0.3f}".format(x) +', "y": '+"{0:0.3f}".format(y) +', "z": -3 },"color":"'+color+'","scale": {"x":0.6,"y":0.6,"z":0.6},"click-listener":""}}'
+    MESSAGE='{"persist": true, "object_id":"'+name+'","action":"update","type":"object","data":{"object_type": "cube","position": {"x": '+"{0:0.3f}".format(x) +', "y": '+"{0:0.3f}".format(y) +', "z": -3 },"material": {"transparent": false, "opacity": 1.0},"scale": {"x":0.6,"y":0.6,"z":0.6},"click-listener":""}}'
     publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
 
+def initCube(x,y,color):
+    name="cube_"+str(x)+'_'+str(y)
+    MESSAGE='{"persist": true, "object_id":"'+name+'","action":"create","type":"object","data":{"dynamic-body": {"type": "static"}, "impulse": {"on": "mouseup", "force": "'+str(0)+' '+str(40)+' '+str(0)+'", "position": "10 1 1"},"click-listener":"", "object_type": "cube","position": {"x": '+"{0:0.3f}".format(x) +', "y": '+"{0:0.3f}".format(y) +', "z": -3 },"material":{"transparent": true, "opacity": 0.5},"color":"'+color+'","scale": {"x":0.6,"y":0.6,"z":0.6},"click-listener":""}}'
+    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
+    
 def dropCube(x,y):
     name="cube_"+str(x)+'_'+str(y)
     MESSAGE='{"persist": true, "object_id":"'+name+'","action":"update","type":"object","data":{"dynamic-body": {"type":"dynamic"}}}'
@@ -58,7 +65,15 @@ def dropCube(x,y):
 
 def deleteCube(x,y):
     name="cube_"+str(x)+'_'+str(y)
-    MESSAGE='{"persist": true,"object_id":"'+name+'","action":"delete","type":"object"}'
+    MESSAGE='{"persist": true, "object_id":"'+name+'","action":"delete"}'
+    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
+    
+def launchCube(x,y):
+    name="cube_"+str(x)+'_'+str(y)
+    MESSAGE='{"persist": true, "object_id":"'+name+'","action":"update","type":"object","data":{"dynamic-body": {"type":"dynamic"}}}'    
+    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
+    #time.sleep(0.15)
+    MESSAGE='{"persist": true,"object_id":"'+name+'","action": "clientEvent", "type": "mouseup", "data": {"position":{"x":0,"y":0,"z":0},"source":"guacprogram"}}'
     publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
     
 def drawAvocado():
@@ -66,7 +81,7 @@ def drawAvocado():
     publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
 
 def animateAvocado():
-    MESSAGE='{"persist": true, "object_id": "gltf-model_avocadoman", "action": "update", "type": "object", "data": {"animation-mixer": {"clip": "Recuperate", "loop": "pingpong", "repetitions": 2}}}'
+    MESSAGE='{"persist": true, "object_id": "gltf-model_avocadoman", "action": "update", "type": "object", "data": {"animation-mixer": {"clip": "Recuperate", "loop": "pingpong", "repetitions": 2, "timeScale": 4}}}'
     publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
 def animateAvocado2():
     MESSAGE='{"persist": true, "object_id": "gltf-model_avocadoman", "action": "update", "type": "object", "data": {"animation-mixer": {"clip": "Walking", "loop": "pingpong", "repetitions": 2}}}'
@@ -82,13 +97,13 @@ def draw_board():
     drawAvocado()
     for x in Xcoords:
         for y in Ycoords:
-            drawCube(x,y,"#808080")
+            initCube(x,y,"#808080")
 
 def animate_win():
+    animateAvocado()
     for x in Xcoords:
         for y in Ycoords:
-            dropCube(x,y)
-    animateAvocado()
+            launchCube(x,y)
     time.sleep( 5)
     for x in Xcoords:
         for y in Ycoords:
@@ -122,7 +137,7 @@ def on_click_input(client, userdata, msg):
         if grid[(x-1)][(y-1)] != -1: return
         counter=counter+1
         grid[(x-1)][(y-1)]=counter%2
-        MESSAGE='{"object_id":"'+name+'","action":"update","type":"object","data":{"material": {"color":"'+color+'"}}}'
+        MESSAGE='{"object_id":"'+name+'","action":"update","type":"object","data":{"material": {"color":"'+color+'", "transparent": false, "opacity": 1.0}}}'
         publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
 
         if solved():

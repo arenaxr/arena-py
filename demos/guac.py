@@ -2,7 +2,7 @@
 #
 # MQTT message format: x,y,z,rotX,rotY,rotZ,rotW,scaleX,scaleY,scaleZ,#colorhex,on/off
 
-import socket,threading,SocketServer,time,random,os,sys,json
+import socket,threading,time,random,os,sys,json
 import paho.mqtt.publish as publish
 import paho.mqtt.client as mqtt
 from scipy.spatial.transform import Rotation as R
@@ -48,11 +48,6 @@ def stalemate():
             if grid[x-1][y-1] == -1: return False
     return True
 
-def drawCube(x,y,color):
-    name="cube_"+str(x)+'_'+str(y)
-    MESSAGE='{"persist": true, "object_id":"'+name+'","action":"update","type":"object","data":{"object_type": "cube","position": {"x": '+"{0:0.3f}".format(x) +', "y": '+"{0:0.3f}".format(y) +', "z": -3 },"material": {"transparent": false, "opacity": 1.0},"scale": {"x":0.6,"y":0.6,"z":0.6},"click-listener":""}}'
-    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
-
 def initCube(x,y,color):
     name="cube_"+str(x)+'_'+str(y)
     MESSAGE='{"persist": true, "object_id":"'+name+'","action":"create","type":"object","data":{"dynamic-body": {"type": "static"}, "impulse": {"on": "mouseup", "force": "'+str(0)+' '+str(40)+' '+str(0)+'", "position": "10 1 1"},"click-listener":"", "object_type": "cube","position": {"x": '+"{0:0.3f}".format(x) +', "y": '+"{0:0.3f}".format(y) +', "z": -3 },"material":{"transparent": true, "opacity": 0.5},"color":"'+color+'","scale": {"x":0.6,"y":0.6,"z":0.6},"click-listener":""}}'
@@ -76,14 +71,25 @@ def launchCube(x,y):
     MESSAGE='{"persist": true,"object_id":"'+name+'","action": "clientEvent", "type": "mouseup", "data": {"position":{"x":0,"y":0,"z":0},"source":"guacprogram"}}'
     publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
     
+def deleteAvocado():
+    MESSAGE='{"persist": true, "object_id" : "gltf-model_avocadoman", "action": "delete"}'
+    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
+
 def drawAvocado():
     MESSAGE='{"persist": true, "object_id" : "gltf-model_avocadoman", "action": "create", "data": {"object_type": "gltf-model", "url": "models/avocadoman/scene.gltf", "position": {"x": -1, "y": 0.01, "z": -4}, "rotation": {"x": 0, "y": 0, "z": 0, "w": 1}, "scale": {"x": 0.005, "y": 0.005, "z": 0.005}}}'
     publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
-
+    
 def animateAvocado():
+#    MESSAGE='{"object_id": "gltf-model_avocadoman", "action": "delete"}'
+#    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
+    deleteAvocado()
+    drawAvocado()
     MESSAGE='{"persist": true, "object_id": "gltf-model_avocadoman", "action": "update", "type": "object", "data": {"animation-mixer": {"clip": "Recuperate", "loop": "pingpong", "repetitions": 2, "timeScale": 4}}}'
     publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
+
 def animateAvocado2():
+    deleteAvocado()
+    drawAvocado()
     MESSAGE='{"persist": true, "object_id": "gltf-model_avocadoman", "action": "update", "type": "object", "data": {"animation-mixer": {"clip": "Walking", "loop": "pingpong", "repetitions": 2}}}'
     publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
     
@@ -123,7 +129,7 @@ def animate_loss():
 def on_click_input(client, userdata, msg):
     global counter
     global rando
-    jsonMsg=json.loads(msg.payload)
+    jsonMsg=json.loads(msg.payload.decode('utf-8'))
 
     # filter non-event messages
     if jsonMsg["action"] !="clientEvent": return
@@ -137,7 +143,7 @@ def on_click_input(client, userdata, msg):
         if grid[(x-1)][(y-1)] != -1: return
         counter=counter+1
         grid[(x-1)][(y-1)]=counter%2
-        MESSAGE='{"object_id":"'+name+'","action":"update","type":"object","data":{"material": {"color":"'+color+'", "transparent": false, "opacity": 1.0}}}'
+        MESSAGE='{"persist": true, "object_id":"'+name+'","action":"update","type":"object","data":{"material": {"color":"'+color+'", "transparent": false, "opacity": 1.0}}}'
         publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
 
         if solved():
@@ -150,7 +156,7 @@ def on_click_input(client, userdata, msg):
         return;
 
 rando=random.randint(0,10000)
-print rando
+print (rando)
 
 client= mqtt.Client(str(random.random()), clean_session=True, userdata=None )
 client.connect(HOST)

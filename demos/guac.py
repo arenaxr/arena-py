@@ -51,47 +51,47 @@ def stalemate():
 def initCube(x,y,color):
     name="cube_"+str(x)+'_'+str(y)
     MESSAGE='{"persist": true, "object_id":"'+name+'","action":"create","type":"object","data":{"dynamic-body": {"type": "static"}, "impulse": {"on": "mouseup", "force": "'+str(0)+' '+str(40)+' '+str(0)+'", "position": "10 1 1"},"click-listener":"", "object_type": "cube","position": {"x": '+"{0:0.3f}".format(x) +', "y": '+"{0:0.3f}".format(y) +', "z": -3 },"material":{"transparent": true, "opacity": 0.5},"color":"'+color+'","scale": {"x":0.6,"y":0.6,"z":0.6},"click-listener":""}}'
-    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
+    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=True)
     
 def dropCube(x,y):
     name="cube_"+str(x)+'_'+str(y)
     MESSAGE='{"persist": true, "object_id":"'+name+'","action":"update","type":"object","data":{"dynamic-body": {"type":"dynamic"}}}'
-    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
+    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=True)
 
 def deleteCube(x,y):
     name="cube_"+str(x)+'_'+str(y)
     MESSAGE='{"persist": true, "object_id":"'+name+'","action":"delete"}'
-    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
+    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=True)
     
 def launchCube(x,y):
     name="cube_"+str(x)+'_'+str(y)
     MESSAGE='{"persist": true, "object_id":"'+name+'","action":"update","type":"object","data":{"dynamic-body": {"type":"dynamic"}}}'    
-    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
+    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=True)
     #time.sleep(0.15)
     MESSAGE='{"persist": true,"object_id":"'+name+'","action": "clientEvent", "type": "mouseup", "data": {"position":{"x":0,"y":0,"z":0},"source":"guacprogram"}}'
-    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
+    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=True)
     
 def deleteAvocado():
     MESSAGE='{"persist": true, "object_id" : "gltf-model_avocadoman", "action": "delete"}'
-    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
+    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=True)
 
 def drawAvocado():
     MESSAGE='{"persist": true, "object_id" : "gltf-model_avocadoman", "action": "create", "data": {"object_type": "gltf-model", "url": "models/avocadoman/scene.gltf", "position": {"x": -1, "y": 0.01, "z": -4}, "rotation": {"x": 0, "y": 0, "z": 0, "w": 1}, "scale": {"x": 0.005, "y": 0.005, "z": 0.005}}}'
-    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
+    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=True)
     
 def animateAvocado():
 #    MESSAGE='{"object_id": "gltf-model_avocadoman", "action": "delete"}'
-#    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
+#    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=True)
     deleteAvocado()
     drawAvocado()
     MESSAGE='{"persist": true, "object_id": "gltf-model_avocadoman", "action": "update", "type": "object", "data": {"animation-mixer": {"clip": "Recuperate", "loop": "pingpong", "repetitions": 2, "timeScale": 4}}}'
-    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
+    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=True)
 
 def animateAvocado2():
     deleteAvocado()
     drawAvocado()
     MESSAGE='{"persist": true, "object_id": "gltf-model_avocadoman", "action": "update", "type": "object", "data": {"animation-mixer": {"clip": "Walking", "loop": "pingpong", "repetitions": 2}}}'
-    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
+    publish.single(TOPIC, MESSAGE, hostname=HOST, retain=True)
     
 counter = 0
 
@@ -143,8 +143,9 @@ def on_click_input(client, userdata, msg):
         if grid[(x-1)][(y-1)] != -1: return
         counter=counter+1
         grid[(x-1)][(y-1)]=counter%2
-        MESSAGE='{"persist": true, "object_id":"'+name+'","action":"update","type":"object","data":{"material": {"color":"'+color+'", "transparent": false, "opacity": 1.0}}}'
-        publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
+        MESSAGE='{"persist": true, "object_id":"'+name+'","action":"create","type":"object","data":{"dynamic-body": {"type": "static"}, "impulse": {"on": "mouseup", "force": "'+str(0)+' '+str(40)+' '+str(0)+'", "position": "10 1 1"},"click-listener":"", "object_type": "cube","position": {"x": '+"{0:0.3f}".format(x) +', "y": '+"{0:0.3f}".format(y) +', "z": -3 },"color":"'+color+'","material":{"transparent": false, "opacity": 1},"scale": {"x":0.6,"y":0.6,"z":0.6},"click-listener":""}}'        
+#        MESSAGE='{"persist": true, "object_id":"'+name+'","action":"update","type":"object","data":{"material": {"color":"'+color+'", "transparent": false, "opacity": 1.0}}}'
+        publish.single(TOPIC, MESSAGE, hostname=HOST, retain=True)
 
         if solved():
             animate_win()

@@ -1,8 +1,9 @@
-# shapes.py
+# ducks.py
 #
-# MQTT message format: x,y,z,rotX,rotY,rotZ,rotW,scaleX,scaleY,scaleZ,#colorhex,on/off
+# emit ducks when Vive controller trigger pressed
+# to view, go to url like https://xr.andrew.cmu.edu/?scene=duck&fixedCamera=duck
 
-import socket,threading,SocketServer,time,random,os,sys,json
+import socket,threading,time,random,os,sys,json
 import paho.mqtt.publish as publish
 import paho.mqtt.client as mqtt
 from scipy.spatial.transform import Rotation as R
@@ -64,7 +65,7 @@ def on_click_input(client, userdata, msg):
 
     #print("got %s \"%s\"" % (msg.topic, msg.payload))
     
-    jsonMsg=json.loads(msg.payload)
+    jsonMsg=json.loads(msg.payload.decode('utf-8'))
     # filter non-event messages
     if jsonMsg["action"] == "update":
         click_x=jsonMsg["data"]["position"]["x"]
@@ -100,7 +101,7 @@ def on_click_input(client, userdata, msg):
         MESSAGE='{"object_id" : "'+name+'", "action": "create", "ttl": 10, "data": {"dynamic-body": {"type": "dynamic"}, "impulse": {"on": "mousedown", "force": "'+str(xf)+' '+str(yf)+' '+str(zf)+'","click-listener":"", "position": "1 1 1"}, "object_type": "gltf-model","url": "models/Duck.glb" ,"position": {"x": '+"{0:0.3f}".format(click_x) +', "y": '+"{0:0.3f}".format(click_y) +', "z": '+"{0:0.3f}".format(click_z) +'}, "scale": {"x":0.2,"y":0.2,"z":0.2},"rotation": {"x": '+randrot() +', "y": '+ randrot()+', "z": '+randrot() +', "w": '+randrot() +'}}}'
         publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)
 
-        time.sleep(0.15) # if we don't pause, mousedown events don't always get fired
+        time.sleep(0.15) # if we don't pause, mousedown events don't always get through
         
         MESSAGE='{"object_id" : "'+name+'", "action": "clientEvent", "type": "mousedown", "data": {"position":{"x":0,"y":0,"z":0},"source":"duckprogram"}}'
         publish.single(TOPIC, MESSAGE, hostname=HOST, retain=False)

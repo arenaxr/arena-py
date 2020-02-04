@@ -143,7 +143,7 @@ def on_click_input(client, userdata, msg):
         if grid[(x-1)][(y-1)] != -1: return
         counter=counter+1
         grid[(x-1)][(y-1)]=counter%2
-        MESSAGE='{"persist": true, "object_id":"'+name+'","action":"create","type":"object","data":{"dynamic-body": {"type": "static"}, "impulse": {"on": "mouseup", "force": "'+str(0)+' '+str(40)+' '+str(0)+'", "position": "10 1 1"},"click-listener":"", "object_type": "cube","position": {"x": '+"{0:0.3f}".format(x) +', "y": '+"{0:0.3f}".format(y) +', "z": -3 },"color":"'+color+'","material":{"transparent": false, "opacity": 1},"scale": {"x":0.6,"y":0.6,"z":0.6},"click-listener":""}}'        
+        MESSAGE='{"persist": true, "object_id":"'+name+'","action":"update","type":"object","data":{"dynamic-body": {"type": "static"}, "impulse": {"on": "mouseup", "force": "'+str(0)+' '+str(40)+' '+str(0)+'", "position": "10 1 1"},"click-listener":"", "object_type": "cube","position": {"x": '+"{0:0.3f}".format(x) +', "y": '+"{0:0.3f}".format(y) +', "z": -3 },"material":{"color":"'+color+'","transparent": false, "opacity": 1},"scale": {"x":0.6,"y":0.6,"z":0.6},"click-listener":""}}'        
 #        MESSAGE='{"persist": true, "object_id":"'+name+'","action":"update","type":"object","data":{"material": {"color":"'+color+'", "transparent": false, "opacity": 1.0}}}'
         publish.single(TOPIC, MESSAGE, hostname=HOST, retain=True)
 

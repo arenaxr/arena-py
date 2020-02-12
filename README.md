@@ -1,10 +1,10 @@
 # ARENA Py - Python Examples
 Draw components in the ARENA using python.
 
-Need to install Paho-mqtt.
+Need to install required packages.
 
 ```
-pip install paho-mqtt
+pip install -r requirements.txt
 ```
 
 

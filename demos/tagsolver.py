@@ -17,6 +17,13 @@ TAGS = {
          [1, 0, 0, 1]],
 }
 
+FLIP = [
+    [1, 0, 0, 0],
+    [0, -1, 0, 0],
+    [0, 0, -1, 0],
+    [0, 0, 0, 1]
+]
+
 
 def dict_to_sns(d):
     return SimpleNamespace(**d)
@@ -40,14 +47,19 @@ def on_tag_detect(client, userdata, msg):
         pos = json_msg.vio.position
         rot = json_msg.vio.rotation
 
+
+
         vio_pose = np.identity(4)
         vio_pose[0:3, 0:3] = Rotation.from_quat(
             [rot._x, rot._y, rot._z, rot._w]).as_matrix()
         vio_pose[0:3, 3] = [pos.x, pos.y, pos.z]
 
         dtag_pose = np.identity(4)
-        dtag_pose[0:3, 0:3] = this_tag.pose.R
+        R_correct = np.array(this_tag.pose.R).T
+        dtag_pose[0:3, 0:3] = R_correct
         dtag_pose[0:3, 3] = this_tag.pose.t
+
+        dtag_pose = np.array(FLIP) @ dtag_pose
 
         new_pose = tag_pose @ np.linalg.inv(dtag_pose) @ np.linalg.inv(vio_pose)
         new_pos = new_pose[0:3, 3]

@@ -6,10 +6,13 @@ import json
 import random
 import time
 
-import paho.mqtt.publish as publish
+import paho.mqtt.client as mqtt
 
 HOST = "oz.andrew.cmu.edu"
 TOPIC = "/topic/transCubes"
+
+client = mqtt.Client(str(random.random()), clean_session=True, userdata=None)
+client.connect(HOST)
 
 
 def randmove():
@@ -87,7 +90,7 @@ def do(name, randx, randy, randz, scalex, scaley, scalez, color):
     }
     messages.append(MESSAGE)
     print(json.dumps(MESSAGE))
-    publish.single(TOPIC + "/" + name, json.dumps(MESSAGE), hostname=HOST, retain=False)
+    client.publish(TOPIC + "/" + name, json.dumps(MESSAGE))
 
 
 messages = []
@@ -120,10 +123,8 @@ while True:
         for i_ in range(4):
             pop = messages.pop(0)
             name = pop["object_id"]
-            publish.single(
+            client.publish(
                 TOPIC + "/" + name,
                 json.dumps({"action": "delete", "object_id": name}),
-                hostname=HOST,
-                retain=False,
             )
     time.sleep(0.1)

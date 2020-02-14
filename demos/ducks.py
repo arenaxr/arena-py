@@ -135,7 +135,7 @@ def on_click_input(client, userdata, msg):
                 },
             },
         }
-        publish.single(TOPIC, json.dumps(MESSAGE), hostname=HOST, retain=False)
+        client.publish(TOPIC, json.dumps(MESSAGE))
 
         time.sleep(0.15)  # if we don't pause, mousedown events don't always get through
 
@@ -145,7 +145,7 @@ def on_click_input(client, userdata, msg):
             "type": "mousedown",
             "data": {"position": {"x": 0, "y": 0, "z": 0}, "source": "duckprogram"},
         }
-        publish.single(TOPIC, json.dumps(MESSAGE), hostname=HOST, retain=False)
+        client.publish(TOPIC, json.dumps(MESSAGE))
 
 
 client = mqtt.Client(str(random.random()), clean_session=True, userdata=None)

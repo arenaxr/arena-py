@@ -6,10 +6,13 @@ import json
 import random
 import time
 
-import paho.mqtt.publish as publish
+import paho.mqtt.client as mqtt
 
 HOST = "oz.andrew.cmu.edu"
 TOPIC = "realm/s/refactor"
+
+client = mqtt.Client(str(random.random()), clean_session=True, userdata=None)
+client.connect(HOST)
 
 
 def randmove():
@@ -75,14 +78,12 @@ while True:
     print(json.dumps(MESSAGE))
 
     # os.system("mosquitto_pub -h " + HOST + " -t " + TOPIC + "/" + name + " -m " + MESSAGE + " -r");
-    publish.single(TOPIC + "/" + name, json.dumps(MESSAGE), hostname=HOST, retain=False)
+    client.publish(TOPIC + "/" + name, json.dumps(MESSAGE))
 
     # REMOVE
     if len(messages) >= 25:
         theMess = messages.pop(0)
         theId = theMess["object_id"]
         newMess = {"object_id": theId, "action": "delete"}
-        publish.single(
-            TOPIC + "/" + theId, json.dumps(newMess), hostname=HOST, retain=False
-        )
+        client.publish(TOPIC + "/" + theId, json.dumps(newMess))
     time.sleep(0.1)

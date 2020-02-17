@@ -6,7 +6,7 @@ import json
 import random
 import time
 
-import paho.mqtt.publish as publish
+import paho.mqtt.client as mqtt
 
 HOST = "oz.andrew.cmu.edu"
 TOPIC = "realm/s/balls"
@@ -24,6 +24,9 @@ def rando():
 def randcolor():
     return "%06x" % random.randint(0, 0xFFFFFF)
 
+
+client = mqtt.Client(str(random.random()), clean_session=True, userdata=None)
+client.connect(HOST)
 
 counter = 0
 while True:
@@ -51,5 +54,5 @@ while True:
     MESSAGE_string = json.dumps(MESSAGE)
     print(MESSAGE_string)
 
-    publish.single(TOPIC + "/" + name, MESSAGE_string, hostname=HOST, retain=False)
+    client.publish(TOPIC + "/" + name, MESSAGE_string)
     time.sleep(0.1)

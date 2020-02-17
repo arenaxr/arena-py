@@ -1,6 +1,6 @@
-# shapes.py
+# guac.py
 #
-# MQTT message format: x,y,z,rotX,rotY,rotZ,rotW,scaleX,scaleY,scaleZ,#colorhex,on/off
+# plays Tic Tac Toe
 
 import json
 import random
@@ -85,7 +85,7 @@ def initCube(x, y, color):
                 "position": "10 1 1",
             },
             "object_type": "cube",
-            "position": {"x": "{0:0.3f}".format(x), "y": "{0:0.3f}".format(y), "z": -3},
+            "position": {"x": x, "y": y, "z": -3},
             "material": {"transparent": True, "opacity": 0.5},
             "color": color,
             "scale": {"x": 0.6, "y": 0.6, "z": 0.6},
@@ -133,7 +133,10 @@ def launchCube(x, y):
 
 
 def deleteAvocado():
-    MESSAGE = {{"object_id": "gltf-model_avocadoman", "action": "delete"}}
+    MESSAGE = {
+        "object_id": "gltf-model_avocadoman",
+         "action": "delete",
+    }
     publish.single(TOPIC, json.dumps(MESSAGE), hostname=HOST)
 
 
@@ -258,8 +261,8 @@ def on_click_input(client, userdata, msg):
                 "click-listener": "",
                 "object_type": "cube",
                 "position": {
-                    "x": "{0:0.3f}".format(x),
-                    "y": "{0:0.3f}".format(y),
+                    "x": x,
+                    "y": y,
                     "z": -3,
                 },
                 "material": {"color": color, "transparent": False, "opacity": 1},

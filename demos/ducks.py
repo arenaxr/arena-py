@@ -17,13 +17,8 @@ USER = "camera_duck_duck"
 FORCE = 50
 
 
-def rando(val):
-    rand = random.random() * val
-    return str("{0:0.3f}".format(rand))
-
-
 def randrot():
-    return str("{0:0.3f}".format(random.random() * 2 - 1))
+    return (round((random.random() * 2 - 1), 3))
 
 
 def randcolor():
@@ -122,9 +117,9 @@ def on_click_input(client, userdata, msg):
                 "object_type": "gltf-model",
                 "url": "models/Duck.glb",
                 "position": {
-                    "x": "{0:0.3f}".format(click_x),
-                    "y": "{0:0.3f}".format(click_y),
-                    "z": "{0:0.3f}".format(click_z),
+                    "x": click_x,
+                    "y": click_y,
+                    "z": click_z,
                 },
                 "scale": {"x": 0.2, "y": 0.2, "z": 0.2},
                 "rotation": {
@@ -135,6 +130,9 @@ def on_click_input(client, userdata, msg):
                 },
             },
         }
+
+        print(json.dumps(MESSAGE));
+
         publish.single(TOPIC, json.dumps(MESSAGE), hostname=HOST, retain=False)
 
         time.sleep(0.15)  # if we don't pause, mousedown events don't always get through
@@ -145,6 +143,9 @@ def on_click_input(client, userdata, msg):
             "type": "mousedown",
             "data": {"position": {"x": 0, "y": 0, "z": 0}, "source": "duckprogram"},
         }
+
+        print(json.dumps(MESSAGE));
+
         publish.single(TOPIC, json.dumps(MESSAGE), hostname=HOST, retain=False)
 
 

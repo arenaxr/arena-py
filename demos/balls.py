@@ -14,11 +14,11 @@ TOPIC = "realm/s/balls"
 
 def randrot():
     # return str("{0:0.3f}".format(random.random() * 2 - 1))
-    return "0"
+    return 0
 
 
-def randy():
-    return str("{0:0.3f}".format(random.random() * 2 - 1))
+def rando():
+    return float(random.randint(0, 10000)) / 1000
 
 
 def randcolor():
@@ -38,12 +38,12 @@ while True:
         "data": {
             "dynamic-body": {"type": "dynamic"},
             "object_type": "sphere",
-            "position": {"x": randy(), "y": "{0:0.3f}".format(0), "z": randy(),},
+            "position": {"x": rando(), "y": 0, "z": rando()},
             "rotation": {
                 "x": randrot(),
                 "y": randrot(),
                 "z": randrot(),
-                "w": randrot(),
+                "w": 1
             },
             "color": "#" + randcolor(),
         },

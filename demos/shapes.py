@@ -22,11 +22,11 @@ def randmove():
 
 def rando(val):
     rando = random.random() * val
-    return str("{0:0.3f}".format(rando))
+    return round(rando, 3)
 
 
 def randrot():
-    return str("{0:0.3f}".format(random.random() * 2 - 1))
+    return round((random.random() * 2 - 1), 3)
 
 
 def randcolor():
@@ -60,9 +60,9 @@ while True:
         "data": {
             "object_type": obj_type,
             "position": {
-                "x": "{0:0.3f}".format(randmove()),
-                "y": "{0:0.3f}".format(randmove() + 5),
-                "z": "{0:0.3f}".format(randmove() - 5),
+                "x": round(randmove(), 3),
+                "y": round(randmove() + 5, 3),
+                "z": round(randmove() - 5, 3),
             },
             "rotation": {
                 "x": randrot(),

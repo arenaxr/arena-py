@@ -38,16 +38,15 @@ def on_tag_detect(client, userdata, msg):
         pass
     if hasattr(json_msg, 'vio'):
         client_id = msg.topic.split('/')[-1]
+        scene = json_msg.scene
 
         # Only take first marker for now, later iterate and avg all markers
-        this_tag = json_msg.detections[0]
+        detected_tag = json_msg.detections[0]
 
-        tag_pose = TAGS[this_tag.id]
+        ref_tag_pose = TAGS[detected_tag.id]
 
         pos = json_msg.vio.position
         rot = json_msg.vio.rotation
-
-
 
         vio_pose = np.identity(4)
         vio_pose[0:3, 0:3] = Rotation.from_quat(
@@ -55,13 +54,13 @@ def on_tag_detect(client, userdata, msg):
         vio_pose[0:3, 3] = [pos.x, pos.y, pos.z]
 
         dtag_pose = np.identity(4)
-        R_correct = np.array(this_tag.pose.R).T
+        R_correct = np.array(detected_tag.pose.R).T
         dtag_pose[0:3, 0:3] = R_correct
-        dtag_pose[0:3, 3] = this_tag.pose.t
+        dtag_pose[0:3, 3] = detected_tag.pose.t
 
-        dtag_pose = np.array(FLIP) @ dtag_pose
+        dtag_pose = np.array(FLIP) @ dtag_pose @ np.array(FLIP)
 
-        new_pose = tag_pose @ np.linalg.inv(dtag_pose) @ np.linalg.inv(vio_pose)
+        new_pose = ref_tag_pose @ np.linalg.inv(dtag_pose) @ np.linalg.inv(vio_pose)
         new_pos = new_pose[0:3, 3]
         new_rotq = Rotation.from_matrix(new_pose[0:3, 0:3]).as_quat()
 
@@ -99,7 +98,7 @@ def on_tag_detect(client, userdata, msg):
         #        }
         #    }
         #}
-        client.publish("realm/s/render", json.dumps(mqtt_response))
+        client.publish("realm/s/" + scene, json.dumps(mqtt_response))
         # client.publish(TOPIC + client_id, json.dumps(mqtt_response))
 
 

@@ -97,6 +97,7 @@ def initCube(x, y, color):
 def dropCube(x, y):
     name = "cube_" + str(x) + "_" + str(y)
     MESSAGE = {
+        "persist": True,
         "object_id": name,
         "action": "update",
         "type": "object",
@@ -114,15 +115,16 @@ def deleteCube(x, y):
 def launchCube(x, y):
     name = "cube_" + str(x) + "_" + str(y)
     MESSAGE = {
+        "persist": True,
         "object_id": name,
         "action": "update",
         "type": "object",
         "data": {"dynamic-body": {"type": "dynamic"}},
     }
-
     client.publish(TOPIC, json.dumps(MESSAGE))
-    # time.sleep(0.15)
+    time.sleep(0.15)
     MESSAGE = {
+        "persist": True,
         "object_id": name,
         "action": "clientEvent",
         "type": "mouseup",
@@ -133,6 +135,7 @@ def launchCube(x, y):
 
 def deleteAvocado():
     MESSAGE = {
+        "persist": True,
         "object_id": "gltf-model_avocadoman",
          "action": "delete",
     }
@@ -160,6 +163,7 @@ def animateAvocado():
     deleteAvocado()
     drawAvocado()
     MESSAGE = {
+        "persist": True,
         "object_id": "gltf-model_avocadoman",
         "action": "update",
         "type": "object",
@@ -179,6 +183,7 @@ def animateAvocado2():
     deleteAvocado()
     drawAvocado()
     MESSAGE = {
+        "persist": True,
         "object_id": "gltf-model_avocadoman",
         "action": "update",
         "type": "object",
@@ -246,6 +251,7 @@ def on_click_input(client, userdata, msg):
         counter = counter + 1
         grid[(x - 1)][(y - 1)] = counter % 2
         MESSAGE = {
+            "persist": True,
             "object_id": name,
             "action": "update",
             "type": "object",

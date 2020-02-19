@@ -22,11 +22,11 @@ def randmove():
 
 def rando(val):
     rand = random.random() * val
-    return str("{0:0.3f}".format(rand))
+    return round(rand, 3)
 
 
 def randrot():
-    return str("{0:0.3f}".format(random.random() * 2 - 1))
+    return round((random.random() * 2 - 1), 3)
 
 
 def unhex(a):
@@ -78,9 +78,9 @@ def do(name, randx, randy, randz, scalex, scaley, scalez, color):
         "type": "object",
         "data": {
             "position": {
-                "x": "{0:0.3f}".format(randx),
-                "y": "{0:0.3f}".format(randy),
-                "z": "{0:0.3f}".format(randz),
+                "x": round(randx, 3),
+                "y": round(randy, 3),
+                "z": round(randz, 3),
             },
             "rotation": {"x": 0, "y": 0, "z": 0, "w": 0},
             "scale": {"x": scalex, "y": scaley, "z": scalez,},

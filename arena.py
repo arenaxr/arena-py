@@ -11,6 +11,7 @@ scene_path = ""
 client = mqtt.Client(
     "client-" + str(random.randrange(0, 1000000)), clean_session=True, userdata=None
 )
+arena_callback = lambda: None
 object_count = 0
 object_list = []
 
@@ -26,15 +27,25 @@ def signal_handler(sig, frame):
         time.sleep(1)
         sys.exit(0)
 
+def our_callback(client, userdata, msg):
+    print("received callback: ", msg)
+    arena_callback(msg)
 
-def init(broker, path):
+def on_connected():
+    print("connected callback")
+
+def init(broker, realm, scene, callback=arena_callback):
     global client
     global scene_path
     global mqtt_broker
+    global arena_callback
     mqtt_broker = broker
-    scene_path = path
+    scene_path = realm + '/s/' + scene
+    arena_callback = callback
+        
     print("connecting to broker ", mqtt_broker)
     client.connect(mqtt_broker)
+    client.message_callback_add(scene_path+'/#', our_callback)
     # add signal handler to remove objects on quit
     signal.signal(signal.SIGINT, signal_handler)
 
@@ -46,8 +57,11 @@ def start():
 
 def stop():
     global client
+    print("stopping client loop")
     client.loop_stop()  # stop loop
+    print("disconnecting")
     client.disconnect()
+    print("disconnected")
 
 
 def add(obj):
@@ -57,33 +71,46 @@ def add(obj):
     if isinstance(obj, Sphere):
         print("its a sphere")
 
+class Object:
+    """Geometric shape object for the arena
+    one of cube, sphere, circle, cone, cylinder, dodecahedron, icosahedron, tetrahedron, octahedron, plane, ring, torus, torusKnot, triangle"""
 
-class Cube:
-    """Cube object for the arena"""
-
-    loc = ()
-    rot = ()
-    scale = ()
+    objType = "cube"
+    location = (0, 0, 0)
+    rotation = (0, 0, 0, 1)
+    scale = (1, 1, 1)
     color = (255, 255, 255)
-    objName = "empty"
+    objName = ""
+    ttl = 0
+    persist = False
+    physical = False
+    clickable = False
+    url = ""
 
-    def __init__(self, loc, rot, scale, color):
+    def __init__(self, objType=objType, location=location, rotation=rotation, scale=scale, color=color, persist=persist, ttl=ttl, physical=physical, clickable=clickable, url=url):
         """Initializes the data."""
         global object_count
         global object_list
-        self.loc = loc
-        self.rot = rot
+        self.objType = objType
+        self.location = location
+        self.rotation = rotation
         self.scale = scale
         self.color = color
-        print("loc: " + str(self.loc))
-        self.objName = str(object_count)
+        self.persist = persist
+        self.ttl = ttl
+        self.physical = physical
+        self.clickable = clickable
+        self.url = url
+        #print("loc: " + str(self.loc))
+        # avoid name clashes by enumerating each new object
+        self.objName = self.objType + '_' + str(object_count)
         object_count = object_count + 1
         object_list.append(self)
         self.redraw()
 
-    def update(self, loc, rot, scale, color):
-        self.loc = loc
-        self.rot = rot
+    def update(self, location, rotation, scale, color):
+        self.location = location
+        self.rotation = rotation
         self.scale = scale
         self.color = color
         self.redraw()
@@ -92,67 +119,71 @@ class Cube:
         self.remove()
 
     def remove(self):
-        client.publish(
-            scene_path + "/cube_" + self.objName,
-            '{"object_id": "cube_' + self.objName + '", "action": "delete"}',
-        )
-        client.publish(scene_path + "/cube_" + self.objName, "")
-        # uncomment to have boxes all fall to the ground at exit
-        # client.publish(scene_path+"/cube_"+self.objName,'{"object_id": "cube_'+self.objName+'", "action": "update", "type": "object", "data": {"dynamic-body": {"type": "dynamic"}}}', retain=False)
+        MESSAGE = {
+            "object_id": self.objName,
+            "action": "delete"
+            }
+        print("deleting " + json.dumps(MESSAGE))
+        print("client ", client)
+        print ("scene_path ", scene_path)
+        client.publish(scene_path, json.dumps(MESSAGE), retain=False)
 
-    def location(self, loc):
+    def location(self, location):
         # mosquitto_pub -h oz.andrew.cmu.edu -t /topic/render/cube_1/position -m "x:1; y:2; z:3;"
-        self.loc = loc
+        self.location = location
         update_msg = {
-            "object_id": "cube_" + self.objName,
+            "object_id": self.objName,
             "action": "update",
             "data": {
-                "position": {"x": self.loc[0], "y": self.loc[1], "z": self.loc[2],}
+                "position": {"x": self.location[0],
+                             "y": self.location[1],
+                             "z": self.location[2],}
             },
         }
-        print("move str: " + json.dumps(update_msg))
+        #print("move str: " + json.dumps(update_msg))
         client.publish(
-            scene_path + "/cube_" + self.objName, json.dumps(update_msg), retain=False
+            scene_path, json.dumps(update_msg), retain=False
         )
 
     def redraw(self):
-        print("Cube publish draw command")
+        #print(self.objType + " publish draw command")
         global scene_path
         color_str = "#%06x" % (
             int(self.color[0]) * 65536 + int(self.color[1]) * 256 + int(self.color[2])
         )
         MESSAGE = {
-            "object_id": "cube_" + self.objName,
+            "object_id": self.objName,
             "action": "create",
+            "type": "object",
+            "ttl": self.ttl,
             "data": {
-                "object_type": "cube",
-                "position": {"x": self.loc[0], "y": self.loc[1], "z": self.loc[2]},
-                "rotation": {
-                    "x": self.rot[0],
-                    "y": self.rot[1],
-                    "z": self.rot[2],
-                    "w": self.rot[3],
+                "object_type": self.objType,
+                "position": {
+                    "x": self.location[0],
+                    "y": self.location[1],
+                    "z": self.location[2]
                 },
-                "scale": {"x": self.scale[0], "y": self.scale[1], "z": self.scale[2]},
+                "rotation": {
+                    "x": self.rotation[0],
+                    "y": self.rotation[1],
+                    "z": self.rotation[2],
+                    "w": self.rotation[3],
+                },
+                "scale": {
+                    "x": self.scale[0],
+                    "y": self.scale[1],
+                    "z": self.scale[2]
+                },
                 "color": color_str,
+                "persist": self.persist,
+                "physical": self.physical,
+                "clickable": self.clickable,
+                "url": self.url
             },
         }
-        cube_str = (
-            "cube_"
-            + self.objName
-            + ", "
-            + str(self.loc)[1:-1]
-            + ", "
-            + str(self.rot)[1:-1]
-            + ", "
-            + str(self.scale)[1:-1]
-            + ","
-            + color_str
-            + ",on"
-        )
-        print("cube str: " + cube_str)
+        #print("publishing " + json.dumps(MESSAGE) + " to " + scene_path)
         client.publish(
-            scene_path + "/cube_" + self.objName, json.dumps(MESSAGE), retain=False
+            scene_path, json.dumps(MESSAGE), retain=False
         )
 
 

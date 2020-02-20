@@ -76,7 +76,7 @@ def initCube(x, y, color):
         "object_id": name,
         "action": "delete"
         }
-    publish.single(TOPIC, json.dumps(MESSAGE))
+    client.publish(TOPIC, json.dumps(MESSAGE))
     MESSAGE = {
         "persist": True,
         "object_id": name,
@@ -97,7 +97,7 @@ def initCube(x, y, color):
             "click-listener": "",
         },
     }
-    publish.single(TOPIC, json.dumps(MESSAGE))
+    client.publish(TOPIC, json.dumps(MESSAGE))
 
 
 def dropCube(x, y):
@@ -108,13 +108,13 @@ def dropCube(x, y):
         "type": "object",
         "data": {"dynamic-body": {"type": "dynamic"}},
     }
-    publish.single(TOPIC, json.dumps(MESSAGE))
+    client.publish(TOPIC, json.dumps(MESSAGE))
 
 
 def deleteCube(x, y):
     name = "cube_" + str(x) + "_" + str(y)
     MESSAGE = {"object_id": name, "action": "delete"}
-    publish.single(TOPIC, json.dumps(MESSAGE))
+    client.publish(TOPIC, json.dumps(MESSAGE))
 
 
 def launchCube(x, y):
@@ -126,7 +126,7 @@ def launchCube(x, y):
         "type": "object",
         "data": {"dynamic-body": {"type": "dynamic"}},
     }
-    publish.single(TOPIC, json.dumps(MESSAGE))
+    client.publish(TOPIC, json.dumps(MESSAGE))
 
     MESSAGE = {
         "persist": True,
@@ -135,7 +135,7 @@ def launchCube(x, y):
         "type": "mouseup",
         "data": {"position": {"x": 0, "y": 0, "z": 0}, "source": "guacprogram"},
     }
-    publish.single(TOPIC, json.dumps(MESSAGE))
+    client.publish(TOPIC, json.dumps(MESSAGE))
 
 
 
@@ -145,7 +145,7 @@ def deleteAvocado():
         "object_id": "gltf-model_avocadoman",
          "action": "delete",
     }
-    publish.single(TOPIC, json.dumps(MESSAGE))
+    client.publish(TOPIC, json.dumps(MESSAGE))
 
 def drawAvocado():
     MESSAGE = {
@@ -160,12 +160,12 @@ def drawAvocado():
             "scale": {"x": 0.005, "y": 0.005, "z": 0.005},
         },
     }
-    publish.single(TOPIC, json.dumps(MESSAGE))
+    client.publish(TOPIC, json.dumps(MESSAGE))
 
 
 def animateAvocado():
     #    MESSAGE='{"object_id": "gltf-model_avocadoman", "action": "delete"}'
-    #    publish.single((TOPIC, MESSAGE)
+    #    client.publish((TOPIC, MESSAGE)
     deleteAvocado()
     drawAvocado()
     MESSAGE = {
@@ -181,7 +181,7 @@ def animateAvocado():
             }
         },
     }
-    publish.single(TOPIC, json.dumps(MESSAGE))
+    client.publish(TOPIC, json.dumps(MESSAGE))
 
 
 def animateAvocado2():
@@ -195,7 +195,7 @@ def animateAvocado2():
             "animation-mixer": {"clip": "Walking", "loop": "pingpong", "repetitions": 2}
         },
     }
-    publish.single(TOPIC, json.dumps(MESSAGE))
+    client.publish(TOPIC, json.dumps(MESSAGE))
 
 
 counter = 0
@@ -250,7 +250,7 @@ def process_message(msg):
 
     # filter non-mouse messages
     if jsonMsg["type"] == "mousedown":
-        print("on_click_input:" + msg.payload.decode("utf-8"))
+        #print("on_click_input:" + msg.payload.decode("utf-8"))
         name = jsonMsg["object_id"]
         color = redblue[counter % 2]
         x = int(name.split("_")[1])
@@ -282,7 +282,7 @@ def process_message(msg):
             },
         }
         #        MESSAGE='{"persist": true, "object_id":"'+name+'","action":"update","type":"object","data":{"material": {"color":"'+color+'", "transparent": false, "opacity": 1.0}}}'
-        publish.single(TOPIC, json.dumps(MESSAGE))
+        client.publish(TOPIC, json.dumps(MESSAGE))
 
         if solved():
             print("solved")

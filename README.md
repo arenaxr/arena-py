@@ -1,17 +1,23 @@
 # ARENA Py - Python Examples
-Draw components in the ARENA using python.
+Draw objects in the ARENA using python.
 
-Need to install required packages.
-
+Install required packages:
 ```
 pip install -r requirements.txt
 ```
 
-
-To run an example:
+Hello ARENA
 
 ```
 cd examples
-python green-boxes.py
+python hello.py
 ```
+(view results at https://xr.andrew.cmu.edu?scene=hello) 
 
+hello.py
+```
+import arena
+arena.init("oz.andrew.cmu.edu", "realm", "hello")
+arena.start()
+arena.Object(arena.Shape.cube)
+```

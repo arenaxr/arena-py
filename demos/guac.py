@@ -5,19 +5,22 @@
 import json
 import random
 import time
-
+import arena
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 
 HOST = "oz.andrew.cmu.edu"
 TOPIC = "realm/s/guac/"
+REALM = "realm"
+SCENE = "guac"
 
 # Globals (yes, Sharon)
 
+cubes = {} # dict of cube objects to be indexed by tuple (x,y)
 grid = [-1, -1, -1], [-1, -1, -1], [-1, -1, -1]
 Xcoords = [1, 2, 3]
 Ycoords = [1, 2, 3]
-redblue = ["#FF0000", "#0000FF"]
+redblue = [(255,0,0),(0,0,255)]
 messages = []
 
 def solved():
@@ -72,134 +75,65 @@ def stalemate():
 
 def initCube(x, y, color):
     name = "cube_" + str(x) + "_" + str(y)
-    MESSAGE = {
-        "object_id": name,
-        "action": "delete"
-        }
-    client.publish(TOPIC, json.dumps(MESSAGE))
-    MESSAGE = {
-        "persist": True,
-        "object_id": name,
-        "action": "create",
-        "type": "object",
-        "data": {
-            "dynamic-body": {"type": "static"},
-            "impulse": {
-                "on": "mouseup",
-                "force": str(0) + " " + str(40) + " " + str(0),
-                "position": "10 1 1",
-            },
-            "object_type": "cube",
-            "position": {"x": x, "y": y, "z": -3},
-            "material": {"transparent": True, "opacity": 0.5},
-            "color": color,
-            "scale": {"x": 0.6, "y": 0.6, "z": 0.6},
-            "click-listener": "",
-        },
-    }
-    client.publish(TOPIC, json.dumps(MESSAGE))
-
+    # what happens if we don't delete first?
+    #    MESSAGE = {
+    #        "object_id": name,
+    #        "action": "delete"
+    #        }
+    #    client.publish(TOPIC, json.dumps(MESSAGE))
+    cubes[(x,y)]=arena.Object(objType=arena.Shape.cube,
+                              persist=True,
+                              objName=name,
+                              physics=arena.Physics.static,
+                              data='{"material": {"transparent":true,"opacity": 0.5},"impulse":{"on":"mouseup","force":"0 40 0","position": "10 1 1"}}',
+                              location=(x,y,-3),
+                              color=color,
+                              scale=(0.6,0.6,0.6),
+                              clickable=True);
 
 def dropCube(x, y):
     name = "cube_" + str(x) + "_" + str(y)
-    MESSAGE = {
-        "object_id": name,
-        "action": "update",
-        "type": "object",
-        "data": {"dynamic-body": {"type": "dynamic"}},
-    }
-    client.publish(TOPIC, json.dumps(MESSAGE))
+    cubes[(x,y)].update(physics=arena.Physics.dynamic)
 
 
 def deleteCube(x, y):
     name = "cube_" + str(x) + "_" + str(y)
-    MESSAGE = {"object_id": name, "action": "delete"}
-    client.publish(TOPIC, json.dumps(MESSAGE))
-
+    cubes[(x,y)].delete()
 
 def launchCube(x, y):
     name = "cube_" + str(x) + "_" + str(y)
-    MESSAGE = {
-        "persist": True,
-        "object_id": name,
-        "action": "update",
-        "type": "object",
-        "data": {"dynamic-body": {"type": "dynamic"}},
-    }
-    client.publish(TOPIC, json.dumps(MESSAGE))
-
-    MESSAGE = {
-        "persist": True,
-        "object_id": name,
-        "action": "clientEvent",
-        "type": "mouseup",
-        "data": {"position": {"x": 0, "y": 0, "z": 0}, "source": "guacprogram"},
-    }
-    client.publish(TOPIC, json.dumps(MESSAGE))
-
-
+    cubes[(x,y)].update(physics=arena.Physics.dynamic)
+    cubes[(x,y)].fireEvent(arena.Event.mouseup,(0,0,0),"guacprogram")
 
 def deleteAvocado():
-    MESSAGE = {
-        "persist": True,
-        "object_id": "gltf-model_avocadoman",
-         "action": "delete",
-    }
-    client.publish(TOPIC, json.dumps(MESSAGE))
+    global avocado
+    avocado.delete()
 
 def drawAvocado():
-    MESSAGE = {
-        "persist": True,
-        "object_id": "gltf-model_avocadoman",
-        "action": "create",
-        "data": {
-            "object_type": "gltf-model",
-            "url": "models/avocadoman/scene.gltf",
-            "position": {"x": -1, "y": 0.01, "z": -4},
-            "rotation": {"x": 0, "y": 0, "z": 0, "w": 1},
-            "scale": {"x": 0.005, "y": 0.005, "z": 0.005},
-        },
-    }
-    client.publish(TOPIC, json.dumps(MESSAGE))
-
+    global avocado
+    avocado = arena.Object(persist=True,
+                           objName="gltf-model_avocadoman",
+                           objType=arena.Shape.gltf_model,
+                           url="models/avocadoman/scene.gltf",
+                           location=(-1,0.01,-4),
+                           scale=(0.005,0.005,0.005),
+    )
 
 def animateAvocado():
+    global avocado
     #    MESSAGE='{"object_id": "gltf-model_avocadoman", "action": "delete"}'
     #    client.publish((TOPIC, MESSAGE)
     deleteAvocado()
     drawAvocado()
-    MESSAGE = {
-        "object_id": "gltf-model_avocadoman",
-        "action": "update",
-        "type": "object",
-        "data": {
-            "animation-mixer": {
-                "clip": "Recuperate",
-                "loop": "pingpong",
-                "repetitions": 2,
-                "timeScale": 4,
-            }
-        },
-    }
-    client.publish(TOPIC, json.dumps(MESSAGE))
-
+    avocado.update(data='{"animation-mixer": {"clip": "Recuperate","loop": "pingpong","repetitions": 2,"timeScale": 4}}')
 
 def animateAvocado2():
+    global avocado
     deleteAvocado()
     drawAvocado()
-    MESSAGE = {
-        "object_id": "gltf-model_avocadoman",
-        "action": "update",
-        "type": "object",
-        "data": {
-            "animation-mixer": {"clip": "Walking", "loop": "pingpong", "repetitions": 2}
-        },
-    }
-    client.publish(TOPIC, json.dumps(MESSAGE))
-
+    avocado.update(data='{"animation-mixer": {"clip": "Walking", "loop": "pingpong", "repetitions": 2}}')
 
 counter = 0
-
 
 def draw_board():
     global counter
@@ -209,14 +143,13 @@ def draw_board():
     drawAvocado()
     for x in Xcoords:
         for y in Ycoords:
-            initCube(x, y, "#808080")
+            initCube(x, y, (127,127,127))
 
 def animate_win():
     animateAvocado()
     for x in Xcoords:
         for y in Ycoords:
             launchCube(x, y)
-    print("sleeping")
     time.sleep(5);
     for x in Xcoords:
         for y in Ycoords:
@@ -227,22 +160,16 @@ def animate_loss():
         for y in Ycoords:
             dropCube(x, y)
     animateAvocado2()
-    print("sleeping")
     time.sleep(5);
     for x in Xcoords:
         for y in Ycoords:
             deleteCube(x, y)
 
-
-# define callbacks
-def on_click_input(client, userdata, msg):
-    messages.append(msg)
-
 def process_message(msg):
     global counter
     global rando
 
-    jsonMsg = json.loads(msg.payload.decode("utf-8"))
+    jsonMsg = json.loads(msg)
 
     # filter non-event messages
     if jsonMsg["action"] != "clientEvent":
@@ -250,7 +177,7 @@ def process_message(msg):
 
     # filter non-mouse messages
     if jsonMsg["type"] == "mousedown":
-        #print("on_click_input:" + msg.payload.decode("utf-8"))
+        #print("on_click_input:" + msg)
         name = jsonMsg["object_id"]
         color = redblue[counter % 2]
         x = int(name.split("_")[1])
@@ -259,30 +186,14 @@ def process_message(msg):
             return
         counter = counter + 1
         grid[(x - 1)][(y - 1)] = counter % 2
-        MESSAGE = {
-            "object_id": name,
-            "action": "update",
-            "type": "object",
-            "data": {
-                "dynamic-body": {"type": "static"},
-                "impulse": {
-                    "on": "mouseup",
-                    "force": str(0) + " " + str(40) + " " + str(0),
-                    "position": "10 1 1",
-                },
-                "click-listener": "",
-                "object_type": "cube",
-                "position": {
-                    "x": x,
-                    "y": y,
-                    "z": -3,
-                },
-                "material": {"color": color, "transparent": False, "opacity": 1},
-                "scale": {"x": 0.6, "y": 0.6, "z": 0.6},
-            },
-        }
+        colstring = '#%02x%02x%02x' % color
+        cubes[(x,y)].update(physics=arena.Physics.static,
+                            data='{"impulse": {"on": "mouseup","force":"0 40 0","position":"10 1 1"},"material": {"color":"'+ colstring+'", "transparent": false, "opacity": 1}}',
+                            clickable=True,
+                            location=(x,y,-3),
+                            scale=(0.6, 0.6, 0.6)
+        )
         #        MESSAGE='{"persist": true, "object_id":"'+name+'","action":"update","type":"object","data":{"material": {"color":"'+color+'", "transparent": false, "opacity": 1.0}}}'
-        client.publish(TOPIC, json.dumps(MESSAGE))
 
         if solved():
             print("solved")
@@ -297,21 +208,7 @@ def process_message(msg):
 
 # start the fun shall we?
 
-client = mqtt.Client(str(random.random()), clean_session=True, userdata=None)
-client.connect(HOST)
-
-print("subscribing")
-client.subscribe(TOPIC + "#")
-
-print("adding callback")
-client.message_callback_add(TOPIC + "#", on_click_input)
-
+arena.init(HOST, REALM, SCENE, process_message)
 print("starting main loop")
 draw_board()
-
-client.loop_start()
-while True:
-    if (len(messages) > 0):
-        process_message(messages.pop(0))
-    else:
-        time.sleep(0.1)
+arena.handle_events()

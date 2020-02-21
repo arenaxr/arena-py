@@ -12,7 +12,8 @@ import paho.mqtt.publish as publish
 from scipy.spatial.transform import Rotation as R
 
 HOST = "oz.andrew.cmu.edu"
-TOPIC = "realm/s/duck/vive-rightHand_duck_duck"
+CONTROLLER_TOPIC = "realm/s/duck/vive-rightHand_duck_duck"
+TOPIC = "realm/s/duck"
 USER = "camera_duck_duck"
 FORCE = 50
 
@@ -83,9 +84,9 @@ def on_click_input(client, userdata, msg):
         v = [0, 0, -1]
         r = rq.apply(v)  # multiply unit vector by rotation to get direction
 
-        xf = r[0] * FORCE
-        yf = r[1] * FORCE
-        zf = r[2] * FORCE
+        xf = round((r[0] * FORCE),3)
+        yf = round(r[1] * FORCE,3)
+        zf = round(r[2] * FORCE,3)
 
     if jsonMsg["action"] != "clientEvent":
         return
@@ -134,7 +135,6 @@ def on_click_input(client, userdata, msg):
         print(json.dumps(MESSAGE));
         client.publish(TOPIC, json.dumps(MESSAGE))
 
-
         time.sleep(0.15)  # if we don't pause, mousedown events don't always get through
 
         MESSAGE = {
@@ -151,10 +151,10 @@ client = mqtt.Client(str(random.random()), clean_session=True, userdata=None)
 client.connect(HOST)
 
 print("subscribing")
-client.subscribe(TOPIC)
+client.subscribe(CONTROLLER_TOPIC)
 
 print("adding callback")
-client.message_callback_add(TOPIC, on_click_input)
+client.message_callback_add(CONTROLLER_TOPIC, on_click_input)
 
 print("starting main loop")
 client.loop_start()  # doesn't really do anything but wait for events

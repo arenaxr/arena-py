@@ -67,16 +67,13 @@ def initCube(x, y, color):
                               clickable=True);
 
 def dropCube(x, y):
-    name = "cube_" + str(x) + "_" + str(y)
     cubes[(x,y)].update(physics=arena.Physics.dynamic)
 
 
 def deleteCube(x, y):
-    name = "cube_" + str(x) + "_" + str(y)
     cubes[(x,y)].delete()
 
 def launchCube(x, y):
-    name = "cube_" + str(x) + "_" + str(y)
     cubes[(x,y)].update(physics=arena.Physics.dynamic)
     cubes[(x,y)].fireEvent(arena.Event.mouseup,(0,0,0),"guacprogram")
 

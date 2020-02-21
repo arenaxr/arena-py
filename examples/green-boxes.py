@@ -5,31 +5,25 @@ import time
 import random
 import arena
 
-arena.init("oz.andrew.cmu.edu", "realm/s/render")
+arena.init("oz.andrew.cmu.edu", "realm", "demo")
 
 arena.start()
 
-location = (5.0, 6.0, 7.0)
-rotation = (0.0, 0.0, 0.0, 0.0)
 color = (0, 255, 0)
-scale = (1.0, 1.0, 1.0)
 
-# Create a box
-myCube = arena.Cube(location, rotation, scale, color)
-# Delete a box
-del myCube
+# more complex case: Create many boxes
 
-x = 1.0
+x = 1
 
 while True:
-    # Create a bunch of boxes drawn directly to screen
-    arena.Cube(
-        (random.randrange(10), random.randrange(10), random.randrange(10)),
-        rotation,
-        scale,
-        color,
+    # Create a bunch of green boxes drawn directly to screen
+    location = (random.randrange(10)-5, random.randrange(10), -random.randrange(10))
+    arena.Object(
+        location=location,
+        color=color,
     )
     x = x + 1
     time.sleep(0.5)
+    print("object " + str(x-1) + " at " + str(location))
 
 arena.stop()

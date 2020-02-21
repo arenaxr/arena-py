@@ -3,11 +3,8 @@
 # plays Tic Tac Toe
 
 import json
-import random
 import time
 import arena
-import paho.mqtt.client as mqtt
-import paho.mqtt.publish as publish
 
 HOST = "oz.andrew.cmu.edu"
 TOPIC = "realm/s/guac/"
@@ -26,24 +23,24 @@ messages = []
 def solved():
     global grid
 
-    if grid[0][0] == 1 and grid[0][1] == 1 and grid[0][2] == 1:        return True
-    if grid[1][0] == 1 and grid[1][1] == 1 and grid[1][2] == 1:        return True
-    if grid[2][0] == 1 and grid[2][1] == 1 and grid[2][2] == 1:        return True
-    if grid[0][0] == 0 and grid[0][1] == 0 and grid[0][2] == 0:        return True
-    if grid[1][0] == 0 and grid[1][1] == 0 and grid[1][2] == 0:        return True
-    if grid[2][0] == 0 and grid[2][1] == 0 and grid[2][2] == 0:        return True
+    if grid[0][0] == 1 and grid[0][1] == 1 and grid[0][2] == 1: return True
+    if grid[1][0] == 1 and grid[1][1] == 1 and grid[1][2] == 1: return True
+    if grid[2][0] == 1 and grid[2][1] == 1 and grid[2][2] == 1: return True
+    if grid[0][0] == 0 and grid[0][1] == 0 and grid[0][2] == 0: return True
+    if grid[1][0] == 0 and grid[1][1] == 0 and grid[1][2] == 0: return True
+    if grid[2][0] == 0 and grid[2][1] == 0 and grid[2][2] == 0: return True
 
-    if grid[0][0] == 1 and grid[1][0] == 1 and grid[2][0] == 1:        return True
-    if grid[0][1] == 1 and grid[1][1] == 1 and grid[2][1] == 1:        return True
-    if grid[0][2] == 1 and grid[1][2] == 1 and grid[2][2] == 1:        return True
-    if grid[0][0] == 0 and grid[1][0] == 0 and grid[2][0] == 0:        return True
-    if grid[0][1] == 0 and grid[1][1] == 0 and grid[2][1] == 0:        return True
-    if grid[0][2] == 0 and grid[1][2] == 0 and grid[2][2] == 0:        return True
+    if grid[0][0] == 1 and grid[1][0] == 1 and grid[2][0] == 1: return True
+    if grid[0][1] == 1 and grid[1][1] == 1 and grid[2][1] == 1: return True
+    if grid[0][2] == 1 and grid[1][2] == 1 and grid[2][2] == 1: return True
+    if grid[0][0] == 0 and grid[1][0] == 0 and grid[2][0] == 0: return True
+    if grid[0][1] == 0 and grid[1][1] == 0 and grid[2][1] == 0: return True
+    if grid[0][2] == 0 and grid[1][2] == 0 and grid[2][2] == 0: return True
 
-    if grid[0][0] == 0 and grid[1][1] == 0 and grid[2][2] == 0:        return True
-    if grid[0][0] == 1 and grid[1][1] == 1 and grid[2][2] == 1:        return True
-    if grid[0][2] == 0 and grid[1][1] == 0 and grid[2][0] == 0:        return True
-    if grid[0][2] == 1 and grid[1][1] == 1 and grid[2][0] == 1:        return True
+    if grid[0][0] == 0 and grid[1][1] == 0 and grid[2][2] == 0: return True
+    if grid[0][0] == 1 and grid[1][1] == 1 and grid[2][2] == 1: return True
+    if grid[0][2] == 0 and grid[1][1] == 0 and grid[2][0] == 0: return True
+    if grid[0][2] == 1 and grid[1][1] == 1 and grid[2][0] == 1: return True
 
     return False
 
@@ -59,12 +56,6 @@ def stalemate():
 
 def initCube(x, y, color):
     name = "cube_" + str(x) + "_" + str(y)
-    # what happens if we don't delete first?
-    #    MESSAGE = {
-    #        "object_id": name,
-    #        "action": "delete"
-    #        }
-    #    client.publish(TOPIC, json.dumps(MESSAGE))
     cubes[(x,y)]=arena.Object(objType=arena.Shape.cube,
                               persist=True,
                               objName=name,
@@ -100,8 +91,7 @@ def drawAvocado():
                            objType=arena.Shape.gltf_model,
                            url="models/avocadoman/scene.gltf",
                            location=(-1,0.01,-4),
-                           scale=(0.005,0.005,0.005),
-    )
+                           scale=(0.005,0.005,0.005))
 
 def animateAvocado():
     global avocado
@@ -149,7 +139,6 @@ def animate_loss():
 
 def process_message(msg):
     global counter
-    global rando
 
     jsonMsg = json.loads(msg)
 
@@ -173,8 +162,7 @@ def process_message(msg):
                             data='{"impulse": {"on": "mouseup","force":"0 40 0","position":"10 1 1"},"material": {"color":"'+ colstring+'", "transparent": false, "opacity": 1}}',
                             clickable=True,
                             location=(x,y,-3),
-                            scale=(0.6, 0.6, 0.6)
-        )
+                            scale=(0.6, 0.6, 0.6))
 
         if solved():
             print("solved")

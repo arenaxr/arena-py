@@ -26,40 +26,24 @@ messages = []
 def solved():
     global grid
 
-    if grid[0][0] == 1 and grid[0][1] == 1 and grid[0][2] == 1:
-        return True
-    if grid[1][0] == 1 and grid[1][1] == 1 and grid[1][2] == 1:
-        return True
-    if grid[2][0] == 1 and grid[2][1] == 1 and grid[2][2] == 1:
-        return True
-    if grid[0][0] == 0 and grid[0][1] == 0 and grid[0][2] == 0:
-        return True
-    if grid[1][0] == 0 and grid[1][1] == 0 and grid[1][2] == 0:
-        return True
-    if grid[2][0] == 0 and grid[2][1] == 0 and grid[2][2] == 0:
-        return True
+    if grid[0][0] == 1 and grid[0][1] == 1 and grid[0][2] == 1:        return True
+    if grid[1][0] == 1 and grid[1][1] == 1 and grid[1][2] == 1:        return True
+    if grid[2][0] == 1 and grid[2][1] == 1 and grid[2][2] == 1:        return True
+    if grid[0][0] == 0 and grid[0][1] == 0 and grid[0][2] == 0:        return True
+    if grid[1][0] == 0 and grid[1][1] == 0 and grid[1][2] == 0:        return True
+    if grid[2][0] == 0 and grid[2][1] == 0 and grid[2][2] == 0:        return True
 
-    if grid[0][0] == 1 and grid[1][0] == 1 and grid[2][0] == 1:
-        return True
-    if grid[0][1] == 1 and grid[1][1] == 1 and grid[2][1] == 1:
-        return True
-    if grid[0][2] == 1 and grid[1][2] == 1 and grid[2][2] == 1:
-        return True
-    if grid[0][0] == 0 and grid[1][0] == 0 and grid[2][0] == 0:
-        return True
-    if grid[0][1] == 0 and grid[1][1] == 0 and grid[2][1] == 0:
-        return True
-    if grid[0][2] == 0 and grid[1][2] == 0 and grid[2][2] == 0:
-        return True
+    if grid[0][0] == 1 and grid[1][0] == 1 and grid[2][0] == 1:        return True
+    if grid[0][1] == 1 and grid[1][1] == 1 and grid[2][1] == 1:        return True
+    if grid[0][2] == 1 and grid[1][2] == 1 and grid[2][2] == 1:        return True
+    if grid[0][0] == 0 and grid[1][0] == 0 and grid[2][0] == 0:        return True
+    if grid[0][1] == 0 and grid[1][1] == 0 and grid[2][1] == 0:        return True
+    if grid[0][2] == 0 and grid[1][2] == 0 and grid[2][2] == 0:        return True
 
-    if grid[0][0] == 0 and grid[1][1] == 0 and grid[2][2] == 0:
-        return True
-    if grid[0][0] == 1 and grid[1][1] == 1 and grid[2][2] == 1:
-        return True
-    if grid[0][2] == 0 and grid[1][1] == 0 and grid[2][0] == 0:
-        return True
-    if grid[0][2] == 1 and grid[1][1] == 1 and grid[2][0] == 1:
-        return True
+    if grid[0][0] == 0 and grid[1][1] == 0 and grid[2][2] == 0:        return True
+    if grid[0][0] == 1 and grid[1][1] == 1 and grid[2][2] == 1:        return True
+    if grid[0][2] == 0 and grid[1][1] == 0 and grid[2][0] == 0:        return True
+    if grid[0][2] == 1 and grid[1][1] == 1 and grid[2][0] == 1:        return True
 
     return False
 
@@ -121,8 +105,6 @@ def drawAvocado():
 
 def animateAvocado():
     global avocado
-    #    MESSAGE='{"object_id": "gltf-model_avocadoman", "action": "delete"}'
-    #    client.publish((TOPIC, MESSAGE)
     deleteAvocado()
     drawAvocado()
     avocado.update(data='{"animation-mixer": {"clip": "Recuperate","loop": "pingpong","repetitions": 2,"timeScale": 4}}')
@@ -193,7 +175,6 @@ def process_message(msg):
                             location=(x,y,-3),
                             scale=(0.6, 0.6, 0.6)
         )
-        #        MESSAGE='{"persist": true, "object_id":"'+name+'","action":"update","type":"object","data":{"material": {"color":"'+color+'", "transparent": false, "opacity": 1.0}}}'
 
         if solved():
             print("solved")

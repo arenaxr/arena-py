@@ -27,10 +27,11 @@ message protocol, described in more detail at https://github.com/conix-center/AR
 
 Here is a breakdown of the currently available arena.py functions
 ### init
-The init function takes 3 positional arguments, in order:
+The init function takes 3 positional arguments, and 1 optional argument in order:
  * the DNS name of a pub/sub MQTT broker (currently Mosquitto v1.6.3, which runs the v3.1.1 protocol)
  * realm, currently the fixed string "realm" to indicate hierarchy level
  * scene name, a string
+ * callback - a callback function to be called when ARENA network events are received. The function is passed a string argument, the network message, a JSON encoded string. (See below for more callback information)
 These are composed together to form an MQTT topic, in the example, "realm/s/hello".  
 A successful `init` results in a connection with the MQTT server, ready to send and receive messages.
 ### Object (create method)
@@ -72,7 +73,11 @@ Accepted arguments are:
     - https://github.com/conix-center/ARENA-core#images
     - https://github.com/conix-center/ARENA-core#models
     - https://github.com/conix-center/ARENA-core#load-scene
-  * data - accepts arbitrary JSON data to specify additional attribute-value pairs not specified above to be added to the object's A-Frame entity; see A-Frame and ARENA-core documentation for more detail
+  * data - accepts arbitrary JSON data to specify additional attribute-value pairs not specified above to be added to the object's A-Frame entity; see A-Frame and ARENA-core documentation for more detail. An example of a somewhat fancy data message would look like
+```
+    data='{"impulse": {"on": "mouseup","force":"0 40 0","position":"10 1 1"},"material": {"color":"(0, 255, 0)", "transparent": false, "opacity": 1}}'
+```
+(this example adds an impulse component which fires on mouseup event, with a force of 40 in the Y direction, and sets the object color to green, and sets the object to be non-transparent)
 ### Methods on Object
   * fireEvent takes 3 optional arguments
     - event - arena.Enum event to be sent to the object, e.g. mouseup, mousedown (default), mouseenter, mouseleave
@@ -87,4 +92,20 @@ Accepted arguments are:
     - data
     - clickable
   * delete - deletes the object from the scene
-  
+### handle_events
+After synchronously drawing objects to the scene, it is necessary to start a loop to handle network events which may fire the callback function specified at init time 
+### callback
+The data passed to the ARENA callback function is a JSON string best interpreted with `json.loads()` which turns it into a dictionary. These messages are the full contents of all MQTT messages pertaining to the scene, as specified in https://github.com/conix-center/ARENA-core. Most of them may not be of interest, and should be filtered to just events, with code like:
+```
+def callback(msg)
+    jsonMsg = json.loads(msg)
+    # filter non-event messages
+    if jsonMsg["action"] != "clientEvent":
+        return
+
+    # look for only mousedown messages
+    if jsonMsg["type"] != "mousedown":
+        return
+        
+    # handle mousedown message, breaking out message data from the dict, e.g
+    # jsonMsg["object_id"], jsonMsg[

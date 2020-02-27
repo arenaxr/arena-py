@@ -137,6 +137,7 @@ class Shape(enum.Enum):
     particle = "particle"
     text = "text"
     line = "line"
+    light = "light"
     thickline = "thickline"
 
 
@@ -161,6 +162,25 @@ class MouseEvent:
         self.source = source
 
 
+class updateRig:
+    def __init__(self, object_id, position, rotation):
+        MESSAGE = {
+            "object_id": object_id,
+            "action": "update",
+            "type": "rig",
+            "data": {
+                "position": {"x": position[0], "y": position[1], "z": position[2]},
+                "rotation": {
+                    "x": rotation[0],
+                    "y": rotation[1],
+                    "z": rotation[2],
+                    "w": rotation[3],
+                },
+            },
+        }
+        client.publish(scene_path, json.dumps(MESSAGE), retain=False)
+
+
 class Object:
     """Geometric shape object for the arena type Arena.Shape"""
 
@@ -171,6 +191,7 @@ class Object:
     color = (255, 255, 255)
     objName = ""
     ttl = 0
+    parent = ""
     persist = False
     physics = Physics.none
     clickable = False
@@ -189,6 +210,7 @@ class Object:
         persist=persist,
         ttl=ttl,
         physics=physics,
+        parent=parent,
         clickable=clickable,
         url=url,
         data=data,
@@ -204,6 +226,7 @@ class Object:
         self.color = color
         self.persist = persist
         self.ttl = ttl
+        self.parent = parent
         self.physics = physics
         self.clickable = clickable
         self.url = url
@@ -245,16 +268,6 @@ class Object:
         # print ("scene_path ", scene_path)
         client.publish(scene_path, json.dumps(MESSAGE), retain=False)
 
-    def updateRig(self, object_id, position, rotation):
-        MESSAGE = {
-            "object_id": object_id,
-            "action": "update",
-            "type": "rig",
-            "data": {"position": {"x": position[0], "y": position[1], "z": position[2]},
-                     "rotation": {"x": rotation[0], "y": rotation[1], "z": rotation[2], "w": rotation[3]}}
-            }
-        client.publish(scene_path, json.dumps(MESSAGE), retain=False)
-
     def update(
         self,
         location=None,
@@ -264,6 +277,8 @@ class Object:
         physics=None,
         data=None,
         clickable=None,
+        ttl=None,
+        parent=None,
     ):
         if location is not None:
             self.location = location
@@ -279,6 +294,10 @@ class Object:
             self.physics = physics
         if data is not None:
             self.data = data
+        if ttl is not None:
+            self.ttl = ttl
+        if parent is not None:
+            self.parent = parent
         self.redraw()
 
     #    def __del__(self):
@@ -309,7 +328,6 @@ class Object:
         client.publish(scene_path, json.dumps(update_msg), retain=False)
 
     def redraw(self):
-        # print(self.objType + " publish draw command")
         global scene_path
         color_str = "#%06x" % (
             int(self.color[0]) * 65536 + int(self.color[1]) * 256 + int(self.color[2])
@@ -345,9 +363,12 @@ class Object:
             MESSAGE["data"]["click-listener"] = ""
         if self.ttl != 0:
             MESSAGE["ttl"] = self.ttl
+        if self.parent != "":
+            MESSAGE["data"]["parent"] = self.parent
 
         # print("publishing " + json.dumps(MESSAGE) + " to " + scene_path)
         client.publish(scene_path, json.dumps(MESSAGE), retain=False)
+
 
 def __init__(self, name):
     """Initializes the data."""

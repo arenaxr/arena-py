@@ -65,7 +65,11 @@ def on_tag_detect(client, userdata, msg):
 
         mqtt_response = None
 
-        if hasattr(json_msg, "localize_tag") and json_msg.localize_tag and detected_tag.id != 0:
+        if (
+            hasattr(json_msg, "localize_tag")
+            and json_msg.localize_tag
+            and detected_tag.id != 0
+        ):
             print("Solve for tag", str(detected_tag.id))
             # Solve for tag, not client
             rig_pose = RIGS.get(client_id)
@@ -75,27 +79,27 @@ def on_tag_detect(client, userdata, msg):
             else:
                 ref_tag_pose = rig_pose @ vio_pose @ dtag_pose
                 ref_tag_pos = ref_tag_pose[0:3, 3]
-                ref_tag_rotq = Rotation.from_matrix(rig_pose[0:3, 0:3]).as_quat()
+                ref_tag_rotq = Rotation.from_matrix(ref_tag_pose[0:3, 0:3]).as_quat()
 
                 TAGS[detected_tag.id] = ref_tag_pose  # Store as reference
 
                 mqtt_response = {
-                    'object_id': 'apriltag_' + str(detected_tag.id),
-                    'action': 'update',
-                    'type': 'object',
-                    'data': {
-                        'position': {
-                            'x': ref_tag_pos[0],
-                            'y': ref_tag_pos[1],
-                            'z': ref_tag_pos[2]
+                    "object_id": "apriltag_" + str(detected_tag.id),
+                    "action": "update",
+                    "type": "object",
+                    "data": {
+                        "position": {
+                            "x": ref_tag_pos[0],
+                            "y": ref_tag_pos[1],
+                            "z": ref_tag_pos[2],
                         },
-                        'rotation': {
-                            'x': ref_tag_rotq[0],
-                            'y': ref_tag_rotq[1],
-                            'z': ref_tag_rotq[2],
-                            'w': ref_tag_rotq[3]
-                        }
-                    }
+                        "rotation": {
+                            "x": ref_tag_rotq[0],
+                            "y": ref_tag_rotq[1],
+                            "z": ref_tag_rotq[2],
+                            "w": ref_tag_rotq[3],
+                        },
+                    },
                 }
         else:  # Solving for client rig, default localization operation
             print("Localizing", client_id, "on", str(detected_tag.id))

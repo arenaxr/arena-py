@@ -19,26 +19,33 @@ object_list = []
 arena_callback = None
 messages = []
 
+
 def signal_handler(sig, frame):
     stop()
 
+
 def arena_callback(msg):
-     arena_callback(msg.payload)
+    arena_callback(msg.payload)
+
 
 def process_message(msg):
     global arena_callback
-#    print("on_message: "+msg.topic+' '+str(msg.payload))
-    if (arena_callback):
-        arena_callback(msg.payload.decode("utf-8","ignore"))
+    #    print("on_message: "+msg.topic+' '+str(msg.payload))
+    if arena_callback:
+        arena_callback(msg.payload.decode("utf-8", "ignore"))
+
 
 def on_message(client, userdata, msg):
     messages.append(msg)
 
+
 def on_connect(client, userdata, flags, rc):
     print("connected")
 
-#def on_log(client, userdata, level, buf):
+
+# def on_log(client, userdata, level, buf):
 #    print("log:" + buf);
+
 
 def init(broker, realm, scene, callback=None):
     global client
@@ -46,16 +53,16 @@ def init(broker, realm, scene, callback=None):
     global mqtt_broker
     global arena_callback
     mqtt_broker = broker
-    scene_path = realm + '/s/' + scene
+    scene_path = realm + "/s/" + scene
     arena_callback = callback
 
-    #print("arena callback:", callback)
-    #print("connecting to broker ", mqtt_broker)
+    # print("arena callback:", callback)
+    # print("connecting to broker ", mqtt_broker)
     client.connect(mqtt_broker)
 
-    #print("subscribing")
-    client.subscribe(scene_path+'/#');
-    
+    # print("subscribing")
+    client.subscribe(scene_path + "/#")
+
     # fall-thru callback for all things on scene
     # not on specific subscribed topics
     client.on_message = on_message
@@ -67,13 +74,15 @@ def init(broker, realm, scene, callback=None):
     signal.signal(signal.SIGINT, signal_handler)
     start()
 
+
 def handle_events():
     while running:
-        if (len(messages) > 0):
+        if len(messages) > 0:
             process_message(messages.pop(0))
         else:
             time.sleep(0.1)
-    
+
+
 def start():
     global client
     global running
@@ -81,6 +90,7 @@ def start():
     print("starting network loop")
     client.loop_start()  # start MQTT network loop
     print("started")
+
 
 def stop():
     global client
@@ -92,6 +102,7 @@ def stop():
     client.disconnect()
     print("disconnected")
 
+
 def add(obj):
     print("Add called with: " + obj.name)
     if isinstance(obj, Cube):
@@ -99,10 +110,12 @@ def add(obj):
     if isinstance(obj, Sphere):
         print("its a sphere")
 
+
 class Physics(enum.Enum):
     none = "none"
     static = "static"
     dynamic = "dynamic"
+
 
 class Shape(enum.Enum):
     cube = "cube"
@@ -126,6 +139,7 @@ class Shape(enum.Enum):
     line = "line"
     thickline = "thickline"
 
+
 class Event(enum.Enum):
     mousedown = "mousedown"
     mouseup = "mouseup"
@@ -133,15 +147,19 @@ class Event(enum.Enum):
     mouseleave = "mouseleave"
     collision = "collision"
 
+
 class MouseEvent:
     """Event data from mouse interaction"""
+
     location = (0, 0, 0)
     eventType = Event.mousedown
     source = ""
+
     def __init__(self, location=location, eventType=eventType, source=source):
         self.location = location
         self.eventType = eventType
         self.source = source
+
 
 class Object:
     """Geometric shape object for the arena type Arena.Shape"""
@@ -158,9 +176,24 @@ class Object:
     clickable = False
     url = ""
     data = ""
-#    callback = None
+    #    callback = None
 
-    def __init__(self, objName=objName, objType=objType, location=location, rotation=rotation, scale=scale, color=color, persist=persist, ttl=ttl, physics=physics, clickable=clickable, url=url, data=data): #, callback=callback):
+    def __init__(
+        self,
+        objName=objName,
+        objType=objType,
+        location=location,
+        rotation=rotation,
+        scale=scale,
+        color=color,
+        persist=persist,
+        ttl=ttl,
+        physics=physics,
+        clickable=clickable,
+        url=url,
+        data=data,
+        # callback=callback
+    ):
         """Initializes the data."""
         global object_count
         global object_list
@@ -175,23 +208,23 @@ class Object:
         self.clickable = clickable
         self.url = url
         self.data = data
-#        self.callback = callback
-        #print("loc: " + str(self.loc))
+        #        self.callback = callback
+        # print("loc: " + str(self.loc))
         # avoid name clashes by enumerating each new object
-        if (objName == ""):
-            self.objName = self.objType.value + '_' + str(object_count)
+        if objName == "":
+            self.objName = self.objType.value + "_" + str(object_count)
         else:
             self.objName = objName
-        
-#        if (callback != None):
-#            print("adding callback")
-#            client.message_callback_add(scene_path+'/'+self.objName, callback)
+
+        #        if (callback != None):
+        #            print("adding callback")
+        #            client.message_callback_add(scene_path+'/'+self.objName, callback)
 
         object_count = object_count + 1
         object_list.append(self)
         self.redraw()
 
-    def fireEvent(self, event=None, position=(0,0,0), source=None):
+    def fireEvent(self, event=None, position=(0, 0, 0), source=None):
         if event is None:
             event = arena.Event.mousedown.value
         else:
@@ -202,11 +235,14 @@ class Object:
             "object_id": self.objName,
             "action": "clientEvent",
             "type": event,
-            "data": {"position": {"x": position[0], "y": position[1], "z": position[2]}, "source": source}
-            }
-        #print("deleting " + json.dumps(MESSAGE))
-        #print("client ", client)
-        #print ("scene_path ", scene_path)
+            "data": {
+                "position": {"x": position[0], "y": position[1], "z": position[2]},
+                "source": source,
+            },
+        }
+        # print("deleting " + json.dumps(MESSAGE))
+        # print("client ", client)
+        # print ("scene_path ", scene_path)
         client.publish(scene_path, json.dumps(MESSAGE), retain=False)
 
     def updateRig(self, object_id, position, rotation):
@@ -219,30 +255,41 @@ class Object:
             }
         client.publish(scene_path, json.dumps(MESSAGE), retain=False)
 
-
-    def update(self, location=None, rotation=None, scale=None, color=None, physics=None, data=None, clickable=None):
-        if location is not None: self.location = location
-        if rotation is not None: self.rotation = rotation
-        if scale is not None: self.scale = scale
-        if color is not None: self.color = color
-        if clickable is not None: self.clickable = clickable
-        if physics is not None: self.physics = physics
-        if data is not None: self.data = data
+    def update(
+        self,
+        location=None,
+        rotation=None,
+        scale=None,
+        color=None,
+        physics=None,
+        data=None,
+        clickable=None,
+    ):
+        if location is not None:
+            self.location = location
+        if rotation is not None:
+            self.rotation = rotation
+        if scale is not None:
+            self.scale = scale
+        if color is not None:
+            self.color = color
+        if clickable is not None:
+            self.clickable = clickable
+        if physics is not None:
+            self.physics = physics
+        if data is not None:
+            self.data = data
         self.redraw()
 
-    def __del__(self):
-        self.delete()
+    #    def __del__(self):
+    #        self.delete()
 
     def delete(self):
-        MESSAGE = {
-            "object_id": self.objName,
-            "action": "delete"
-            }
-        #print("deleting " + json.dumps(MESSAGE))
-        #print("client ", client)
-        #print ("scene_path ", scene_path)
-        if client is not None:
-            client.publish(scene_path, json.dumps(MESSAGE), retain=False)
+        MESSAGE = {"object_id": self.objName, "action": "delete"}
+        # print("deleting " + json.dumps(MESSAGE))
+        # print("client ", client)
+        # print ("scene_path ", scene_path)
+        client.publish(scene_path, json.dumps(MESSAGE), retain=False)
 
     def location(self, location):
         # mosquitto_pub -h oz.andrew.cmu.edu -t /topic/render/cube_1/position -m "x:1; y:2; z:3;"
@@ -251,18 +298,18 @@ class Object:
             "object_id": self.objName,
             "action": "update",
             "data": {
-                "position": {"x": self.location[0],
-                             "y": self.location[1],
-                             "z": self.location[2],}
+                "position": {
+                    "x": self.location[0],
+                    "y": self.location[1],
+                    "z": self.location[2],
+                }
             },
         }
-        #print("move str: " + json.dumps(update_msg))
-        client.publish(
-            scene_path, json.dumps(update_msg), retain=False
-        )
+        # print("move str: " + json.dumps(update_msg))
+        client.publish(scene_path, json.dumps(update_msg), retain=False)
 
     def redraw(self):
-        #print(self.objType + " publish draw command")
+        # print(self.objType + " publish draw command")
         global scene_path
         color_str = "#%06x" % (
             int(self.color[0]) * 65536 + int(self.color[1]) * 256 + int(self.color[2])
@@ -277,7 +324,7 @@ class Object:
                 "position": {
                     "x": self.location[0],
                     "y": self.location[1],
-                    "z": self.location[2]
+                    "z": self.location[2],
                 },
                 "rotation": {
                     "x": self.rotation[0],
@@ -285,28 +332,22 @@ class Object:
                     "z": self.rotation[2],
                     "w": self.rotation[3],
                 },
-                "scale": {
-                    "x": self.scale[0],
-                    "y": self.scale[1],
-                    "z": self.scale[2]
-                },
+                "scale": {"x": self.scale[0], "y": self.scale[1], "z": self.scale[2]},
                 "color": color_str,
-                "url": self.url
+                "url": self.url,
             },
         }
-        if (self.data != ""):
+        if self.data != "":
             MESSAGE["data"].update(json.loads(self.data))
-        if (self.physics != Physics.none):
+        if self.physics != Physics.none:
             MESSAGE["data"]["dynamic-body"] = {"type": self.physics.value}
-        if (self.clickable):
+        if self.clickable:
             MESSAGE["data"]["click-listener"] = ""
-        if (self.ttl != 0):
+        if self.ttl != 0:
             MESSAGE["ttl"] = self.ttl
 
-        #print("publishing " + json.dumps(MESSAGE) + " to " + scene_path)
-        client.publish(
-            scene_path, json.dumps(MESSAGE), retain=False
-        )
+        # print("publishing " + json.dumps(MESSAGE) + " to " + scene_path)
+        client.publish(scene_path, json.dumps(MESSAGE), retain=False)
 
 def __init__(self, name):
     """Initializes the data."""

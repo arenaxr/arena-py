@@ -45,7 +45,7 @@ cube.delete()
 time.sleep(1)
 
 floor = arena.Object(
-    objName="image_floor",
+    objName="my_image_floor",
     objType=arena.Shape.image,
     location=(0, 0, 0.4),
     rotation=(-0.7, 0, 0, 0.7),
@@ -130,5 +130,10 @@ time.sleep(2)
 
 torus.update(ttl=2)
 time.sleep(2)
+
+rig=arena.Object(objName="cameraRig")
+rig.update(data='{"animation": {"property": "position","to": "0 10 20","easing": "linear","dur": 1000}}')
+time.sleep(2)
+rig.update(data='{"animation": {"property": "position","to": "0 10 -200","easing": "linear","dur": 1000}}')
 
 arena.handle_events()

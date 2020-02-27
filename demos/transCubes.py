@@ -1,19 +1,16 @@
-# shapes.py
+# transCubes.py
 #
-# MQTT message format: x,y,z,rotX,rotY,rotZ,rotW,scaleX,scaleY,scaleZ,#colorhex,on/off
+# draw a symmetric structure of transparent mostly red blue (yellow) rectangles
 
-import json
+import arena
 import random
 import time
-
-import paho.mqtt.client as mqtt
+import signal
 
 HOST = "oz.andrew.cmu.edu"
-TOPIC = "/topic/transCubes"
+SCENE = "transCubes"
 
-client = mqtt.Client(str(random.random()), clean_session=True, userdata=None)
-client.connect(HOST)
-
+arena.init(HOST, "realm", SCENE)
 
 def randmove():
     rando = random.random() * 10 - 5
@@ -34,15 +31,15 @@ def unhex(a):
 
 
 def randgold():
-    return "FF" + format(random.randint(128, 208), "x") + "00"
+    return (255, random.randint(128, 208), 0)
 
 
 def randblue():
-    return "0000" + format(random.randint(128, 255), "x")
+    return (0, 0, random.randint(128, 255))
 
 
 def randred():
-    return format(random.randint(128, 255), "x") + "0000"
+    return (random.randint(128, 255), 0, 0)
 
 
 def randcolor():
@@ -61,36 +58,28 @@ def randcolor():
 def randobj():
     rando = random.random()
     if rando < 0.2:
-        return "cylinder"
+        return "arena.Shape.cylinder"
     if rando < 0.4:
-        return "sphere"
+        return "arena.Shape.sphere"
     if rando < 0.6:
-        return "cube"
+        return "arena.Shape.cube"
     if rando < 0.8:
-        return "quad"
-    return "cube"
+        return "arena.Shape.quad"
+    return "arena.Shape.cube"
 
 
 def do(name, randx, randy, randz, scalex, scaley, scalez, color):
-    MESSAGE = {
-        "action": "create",
-        "object_id": name,
-        "type": "object",
-        "data": {
-            "position": {
-                "x": round(randx, 3),
-                "y": round(randy, 3),
-                "z": round(randz, 3),
-            },
-            "rotation": {"x": 0, "y": 0, "z": 0, "w": 0},
-            "scale": {"x": scalex, "y": scaley, "z": scalez,},
-            "color": color,
-            "material": {"transparent": True, "opacity": 0.5},
-        },
-    }
-    messages.append(MESSAGE)
-    print(json.dumps(MESSAGE))
-    client.publish(TOPIC + "/" + name, json.dumps(MESSAGE))
+    obj = arena.Object(
+        objName=name,
+        location=(randx,randy,randz),
+        scale=(scalex,scaley,scalez),
+        color=color,
+        data='{"material": {"transparent": true, "opacity": 0.5}}')
+    messages.append(obj)
+
+def signal_handler(sig, frame):
+    exit(0)
+signal.signal(signal.SIGINT, signal_handler)
 
 
 messages = []
@@ -122,9 +111,6 @@ while True:
     if len(messages) >= 100:
         for i_ in range(4):
             pop = messages.pop(0)
-            name = pop["object_id"]
-            client.publish(
-                TOPIC + "/" + name,
-                json.dumps({"action": "delete", "object_id": name}),
-            )
+            pop.delete()
+
     time.sleep(0.1)

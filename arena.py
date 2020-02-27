@@ -23,28 +23,6 @@ def signal_handler(sig, frame):
     stop()
 
 def arena_callback(msg):
-#     print("arena_callback called with: " + msg.payload)
-#     jsonMsg = json.loads(msg.payload)
-#     # filter non-event messages
-#     if jsonMsg["action"] != "clientEvent":
-#         return(None)
-#     # filter non-mouse messages
-#     if jsonMsg["type"] != "mousedown" and jsonMsg["type"] != "mouseup":
-#         return
-#     print('got click: %s "%s"' % (msg.topic, msg.payload))
-
-#     click_x = jsonMsg["data"]["position"]["x"]
-#     click_y = jsonMsg["data"]["position"]["y"]
-#     click_z = jsonMsg["data"]["position"]["z"]
-#     user = jsonMsg["data"]["source"]
-#     # click_x,click_y,click_z,user = msg.payload.split(',')
-#     print("Clicked by: " + user)
-#     obj_x = float(x) - float(click_x)
-#     obj_y = float(y) - float(click_y)
-#     obj_z = float(z) - float(click_z)
-#     if str(msg.topic).find("mousedown") != -1:
-#         print("Obj relative click: " + str(obj_x) + "," + str(obj_y) + "," + str(obj_z))
-    
      arena_callback(msg.payload)
 
 def process_message(msg):
@@ -142,6 +120,11 @@ class Shape(enum.Enum):
     torusKnot = "torusKnot"
     triangle = "triangle"
     gltf_model = "gltf-model"
+    image = "image"
+    particle = "particle"
+    text = "text"
+    line = "line"
+    thickline = "thickline"
 
 class Event(enum.Enum):
     mousedown = "mousedown"
@@ -226,6 +209,16 @@ class Object:
         #print ("scene_path ", scene_path)
         client.publish(scene_path, json.dumps(MESSAGE), retain=False)
 
+    def updateRig(self, object_id, position, rotation):
+        MESSAGE = {
+            "object_id": object_id,
+            "action": "update",
+            "type": "rig",
+            "data": {"position": {"x": position[0], "y": position[1], "z": position[2]},
+                     "rotation": {"x": rotation[0], "y": rotation[1], "z": rotation[2], "w": rotation[3]}}
+            }
+        client.publish(scene_path, json.dumps(MESSAGE), retain=False)
+
 
     def update(self, location=None, rotation=None, scale=None, color=None, physics=None, data=None, clickable=None):
         if location is not None: self.location = location
@@ -237,8 +230,8 @@ class Object:
         if data is not None: self.data = data
         self.redraw()
 
-#    def __del__(self):
-#        self.delete()
+    def __del__(self):
+        self.delete()
 
     def delete(self):
         MESSAGE = {
@@ -248,7 +241,8 @@ class Object:
         #print("deleting " + json.dumps(MESSAGE))
         #print("client ", client)
         #print ("scene_path ", scene_path)
-        client.publish(scene_path, json.dumps(MESSAGE), retain=False)
+        if client is not None:
+            client.publish(scene_path, json.dumps(MESSAGE), retain=False)
 
     def location(self, location):
         # mosquitto_pub -h oz.andrew.cmu.edu -t /topic/render/cube_1/position -m "x:1; y:2; z:3;"
@@ -313,11 +307,6 @@ class Object:
         client.publish(
             scene_path, json.dumps(MESSAGE), retain=False
         )
-
-
-class Sphere:
-    """Sphere object for the arena"""
-
 
 def __init__(self, name):
     """Initializes the data."""

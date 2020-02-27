@@ -5,6 +5,7 @@
 import json
 import time
 import arena
+import re
 
 HOST = "oz.andrew.cmu.edu"
 TOPIC = "realm/s/guac/"
@@ -14,6 +15,10 @@ SCENE = "guac"
 # Globals (yes, Sharon)
 
 cubes = {} # dict of cube objects to be indexed by tuple (x,y)
+# grid elements can be:
+# -1: unassigned
+#  0: red
+#  1: blue
 grid = [-1, -1, -1], [-1, -1, -1], [-1, -1, -1]
 Xcoords = [1, 2, 3]
 Ycoords = [1, 2, 3]
@@ -60,7 +65,7 @@ def initCube(x, y, color):
                               persist=True,
                               objName=name,
                               physics=arena.Physics.static,
-                              data='{"material": {"transparent":true,"opacity": 0.5},"impulse":{"on":"mouseup","force":"0 40 0","position": "10 1 1"}}',
+                              data='{"collision-listner":"", "material": {"transparent":true,"opacity": 0.5},"impulse":{"on":"mouseup","force":"0 40 0","position": "10 1 1"}}',
                               location=(x,y,-3),
                               color=color,
                               scale=(0.6,0.6,0.6),
@@ -147,6 +152,8 @@ def process_message(msg):
     if jsonMsg["type"] == "mousedown":
         #print("on_click_input:" + msg)
         name = jsonMsg["object_id"]
+        if not re.match("cube_\d_\d", name): # test that object name matches pattern e.g. "cube_1_2"
+            return
         color = redblue[counter % 2]
         x = int(name.split("_")[1])
         y = int(name.split("_")[2])

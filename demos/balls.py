@@ -2,31 +2,28 @@
 #
 # spray a bunch of spheres into the scene, test physics
 
-import json
+import arena
 import random
 import time
-
-import paho.mqtt.client as mqtt
+import signal
 
 HOST = "oz.andrew.cmu.edu"
-TOPIC = "realm/s/balls"
+SCENE = "balls"
 
-
-def randrot():
-    # return str("{0:0.3f}".format(random.random() * 2 - 1))
-    return 0
-
+arena.init(HOST, "realm", SCENE)
 
 def rando():
     return float(random.randint(0, 10000)) / 1000
 
-
 def randcolor():
-    return "%06x" % random.randint(0, 0xFFFFFF)
+    x = random.randint(0,255)
+    y = random.randint(0,255)
+    z = random.randint(0,255)
+    return(x,y,z)
 
-
-client = mqtt.Client(str(random.random()), clean_session=True, userdata=None)
-client.connect(HOST)
+def signal_handler(sig, frame):
+    exit()
+signal.signal(signal.SIGINT, signal_handler)
 
 counter = 0
 while True:
@@ -34,25 +31,12 @@ while True:
     name = "sphere" + "_" + obj_id
     counter += 1
 
-    MESSAGE = {
-        "object_id": name,
-        "action": "create",
-        "ttl": 40,
-        "data": {
-            "dynamic-body": {"type": "dynamic"},
-            "object_type": "sphere",
-            "position": {"x": rando(), "y": 0, "z": rando()},
-            "rotation": {
-                "x": randrot(),
-                "y": randrot(),
-                "z": randrot(),
-                "w": 1
-            },
-            "color": "#" + randcolor(),
-        },
-    }
-    MESSAGE_string = json.dumps(MESSAGE)
-    print(MESSAGE_string)
-
-    client.publish(TOPIC + "/" + name, MESSAGE_string)
+    obj = arena.Object(
+        physics=arena.Physics.dynamic,
+        objName=obj_id,
+        objType=arena.Shape.sphere,
+        location=(rando(),0,rando()),
+        color=randcolor(),
+        ttl=40)
+    
     time.sleep(0.1)

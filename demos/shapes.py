@@ -2,88 +2,72 @@
 #
 # MQTT message format: x,y,z,rotX,rotY,rotZ,rotW,scaleX,scaleY,scaleZ,#colorhex,on/off
 
-import json
+import arena
 import random
 import time
-
-import paho.mqtt.client as mqtt
+import signal
 
 HOST = "oz.andrew.cmu.edu"
-TOPIC = "realm/s/refactor"
+SCENE = "shapes"
 
-client = mqtt.Client(str(random.random()), clean_session=True, userdata=None)
-client.connect(HOST)
-
+arena.init(HOST, "realm", SCENE)
 
 def randmove():
     rando = random.random() * 10 - 5
     return rando
 
-
 def rando(val):
     rando = random.random() * val
     return round(rando, 3)
 
-
 def randrot():
     return round((random.random() * 2 - 1), 3)
 
-
 def randcolor():
-    return "%06x" % random.randint(0, 0xFFFFFF)
-
+    x = random.randint(0,255)
+    y = random.randint(0,255)
+    z = random.randint(0,255)
+    return(x,y,z)
 
 def randobj():
     rando = random.random()
     if rando < 0.2:
-        return "cylinder"
+        return arena.Shape.cylinder
     if rando < 0.4:
-        return "sphere"
+        return arena.Shape.sphere
     if rando < 0.6:
-        return "cube"
+        return arena.Shape.cube
     if rando < 0.8:
-        return "quad"
-    return "cube"
+        return arena.Shape.torus
+    return arena.Shape.cube
 
+def signal_handler(sig, frame):
+    exit()
 
+signal.signal(signal.SIGINT, signal_handler)
 messages = []
 counter = 0
 while True:
     obj_type = randobj()
     obj_id = str(counter)
-    name = obj_type + "_" + obj_id
+    name = obj_type.value + "_" + obj_id
     counter += 1
 
-    MESSAGE = {
-        "object_id": name,
-        "action": "create",
-        "data": {
-            "object_type": obj_type,
-            "position": {
-                "x": round(randmove(), 3),
-                "y": round(randmove() + 5, 3),
-                "z": round(randmove() - 5, 3),
-            },
-            "rotation": {
-                "x": randrot(),
-                "y": randrot(),
-                "z": randrot(),
-                "w": randrot(),
-            },
-            "scale": {"x": rando(2), "y": rando(2), "z": rando(2),},
-            "color": "#" + randcolor(),
-        },
-    }
-    messages.append(MESSAGE)
-    print(json.dumps(MESSAGE))
-
-    # os.system("mosquitto_pub -h " + HOST + " -t " + TOPIC + "/" + name + " -m " + MESSAGE + " -r");
-    client.publish(TOPIC + "/" + name, json.dumps(MESSAGE))
+    x = round(randmove(), 3)
+    y = round(randmove() + 5, 3)
+    z = round(randmove() - 5, 3)
+    obj = arena.Object(
+        objName=name,
+        objType=obj_type,
+        location=(x,y,z),
+        rotation=(randrot(),randrot(),randrot(),randrot()),
+        scale=(rando(2),rando(2),rando(2)),
+        color=randcolor())
+    messages.append(obj)
 
     # REMOVE
     if len(messages) >= 25:
         theMess = messages.pop(0)
-        theId = theMess["object_id"]
-        newMess = {"object_id": theId, "action": "delete"}
-        client.publish(TOPIC + "/" + theId, json.dumps(newMess))
+        theMess.delete()
     time.sleep(0.1)
+exit()

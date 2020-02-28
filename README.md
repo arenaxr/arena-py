@@ -5,9 +5,9 @@ Install required packages:
 ```
 pip install -r requirements.txt
 ```
+(on my linux box only had to run `sudo apt-get install python3-paho-mqtt`)
 
-Hello ARENA
-
+## Hello ARENA
 ```
 cd examples
 python hello.py
@@ -59,12 +59,14 @@ Accepted arguments are:
     - *text*
     - *image*
     - *particle*
+    - *light*
   * **location** - a triple (x, y, z) coordinate in meters
   * **rotation** - a quad (x, y, z, w) rotation in quaternions
   * **scale** - a triple scaling factor in 3 dimensions
   * **color** - a triple RGB color where each component is in the range 0-255
   * **persist** - a boolean indicating whether to persist the created ARENA object to a database, such that it is visible when revisiting a scene. If `False`, the object will still be visible to everyone currently viewing the scene, but go away upon reload.
   * **ttl** - an integer for time to live, in seconds. objects will self-delete after this many seconds, and will not be persisted
+  * **parent** - a string object name; sets this object to be one of possibly several children of the parent object with this objId
   * **physics** - an `arena.Physics` enum from
     - *none* - object remains fixed in place and does not interact with other physical objects
     - *static* - object remains fixed in place but DOES interact with other physical objects (collision, bounce off, etc.) Updates to the object's position can change it's location
@@ -97,8 +99,13 @@ Accepted arguments are:
     - **data**
     - **clickable**
   * **delete** - deletes the object from the scene
+### updateRig
+takes 3 positional arguments
+  * **camera id** for example "camera_er1k_er1k" if visiting ARENA URL with &fixedCamera=er1k
+  * **location** - a triple (x, y, z) coordinate in meters
+  * **rotation** - a quad (x, y, z, w) rotation in quaternions
 ### handle_events
-After synchronously drawing objects to the scene, it is necessary to start a loop to handle network events which may fire the callback function specified at init time 
+After synchronously drawing objects to the scene, it is necessary to start a loop to listen to and handle network events and call the callback function (specified at `init()` time) 
 ### callback
 The data passed to the ARENA callback function is a JSON string best interpreted with `json.loads()` which turns it into a dictionary. These messages are the full contents of all MQTT messages pertaining to the scene, as specified in https://github.com/conix-center/ARENA-core. Most of them may not be of interest, and should be filtered to just events, with code like:
 ```

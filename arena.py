@@ -18,6 +18,7 @@ object_count = 0
 object_list = []
 arena_callback = None
 messages = []
+debug_toggle = False
 
 
 def signal_handler(sig, frame):
@@ -52,6 +53,8 @@ def init(broker, realm, scene, callback=None):
     global scene_path
     global mqtt_broker
     global arena_callback
+    global debug_toggle
+    debug_toggle = False
     mqtt_broker = broker
     scene_path = realm + "/s/" + scene
     arena_callback = callback
@@ -90,6 +93,11 @@ def start():
     print("starting network loop")
     client.loop_start()  # start MQTT network loop
     print("started")
+
+
+def debug():
+    global debug_toggle
+    debug_toggle = True
 
 
 def stop():
@@ -164,6 +172,7 @@ class MouseEvent:
 
 class updateRig:
     def __init__(self, object_id, position, rotation):
+        global debug_toggle
         MESSAGE = {
             "object_id": object_id,
             "action": "update",
@@ -178,6 +187,8 @@ class updateRig:
                 },
             },
         }
+        if debug_toggle:
+            print(json.dumps(MESSAGE))
         client.publish(scene_path, json.dumps(MESSAGE), retain=False)
 
 
@@ -219,6 +230,7 @@ class Object:
         """Initializes the data."""
         global object_count
         global object_list
+        global debug_toggle
         self.objType = objType
         self.location = location
         self.rotation = rotation
@@ -248,6 +260,7 @@ class Object:
         self.redraw()
 
     def fireEvent(self, event=None, position=(0, 0, 0), source=None):
+        global debug_toggle
         if event is None:
             event = arena.Event.mousedown.value
         else:
@@ -266,6 +279,8 @@ class Object:
         # print("deleting " + json.dumps(MESSAGE))
         # print("client ", client)
         # print ("scene_path ", scene_path)
+        if debug_toggle:
+            print(json.dumps(MESSAGE))
         client.publish(scene_path, json.dumps(MESSAGE), retain=False)
 
     def update(
@@ -280,6 +295,7 @@ class Object:
         ttl=None,
         parent=None,
     ):
+        global debug_toggle
         if location is not None:
             self.location = location
         if rotation is not None:
@@ -304,18 +320,23 @@ class Object:
     #        self.delete()
 
     def delete(self):
+        global debug_toggle
         MESSAGE = {"object_id": self.objName, "action": "delete"}
         # print("deleting " + json.dumps(MESSAGE))
         # print("client ", client)
         # print ("scene_path ", scene_path)
+        if debug_toggle:
+            print(json.dumps(MESSAGE))
         client.publish(scene_path, json.dumps(MESSAGE), retain=False)
 
-    def location(self, location):
+    def position(self, location=(0, 0, 0)):
+        global debug_toggle
         # mosquitto_pub -h oz.andrew.cmu.edu -t /topic/render/cube_1/position -m "x:1; y:2; z:3;"
         self.location = location
-        update_msg = {
+        MESSAGE = {
             "object_id": self.objName,
             "action": "update",
+            "type": "object",
             "data": {
                 "position": {
                     "x": self.location[0],
@@ -325,10 +346,13 @@ class Object:
             },
         }
         # print("move str: " + json.dumps(update_msg))
-        client.publish(scene_path, json.dumps(update_msg), retain=False)
+        if debug_toggle:
+            print(json.dumps(MESSAGE))
+        client.publish(scene_path, json.dumps(MESSAGE), retain=False)
 
     def redraw(self):
         global scene_path
+        global debug_toggle
         color_str = "#%06x" % (
             int(self.color[0]) * 65536 + int(self.color[1]) * 256 + int(self.color[2])
         )
@@ -367,6 +391,8 @@ class Object:
             MESSAGE["data"]["parent"] = self.parent
 
         # print("publishing " + json.dumps(MESSAGE) + " to " + scene_path)
+        if debug_toggle:
+            print(json.dumps(MESSAGE))
         client.publish(scene_path, json.dumps(MESSAGE), retain=False)
 
 

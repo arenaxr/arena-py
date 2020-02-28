@@ -1,5 +1,4 @@
 import arena
-import aiohttp
 import json
 import random
 from types import SimpleNamespace
@@ -126,5 +125,5 @@ def on_tag_detect(msg):
         #    }
         # }
                      
-arena.init(HOST, "realm", "a", on_tag_detect)
+arena.init(HOST, "realm", TOPIC, on_tag_detect)
 arena.handle_events()

@@ -48,7 +48,7 @@ def on_connect(client, userdata, flags, rc):
 #    print("log:" + buf);
 
 
-def init(broker, realm, scene, callback=None):
+def init(broker, realm, scene, callback=None, port=None):
     global client
     global scene_path
     global mqtt_broker
@@ -61,7 +61,10 @@ def init(broker, realm, scene, callback=None):
 
     # print("arena callback:", callback)
     # print("connecting to broker ", mqtt_broker)
-    client.connect(mqtt_broker)
+    if (port != None):
+        client.connect(mqtt_broker, port)
+    else:
+        client.connect(mqtt_broker)
 
     # print("subscribing")
     client.subscribe(scene_path + "/#")
@@ -80,6 +83,13 @@ def init(broker, realm, scene, callback=None):
 
 def handle_events():
     while running:
+        if len(messages) > 0:
+            process_message(messages.pop(0))
+        else:
+            time.sleep(0.1)
+
+def handle_event():
+    if running:
         if len(messages) > 0:
             process_message(messages.pop(0))
         else:

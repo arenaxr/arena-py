@@ -60,7 +60,8 @@ def init(broker, realm, scene, callback=None, port=None):
     arena_callback = callback
 
     # print("arena callback:", callback)
-    # print("connecting to broker ", mqtt_broker)
+    #print("connecting to broker ", mqtt_broker)
+    #print("scene_path ", scene_path)
     if (port != None):
         client.connect(mqtt_broker, port)
     else:
@@ -88,13 +89,10 @@ def handle_events():
         else:
             time.sleep(0.1)
 
-def handle_event():
+def flush_events():
     if running:
-        if len(messages) > 0:
+        while len(messages) > 0:
             process_message(messages.pop(0))
-        else:
-            time.sleep(0.1)
-
 
 def start():
     global client

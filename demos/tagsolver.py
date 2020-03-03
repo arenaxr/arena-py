@@ -1,7 +1,10 @@
-import aiohttp
 import json
 import random
+import uuid
 from types import SimpleNamespace
+
+import requests
+from requests.auth import HTTPBasicAuth
 
 import numpy as np
 import paho.mqtt.client as mqtt
@@ -10,14 +13,20 @@ from scipy.spatial.transform import Rotation
 CLIENT_ID = "apriltag_solver_" + str(random.randint(0, 100))
 HOST = "oz.andrew.cmu.edu"
 TOPIC = "realm/g/a/"
+TAGLOAD_URL = "https://atlas.conix.io/lookup/geo?lat=0&long=0&distance=20000&units=km&objectType=apriltag"
+TAG_URLBASE = "https://atlas.conix.io/record"
 
 # fmt: off
 
 TAGS = {  # Local cache, TBD how it's invalidated or refreshed from MongoDB
-    0: [[1, 0, 0, 0],
-        [0, 0, 1, 0],
-        [0, -1, 0, 0],
-        [1, 0, 0, 1]],
+    0: {
+        "id": "Origin",
+        "pose":
+            [[1, 0, 0, 0],
+            [0, 0, 1, 0],
+            [0, -1, 0, 0],
+            [1, 0, 0, 1]],
+    }
 }
 
 FLIP = [[1, 0, 0, 0],
@@ -80,9 +89,36 @@ def on_tag_detect(client, userdata, msg):
                 ref_tag_pose = rig_pose @ vio_pose @ dtag_pose
                 ref_tag_pos = ref_tag_pose[0:3, 3]
                 ref_tag_rotq = Rotation.from_matrix(ref_tag_pose[0:3, 0:3]).as_quat()
-
-                TAGS[detected_tag.id] = ref_tag_pose  # Store as reference
-
+                if detected_tag.id in TAGS:
+                    print("Builder updating existing tag")
+                    # Update existing tag
+                    TAGS[detected_tag.id]["pose"] = ref_tag_pose
+                    resp = requests.patch(
+                        TAG_URLBASE + "/" + TAGS[detected_tag.id]["id"],
+                        json={"pose": ref_tag_pose.tolist()},
+                        auth=HTTPBasicAuth("conix", "conix"),
+                    )
+                    print(resp.status_code)
+                else:
+                    # New tag, store it in memory and ATLAS
+                    print("Builder create new tag")
+                    TAGS[detected_tag.id] = {
+                        "id": str(uuid.uuid4()),
+                        "name": "apriltag_" + str(detected_tag.id),
+                        "pose": ref_tag_pose.tolist(),
+                        "lat": 0,  # TODO: get and pass along client lat/long
+                        "long": 0,
+                        "ele": 0,
+                        "objectType": "apriltag",
+                        "url": "https://conix.io",
+                    }
+                    print(TAGS[detected_tag.id])
+                    resp = requests.post(
+                        TAG_URLBASE,
+                        json=TAGS[detected_tag.id],
+                        auth=HTTPBasicAuth("conix", "conix"),
+                    )
+                    print(resp.text)
                 mqtt_response = {
                     "object_id": "apriltag_" + str(detected_tag.id),
                     "action": "update",
@@ -103,11 +139,12 @@ def on_tag_detect(client, userdata, msg):
                 }
         else:  # Solving for client rig, default localization operation
             print("Localizing", client_id, "on", str(detected_tag.id))
-            ref_tag_pose = TAGS.get(detected_tag.id)
-            if ref_tag_pose is None:
+            ref_tag = TAGS.get(detected_tag.id)
+            if ref_tag is None:
                 # Tag not found. TODO: query ATLAS for it
                 print("Tag not found, not in build mode")
                 return
+            ref_tag_pose = ref_tag["pose"]
             rig_pose = ref_tag_pose @ np.linalg.inv(dtag_pose) @ np.linalg.inv(vio_pose)
             rig_pos = rig_pose[0:3, 3]
             rig_rotq = Rotation.from_matrix(rig_pose[0:3, 0:3]).as_quat()
@@ -145,8 +182,28 @@ def on_tag_detect(client, userdata, msg):
         # client.publish(TOPIC + client_id, json.dumps(mqtt_response))
 
 
-mttqc = mqtt.Client(CLIENT_ID, clean_session=True, userdata=None)
-mttqc.connect(HOST)
-mttqc.subscribe(TOPIC + "#")
-mttqc.message_callback_add(TOPIC + "#", on_tag_detect)
-mttqc.loop_forever()
+def start_mqtt():
+    mttqc = mqtt.Client(CLIENT_ID, clean_session=True, userdata=None)
+    mttqc.connect(HOST)
+    mttqc.subscribe(TOPIC + "#")
+    mttqc.message_callback_add(TOPIC + "#", on_tag_detect)
+    mttqc.loop_forever()
+
+
+r = requests.get(TAGLOAD_URL)
+loaded_tags = r.json()
+for tag in loaded_tags:
+    if tag["name"][0:9] == "apriltag_":
+        tagid = int(tag["name"][9:])
+        TAGS[tagid] = {
+            "id": tag["id"],
+            "name": tag["name"],
+            "pose": tag["pose"],
+            "lat": tag["lat"],
+            "long": tag["long"],
+            "ele:": tag["ele"],
+            "objectType": "apriltag",
+            "url": tag["url"],
+        }
+        print("Loaded tag", str(tagid))
+start_mqtt()

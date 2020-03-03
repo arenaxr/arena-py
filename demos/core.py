@@ -72,7 +72,7 @@ arena.Object(
     objName="model1",
     objType=arena.Shape.gltf_model,
     location=(0, 0, -4),
-    url="https://xr.andrew.cmu.edu/models/Duck.glb",
+    url="models/Duck.glb",
 )
 input("")
 
@@ -81,11 +81,13 @@ cow = arena.Object(
     objType=arena.Shape.gltf_model,
     location=(-21, 1.8, -8),
     scale=(0.02, 0.02, 0.02),
-    url="https://xr.andrew.cmu.edu/models/cow2/scene.gltf",
+    url="models/cow2/scene.gltf",
 )
 input("")
 
-arena.updateRig("camera_er1k_er1k", (1, 1, 1), (0, 0, 0, 1))
+# (dangerous) technique to update everyone's camera rig without knowing name
+rig=arena.Object(objName="cameraRig")
+rig.update(location=(1, 1, 1))
 input("")
 
 cow.update(data='{"animation-mixer": {"clip": "*"}}')

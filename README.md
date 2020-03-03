@@ -27,11 +27,12 @@ message protocol: JSON messages described in more detail at https://github.com/c
 
 Here is a breakdown of the currently available arena.py functions
 ### init
-The **init** function takes 3 string positional arguments, and 1 optional argument in order:
+The **init** function takes 3 string positional arguments, and 2 optional arguments in order:
  * the DNS name of a pub/sub MQTT broker (currently Mosquitto v1.6.3, which runs the v3.1.1 protocol)
  * realm, currently the fixed string "realm" to indicate hierarchy level
  * scene name, a string
  * **callback** - a callback function to be called when ARENA network events are received. The function is passed a string argument, the network message, a JSON encoded string. (See below for more callback information)
+ * **port** - a numerical port to connect if MQTT is running on a nonstandard port e.g. 3003
 These are composed together to form an MQTT topic, in the example, "realm/s/hello".  
 A successful *init* results in a connection with the MQTT server, ready to send and receive messages.
 ### Object (create method)
@@ -106,6 +107,8 @@ takes 3 positional arguments
   * **rotation** - a quad (x, y, z, w) rotation in quaternions
 ### handle_events
 After synchronously drawing objects to the scene, it is necessary to start a loop to listen to and handle network events and call the callback function (specified at `init()` time) 
+### flush_events
+Empty out the buffer of sent/received network events; call this from main thread rather than sleep() or during loops.
 ### callback
 The data passed to the ARENA callback function is a JSON string best interpreted with `json.loads()` which turns it into a dictionary. These messages are the full contents of all MQTT messages pertaining to the scene, as specified in https://github.com/conix-center/ARENA-core. Most of them may not be of interest, and should be filtered to just events, with code like:
 ```

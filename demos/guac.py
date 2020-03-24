@@ -1,6 +1,10 @@
 # guac.py
 #
 # plays Tic Tac Toe
+# clicked boxes alternate red and blue
+# boxes fall if no winner
+# boxes launch upon win
+# avocado "Vanna White" reacts accordingly
 
 import json
 import time
@@ -28,20 +32,17 @@ messages = []
 def solved():
     global grid
 
-    if grid[0][0] == 1 and grid[0][1] == 1 and grid[0][2] == 1: return True
-    if grid[1][0] == 1 and grid[1][1] == 1 and grid[1][2] == 1: return True
-    if grid[2][0] == 1 and grid[2][1] == 1 and grid[2][2] == 1: return True
-    if grid[0][0] == 0 and grid[0][1] == 0 and grid[0][2] == 0: return True
-    if grid[1][0] == 0 and grid[1][1] == 0 and grid[1][2] == 0: return True
-    if grid[2][0] == 0 and grid[2][1] == 0 and grid[2][2] == 0: return True
+    # rows
+    for row in [0, 1, 2]:
+        for color in [0, 1]:
+            if grid[row][0] == color and grid[row][1] == color and grid[row][2] == color: return True
 
-    if grid[0][0] == 1 and grid[1][0] == 1 and grid[2][0] == 1: return True
-    if grid[0][1] == 1 and grid[1][1] == 1 and grid[2][1] == 1: return True
-    if grid[0][2] == 1 and grid[1][2] == 1 and grid[2][2] == 1: return True
-    if grid[0][0] == 0 and grid[1][0] == 0 and grid[2][0] == 0: return True
-    if grid[0][1] == 0 and grid[1][1] == 0 and grid[2][1] == 0: return True
-    if grid[0][2] == 0 and grid[1][2] == 0 and grid[2][2] == 0: return True
+    # columns
+    for col in [0, 1, 2]:
+        for color in [0, 1]:
+            if grid[0][col] == color and grid[1][col] == color and grid[2][col] == color: return True
 
+    # diagonals
     if grid[0][0] == 0 and grid[1][1] == 0 and grid[2][2] == 0: return True
     if grid[0][0] == 1 and grid[1][1] == 1 and grid[2][2] == 1: return True
     if grid[0][2] == 0 and grid[1][1] == 0 and grid[2][0] == 0: return True
@@ -148,12 +149,35 @@ def process_message(msg):
     if jsonMsg["action"] != "clientEvent":
         return
 
-    # filter non-mouse messages
+    # only mousedown messages
     if jsonMsg["type"] == "mousedown":
         #print("on_click_input:" + msg)
-        name = jsonMsg["object_id"]
+        name = jsonMsg["object_id"]        
         if not re.match("cube_\d_\d", name): # test that object name matches pattern e.g. "cube_1_2"
             return
+
+        # get click coordinates
+        click_x = str(jsonMsg["data"]["clickPos"]["x"])
+        click_y = str(jsonMsg["data"]["clickPos"]["y"]-0.5)
+        click_z = str(jsonMsg["data"]["clickPos"]["z"])
+        box_x = str(jsonMsg["data"]["position"]["x"])
+        box_y = str(jsonMsg["data"]["position"]["y"])
+        box_z = str(jsonMsg["data"]["position"]["z"])
+        
+        # draw a ray from clicker to cube
+        line = arena.Object(
+            objName="line1",
+            objType=arena.Shape.line,
+            ttl=1,
+            data='{"start": {"x":'+
+            click_x+', "y":'+
+            click_y+', "z":'+
+            click_z+'},"end": {"x":'+
+            box_x+', "y":'+
+            box_y+', "z":'+
+            box_z+'}, "color": "#FFFFFF"}',
+            )
+
         color = redblue[counter % 2]
         x = int(name.split("_")[1])
         y = int(name.split("_")[2])
@@ -168,6 +192,8 @@ def process_message(msg):
                             location=(x,y,-3),
                             scale=(0.6, 0.6, 0.6))
 
+        #line.delete()
+
         if solved():
             print("solved")
             animate_win()
@@ -176,6 +202,7 @@ def process_message(msg):
             print("stalemate")
             animate_loss()
             draw_board()
+
     else:
         return
 

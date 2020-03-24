@@ -10,9 +10,13 @@ import numpy as np
 import paho.mqtt.client as mqtt
 from scipy.spatial.transform import Rotation
 
+with open('config.json') as config_file:
+    CONFIG = json.load(config_file)
+
 CLIENT_ID = "apriltag_solver_" + str(random.randint(0, 100))
-HOST = "oz.andrew.cmu.edu"
-TOPIC = "realm/g/a/"
+HOST = CONFIG['host']
+PORT = CONFIG['port']
+TOPIC = CONFIG['default_realm'] + "/g/a/"
 TAGLOAD_URL = "https://atlas.conix.io/lookup/geo?lat=0&long=0&distance=20000&units=km&objectType=apriltag"
 TAG_URLBASE = "https://atlas.conix.io/record"
 
@@ -98,7 +102,6 @@ def on_tag_detect(client, userdata, msg):
                         json={"pose": ref_tag_pose.tolist()},
                         auth=HTTPBasicAuth("conix", "conix"),
                     )
-                    print(resp.status_code)
                 else:
                     # New tag, store it in memory and ATLAS
                     print("Builder create new tag")
@@ -118,7 +121,6 @@ def on_tag_detect(client, userdata, msg):
                         json=TAGS[detected_tag.id],
                         auth=HTTPBasicAuth("conix", "conix"),
                     )
-                    print(resp.text)
                 mqtt_response = {
                     "object_id": "apriltag_" + str(detected_tag.id),
                     "action": "update",
@@ -184,7 +186,8 @@ def on_tag_detect(client, userdata, msg):
 
 def start_mqtt():
     mttqc = mqtt.Client(CLIENT_ID, clean_session=True, userdata=None)
-    mttqc.connect(HOST)
+    mttqc.connect(HOST, PORT)
+    print("Connected MQTT")
     mttqc.subscribe(TOPIC + "#")
     mttqc.message_callback_add(TOPIC + "#", on_tag_detect)
     mttqc.loop_forever()

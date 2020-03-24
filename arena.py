@@ -301,6 +301,7 @@ class Object:
         data=None,
         clickable=None,
         ttl=None,
+        url=None,
         parent=None,
     ):
         global debug_toggle
@@ -320,6 +321,8 @@ class Object:
             self.data = data
         if ttl is not None:
             self.ttl = ttl
+        if url is not None:
+            self.url = url
         if parent is not None:
             self.parent = parent
         self.redraw()
@@ -384,9 +387,10 @@ class Object:
                 },
                 "scale": {"x": self.scale[0], "y": self.scale[1], "z": self.scale[2]},
                 "color": color_str,
-                "url": self.url,
             },
         }
+        if self.url != "":
+            MESSAGE["data"]["url"] = self.url
         if self.data != "":
             MESSAGE["data"].update(json.loads(self.data))
         if self.physics != Physics.none:

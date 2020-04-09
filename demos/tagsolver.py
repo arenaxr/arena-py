@@ -70,11 +70,10 @@ def on_tag_detect(client, userdata, msg):
         vio_pose[0:3, 3] = [pos.x, pos.y, pos.z]
 
         dtag_pose = np.identity(4)
-        # R_correct = np.array(detected_tag.pose.R).T
-        # dtag_pose[0:3, 0:3] = R_correct
-        dtag_pose[0:3, 0:3] = detected_tag.pose.R
+        R_correct = np.array(detected_tag.pose.R).T
+        dtag_pose[0:3, 0:3] = R_correct
+        # dtag_pose[0:3, 0:3] = detected_tag.pose.R
         dtag_pose[0:3, 3] = detected_tag.pose.t
-
         dtag_pose = np.array(FLIP) @ dtag_pose @ np.array(FLIP)
 
         mqtt_response = None

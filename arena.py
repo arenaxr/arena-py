@@ -4,6 +4,7 @@ import signal
 import sys
 import time
 import enum
+from datetime import datetime
 
 import paho.mqtt.client as mqtt
 
@@ -15,7 +16,7 @@ client = mqtt.Client(
     "client-" + str(random.randrange(0, 1000000)), clean_session=True, userdata=None
 )
 object_count = 0
-object_list = []
+#object_list = []
 arena_callback = None
 messages = []
 debug_toggle = False
@@ -27,6 +28,14 @@ def signal_handler(sig, frame):
 
 def arena_callback(msg):
     arena_callback(msg.payload)
+
+
+def arena_publish(scene_path, MESSAGE):
+    #print(json.dumps(MESSAGE))
+
+    d = datetime.now().isoformat()[:-3]+'Z'
+    MESSAGE["timestamp"] = d
+    client.publish(scene_path, json.dumps(MESSAGE), retain=False)
 
 
 def process_message(msg):
@@ -83,11 +92,14 @@ def init(broker, realm, scene, callback=None, port=None):
 
 
 def handle_events():
+    # if we don't sleep, this python thread
+    # pulls a load of 1 completely tying up CPU
+    # so we sleep here
     while running:
         if len(messages) > 0:
             process_message(messages.pop(0))
         else:
-            time.sleep(0.1)
+            time.sleep(0.01)
 
 def flush_events():
     if running:
@@ -197,7 +209,7 @@ class updateRig:
         }
         if debug_toggle:
             print(json.dumps(MESSAGE))
-        client.publish(scene_path, json.dumps(MESSAGE), retain=False)
+        arena_publish(scene_path, MESSAGE)
 
 
 class Object:
@@ -237,7 +249,7 @@ class Object:
     ):
         """Initializes the data."""
         global object_count
-        global object_list
+        #global object_list
         global debug_toggle
         self.objType = objType
         self.location = location
@@ -264,7 +276,7 @@ class Object:
         #            client.message_callback_add(scene_path+'/'+self.objName, callback)
 
         object_count = object_count + 1
-        object_list.append(self)
+        #object_list.append(self)
         self.redraw()
 
     def fireEvent(self, event=None, position=(0, 0, 0), source=None):
@@ -284,12 +296,10 @@ class Object:
                 "source": source,
             },
         }
-        # print("deleting " + json.dumps(MESSAGE))
-        # print("client ", client)
-        # print ("scene_path ", scene_path)
+
         if debug_toggle:
             print(json.dumps(MESSAGE))
-        client.publish(scene_path, json.dumps(MESSAGE), retain=False)
+        arena_publish(scene_path, MESSAGE)
 
     def update(
         self,
@@ -327,18 +337,22 @@ class Object:
             self.parent = parent
         self.redraw()
 
-    #    def __del__(self):
-    #        self.delete()
+#    def __del__(self):
+#        print ("del (self) ", self.objName)
+#        self.delete()
 
     def delete(self):
         global debug_toggle
-        MESSAGE = {"object_id": self.objName, "action": "delete"}
+        MESSAGE = {
+            "object_id": self.objName,
+            "action": "delete"
+        }
         # print("deleting " + json.dumps(MESSAGE))
         # print("client ", client)
         # print ("scene_path ", scene_path)
         if debug_toggle:
             print(json.dumps(MESSAGE))
-        client.publish(scene_path, json.dumps(MESSAGE), retain=False)
+        arena_publish(scene_path, MESSAGE)
 
     def position(self, location=(0, 0, 0)):
         global debug_toggle
@@ -359,7 +373,7 @@ class Object:
         # print("move str: " + json.dumps(update_msg))
         if debug_toggle:
             print(json.dumps(MESSAGE))
-        client.publish(scene_path, json.dumps(MESSAGE), retain=False)
+        arena_publish(scene_path, MESSAGE)
 
     def redraw(self):
         global scene_path
@@ -405,7 +419,7 @@ class Object:
         # print("publishing " + json.dumps(MESSAGE) + " to " + scene_path)
         if debug_toggle:
             print(json.dumps(MESSAGE))
-        client.publish(scene_path, json.dumps(MESSAGE), retain=False)
+        arena_publish(scene_path, MESSAGE)
 
 
 def __init__(self, name):

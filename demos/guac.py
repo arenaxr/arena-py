@@ -21,13 +21,17 @@ SCENE = "guac"
 cubes = {} # dict of cube objects to be indexed by tuple (x,y)
 # grid elements can be:
 # -1: unassigned
-#  0: red
-#  1: blue
+#  0: blue
+#  1: red
 grid = [-1, -1, -1], [-1, -1, -1], [-1, -1, -1]
 Xcoords = [1, 2, 3]
 Ycoords = [1, 2, 3]
 redblue = [(255,0,0),(0,0,255)]
 messages = []
+counter = 0
+reds = 0
+blues = 0
+draws = 0
 
 def solved():
     global grid
@@ -35,20 +39,20 @@ def solved():
     # rows
     for row in [0, 1, 2]:
         for color in [0, 1]:
-            if grid[row][0] == color and grid[row][1] == color and grid[row][2] == color: return True
+            if grid[row][0] == color and grid[row][1] == color and grid[row][2] == color: return color
 
     # columns
     for col in [0, 1, 2]:
         for color in [0, 1]:
-            if grid[0][col] == color and grid[1][col] == color and grid[2][col] == color: return True
+            if grid[0][col] == color and grid[1][col] == color and grid[2][col] == color: return color
 
     # diagonals
-    if grid[0][0] == 0 and grid[1][1] == 0 and grid[2][2] == 0: return True
-    if grid[0][0] == 1 and grid[1][1] == 1 and grid[2][2] == 1: return True
-    if grid[0][2] == 0 and grid[1][1] == 0 and grid[2][0] == 0: return True
-    if grid[0][2] == 1 and grid[1][1] == 1 and grid[2][0] == 1: return True
+    if grid[0][0] == 0 and grid[1][1] == 0 and grid[2][2] == 0: return 0
+    if grid[0][0] == 1 and grid[1][1] == 1 and grid[2][2] == 1: return 1
+    if grid[0][2] == 0 and grid[1][1] == 0 and grid[2][0] == 0: return 0
+    if grid[0][2] == 1 and grid[1][1] == 1 and grid[2][0] == 1: return 1
 
-    return False
+    return -1
 
 
 def stalemate():
@@ -58,6 +62,7 @@ def stalemate():
             if grid[x - 1][y - 1] == -1:
                 return False
     return True
+
 
 
 def initCube(x, y, color):
@@ -72,20 +77,23 @@ def initCube(x, y, color):
                               scale=(0.6,0.6,0.6),
                               clickable=True);
 
-def dropCube(x, y):
-    cubes[(x,y)].update(physics=arena.Physics.dynamic)
-
-
-def deleteCube(x, y):
+def delete_cube(x, y):
     cubes[(x,y)].delete()
 
-def launchCube(x, y):
+
+def drop_cube(x, y):
+    cubes[(x,y)].update(physics=arena.Physics.dynamic)
+
+
+def launch_cube(x, y):
     cubes[(x,y)].update(physics=arena.Physics.dynamic)
     cubes[(x,y)].fireEvent(arena.Event.mouseup,(0,0,0),"guacprogram")
+
 
 def deleteAvocado():
     global avocado
     avocado.delete()
+
 
 def drawAvocado():
     global avocado
@@ -95,6 +103,27 @@ def drawAvocado():
                            url="models/avocadoman/scene.gltf",
                            location=(-1,0.01,-4),
                            scale=(0.005,0.005,0.005))
+
+def draw_hud(score):
+    global reds
+    global blues
+    global draws
+    if score == -1:
+        draws = draws + 1
+    if score == 1:
+        reds = reds + 1
+    if score == 0:
+        blues = blues + 1
+    hud = arena.Object(persist=True,
+                           objName="hudText",
+                           objType=arena.Shape.text,
+                           data='{"text":"red:'+str(reds)+
+                                        ' blue:'+str(blues)+
+                                        ' draw:'+str(draws)+'"}',
+                           location=(0,0.4,-0.5),
+                           parent="myCamera",
+                           scale=(0.2,0.2,0.2))
+
 
 def animateAvocado():
     global avocado
@@ -108,7 +137,6 @@ def animateAvocado2():
     drawAvocado()
     avocado.update(data='{"animation-mixer": {"clip": "Walking", "loop": "pingpong", "repetitions": 2}}')
 
-counter = 0
 
 def draw_board():
     global counter
@@ -120,25 +148,32 @@ def draw_board():
         for y in Ycoords:
             initCube(x, y, (127,127,127))
 
+def launch_cubes():
+    for x in Xcoords:
+        for y in Ycoords:
+            launch_cube(x, y)
+
+def drop_cubes():
+    for x in Xcoords:
+        for y in Ycoords:
+            drop_cube(x, y)
+
+def delete_cubes():
+    for x in Xcoords:
+        for y in Ycoords:
+            delete_cube(x, y)
+
 def animate_win():
+    launch_cubes()
     animateAvocado()
-    for x in Xcoords:
-        for y in Ycoords:
-            launchCube(x, y)
     time.sleep(5);
-    for x in Xcoords:
-        for y in Ycoords:
-            deleteCube(x, y)
+    delete_cubes();
 
 def animate_loss():
-    for x in Xcoords:
-        for y in Ycoords:
-            dropCube(x, y)
+    drop_cubes()
     animateAvocado2()
     time.sleep(5);
-    for x in Xcoords:
-        for y in Ycoords:
-            deleteCube(x, y)
+    delete_cubes();
 
 def process_message(msg):
     global counter
@@ -152,8 +187,9 @@ def process_message(msg):
     # only mousedown messages
     if jsonMsg["type"] == "mousedown":
         #print("on_click_input:" + msg)
-        name = jsonMsg["object_id"]        
-        if not re.match("cube_\d_\d", name): # test that object name matches pattern e.g. "cube_1_2"
+        name = jsonMsg["object_id"]
+        # test that object name matches pattern e.g. "21-cube_1_2"        
+        if not re.match("cube_\d_\d", name): 
             return
 
         # get click coordinates
@@ -168,6 +204,7 @@ def process_message(msg):
         line = arena.Object(
             objName="line1",
             objType=arena.Shape.line,
+            persist=True,
             ttl=1,
             data='{"start": {"x":'+
             click_x+', "y":'+
@@ -194,11 +231,14 @@ def process_message(msg):
 
         #line.delete()
 
-        if solved():
+        winColor = solved()
+        if (winColor != -1):
+            draw_hud(winColor)
             print("solved")
             animate_win()
             draw_board()
         if stalemate():
+            draw_hud(-1)
             print("stalemate")
             animate_loss()
             draw_board()

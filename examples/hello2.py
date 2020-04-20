@@ -9,7 +9,7 @@ def scene_callback(msg):
 arena.init("oz.andrew.cmu.edu", "realm", "hello", scene_callback)
 
 # synchronous draw commandds
-cube = arena.Object(arena.Shape.cube, clickable=True)
+cube = arena.Object(objType=arena.Shape.cube, clickable=True)
 
 # our main event loop
 arena.handle_events()

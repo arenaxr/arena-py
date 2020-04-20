@@ -25,5 +25,6 @@ while True:
     x = x + 1
     time.sleep(0.5)
     print("object " + str(x-1) + " at " + str(location))
+    arena.flush_events()
 
 arena.stop()

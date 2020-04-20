@@ -4,8 +4,8 @@
 import arena
 
 arena.init("oz.andrew.cmu.edu", "realm", "hello")
-arena.Object(arena.Shape.cube)
-arena.Object(arena.Shape.sphere,location=(1,1,-1),color=(255,0,0))
+arena.Object(objType=arena.Shape.cube)
+arena.Object(objType=arena.Shape.sphere,location=(1,1,-1),color=(255,0,0))
 arena.Object(objType=arena.Shape.gltf_model,
              location=(-1,1,-3),
              persist=False,

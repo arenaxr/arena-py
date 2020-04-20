@@ -129,7 +129,7 @@ def stop():
     print("disconnecting")
     client.disconnect()
     print("disconnected")
-
+    sys.exit()
 
 def add(obj):
     print("Add called with: " + obj.name)

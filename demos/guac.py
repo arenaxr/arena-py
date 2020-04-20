@@ -33,6 +33,7 @@ reds = 0
 blues = 0
 draws = 0
 
+
 def solved():
     global grid
 
@@ -64,10 +65,13 @@ def stalemate():
     return True
 
 
+def childObject(**kwargs):
+    return arena.Object(**kwargs, parent="sceneParent")
+
 
 def initCube(x, y, color):
     name = "cube_" + str(x) + "_" + str(y)
-    cubes[(x,y)]=arena.Object(objType=arena.Shape.cube,
+    cubes[(x,y)]=childObject(objType=arena.Shape.cube,
                               persist=True,
                               objName=name,
                               physics=arena.Physics.static,
@@ -97,7 +101,7 @@ def deleteAvocado():
 
 def drawAvocado():
     global avocado
-    avocado = arena.Object(persist=True,
+    avocado = childObject(persist=True,
                            objName="gltf-model_avocadoman",
                            objType=arena.Shape.gltf_model,
                            url="models/avocadoman/scene.gltf",
@@ -249,6 +253,14 @@ def process_message(msg):
 # start the fun shall we?
 
 arena.init(HOST, REALM, SCENE, process_message)
+# make a parent scene object
+sceneParent = arena.Object(
+    persist=True,
+    objName="sceneParent",
+    objType=arena.Shape.cube,
+    location=(-2,0,0),
+    data='{"material": {"transparent": true, "opacity": 0}}'
+)
 print("starting main loop")
 draw_board()
 arena.handle_events()

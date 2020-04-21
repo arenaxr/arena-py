@@ -47,6 +47,7 @@ def light_toggle(light_obj,light_state,light_id):
      return light_state
 
 # This function is called to help with changing the brightness on mouse hover events
+# 255 is bright and 150 (see below is dark)
 def light_select(light_obj,light_state):
      if light_state==1:
           light_obj.update(color=(0, 255, 0))

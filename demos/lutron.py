@@ -94,8 +94,10 @@ def scene_callback(msg):
      if jsonMsg["type"] == "mousedown":
           name = jsonMsg["object_id"]
           if name=="pendant":
+               # The "3" is the lutron id for that light
                pendant_state=light_toggle(pendant_obj,pendant_state,"3")
           if name=="pantry":
+               # The "4" is the lutron id for that light
                pantry_state=light_toggle(pantry_obj,pantry_state,"4")
 
 # open a telnet (sigh) connection to to lutron caseta system

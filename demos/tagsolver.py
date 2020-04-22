@@ -78,6 +78,28 @@ def on_tag_detect(client, userdata, msg):
 
         mqtt_response = None
 
+        # Add some extremely simple filtering based on camera motion
+        # make sure we get two readings with minimal vio movement
+        vio_max_diff=1.0;  # set diff to a large value
+        vio_pose_last=VIO_STATE.get(client_id)
+        if vio_pose_last is None: 
+             print( "skip, no previous camera location" )
+        else:
+             # Directly subtract the current and previous pose matrix
+             vio_pose_delta=np.subtract(vio_pose,vio_pose_last)
+             # take absolute value of matrix elements and find max change value
+             vio_pose_delta=abs(vio_pose_delta)
+             vio_max_diff=vio_pose_delta.max()
+        # save state of last vio position for this camera
+        VIO_STATE[client_id] = vio_pose
+        if abs(vio_max_diff)>0.01:
+             print( "Too much camera movement" )
+             return 
+        if detected_tag.pose.e>5e-6:
+             print( "Too tag much error" )
+             return 
+
+
         if (
             hasattr(json_msg, "localize_tag")
             and json_msg.localize_tag
@@ -171,28 +193,6 @@ def on_tag_detect(client, userdata, msg):
                 }
             }
             # fmt: on
-
- 
-        # Add some extremely simple filtering
-        # make sure we get two tag readings with minimal vio movement
-        vio_max_diff=1.0;  # set diff to a large value
-        vio_pose_last=VIO_STATE.get(client_id)
-        if vio_pose_last is None: 
-             print( "skip, no previous camera location" )
-        else:
-             # Directly subtract the current and previous pose matrix
-             vio_pose_delta=np.subtract(vio_pose,vio_pose_last)
-             # take absolute value of matrix elements and find max change value
-             vio_pose_delta=abs(vio_pose_delta)
-             vio_max_diff=vio_pose_delta.max()
-        # save state of last vio position for this camera
-        VIO_STATE[client_id] = vio_pose
-        if abs(vio_max_diff)>0.01:
-             print( "Too much camera movement" )
-             mqtt_response = None
-        if detected_tag.pose.e>5e-6:
-             print( "Too tag much error" )
-             mqtt_response = None
 
         # mqtt_response = {
         #    "new_pose": {

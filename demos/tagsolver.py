@@ -85,6 +85,8 @@ def on_tag_detect(client, userdata, msg):
         vio_pose_last=VIO_STATE.get(client_id)
         if vio_pose_last is None: 
              print( "skip, no previous camera location" )
+             VIO_STATE[client_id] = vio_pose
+             return
         else:
              # Directly subtract the current and previous pose matrix
              vio_pose_delta=np.subtract(vio_pose,vio_pose_last)

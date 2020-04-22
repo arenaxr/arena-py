@@ -14,6 +14,7 @@ with open('config.json') as config_file:
     CONFIG = json.load(config_file)
 
 CLIENT_ID = "apriltag_solver_" + str(random.randint(0, 100))
+
 HOST = CONFIG['host']
 PORT = CONFIG['port']
 TOPIC = CONFIG['default_realm'] + "/g/a/"
@@ -41,7 +42,7 @@ FLIP = [[1, 0, 0, 0],
 # fmt: on
 
 RIGS = {}
-
+VIO_STATE = {}
 
 def dict_to_sns(d):
     return SimpleNamespace(**d)
@@ -59,7 +60,6 @@ def on_tag_detect(client, userdata, msg):
 
         # Only take first marker for now, later iterate and avg all markers
         detected_tag = json_msg.detections[0]
-
         pos = json_msg.vio.position
         rot = json_msg.vio.rotation
 
@@ -150,7 +150,6 @@ def on_tag_detect(client, userdata, msg):
             rig_pose = ref_tag_pose @ np.linalg.inv(dtag_pose) @ np.linalg.inv(vio_pose)
             rig_pos = rig_pose[0:3, 3]
             rig_rotq = Rotation.from_matrix(rig_pose[0:3, 0:3]).as_quat()
-
             RIGS[client_id] = rig_pose
             # fmt: off
             mqtt_response = {
@@ -172,6 +171,28 @@ def on_tag_detect(client, userdata, msg):
                 }
             }
             # fmt: on
+
+ 
+        # Add some extremely simple filtering
+        # make sure we get two tag readings with minimal vio movement
+        vio_max_diff=1.0;  # set diff to a large value
+        vio_pose_last=VIO_STATE.get(client_id)
+        if vio_pose_last is None: 
+             print( "skip, no previous camera location" )
+        else:
+             # Directly subtract the current and previous pose matrix
+             vio_pose_delta=np.subtract(vio_pose,vio_pose_last)
+             # take absolute value of matrix elements and find max change value
+             vio_pose_delta=abs(vio_pose_delta)
+             vio_max_diff=vio_pose_delta.max()
+        # save state of last vio position for this camera
+        VIO_STATE[client_id] = vio_pose
+        if abs(vio_max_diff)>0.01:
+             print( "Too much camera movement" )
+             mqtt_response = None
+        if detected_tag.pose.e>5e-6:
+             print( "Too tag much error" )
+             mqtt_response = None
 
         # mqtt_response = {
         #    "new_pose": {

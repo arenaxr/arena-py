@@ -112,7 +112,7 @@ arena.Object(objType=arena.Shape.cube, objName="origin", location=(0,0,0), color
 # Object locations are hardcoded based on April Tag on the floor in Anthony's house
 pantry_obj=arena.Object(objType=arena.Shape.sphere, objName="pantry", location=(2.5,2.3,-0.6), color=(150,0,0),scale=(0.1,0.1,0.1), data='{"material": {"transparent":true,"opacity": 0.5}}', clickable=True, persist=True);
 # Create the clickable object for the pendant light.  Added in transparency using json bypass
-pendant_obj=arena.Object(objType=arena.Shape.sphere, objName="pendant", location=(3.2,1.8,-3.0), color=(150,0,0),scale=(0.1,0.1,0.1), data='{"material": {"transparent":true,"opacity": 0.5}}', clickable=True, persist=True);
+pendant_obj=arena.Object(objType=arena.Shape.sphere, objName="pendant", location=(3.1,2.0,-3.2), color=(150,0,0),scale=(0.1,0.1,0.1), data='{"material": {"transparent":true,"opacity": 0.5}}', clickable=True, persist=True);
 
 
 print("starting main loop")

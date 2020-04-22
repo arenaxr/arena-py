@@ -81,7 +81,7 @@ def on_tag_detect(client, userdata, msg):
 
         # Add some extremely simple filtering based on camera motion
         # make sure we get two readings with minimal vio movement
-        vio_max_diff=1.0;  # set diff to a large value
+        vio_max_diff=100.0;  # set diff to a large value
         vio_pose_last=VIO_STATE.get(client_id)
         if vio_pose_last is None: 
              print( "skip, no previous camera location" )
@@ -96,7 +96,7 @@ def on_tag_detect(client, userdata, msg):
         # save state of last vio position for this camera
         VIO_STATE[client_id] = vio_pose
         # Just guessed the threshold for motion
-        if abs(vio_max_diff)>0.01:
+        if abs(vio_max_diff)>0.80:
              print( "Too much camera movement" )
              return 
         # Just guessed the threshold for tag error 

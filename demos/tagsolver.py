@@ -43,6 +43,7 @@ FLIP = [[1, 0, 0, 0],
 
 RIGS = {}
 VIO_STATE = {}
+FRAME_COUNTER = {}
 
 def dict_to_sns(d):
     return SimpleNamespace(**d)
@@ -92,9 +93,11 @@ def on_tag_detect(client, userdata, msg):
              vio_max_diff=vio_pose_delta.max()
         # save state of last vio position for this camera
         VIO_STATE[client_id] = vio_pose
+        # Just guessed the threshold for motion
         if abs(vio_max_diff)>0.01:
              print( "Too much camera movement" )
              return 
+        # Just guessed the threshold for tag error 
         if detected_tag.pose.e>5e-6:
              print( "Too tag much error" )
              return 

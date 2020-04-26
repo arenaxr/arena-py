@@ -132,11 +132,11 @@ data='{"static-body": {"type": "static"},"material":{"colorWrite": false}, "rend
 persist=True );
 
 waypoints = []
-waypoints.append((0.0,-0.5))
-waypoints.append((2.3,-0.5))
-waypoints.append((2.3,-3.3))
-waypoints.append((3.5,-3.3))
-drawpath.drawpath(waypoints,0.1, 0, True)
+waypoints.append((0.0,0.1,-0.5))
+waypoints.append((2.3,0.1,-0.5))
+waypoints.append((2.3,0.1,-3.3))
+waypoints.append((3.5,0.1,-3.3))
+drawpath.drawpath(waypoints, 0, True)
 
 
 #blah.delete()

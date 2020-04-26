@@ -11,10 +11,13 @@ import math
 # waypoints.append((5.0,-2.0))
 # waypoints.append((2.0,-8.0))
 # drawpath(waypoints,0.1)
-def drawpath(waypoints, y ):
+def drawpath(waypoints, y, name_seed, persist ):
     print( waypoints)
     lastPt = None
-    pathStr = "path" + str(random.randint(0, 1000000))
+    if name_seed == -1:
+        pathStr = "path" + str(random.randint(0, 1000000))
+    else:
+        pathStr = "path" + str(name_seed)   
     stepCnt=0
     for pt in waypoints:
         print(pt[0])
@@ -31,5 +34,11 @@ def drawpath(waypoints, y ):
             z=lastPt[1]+i*stepZ
             pathobjstr = pathStr + str(stepCnt)
             stepCnt+=1                
-            arena.Object(objType=arena.Shape.circle, objName=pathobjstr, location=(x,y,z), color=(0,255,255),scale=(0.1,0.1,0.1),rotation=(-0.7,0.0,0.0,0.7), data='{"material": {"transparent":true,"opacity": 0.3}}', persist=False);
+            arena.Object(objType=arena.Shape.circle, 
+            objName=pathobjstr, 
+            location=(x,y,z), 
+            color=(0,255,255),scale=(0.1,0.1,0.1),
+            rotation=(-0.7,0.0,0.0,0.7), 
+            data='{"material": {"transparent":true,"opacity": 0.3}}', 
+            persist=persist);
         lastPt = pt 

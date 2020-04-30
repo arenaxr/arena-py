@@ -12,9 +12,8 @@ import arena
 import re
 
 HOST = "oz.andrew.cmu.edu"
-TOPIC = "realm/s/guac/"
 REALM = "realm"
-SCENE = "agr-kitchen"
+SCENE = "agr-kitchen-test4"
 
 # Globals (yes, Sharon)
 
@@ -74,7 +73,7 @@ def initCube(x, y, color):
     cubes[(x,y)]=childObject(objType=arena.Shape.cube,
                               persist=True,
                               objName=name,
-                              physics=arena.Physics.static,
+                              #physics=arena.Physics.static,
                               data='{"collision-listner":"", "material": {"transparent":true,"opacity": 0.5},"impulse":{"on":"mouseup","force":"0 15 0","position": "10 1 1"}}',
                               location=(x,y,-3),
                               color=color,
@@ -260,9 +259,9 @@ sceneParent = arena.Object(
     objType=arena.Shape.cube,
     location=(-.6,1.2,-2),
     scale=(0.1,0.1,0.1),
+    rotation=(0,0,0,1),
     data='{"material": {"transparent": true, "opacity": 0}}'
 )
-
 
 draw_board()
 print("starting main loop")

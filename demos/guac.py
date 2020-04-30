@@ -74,7 +74,8 @@ def initCube(x, y, color):
     cubes[(x,y)]=childObject(objType=arena.Shape.cube,
                               persist=True,
                               objName=name,
-                              physics=arena.Physics.static,
+                              # messes up child-follow-parent pose
+                              #physics=arena.Physics.static,
                               data='{"collision-listner":"", "material": {"transparent":true,"opacity": 0.5},"impulse":{"on":"mouseup","force":"0 40 0","position": "10 1 1"}}',
                               location=(x,y,-3),
                               color=color,
@@ -179,7 +180,7 @@ def animate_loss():
     time.sleep(5);
     delete_cubes();
 
-def process_message(msg):
+def process_message_guac(msg):
     global counter
 
     jsonMsg = json.loads(msg)
@@ -252,7 +253,7 @@ def process_message(msg):
 
 # start the fun shall we?
 
-arena.init(HOST, REALM, SCENE, process_message)
+arena.init(HOST, REALM, SCENE, process_message_guac)
 # make a parent scene object
 sceneParent = arena.Object(
     persist=True,

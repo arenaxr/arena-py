@@ -13,7 +13,7 @@ import re
 
 HOST = "oz.andrew.cmu.edu"
 REALM = "realm"
-SCENE = "agr-kitchen-test4"
+SCENE = "agr-kitchen"
 
 # Globals (yes, Sharon)
 

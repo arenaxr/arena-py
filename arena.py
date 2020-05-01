@@ -16,7 +16,7 @@ client = mqtt.Client(
     "client-" + str(random.randrange(0, 1000000)), clean_session=True, userdata=None
 )
 object_count = 0
-#object_list = []
+callbacks = {}
 arena_callback = None
 messages = []
 debug_toggle = False
@@ -26,8 +26,8 @@ def signal_handler(sig, frame):
     stop()
 
 
-def arena_callback(msg):
-    arena_callback(msg.payload)
+#def arena_callback(msg):
+#    arena_callback(msg.payload)
 
 
 def arena_publish(scene_path, MESSAGE):
@@ -40,9 +40,31 @@ def arena_publish(scene_path, MESSAGE):
 
 def process_message(msg):
     global arena_callback
-    #    print("on_message: "+msg.topic+' '+str(msg.payload))
-    if arena_callback:
-        arena_callback(msg.payload.decode("utf-8", "ignore"))
+    #print("process_message: "+str(msg.payload))
+    # first call specific objects' callbacks
+    payload = msg.payload.decode("utf-8", "ignore")
+    MESSAGE = json.loads(payload)
+    object_id = MESSAGE["object_id"]
+    evtType=""
+    clickPos=(0,0,0)
+    Pos=(0,0,0)
+    Rot=(0,0,0,1)
+    if object_id in callbacks:
+        objId  = MESSAGE["object_id"]
+        Action = MESSAGE["action"]
+        if ("type" in MESSAGE):
+            evtType = MESSAGE["type"]
+        if ("data" in MESSAGE):
+            if ("clickPos" in MESSAGE["data"]):
+                clickPos = (MESSAGE["data"]["clickPos"]["x"],MESSAGE["data"]["clickPos"]["y"],MESSAGE["data"]["clickPos"]["z"])
+            if ("position" in MESSAGE["data"]):
+                Pos = (MESSAGE["data"]["position"]["x"],MESSAGE["data"]["position"]["y"],MESSAGE["data"]["position"]["z"])
+            if ("rotation" in MESSAGE["data"]):
+                Rot = (MESSAGE["data"]["rotation"]["x"],MESSAGE["data"]["rotation"]["y"],MESSAGE["data"]["rotation"]["z"],MESSAGE["data"]["rotation"]["w"])
+        callbacks[object_id](object_id=objId, event_action=Action, event_type=evtType, click_pos=clickPos, position=Pos, rotation=Rot)
+    # else call general callback set at init time, for all messages
+    elif arena_callback:
+        arena_callback(payload)
 
 
 def on_message(client, userdata, msg):
@@ -54,7 +76,7 @@ def on_connect(client, userdata, flags, rc):
 
 
 # def on_log(client, userdata, level, buf):
-#    print("log:" + buf);
+#    print("log:" + buf)
 
 
 def init(broker, realm, scene, callback=None, port=None):
@@ -68,7 +90,7 @@ def init(broker, realm, scene, callback=None, port=None):
     scene_path = realm + "/s/" + scene
     arena_callback = callback
 
-    # print("arena callback:", callback)
+    #print("arena callback:", callback)
     #print("connecting to broker ", mqtt_broker)
     #print("scene_path ", scene_path)
     if (port != None):
@@ -104,6 +126,7 @@ def handle_events():
 def flush_events():
     if running:
         while len(messages) > 0:
+            print("flush_events")
             process_message(messages.pop(0))
 
 def start():
@@ -131,12 +154,12 @@ def stop():
     print("disconnected")
     sys.exit()
 
-def add(obj):
-    print("Add called with: " + obj.name)
-    if isinstance(obj, Cube):
-        print("its a cube")
-    if isinstance(obj, Sphere):
-        print("its a sphere")
+# def add(obj):
+#     print("Add called with: " + obj.name)
+#     if isinstance(obj, Cube):
+#         print("its a cube")
+#     if isinstance(obj, Sphere):
+#         print("its a sphere")
 
 
 class Physics(enum.Enum):
@@ -228,7 +251,7 @@ class Object:
     clickable = False
     url = ""
     data = ""
-    #    callback = None
+    callback = None
 
     def __init__(
         self,
@@ -245,11 +268,11 @@ class Object:
         clickable=clickable,
         url=url,
         data=data,
-        # callback=callback
+        callback=callback
     ):
         """Initializes the data."""
         global object_count
-        #global object_list
+        global object_list
         global debug_toggle
         self.objType = objType
         self.location = location
@@ -263,7 +286,7 @@ class Object:
         self.clickable = clickable
         self.url = url
         self.data = data
-        #        self.callback = callback
+        self.callback = callback
         # print("loc: " + str(self.loc))
         # avoid name clashes by enumerating each new object
         if objName == "":
@@ -271,9 +294,9 @@ class Object:
         else:
             self.objName = objName
 
-        #        if (callback != None):
-        #            print("adding callback")
-        #            client.message_callback_add(scene_path+'/'+self.objName, callback)
+        if (callback != None):
+            #print("adding callback")
+            callbacks[self.objName] = callback
 
         object_count = object_count + 1
         #object_list.append(self)
@@ -313,8 +336,11 @@ class Object:
         ttl=None,
         url=None,
         parent=None,
+        persist=None,
     ):
         global debug_toggle
+        if persist is not None:
+            self.persist = persist
         if location is not None:
             self.location = location
         if rotation is not None:
@@ -343,6 +369,8 @@ class Object:
 
     def delete(self):
         global debug_toggle
+        if self.objName in callbacks:
+            del callbacks[self.objName]
         MESSAGE = {
             "object_id": self.objName,
             "action": "delete"

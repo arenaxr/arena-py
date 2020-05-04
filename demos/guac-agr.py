@@ -11,7 +11,7 @@ import arena
 
 HOST = "oz.andrew.cmu.edu"
 REALM = "realm"
-SCENE = "guac"
+SCENE = "agr-kitchen"
 
 # Globals (yes, Sharon)
 

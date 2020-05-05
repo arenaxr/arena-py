@@ -49,11 +49,14 @@ def process_message(msg):
     clickPos=(0,0,0)
     Pos=(0,0,0)
     Rot=(0,0,0,1)
+
     if object_id in callbacks:
+
+        # Unpack JSON data
         objId  = MESSAGE["object_id"]
-        Action = MESSAGE["action"]
+        Action = MESSAGE["action"] # create/delete/update/clientEvent
         if ("type" in MESSAGE):
-            evtType = MESSAGE["type"]
+            evtType = MESSAGE["type"] # object/rig/mousedown/mouseup/mouseenter/mouseleave/controler++
         if ("data" in MESSAGE):
             if ("clickPos" in MESSAGE["data"]):
                 clickPos = (MESSAGE["data"]["clickPos"]["x"],MESSAGE["data"]["clickPos"]["y"],MESSAGE["data"]["clickPos"]["z"])
@@ -61,7 +64,21 @@ def process_message(msg):
                 Pos = (MESSAGE["data"]["position"]["x"],MESSAGE["data"]["position"]["y"],MESSAGE["data"]["position"]["z"])
             if ("rotation" in MESSAGE["data"]):
                 Rot = (MESSAGE["data"]["rotation"]["x"],MESSAGE["data"]["rotation"]["y"],MESSAGE["data"]["rotation"]["z"],MESSAGE["data"]["rotation"]["w"])
-        callbacks[object_id](object_id=objId, event_action=Action, event_type=evtType, click_pos=clickPos, position=Pos, rotation=Rot)
+
+        # slight oversight: MQTT messages don't set 'type' for delete events
+        if (Action == 'delete'):
+            evtType = 'object'
+
+        # Repackage into & return a GenericEvent
+        event_data = GenericEvent(
+            object_id=objId,
+            event_action=EventAction[Action],# delete/create/update/clientEvent
+            event_type=EventType[evtType],  # object/rig/mouseup/mousedown/mouseenter/mouseleave/collision/controller++
+            position=Pos,
+            rotation=Rot,
+            click_pos=clickPos)
+        callbacks[object_id](event_data)
+
     # else call general callback set at init time, for all messages
     elif arena_callback:
         arena_callback(payload)
@@ -192,24 +209,110 @@ class Shape(enum.Enum):
     thickline = "thickline"
 
 
-class Event(enum.Enum):
+class EventType(enum.Enum):
+    """Values of  MQTT 'type'"""
+
+    rig = "rig"
+    object = "object"
     mousedown = "mousedown"
     mouseup = "mouseup"
     mouseenter = "mouseenter"
     mouseleave = "mouseleave"
     collision = "collision"
+    triggerdown = "triggerdown"
+    triggerup = "triggerup"
+    gripdown = "gripdown"
+    gripup = "gripup"
+    menudown = "menudown"
+    menuup = "menuup"
+    systemdown = "systemdown"
+    systemup = "systemup"
+    trackpaddown = "trackpaddown"
+    trackpadup = "trackpadup"
 
+class ObjectType(enum.Enum):
+    object = "object"
+    rig = "rig"
 
-class MouseEvent:
-    """Event data from mouse interaction"""
+class EventAction(enum.Enum):
+    """Kinds of actions"""
 
+    delete = "delete"
+    create = "create"
+    update = "update"
+    clientEvent = "clientEvent"
+
+class Transparency:
+    transparent = False
+    opacity = 1
+    def __init__(self, transparent=transparent, opacity=opacity):
+        self.transparent = transparent
+        self.opacity = opacity
+
+class Line:
+    start = (0, 0, 0)
+    end = (0, 0, 0)
+    line_width = 1
+    color = "#FFFFFF"
+    def __init__(self, start=start, end=end, line_width=line_width, color=color):
+        self.start = start
+        self.end = end
+        self.line_width = line_width
+        self.color = color
+
+class Impulse:
+    on = None
+    force = (0, 0, 0)
+    position = (0, 0, 0)
+    def __init__(self, on=on, force=force, position=position):
+        self.on = on
+        self.force = force
+        self.position = position
+
+class Animation:
+    clip = ""
+    loop = ""
+    repetitions = 1
+    timeScale = 1
+    def __init__(self, clip=clip, loop=loop, repetitions=repetitions, timeScale=timeScale):
+        self.clip = clip
+        self.loop = loop
+        self.repetitions = repetitions
+        self.timeScale = timeScale
+
+        
+class GenericEvent:
+    """Event data any ARENA event"""
+    object_id = ""
+    event_action = EventAction.clientEvent
+    event_type = EventType.mousedown
+    update_type = ObjectType.object
+    position = (0, 0, 0)
+    rotation = (0, 0, 0, 1)
+    click_pos = (0, 0, 0)
+
+    def __init__(self, object_id=object_id, event_action=event_action, event_type=event_type, update_type=update_type, position=position, rotation=rotation, click_pos=click_pos):
+        self.object_id = object_id
+        self.event_action = event_action
+        self.event_type = event_type
+        self.update_type = update_type
+        self.position = position
+        self.rotation = rotation
+        self.click_pos = click_pos
+    
+class ClickEvent:
+    """Event data e.g. mouse interaction"""
+
+    object_id = ""
     location = (0, 0, 0)
-    eventType = Event.mousedown
+    click_pos = (0, 0, 0)
+    event_type = EventType.mousedown
     source = ""
 
-    def __init__(self, location=location, eventType=eventType, source=source):
+    def __init__(self, location=location, click_pos=click_pos, event_type=event_type, source=source):
         self.location = location
-        self.eventType = eventType
+        self.click_pos=click_pos
+        self.event_type = event_type
         self.source = source
 
 
@@ -235,6 +338,10 @@ class updateRig:
         arena_publish(scene_path, MESSAGE)
 
 
+def tuple_to_string(tuple):
+    return str(tuple[0])+' '+str(tuple[1])+' '+str(tuple[2])
+
+        
 class Object:
     """Geometric shape object for the arena type Arena.Shape"""
 
@@ -250,6 +357,13 @@ class Object:
     physics = Physics.none
     clickable = False
     url = ""
+    text = None
+    transparentOcclude = False
+    line = None
+    collision_listener = False
+    transparency = None
+    impulse = None
+    animation = None
     data = ""
     callback = None
 
@@ -266,7 +380,14 @@ class Object:
         physics=physics,
         parent=parent,
         clickable=clickable,
+        transparency=transparency,
+        impulse=impulse,
+        animation=animation,
         url=url,
+        text=text,
+        transparentOcclude=transparentOcclude,
+        line=line,
+        collision_listener=collision_listener,
         data=data,
         callback=callback
     ):
@@ -285,6 +406,12 @@ class Object:
         self.physics = physics
         self.clickable = clickable
         self.url = url
+        self.text = text
+        self.transparentOcclude = transparentOcclude
+        self.line = line
+        self.collision_listener = collision_listener
+        self.transparency = transparency
+        self.impulse = impulse
         self.data = data
         self.callback = callback
         # print("loc: " + str(self.loc))
@@ -300,12 +427,14 @@ class Object:
 
         object_count = object_count + 1
         #object_list.append(self)
+
+        # do all the work
         self.redraw()
 
     def fireEvent(self, event=None, position=(0, 0, 0), source=None):
         global debug_toggle
         if event is None:
-            event = arena.Event.mousedown.value
+            event = arena.EventType.mousedown.value
         else:
             event = event.value
         if source is None:
@@ -325,19 +454,25 @@ class Object:
         arena_publish(scene_path, MESSAGE)
 
     def update(
-        self,
-        location=None,
-        rotation=None,
-        scale=None,
-        color=None,
-        physics=None,
-        data=None,
-        clickable=None,
-        ttl=None,
-        url=None,
-        parent=None,
-        persist=None,
-    ):
+            self,
+            location=None,
+            rotation=None,
+            scale=None,
+            color=None,
+            physics=None,
+            data=None,
+            clickable=None,
+            ttl=None,
+            url=None,
+            text=None,
+            transparentOcclude=None,
+            line=None,
+            collision_listener=None,
+            animation=None,
+            transparency=None,
+            impulse=None,
+            parent=None,
+            persist=None):
         global debug_toggle
         if persist is not None:
             self.persist = persist
@@ -359,13 +494,25 @@ class Object:
             self.ttl = ttl
         if url is not None:
             self.url = url
+        if text is not None:
+            self.text = text
+        if transparentOcclude is not None:
+            self.transparentOcclude = transparentOcclude
+        if collision_listener is not None:
+            self.collision_listener = collision_listener
+        if animation is not None:
+            self.animation = animation
+        if impulse is not None:
+            self.impulse = impulse
+        if transparency is not None:
+            self.transparency = transparency
         if parent is not None:
             self.parent = parent
         self.redraw()
 
-#    def __del__(self):
-#        print ("del (self) ", self.objName)
-#        self.delete()
+    #    def __del__(self):
+    #        print ("del (self) ", self.objName)
+    #        self.delete()
 
     def delete(self):
         global debug_toggle
@@ -433,6 +580,28 @@ class Object:
         }
         if self.url != "":
             MESSAGE["data"]["url"] = self.url
+        if self.text != None:
+            MESSAGE["data"]["text"] = self.text
+        if self.transparentOcclude:
+            MESSAGE["data"]["material"] = {
+                "colorWrite": false,
+                "render-order": 0
+                }
+        if self.line != None:
+            MESSAGE["data"]["start"] = {
+                "x": self.line.start[0],
+                "y": self.line.start[1],
+                "z": self.line.start[2],
+            }
+            MESSAGE["data"]["end"] = {
+                "x": self.line.end[0],
+                "y": self.line.end[1],
+                "z": self.line.end[2],
+            }
+            MESSAGE["data"]["lineWidth"] = self.line.line_width
+            MESSAGE["data"]["color"] = self.line.color
+        if self.collision_listener != False:
+            MESSAGE["data"]["collision-listener"]=""
         if self.data != "":
             MESSAGE["data"].update(json.loads(self.data))
         if self.physics != Physics.none:
@@ -441,6 +610,24 @@ class Object:
             MESSAGE["data"]["click-listener"] = ""
         if self.ttl != 0:
             MESSAGE["ttl"] = self.ttl
+        if self.animation != None:
+            MESSAGE["data"]["animation-mixer"] = {
+                "clip": self.animation.clip,
+                "loop": self.animation.loop,
+                "repetitions": self.animation.repetitions,
+                "timeScale": self.animation.timeScale
+                }
+        if self.transparency != None:
+            MESSAGE["data"]["material"] = {
+                "transparent": self.transparency.transparent,
+                "opacity": self.transparency.opacity
+            }
+        if self.impulse != None:
+            MESSAGE["data"]["impulse"] = {
+                "on": self.impulse.on,
+                "force": tuple_to_string(self.impulse.force),
+                "position": tuple_to_string(self.impulse.position)
+                }
         if self.parent != "":
             MESSAGE["data"]["parent"] = self.parent
 

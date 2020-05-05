@@ -10,8 +10,8 @@ import time
 import arena
 
 HOST = "oz.andrew.cmu.edu"
-REALM = "realm"
-SCENE = "agr-kitchen"
+REALM = "agr-kitchen"
+SCENE = "guac"
 
 # Globals (yes, Sharon)
 
@@ -88,7 +88,9 @@ def initCube(x, y, color):
         objName=name,
         # messes up child-follow-parent pose
         # physics=arena.Physics.static,
-        data='{"collision-listner":"", "material": {"transparent":true,"opacity": 0.5},"impulse":{"on":"mouseup","force":"0 40 0","position": "10 1 1"}}',
+        collision_listener=True,
+        transparency=arena.Transparency(True,0.5),
+        impulse=arena.Impulse("mouseup",(0,40,0),(10,1,1)),
         location=(x, y, -3),
         color=color,
         scale=(0.6, 0.6, 0.6),
@@ -107,7 +109,7 @@ def drop_cube(x, y):
 
 def launch_cube(x, y):
     cubes[(x, y)].update(physics=arena.Physics.dynamic)
-    cubes[(x, y)].fireEvent(arena.Event.mouseup, (0, 0, 0), "guacprogram")
+    cubes[(x, y)].fireEvent(arena.EventType.mouseup, (0, 0, 0), "guacprogram")
 
 
 def deleteAvocado():
@@ -141,13 +143,7 @@ def draw_hud(score):
         persist=True,
         objName="hudText",
         objType=arena.Shape.text,
-        data='{"text":"red:'
-        + str(reds)
-        + " blue:"
-        + str(blues)
-        + " draw:"
-        + str(draws)
-        + '"}',
+        text="red:"+str(reds)+" blue:"+str(blues)+" draw:"+str(draws),
         location=(0, 0.4, -0.5),
         parent="myCamera",
         scale=(0.2, 0.2, 0.2),
@@ -159,7 +155,7 @@ def animateAvocado():
     deleteAvocado()
     drawAvocado()
     avocado.update(
-        data='{"animation-mixer": {"clip": "Recuperate","loop": "pingpong","repetitions": 2,"timeScale": 4}}'
+        animation=arena.Animation(clip="Recuperate",loop="pingpong",repetitions=2,timeScale=4)
     )
 
 
@@ -168,7 +164,7 @@ def animateAvocado2():
     deleteAvocado()
     drawAvocado()
     avocado.update(
-        data='{"animation-mixer": {"clip": "Walking", "loop": "pingpong", "repetitions": 2}}'
+        animation=arena.Animation(clip="Walking",loop="pingpong",repetitions=2)
     )
 
 
@@ -218,57 +214,36 @@ def animate_loss():
 def draw_ray(click_pos, position):
     line = arena.Object(
         objName="line1",
-        objType=arena.Shape.line,
         ttl=1,
-        data='{"start": {"x":'
-        + str(click_pos[0])
-        + ', "y":'
-        + str(click_pos[1] - 0.5)
-        + ', "z":'
-        + str(click_pos[2])
-        + '},"end": {"x":'
-        + str(position[0])
-        + ', "y":'
-        + str(position[1])
-        + ', "z":'
-        + str(position[2])
-        + '}, "color": "#FFFFFF"}',
+        objType=arena.Shape.line,
+        line=arena.Line( # slightly below camera so you can see line vs head-on
+            (click_pos[0],click_pos[1]-0.1,click_pos[2]),
+            (position[0],position[1],position[2]),1,"#FFFFFF")
     )
 
 
-def guac_callback(
-    object_id=None,
-    event_action=None,
-    event_type=None,
-    click_pos=None,
-    position=None,
-    rotation=None,
-):
+def guac_callback(event=None): # gets a GenericEvent
+
     global counter
 
-    # filter non-event messages
-    if event_action != "clientEvent":
-        return
-
     # only mousedown messages
-    if event_type == "mousedown":
+    if event.event_type == arena.EventType.mousedown:
 
         # draw a ray from clicker to cube
-        draw_ray(click_pos, position)
+        draw_ray(event.click_pos, event.position)
 
         color = redblue[counter % 2]
-        x = int(object_id.split("_")[1])
-        y = int(object_id.split("_")[2])
+        x = int(event.object_id.split("_")[1])
+        y = int(event.object_id.split("_")[2])
         if grid[(x - 1)][(y - 1)] != -1:
             return
         counter = counter + 1
         grid[(x - 1)][(y - 1)] = counter % 2
-        colstring = "#%02x%02x%02x" % color
         cubes[(x, y)].update(
-            physics=arena.Physics.static,
-            data='{"impulse": {"on": "mouseup","force":"0 40 0","position":"10 1 1"},"material": {"color":"'
-            + colstring
-            + '", "transparent": false, "opacity": 1}}',
+            #physics=arena.Physics.static,
+            color=color,
+            impulse=arena.Impulse("mouseup",(0,40,0),(10,1,1)),
+            transparency=arena.Transparency(False,1),
             clickable=True,
             location=(x, y, -3),
             scale=(0.6, 0.6, 0.6),
@@ -301,10 +276,8 @@ sceneParent = arena.Object(
     location=(-.6,1.2,-2),
     scale=(0.1,0.1,0.1),
     rotation=(0,0,0,1),
-    data='{"material": {"transparent": true, "opacity": 0}}',
+    transparency=arena.Transparency(True, 0)
 )
-
-
 print("starting main loop")
 draw_board()
 arena.handle_events()

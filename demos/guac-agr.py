@@ -10,8 +10,8 @@ import time
 import arena
 
 HOST = "oz.andrew.cmu.edu"
-REALM = "agr-kitchen"
-SCENE = "guac"
+REALM = "realm"
+SCENE = "agr-kitchen"
 
 # Globals (yes, Sharon)
 
@@ -275,7 +275,6 @@ sceneParent = arena.Object(
     objType=arena.Shape.cube,
     location=(-.6,1.2,-2),
     scale=(0.1,0.1,0.1),
-    rotation=(0,0,0,1),
     transparency=arena.Transparency(True, 0)
 )
 print("starting main loop")

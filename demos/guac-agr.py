@@ -10,8 +10,8 @@ import time
 import arena
 
 HOST = "oz.andrew.cmu.edu"
-REALM = "agr-kitchen"
-SCENE = "guac"
+REALM = "realm"
+SCENE = "agr-kitchen"
 
 # Globals (yes, Sharon)
 
@@ -84,13 +84,13 @@ def initCube(x, y, color):
     name = "cube_" + str(x) + "_" + str(y)
     cubes[(x, y)] = childObject(
         objType=arena.Shape.cube,
-        persist=True,
+        persist=False,
         objName=name,
         # messes up child-follow-parent pose
         # physics=arena.Physics.static,
         collision_listener=True,
         transparency=arena.Transparency(True,0.5),
-        impulse=arena.Impulse("mouseup",(0,40,0),(10,1,1)),
+        impulse=arena.Impulse("mouseup",(0,10,0),(10,1,1)),
         location=(x, y, -3),
         color=color,
         scale=(0.6, 0.6, 0.6),
@@ -120,7 +120,7 @@ def deleteAvocado():
 def drawAvocado():
     global avocado
     avocado = childObject(
-        persist=True,
+        persist=False,
         objName="gltf-model_avocadoman",
         objType=arena.Shape.gltf_model,
         url="models/avocadoman/scene.gltf",
@@ -140,7 +140,7 @@ def draw_hud(score):
     if score == 0:
         blues = blues + 1
     hud = arena.Object(
-        persist=True,
+        persist=False,
         objName="hudText",
         objType=arena.Shape.text,
         text="red:"+str(reds)+" blue:"+str(blues)+" draw:"+str(draws),
@@ -242,7 +242,7 @@ def guac_callback(event=None): # gets a GenericEvent
         cubes[(x, y)].update(
             #physics=arena.Physics.static,
             color=color,
-            impulse=arena.Impulse("mouseup",(0,40,0),(10,1,1)),
+            impulse=arena.Impulse("mouseup",(0,10,0),(10,1,1)),
             transparency=arena.Transparency(False,1),
             clickable=True,
             location=(x, y, -3),
@@ -270,7 +270,7 @@ def guac_callback(event=None): # gets a GenericEvent
 arena.init(HOST, REALM, SCENE)
 # make a parent scene object
 sceneParent = arena.Object(
-    persist=True,
+    persist=False,
     objName="sceneParent",
     objType=arena.Shape.cube,
     location=(-.6,1.2,-2),

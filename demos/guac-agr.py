@@ -1,4 +1,4 @@
-# guac.py
+# guac-agr.py
 #
 # plays Tic Tac Toe
 # clicked boxes alternate red and blue
@@ -12,7 +12,7 @@ import arena
 HOST = "oz.andrew.cmu.edu"
 REALM = "realm"
 SCENE = "agr-kitchen"
-
+ORIGIN =  (-.6,1.2,-2)
 # Globals (yes, Sharon)
 
 cubes = {}  # dict of cube objects to be indexed by tuple (x,y)
@@ -88,6 +88,7 @@ def initCube(x, y, color):
         objName=name,
         # messes up child-follow-parent pose
         # physics=arena.Physics.static,
+        physics=arena.Physics.none,
         collision_listener=True,
         transparency=arena.Transparency(True,0.5),
         impulse=arena.Impulse("mouseup",(0,10,0),(10,1,1)),
@@ -114,7 +115,8 @@ def launch_cube(x, y):
 
 def deleteAvocado():
     global avocado
-    avocado.delete()
+    if ('avocado' in globals()):
+        avocado.delete()
 
 
 def drawAvocado():
@@ -173,7 +175,7 @@ def draw_board():
     global grid
     counter = 0
     grid = [-1, -1, -1], [-1, -1, -1], [-1, -1, -1]
-    drawAvocado()
+    #drawAvocado()
     for x in Xcoords:
         for y in Ycoords:
             initCube(x, y, (127, 127, 127))
@@ -209,6 +211,7 @@ def animate_loss():
     animateAvocado2()
     time.sleep(5)
     delete_cubes()
+
 
 
 def draw_ray(click_pos, position):
@@ -273,10 +276,14 @@ sceneParent = arena.Object(
     persist=False,
     objName="sceneParent",
     objType=arena.Shape.cube,
-    location=(-.6,1.2,-2),
-    scale=(0.1,0.1,0.1),
+    location=ORIGIN,
+    scale=(0.01,0.01,0.01),
     transparency=arena.Transparency(True, 0)
 )
 print("starting main loop")
 draw_board()
+for x in range(-10, 10):
+    for z in range(-10, 10):
+        draw_ray(ORIGIN,(x,10,z))
+sceneParent.update(data='{"animation": {"property": "scale","to": "0.1 0.1 0.1","easing": "linear","dur": 1000}}')
 arena.handle_events()

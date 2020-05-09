@@ -24,11 +24,19 @@ HUD_BRIGHT = "hudButtonRight"
 HUD_TLEFT = "hudTextLeft"
 HUD_TRIGHT = "hudTextRight"
 HUD_TSTATUS = "hudTextStatus"
+FONTSCALE = (0.1, 0.1, 0.1)
+FONTCOLOR = (200, 200, 200)
+TILT_THRESHOLD = 0.2
+TILT_MS = 150
+
+users = {}  # dictionary of user instances
+args = None
 
 
 class Mode(Enum):
     EDIT = 0  # edit is default
     CREATE = 1
+    DELETE = 2
 
     def first(self):
         cls = self.__class__
@@ -51,14 +59,38 @@ class Mode(Enum):
         return members[index]
 
 
-fontScale = (0.1, 0.1, 0.1)
-fontColor = (200, 200, 200)
-tilt_z_threshhold = 0.2
-tilt_ms = 150
-tilt_lock = False
-cam_timestamp = datetime.datetime.utcnow()
-args = None
-mode = Mode.EDIT
+class User:
+    def __init__(self, camname):
+        self.camname = camname
+        self.tilt_lock = False
+        self.cam_timestamp = datetime.datetime.utcnow()
+        self.mode = Mode.EDIT
+
+        # origin object
+        # TODO: origin should be like a red flashing light
+        arena.Object(objType=arena.Shape.cube, objName="arb-origin",
+                     data='{"material": {"transparent": true, "opacity": 0.3}}',
+                     location=(0, 0, 0), color=(255, 0, 0), scale=(0.1, 0.1, 0.1), persist=False)
+
+        # set HUD to each user
+        self.clipboard = set_clipboard(camname)
+        self.clipboard.delete()
+        self.hudTextLeft = arena.Object(objName=(HUD_TLEFT + "_" + camname), objType=arena.Shape.text, parent=camname, data='{"text":"' + getModeName(self.mode) + '"}',
+                                        location=(-0.15, 0.15, -0.5), color=(FONTCOLOR), scale=(FONTSCALE))
+        self.hudTextRight = arena.Object(objName=(HUD_TRIGHT + "_" + camname), objType=arena.Shape.text, parent=camname, data='{"text":""}',
+                                         location=(0.15, 0.15, -0.5), color=(FONTCOLOR), scale=(FONTSCALE))
+        self.hudTextStatus = arena.Object(objName=(HUD_TSTATUS + "_" + camname), objType=arena.Shape.text, parent=camname, data='{"text":""}',
+                                          location=(0, -0.1, -0.5), color=(FONTCOLOR), scale=(FONTSCALE))
+        # TODO: better icons for mode toggle
+        self.hudButtonLeft = arena.Object(objName=(HUD_BLEFT + "_" + camname), objType=arena.Shape.image, parent=camname,
+                                          url="images/conix-x.png",
+                                          data='{"material": {"transparent": true, "opacity": 0.7}}',
+                                          location=(-0.15, 0.25, -0.5), scale=(0.1, 0.1, 0.1), clickable=True)
+        self.hudButtonRight = arena.Object(objName=(HUD_BRIGHT + "_" + camname), objType=arena.Shape.image, parent=camname,
+                                           url="images/conix-x.png",
+                                           data='{"material": {"transparent": true, "opacity": 0.7}}',
+                                           location=(0.15, 0.25, -0.5), scale=(0.1, 0.1, 0.1), clickable=True)
+
 
 # TODO: https://oz.andrew.cmu.edu/persist/<scene>/<object_id>
 # TODO: https://xr.andrew.cmu.edu/go/ interface to add AR builder
@@ -112,17 +144,17 @@ def randcolor():
     return(x, y, z)
 
 
-def set_clipboard():
+def set_clipboard(camname):
     return arena.Object(
         persist=False,
-        objName=CLIPBOARD,
+        objName=(CLIPBOARD + "_" + camname),
         objType=arena.Shape.sphere,
         color=randcolor(),
         location=(0.0, 0.0, -1),
-        parent="myCamera",
+        parent=camname,
         scale=(0.05, 0.05, 0.05),
         data='{"material": {"transparent": true, "opacity": 0.3}}',
-        clickable=True,  # for everything?
+        clickable=True,
     )
 
 
@@ -139,6 +171,7 @@ def moveObj(object_id, position):
         },
     }
     arena.arena_publish(REALM + "/s/" + SCENE, MESSAGE)
+    print("Relocated " + object_id)
 
 
 def rotateObj(object_id, rotation):
@@ -155,6 +188,7 @@ def rotateObj(object_id, rotation):
         },
     }
     arena.arena_publish(REALM + "/s/" + SCENE, MESSAGE)
+    print("Rotated " + object_id)
 
 
 def deleteObj(object_id):
@@ -163,40 +197,48 @@ def deleteObj(object_id):
         "action": "delete"
     }
     arena.arena_publish(REALM + "/s/" + SCENE, MESSAGE)
+    print("Deleted " + object_id)
 
 
-def doModeChange():
-    global mode, clipboard
-    try:
-        mode = mode.next()
-    except StopIteration:
-        mode = mode.first()
+def doModeChange(camname, mode):
+    global users
 
-    # make/unmake camera tracking object
+    # make/unmake camera tracking objects
     if mode == Mode.EDIT:
-        clipboard.delete()
-        hudTextRight.update(data='{"text":""}')
+        users[camname].clipboard.delete()
+        users[camname].hudTextRight.update(data='{"text":""}')
     elif mode == Mode.CREATE:
-        clipboard = set_clipboard()
-        hudTextRight.update(data='{"text":"' + "Change Color" + '"}')
+        users[camname].clipboard = set_clipboard(camname)
+        users[camname].hudTextRight.update(
+            data='{"text":"' + "Change Color" + '"}')
+    elif mode == Mode.DELETE:
+        users[camname].clipboard.delete()
+        users[camname].hudTextRight.update(data='{"text":""}')
 
-    hudTextLeft.update(data='{"text":"' + getModeName(mode) + '"}')
+    users[camname].hudTextLeft.update(
+        data='{"text":"' + getModeName(mode) + '"}')
 
 
 def getModeName(mode):
     return str(mode)
 
 
-def doCreateRight():
-    global clipboard
-    # TODO: implement me!
-    # for now just change clip color
-    clipboard = set_clipboard()
-
-
-def doEditRight():
+def doEditRight(camname):
     # TODO: implement me!
     return
+
+
+def doEditClick(object_id):
+    # TODO: this should open a new tab to edit targeted object without leaving
+    # AR mode
+    return
+
+
+def doCreateRight(camname):
+    global users
+    # TODO: this should cycle through shapes...
+    # for now just change clip color
+    users[camname].clipboard = set_clipboard(camname)
 
 
 def doCreateClick(clipboard, jsonMsg):
@@ -205,84 +247,114 @@ def doCreateClick(clipboard, jsonMsg):
     pos_x = click["x"]
     pos_y = click["y"]
     pos_z = click["z"]
-    # second way, place object at calculated vector from cam
-    # TODO: almost there, need to calc slope of cam rotation
-    # cam = jsonMsg["data"]["clickPos"]
-    # pos_x = cam["x"] + clipboard.location[0]
-    # pos_y = cam["y"] + clipboard.location[1]
-    # pos_z = cam["z"] + clipboard.location[2]
+
     randstr = str(random.randrange(0, 1000000))
     # make a copy of static object in place
     newObj = arena.Object(persist=True,
-                          objName="ballN_" + randstr,  # rand?
+                          objName=clipboard.objType.name + "_" + randstr,
                           objType=clipboard.objType,
                           location=(pos_x, pos_y, pos_z),
-                          # rotation=clipboard.rotation, #must calc.
+                          rotation=clipboard.rotation,
                           scale=clipboard.scale,
                           color=clipboard.color,
                           data='{"material": {"transparent": false}}',
+                          # data='{"material": {"transparent": false},
+                          # "goto-url": "on: mousedown; url://oz.andrew.cmu.edu/persist/' +
+                          # SCENE + '/' + "ballN_" + randstr + ';"}',
                           clickable=True)
-    print (newObj)
+    print("Created " + newObj.objName)
 
 
-# This is the MQTT message callback function for the scene
+def doDeleteRight(camname):
+    # TODO: implement me!
+    return
+
+
+def doDeleteClick(object_id):
+    # this should delete the targeted object from the arena
+    deleteObj(object_id)
+    return
+
+
 def scene_callback(msg):
-    global mode, hudTextStatus, hudTextLeft, tilt_lock, cam_timestamp
+    # This is the MQTT message callback function for the scene
+    global users
 
     jsonMsg = json.loads(msg)
-    print(msg)
+    # print(msg)
 
-    # camera updates are useful to detect AR-counter/clockwise tilts for controls
-    # TODO: only do this for this user's camera
+    # camera updates are useful to detect AR-counter/clockwise tilts
     if jsonMsg["action"] == "create" and jsonMsg["data"]["object_type"] == "camera":
+        # camera updates define users present
+        camname = jsonMsg["object_id"]
+        if camname not in users:
+            users[camname] = User(camname)
+
         tilt = jsonMsg["data"]["rotation"]["z"]
         now_timestamp = datetime.datetime.strptime(
             jsonMsg["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
-        duration = now_timestamp - cam_timestamp
+        duration = now_timestamp - users[camname].cam_timestamp
         timediff = duration.microseconds / 1000
-        print (timediff)
-        if (not tilt_lock) and (timediff < tilt_ms):
-            if tilt > tilt_z_threshhold:  # left
-                tilt_lock = True
-                hudButtonLeft.fireEvent(arena.EventType.mousedown)
-            elif tilt < -tilt_z_threshhold:  # right
-                tilt_lock = True
-                hudButtonRight.fireEvent(arena.EventType.mousedown)
+        if (not users[camname].tilt_lock) and (timediff < TILT_MS):
+            if tilt > TILT_THRESHOLD:  # left
+                users[camname].tilt_lock = True
+                users[camname].hudButtonLeft.fireEvent(
+                    event=arena.EventType.mousedown, source=camname)
+            elif tilt < -TILT_THRESHOLD:  # right
+                users[camname].tilt_lock = True
+                users[camname].hudButtonRight.fireEvent(
+                    event=arena.EventType.mousedown, source=camname)
         else:
-            if tilt < tilt_z_threshhold and tilt > -tilt_z_threshhold:  # back to center
-                tilt_lock = False
+            if tilt < TILT_THRESHOLD and tilt > -TILT_THRESHOLD:  # back to center
+                users[camname].tilt_lock = False
 
-        cam_timestamp = now_timestamp
+        users[camname].cam_timestamp = now_timestamp
 
+    # mouse event
     elif jsonMsg["action"] == "clientEvent":
+        # camera updates define users present
+        camname = jsonMsg["data"]["source"]
+        if camname not in users:
+            users[camname] = User(camname)
 
         # show objects with events
         if jsonMsg["type"] == "mouseenter":
-            hudTextStatus.update(
+            users[camname].hudTextStatus.update(
                 data='{"text":"' + jsonMsg["object_id"] + '"}')
         elif jsonMsg["type"] == "mouseleave":
-            hudTextStatus.update(data='{"text":"' + "" + '"}')
+            users[camname].hudTextStatus.update(data='{"text":"' + "" + '"}')
 
         # handle click
         elif jsonMsg["type"] == "mousedown":
 
             # Left Option: change modes
-            if jsonMsg["object_id"] == HUD_BLEFT:
-                doModeChange()
+            if jsonMsg["object_id"] == users[camname].hudButtonLeft.objName:
+                try:
+                    users[camname].mode = users[camname].mode.next()
+                except StopIteration:
+                    users[camname].mode = users[camname].mode.first()
+                doModeChange(camname, users[camname].mode)
 
-            # Right Option: mode-dependant action
-            elif jsonMsg["object_id"] == HUD_BRIGHT:
-                if mode == Mode.EDIT:
-                    doEditRight()
-                elif mode == Mode.CREATE:
-                    doCreateRight()
+            # Right Option: mode-dependent action
+            elif jsonMsg["object_id"] == users[camname].hudButtonRight.objName:
+                if users[camname].mode == Mode.EDIT:
+                    doEditRight(camname)
+                elif users[camname].mode == Mode.CREATE:
+                    doCreateRight(camname)
+                elif users[camname].mode == Mode.DELETE:
+                    doDeleteRight(camname)
 
-            # clicked cursor
-            elif jsonMsg["object_id"] == CLIPBOARD:
-                if mode == Mode.EDIT:
-                    doEditClick()
-                elif mode == Mode.CREATE:
-                    doCreateClick(clipboard, jsonMsg)
+            # clicked self HUD clipboard
+            elif jsonMsg["object_id"] == users[camname].clipboard.objName:
+                if users[camname].mode == Mode.CREATE:
+                    doCreateClick(users[camname].clipboard, jsonMsg)
+
+            # clicked another scene object
+            elif len(jsonMsg["object_id"]) > 0:
+                if users[camname].mode == Mode.EDIT:
+                    doEditClick(jsonMsg["object_id"])
+                elif users[camname].mode == Mode.DELETE:
+                    doDeleteClick(jsonMsg["object_id"])
 
 
 initArgs()
@@ -294,26 +366,5 @@ random.seed()
 
 arena.init(BROKER, REALM, SCENE, scene_callback)
 
-# origin object
-arena.Object(objType=arena.Shape.cube, objName="arb-origin",
-             location=(0, 0, 0), color=(0, 0, 255), scale=(0.1, 0.1, 0.1), persist=False)
-
-# TODO: set huds specific to each user
-hudTextLeft = arena.Object(objName=HUD_TLEFT, objType=arena.Shape.text, parent="myCamera", data='{"text":"' + getModeName(mode) + '"}',
-                           location=(-0.15, 0.15, -0.5), color=(fontColor), scale=(fontScale))
-hudTextRight = arena.Object(objName=HUD_TRIGHT, objType=arena.Shape.text, parent="myCamera", data='{"text":""}',
-                            location=(0.15, 0.15, -0.5), color=(fontColor), scale=(fontScale))
-hudTextStatus = arena.Object(objName=HUD_TSTATUS, objType=arena.Shape.text, parent="myCamera",
-                             location=(0, -0.15, -0.5), color=(fontColor), scale=(fontScale))
-
-# TODO: better icons for mode toggle
-hudButtonLeft = arena.Object(objName=HUD_BLEFT, objType=arena.Shape.image, parent="myCamera",
-                             url="images/conix-x.png",
-                             data='{"material": {"transparent": true, "opacity": 0.7}}',
-                             location=(-0.15, 0.25, -0.5), scale=(0.1, 0.1, 0.1), clickable=True)
-hudButtonRight = arena.Object(objName=HUD_BRIGHT, objType=arena.Shape.image, parent="myCamera",
-                              url="images/conix-x.png",
-                              data='{"material": {"transparent": true, "opacity": 0.7}}',
-                              location=(0.15, 0.25, -0.5), scale=(0.1, 0.1, 0.1), clickable=True)
 
 arena.handle_events()

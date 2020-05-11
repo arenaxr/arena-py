@@ -159,6 +159,7 @@ def moveObj(object_id, position):
         "object_id": object_id,
         "action": "update",
         "type": "object",
+        "persist": "true",
         "data": {
             "position": {
                 "x": position[0],
@@ -177,6 +178,7 @@ def rotateObj(object_id, rotation):
         "object_id": object_id,
         "action": "update",
         "type": "object",
+        "persist": "true",
         "data": {
             "rotation": {
                 "x": rotation[0],

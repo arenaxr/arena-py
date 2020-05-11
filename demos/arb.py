@@ -14,7 +14,6 @@ import argparse
 from enum import Enum
 import datetime
 
-
 BROKER = "oz.andrew.cmu.edu"
 REALM = "realm"
 SCENE = ""  # no default scene, arb works on any scene
@@ -159,6 +158,7 @@ def moveObj(object_id, position):
     MESSAGE = {
         "object_id": object_id,
         "action": "update",
+        "type": "object",
         "data": {
             "position": {
                 "x": position[0],
@@ -167,7 +167,7 @@ def moveObj(object_id, position):
             },
         },
     }
-    arena.arena_publish(REALM + "/s/" + SCENE, MESSAGE)
+    arena.arena_publish(REALM + "/s/" + SCENE + "/" + object_id, MESSAGE)
     # print(json.dumps(MESSAGE))  # TODO: not relocating?
     print("Relocated " + object_id)
 
@@ -176,6 +176,7 @@ def rotateObj(object_id, rotation):
     MESSAGE = {
         "object_id": object_id,
         "action": "update",
+        "type": "object",
         "data": {
             "rotation": {
                 "x": rotation[0],
@@ -185,7 +186,7 @@ def rotateObj(object_id, rotation):
             },
         },
     }
-    arena.arena_publish(REALM + "/s/" + SCENE, MESSAGE)
+    arena.arena_publish(REALM + "/s/" + SCENE + "/" + object_id, MESSAGE)
     print("Rotated " + object_id)
 
 
@@ -194,7 +195,7 @@ def deleteObj(object_id):
         "object_id": object_id,
         "action": "delete"
     }
-    arena.arena_publish(REALM + "/s/" + SCENE, MESSAGE)
+    arena.arena_publish(REALM + "/s/" + SCENE + "/" + object_id, MESSAGE)
     print("Deleted " + object_id)
 
 

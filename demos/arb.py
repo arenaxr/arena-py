@@ -14,6 +14,7 @@ import argparse
 from enum import Enum
 import datetime
 
+
 BROKER = "oz.andrew.cmu.edu"
 REALM = "realm"
 SCENE = ""  # no default scene, arb works on any scene
@@ -34,9 +35,10 @@ args = None
 
 
 class Mode(Enum):
-    EDIT = 0  # edit is default
-    CREATE = 1
-    DELETE = 2
+    EDIT = "edit"  # edit is default
+    MOVE = "move"
+    CREATE = "create"
+    DELETE = "delete"
 
     def first(self):
         cls = self.__class__
@@ -65,6 +67,7 @@ class User:
         self.tilt_lock = False
         self.cam_timestamp = datetime.datetime.utcnow()
         self.mode = Mode.EDIT
+        self.target_id = None
 
         # origin object
         # TODO: origin should be like a red flashing light
@@ -73,8 +76,9 @@ class User:
                      location=(0, 0, 0), color=(255, 0, 0), scale=(0.1, 0.1, 0.1), persist=False)
 
         # set HUD to each user
+        # TODO: construction helmet
         self.clipboard = set_clipboard(camname)
-        self.clipboard.delete()
+        self.clipboard.delete()  # workaround for non-empty object
         self.hudTextLeft = arena.Object(objName=(HUD_TLEFT + "_" + camname), objType=arena.Shape.text, parent=camname, data='{"text":"' + getModeName(self.mode) + '"}',
                                         location=(-0.15, 0.15, -0.5), color=(FONTCOLOR), scale=(FONTSCALE))
         self.hudTextRight = arena.Object(objName=(HUD_TRIGHT + "_" + camname), objType=arena.Shape.text, parent=camname, data='{"text":""}',
@@ -100,30 +104,15 @@ class User:
 # TODO: gui select objects
 # TODO: Add args for broker and realm.
 
-# *TODO: move source into functions
-
 # order of modes
 #    LEFT-MODE   MOUSECLICK     RIGHT-ACTION
 # --------------------------------------------
-#    move       copy/update    location/rotation
+#    edit*       build.html?
+#    move        copy/update    location nudge
 #    create      create obj     next new obj
-#    edit*        build.html
 #    delete      delete obj
 # --------------------------------------------
 # * default mode
-
-# TODO: clip edit = invisible
-
-# TODO: ALL: Left -> Next mode (display current)
-
-# TODO: CREATE: Click -> Create object at click
-# TODO: CREATE: Right -> Next clipboard obj in manifest
-
-# TODO: EDIT: Click -> Select (highlight)
-# TODO: EDIT: Right -> Go to edit page
-
-# TODO: MOVE: Click -> Copy (to clipboard)
-# TODO: MOVE: Right -> ...
 
 
 def initArgs():
@@ -144,16 +133,24 @@ def randcolor():
     return(x, y, z)
 
 
-def set_clipboard(camname):
+def set_clipboard(camname,
+                  type=arena.Shape.sphere,
+                  rotation=(0, 0, 0, 1),
+                  scale=(0.05, 0.05, 0.05),
+                  color=(255, 255, 255),
+                  ):
     return arena.Object(
         persist=False,
         objName=(CLIPBOARD + "_" + camname),
-        objType=arena.Shape.sphere,
-        color=randcolor(),
+        objType=type,
+        color=color,
         location=(0.0, 0.0, -1),
+        rotation=rotation,
         parent=camname,
-        scale=(0.05, 0.05, 0.05),
+        scale=scale,
         data='{"material": {"transparent": true, "opacity": 0.3}}',
+        # data='{"goto-url": "on: mousedown; url://' + BROKER + '/persist/' +
+        # SCENE + '/' + object_id + ';"}',
         clickable=True,
     )
 
@@ -171,6 +168,7 @@ def moveObj(object_id, position):
         },
     }
     arena.arena_publish(REALM + "/s/" + SCENE, MESSAGE)
+    # print(json.dumps(MESSAGE))  # TODO: not relocating?
     print("Relocated " + object_id)
 
 
@@ -223,57 +221,67 @@ def getModeName(mode):
     return str(mode)
 
 
-def doEditRight(camname):
-    # TODO: implement me!
-    return
+def getClickLocation(jsonMsg):
+    click = jsonMsg["data"]["position"]
+    pos_x = click["x"]
+    pos_y = click["y"]
+    pos_z = click["z"]
+    return (pos_x, pos_y, pos_z)
 
 
-def doEditClick(object_id):
-    # TODO: this should open a new tab to edit targeted object without leaving
-    # AR mode
-    return
+def doMoveSelect(camname, object_id):
+    global users
+    prop = getNetworkPersistedObject(object_id)
+    users[camname].target_id = object_id
+    rotation = (prop[0]["attributes"]["rotation"]["x"],
+                prop[0]["attributes"]["rotation"]["y"],
+                prop[0]["attributes"]["rotation"]["z"],
+                prop[0]["attributes"]["rotation"]["w"])
+    scale = (prop[0]["attributes"]["scale"]["x"],
+             prop[0]["attributes"]["scale"]["y"],
+             prop[0]["attributes"]["scale"]["z"])
+    hClr = prop[0]["attributes"]["color"].lstrip('#')
+    color = tuple(int(hClr[i:i + 2], 16) for i in (0, 2, 4))
+    users[camname].clipboard = set_clipboard(camname,
+                                             type=arena.Shape(
+                                                 prop[0]["attributes"]["object_type"]),
+                                             rotation=rotation,
+                                             scale=scale,
+                                             color=color,
+                                             )
+
+
+def doMoveRelocate(camname, jsonMsg):
+    global users
+    newlocation = getClickLocation(jsonMsg)
+    moveObj(users[camname].target_id, newlocation)
+    users[camname].clipboard.delete()
+    users[camname].target_id = None
 
 
 def doCreateRight(camname):
     global users
     # TODO: this should cycle through shapes...
     # for now just change clip color
-    users[camname].clipboard = set_clipboard(camname)
+    users[camname].clipboard = set_clipboard(camname, color=randcolor())
 
 
-def doCreateClick(clipboard, jsonMsg):
+def createObj(clipboard, jsonMsg):
     # first way, place object at clickable clipboard
-    click = jsonMsg["data"]["position"]
-    pos_x = click["x"]
-    pos_y = click["y"]
-    pos_z = click["z"]
+    location = getClickLocation(jsonMsg)
 
     randstr = str(random.randrange(0, 1000000))
     # make a copy of static object in place
     newObj = arena.Object(persist=True,
                           objName=clipboard.objType.name + "_" + randstr,
                           objType=clipboard.objType,
-                          location=(pos_x, pos_y, pos_z),
+                          location=location,
                           rotation=clipboard.rotation,
                           scale=clipboard.scale,
                           color=clipboard.color,
                           data='{"material": {"transparent": false}}',
-                          # data='{"material": {"transparent": false},
-                          # "goto-url": "on: mousedown; url://oz.andrew.cmu.edu/persist/' +
-                          # SCENE + '/' + "ballN_" + randstr + ';"}',
                           clickable=True)
     print("Created " + newObj.objName)
-
-
-def doDeleteRight(camname):
-    # TODO: implement me!
-    return
-
-
-def doDeleteClick(object_id):
-    # this should delete the targeted object from the arena
-    deleteObj(object_id)
-    return
 
 
 def scene_callback(msg):
@@ -338,33 +346,41 @@ def scene_callback(msg):
             # Right Option: mode-dependent action
             elif jsonMsg["object_id"] == users[camname].hudButtonRight.objName:
                 if users[camname].mode == Mode.EDIT:
-                    doEditRight(camname)
+                    pass  # TODO: doEditRight(camname)
                 elif users[camname].mode == Mode.CREATE:
                     doCreateRight(camname)
                 elif users[camname].mode == Mode.DELETE:
-                    doDeleteRight(camname)
+                    pass  # TODO: doDeleteRight(camname)
+                elif users[camname].mode == Mode.MOVE:
+                    pass  # TODO: doMoveRight(camname)
 
             # clicked self HUD clipboard
             elif jsonMsg["object_id"] == users[camname].clipboard.objName:
                 if users[camname].mode == Mode.CREATE:
-                    doCreateClick(users[camname].clipboard, jsonMsg)
+                    createObj(users[camname].clipboard, jsonMsg)
+                elif users[camname].mode == Mode.MOVE:
+                    doMoveRelocate(camname, jsonMsg)
 
             # clicked another scene object
             elif len(jsonMsg["object_id"]) > 0:
                 if users[camname].mode == Mode.EDIT:
-                    doEditClick(jsonMsg["object_id"])
+                    pass  # doEditClick(jsonMsg["object_id"])
                 elif users[camname].mode == Mode.DELETE:
-                    doDeleteClick(jsonMsg["object_id"])
+                    deleteObj(jsonMsg["object_id"])
+                elif users[camname].mode == Mode.MOVE:
+                    doMoveSelect(camname, jsonMsg["object_id"])
+
+
+def getNetworkPersistedObject(object_id):
+    data = urllib.request.urlopen(
+        'https://' + BROKER + '/persist/' + SCENE + '/' + object_id).read()
+    output = json.loads(data)
+    # print(output)  # TODO: not relocating?
+    return output
 
 
 initArgs()
 random.seed()
-# data = urllib.request.urlopen(
-#     'https://oz.andrew.cmu.edu/persist/' + SCENE).read()
-# output = json.loads(data)
-# print (output)
 
 arena.init(BROKER, REALM, SCENE, scene_callback)
-
-
 arena.handle_events()

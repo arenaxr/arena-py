@@ -216,7 +216,7 @@ def animate_loss():
 
 def draw_ray(click_pos, position):
     line = arena.Object(
-        objName="line1",
+        objName="",
         ttl=1,
         objType=arena.Shape.line,
         line=arena.Line( # slightly below camera so you can see line vs head-on

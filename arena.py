@@ -260,6 +260,15 @@ class Line:
         self.line_width = line_width
         self.color = color
 
+class Thickline:
+    path = [] # array of tuple coordinates
+    line_width = 1
+    color = "#FFFFFF"
+    def __init__(self, path=path, line_width=line_width, color=color):
+        self.path = path
+        self.line_width = line_width
+        self.color = color
+
 class Impulse:
     on = None
     force = (0, 0, 0)
@@ -360,6 +369,7 @@ class Object:
     text = None
     transparentOcclude = False
     line = None
+    thickline = None
     collision_listener = False
     transparency = None
     impulse = None
@@ -387,6 +397,7 @@ class Object:
         text=text,
         transparentOcclude=transparentOcclude,
         line=line,
+        thickline=thickline,
         collision_listener=collision_listener,
         data=data,
         callback=callback
@@ -409,6 +420,7 @@ class Object:
         self.text = text
         self.transparentOcclude = transparentOcclude
         self.line = line
+        self.thickline = thickline
         self.collision_listener = collision_listener
         self.transparency = transparency
         self.impulse = impulse
@@ -467,6 +479,7 @@ class Object:
             text=None,
             transparentOcclude=None,
             line=None,
+            thickline=None,
             collision_listener=None,
             animation=None,
             transparency=None,
@@ -600,6 +613,16 @@ class Object:
             }
             MESSAGE["data"]["lineWidth"] = self.line.line_width
             MESSAGE["data"]["color"] = self.line.color
+        if self.thickline != None:
+            pathstring = ""
+            for point in self.thickline.path:
+                pathstring = pathstring +\
+                             str(point[0])+' '+\
+                             str(point[1])+' '+\
+                             str(point[2])+','
+            MESSAGE["data"]["path"] = pathstring.rstrip(',')
+            MESSAGE["data"]["lineWidth"] = self.thickline.line_width
+            MESSAGE["data"]["color"] = self.thickline.color
         if self.collision_listener != False:
             MESSAGE["data"]["collision-listener"]=""
         if self.data != "":

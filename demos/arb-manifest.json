@@ -1,0 +1,43 @@
+{
+ "models": [
+  {
+   "name": "Avocado",
+   "url_gltf": "models/Avocado.glb",
+   "url_sound": "https://xr.andrew.cmu.edu/audio/flesh.ogg"
+  },
+  {
+   "name": "Shuttle",
+   "url_gltf": "models/Shuttle.glb",
+   "url_sound": "https://xr.andrew.cmu.edu/audio/glass.ogg"
+  },
+  {
+   "name": "Duck",
+   "url_gltf": "models/Duck.glb",
+   "url_sound": "https://xr.andrew.cmu.edu/audio/boing.wav"
+  },
+  {
+   "name": "BrainStem",
+   "url_gltf": "models/BrainStem.glb"
+  },
+  {
+   "name": "Earth",
+   "url_gltf": "models/Earth.glb"
+  },
+  {
+   "name": "Lantern",
+   "url_gltf": "models/Lantern.glb"
+  },
+  {
+   "name": "2CylinderEngine",
+   "url_gltf": "models/2CylinderEngine.glb"
+  },
+  {
+   "name": "BoomBox",
+   "url_gltf": "models/BoomBox.glb"
+  },
+  {
+   "name": "AntiqueCamera",
+   "url_gltf": "models/AntiqueCamera.glb"
+  }
+ ]
+}

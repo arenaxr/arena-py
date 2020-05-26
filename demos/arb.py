@@ -2,15 +2,11 @@
 #
 # AR Builder
 # Pass in args for scene name and/or broker and realm.
-# Left click/tilt: cycle builder modes.
-# Right click/tilt: cycle mode options.
-# Mouse/reticle click/tap: activate mode action.
 
 # future:
 #    occlude/unocclude scene (non-persist)
 #    worklight on/off
 #    rotate
-#    color palette
 #    level meter 3dof
 #    rotate controls to camera
 #    subscribe to all mouseenter/leave
@@ -18,28 +14,33 @@
 
 # TODO: arena: https://xr.andrew.cmu.edu/go/ interface to add AR builder
 # TODO: arena: https://xr.andrew.cmu.edu/build.html go to page from edit function
-# TODO: arb: cleanup of scene method
-# TODO: arb: Add args for broker and realm.
+# TODO: arena: Send kill signal to display on exit or crash?
 # TODO: arena: add ability to catch all mousemoves, even w/o click-listener
 # TODO: arena: move relative position lock into server js to...
 # TODO: ...prevent latency follow lock outside click/reticle
+# TODO: arena: enable data:source in callback for ClickEvent
+# TODO: arena: Dead man switch timer ttl revealed when not
+# TODO: arb: cleanup of scene method
+# TODO: arb: Add args for broker and realm.
 # TODO: arb: what is source of origin reset in XR?
-# TODO: arb: fix follow unlock position relative, not default
+# TODO: *arb: fix follow unlock position relative, not default
 # TODO: arb: why is AR click sometimes hard to fire?
 # TODO: arb: handle click-listener objects with 1.1 x scale shield?
 # TODO: *arb: nudge-line unclickable in AR
-# TODO: arb: models in clipboard origin may be outside reticle
-# TODO: *arb: shapes panel
 # TODO: arb: models panel
-# TODO: arb: Send kill signal to display on exit or crash?
-# TODO: arb: Scale all with three dof
-# TODO: arb: Rotate placeholder
+# TODO: *arb: Scale all with three dof
 # TODO: arb: Latency bottom corner camera control updates
-# TODO: arb: recreated button child text not rendering
-# TODO: arena: enable data:source in callback for ClickEvent
-# TODO: arb: make better use of event callbacks
-# TODO: *arb: drop select on/off could be more generic/reusable
-# TODO: *arb: color prototype needs more thought
+# TODO: arb: gridlines on floor/ceiling, circles follow position
+# TODO: arb: hud update of position
+# TODO: arb: Show light sources
+# TODO: arb: Is camera inside a shape?
+# TODO: *arb: document theory/structure of builder
+# TODO: *arb: are other users prevented from clicking others buttons?
+# TODO: *arb: add easy doc overlay for each button operation
+# TODO: arb: keep local array of persist to prevent call updates each time?
+# TODO: *arb: models in clipboard origin may be outside reticle
+# TODO: *arb: dropdown rows should expand for options beyond eight perhaps
+
 
 import arena
 import argparse
@@ -63,6 +64,12 @@ CLIP_RADIUS = 1.25
 PANEL_RADIUS = 1
 LOCK_XOFF = 0
 LOCK_YOFF = 0.7
+CLR_HUDTEXT = (200, 200, 200)
+CLR_NUDGE = (255, 255, 0)
+CLR_SELECT = (255, 255, 0)
+CLR_ENABLED = (255, 255, 255)
+CLR_DISABLED = (128, 128, 128)
+SCL_GLTF = (0.5, 0.5, 0.5)
 
 COLORS = ["ffffff", "ff0000", "ffa500", "ffff00", "00ff00",
           "0000ff", "4b0082", "800080", "a52a2a", "000000"]
@@ -81,8 +88,8 @@ SHAPES = [arena.Shape.sphere.value,
           arena.Shape.ring.value,
           arena.Shape.triangle.value,
           ]
-
-MODELS = [{  # default model, if none loaded
+MODELS = []
+manifest = [{  # default model, if none loaded
     "name": "duck",
     "url_gltf": "models/Duck.glb",
 }]
@@ -112,16 +119,11 @@ class User:
         self.camname = camname
         self.mode = Mode.NONE
         self.target_id = None
-        self.target_style = "ffffff"
-        self.models_idx = 0
+        self.target_style = ""
         self.locky = LOCK_YOFF
         self.lockx = LOCK_XOFF
 
-        # origin object
-        arena.Object(objType=arena.Shape.cube, objName="arb-origin",
-                     data='{"material": {"transparent": true, "opacity": 0.3}}',
-                     location=(0, 0, 0), color=(255, 0, 0),
-                     scale=(0.1, 0.1, 0.1))
+        initOrigin()
 
         # set HUD to each user
         self.clipboard = set_clipboard(camname)
@@ -147,29 +149,37 @@ class User:
         followName = self.follow.objName
         self.dbuttons = []
         buttons = [
-            Button(camname, Mode.LOCK, "lock", 0, 0, parent=followName),
-            Button(camname, Mode.SCALE, "scale", 0, -1, parent=followName,
+            Button(camname, Mode.LOCK, "lock", 0, 0,
+                   parent=followName, callback=panel_callback, ),
+            Button(camname, Mode.SCALE, "scale", 0, -1, parent=followName, callback=panel_callback,
                    enable=False),
-            Button(camname, Mode.CREATE, "create", 1, 1, parent=followName),
-            Button(camname, Mode.DELETE, "delete", 1, 0, parent=followName),
-            Button(camname, Mode.MODEL, "model",  0, 1, parent=followName),
-            Button(camname, Mode.MOVE, "move", -1, 0, parent=followName),
-            Button(camname, Mode.NUDGE, "nudge",  -1, 1, parent=followName),
-            Button(camname, Mode.COLOR, "color", 1, -1, parent=followName),
-            Button(camname, Mode.OCCLUDE, "occlude", -1, -1, parent=followName,
+            Button(camname, Mode.CREATE, "create", 1, 1,
+                   parent=followName, callback=panel_callback),
+            Button(camname, Mode.DELETE, "delete", 1, 0,
+                   parent=followName, callback=panel_callback),
+            Button(camname, Mode.MODEL, "model",  0, 1,
+                   parent=followName, callback=panel_callback),
+            Button(camname, Mode.MOVE, "move", -1, 0,
+                   parent=followName, callback=panel_callback),
+            Button(camname, Mode.NUDGE, "nudge",  -1, 1,
+                   parent=followName, callback=panel_callback),
+            Button(camname, Mode.COLOR, "color", 1, -1,
+                   parent=followName, callback=panel_callback),
+            Button(camname, Mode.OCCLUDE, "occlude", -1, -1, parent=followName, callback=panel_callback,
                    enable=False),
-            Button(camname, Mode.ROTATE, "rotate", -2, 0, parent=followName,
+            Button(camname, Mode.ROTATE, "rotate", -2, 0, parent=followName, callback=panel_callback,
                    enable=False),
-            Button(camname, Mode.EDIT, "edit", -2, -1, parent=followName,
+            Button(camname, Mode.EDIT, "edit", -2, -1, parent=followName, callback=panel_callback,
                    enable=False),
-            Button(camname, Mode.COLLAPSE, "collapse", -2, 1, parent=followName,
+            Button(camname, Mode.COLLAPSE, "collapse", -2, 1, parent=followName, callback=panel_callback,
                    enable=False),
         ]
         for b in buttons:
             self.panel[b.button.objName] = b
 
         # panic button, to reset
-        self.panic = Button(camname, Mode.PANIC, "Panic")
+        self.panic = Button(camname, Mode.PANIC, "Panic",
+                            callback=panic_callback)
 
     def makeHudText(self, camname, label, location, text):
         return arena.Object(
@@ -178,21 +188,20 @@ class User:
             parent=camname,
             data='{"text":"' + text + '"}',
             location=location,
-            color=(200, 200, 200),
+            color=CLR_HUDTEXT,
             scale=(0.1, 0.1, 0.1),
         )
 
     def setTextLeft(self, mode):
         self.hudTextLeft.update(data='{"text":"' + str(mode) + '"}')
 
-    def setTextRight(self, text, hcolor="ffffff"):
-        color = tuple(int(hcolor[i:i + 2], 16) for i in (0, 2, 4))
+    def setTextRight(self, text, color=CLR_HUDTEXT):
         self.hudTextRight.update(data='{"text":"' + text + '"}', color=color)
 
 
 class Button:
     def __init__(self, camname, mode, label, x=0, y=0, parent=None,
-                 drop=None, hcolor="ffffff", enable=True, callback=None):
+                 drop=None, color=CLR_ENABLED, enable=True, callback=None):
         if parent == None:
             parent = camname
             scale = (0.1, 0.1, 0.01)
@@ -200,11 +209,15 @@ class Button:
             scale = (1, 1, 1)
         self.enabled = enable
         if enable:
-            colorbut = hcolor
-            colortxt = "ffffff"
+            self.colorbut = color
+            self.colortxt = CLR_ENABLED
         else:
-            colorbut = colortxt = "808080"
-
+            self.colorbut = CLR_DISABLED
+            self.colortxt = CLR_DISABLED
+        if len(label) > 8:  # easier to read
+            self.label = label[:6] + "..."
+        else:
+            self.label = label
         self.mode = mode
         self.dropdown = drop
         self.on = False
@@ -212,8 +225,6 @@ class Button:
             objName = "button_" + mode.value + "_" + camname
         else:
             objName = "button_" + mode.value + "_" + drop + "_" + camname
-        self.colorbut = tuple(int(colorbut[i:i + 2], 16) for i in (0, 2, 4))
-        self.colortxt = tuple(int(colortxt[i:i + 2], 16) for i in (0, 2, 4))
         self.button = arena.Object(  # cube is main button
             objName=objName,
             objType=arena.Shape.cube,
@@ -232,7 +243,7 @@ class Button:
             objName=("text_" + self.button.objName),
             objType=arena.Shape.text,
             parent=self.button.objName,
-            data='{"text":"' + label + '"}',
+            data='{"text":"' + self.label + '"}',
             location=(0, 0, -0.1),  # location inside to prevent ray events
             color=self.colortxt,
             scale=(1, 1, 1),
@@ -241,13 +252,19 @@ class Button:
     def setOn(self, on):
         self.on = on
         if on:
-            self.text.update(color=(255, 0, 0))
+            self.button.update(color=CLR_SELECT)
         else:
+            self.button.update(color=CLR_ENABLED)
             self.text.update(color=self.colortxt)
+
+    def delete(self):
+        # provide a delete method so that child text object also gets deleted
+        self.text.delete()
+        self.button.delete()
 
 
 def initArgs():
-    global args, SCENE, MODELS
+    global args, SCENE, MODELS, manifest
 
     parser = argparse.ArgumentParser(description='ARENA AR Builder.')
     parser.add_argument('scene', type=str, help='ARENA scene name')
@@ -261,10 +278,35 @@ def initArgs():
     if args.models is not None:
         f = open(args.models[0])
         data = json.load(f)
+        MODELS = []
         for i in data['models']:
             print(i)
         f.close()
-        MODELS = data['models']
+        manifest = data['models']
+
+    for i in manifest:
+        MODELS.append(i['name'])
+
+
+def initOrigin():
+    # origin object, construction cone
+    c = [0.2, 0.4, 0.2]
+    cone = arena.Object(  # 370mm x 370mm # 750mm
+        objType=arena.Shape.cone, objName="arb-origin", data='{"material": {"transparent":true,"shader":"flat","opacity":0.8}}',
+        color=(255, 114, 33),
+        location=(0, c[1] / 2, 0),
+        scale=(c[0] / 2, c[1], c[2] / 2))
+    hole = arena.Object(
+        objType=arena.Shape.cone, objName="arb-origin-hole",
+        data='{"material":{"colorWrite":false},"render-order":"0"}',
+        location=(0, c[1] - (c[1] / 2 / 15), 0),
+        scale=(c[0] / 15, c[1] / 10, c[2] / 15))
+    base = arena.Object(
+        objType=arena.Shape.cube, objName="arb-origin-base",
+        data='{"material": {"transparent":true,"shader":"flat","opacity":0.8}}',
+        color=(0, 0, 0),
+        location=(0, c[1] / 20, 0),
+        scale=(c[0], c[1] / 10, c[2]))
 
 
 def randcolor():
@@ -278,7 +320,7 @@ def set_clipboard(camname,
                   type=arena.Shape.sphere,
                   rotation=(0, 0, 0, 1),
                   scale=(0.05, 0.05, 0.05),
-                  color=(255, 255, 255),
+                  color=CLR_ENABLED,
                   url="",
                   ):
     return arena.Object(
@@ -292,6 +334,7 @@ def set_clipboard(camname,
         data='{"material": {"transparent": true, "opacity": 0.3}}',
         url=url,
         clickable=True,
+        callback=clipboard_callback,
     )
 
 
@@ -352,8 +395,14 @@ def deleteObj(object_id):
     modifyPersistedObj(object_id, "Deleted", action="delete")
 
 
-def doModeChange(camname, objId):
+def panel_callback(event=None):  # TODO: ClickEvent not GenericEvent
     global users
+    if event.event_type != arena.EventType.mousedown:
+        return
+
+    o = event.object_id.split("_")
+    camname = o[2] + "_" + o[3] + "_" + o[4]  # reconstruct data.source
+    objId = event.object_id
 
     # ignore disabled
     if not users[camname].panel[objId].enabled:
@@ -373,86 +422,101 @@ def doModeChange(camname, objId):
         users[camname].mode = mode
 
     users[camname].setTextLeft(users[camname].mode)
-    rText = ""
+    users[camname].setTextRight("")
     users[camname].target_id = None
     users[camname].clipboard.delete()
+
+    # always clear last dropdown
+    for b in users[camname].dbuttons:
+        b.delete()
+    users[camname].dbuttons.clear()
 
     # make/unmake camera tracking objects
     if mode == Mode.CREATE:
         updateDropDown(camname, objId, mode, SHAPES, 2, shapes_callback)
-    elif mode == Mode.MODEL:
-        url = MODELS[users[camname].models_idx]['url_gltf']
         users[camname].clipboard = set_clipboard(
-            camname, type=arena.Shape.gltf_model, scale=(0.1, 0.1, 0.1),
+            camname, type=arena.Shape(users[camname].target_style))
+    elif mode == Mode.MODEL:
+        updateDropDown(camname, objId, mode, MODELS, 2, models_callback)
+        idx = MODELS.index(users[camname].target_style)
+        url = manifest[idx]['url_gltf']
+        users[camname].clipboard = set_clipboard(
+            camname, type=arena.Shape.gltf_model, scale=SCL_GLTF,
             url=url)
-        rText = os.path.basename(url)
     elif mode == Mode.COLOR:
         updateDropDown(camname, objId, mode, COLORS, -2, colors_callback)
     elif mode == Mode.LOCK:
-        users[camname].panel[objId].button.update(color=randcolor())
         users[camname].follow_lock = not users[camname].follow_lock
-        # after lock ensure original ray keeps lock button in reticle
-
-    users[camname].setTextRight(rText)
+        users[camname].panel[objId].setOn(users[camname].follow_lock)
+        # TODO: after lock ensure original ray keeps lock button in reticle
 
 
 def updateDropDown(camname, objId, mode, options, row, callback):
     global users
+    # show new dropdown
     if users[camname].panel[objId].on:
         followName = users[camname].follow.objName
         dropBtnOffset = -math.floor(len(options) / 2)
         for i in range(len(options)):
             if mode is Mode.COLOR:
-                hcolor = options[i]
+                bcolor = tuple(int(options[i][c:c + 2], 16) for c in (0, 2, 4))
             else:
-                hcolor = "ffffff"
+                bcolor = CLR_SELECT
             dbutton = Button(camname, mode,
                              options[i], i + dropBtnOffset, row,
-                             parent=followName, hcolor=hcolor,
+                             parent=followName, color=bcolor,
                              drop=options[i], callback=callback)
             users[camname].dbuttons.append(dbutton)
+        # make default selection
+        if mode is Mode.COLOR:
+            rcolor = tuple(int(options[0][c:c + 2], 16) for c in (0, 2, 4))
+        else:
+            rcolor = CLR_HUDTEXT
+        users[camname].setTextRight(options[0], color=rcolor)
+        users[camname].target_style = options[0]
 
-        style = users[camname].target_style = options[0]
-        users[camname].setTextRight("#" + style, hcolor=hcolor)
-    else:
-        for b in users[camname].dbuttons:
-            b.button.delete()
-        users[camname].dbuttons.clear()
+
+def models_callback(event=None):  # TODO: ClickEvent not GenericEvent
+    global users
+    if event.event_type != arena.EventType.mousedown:
+        return
+
+    o = event.object_id.split("_")
+    camname = o[3] + "_" + o[4] + "_" + o[5]  # reconstruct data.source
+    model = o[2]
+    idx = MODELS.index(model)
+    url = manifest[idx]['url_gltf']
+    users[camname].clipboard = set_clipboard(
+        camname, type=arena.Shape.gltf_model, scale=SCL_GLTF,
+        url=url)
+    users[camname].setTextRight(model)
+    users[camname].target_style = model
 
 
 def shapes_callback(event=None):  # TODO: ClickEvent not GenericEvent
     global users
-
-    if event.event_type == arena.EventType.mousedown:
-        o = event.object_id.split("_")
-        camname = o[3] + "_" + o[4] + "_" + o[5]  # reconstruct data.source
-        shape = arena.Shape(o[2])
-        users[camname].clipboard = set_clipboard(camname, type=shape)
-        users[camname].setTextRight(str(users[camname].clipboard.objType))
-        users[camname].target_style = shape
-    else:
+    if event.event_type != arena.EventType.mousedown:
         return
+
+    o = event.object_id.split("_")
+    camname = o[3] + "_" + o[4] + "_" + o[5]  # reconstruct data.source
+    shape = o[2]
+    users[camname].clipboard = set_clipboard(camname, type=arena.Shape(shape))
+    users[camname].setTextRight(shape)
+    users[camname].target_style = shape
 
 
 def colors_callback(event=None):  # TODO: ClickEvent not GenericEvent
     global users
-
-    if event.event_type == arena.EventType.mousedown:
-        o = event.object_id.split("_")
-        camname = o[3] + "_" + o[4] + "_" + o[5]  # reconstruct data.source
-        hcolor = o[2]
-        users[camname].setTextRight("#" + hcolor, hcolor=hcolor)
-        users[camname].target_style = hcolor
-    else:
+    if event.event_type != arena.EventType.mousedown:
         return
 
-
-def getClickLocation(jsonMsg):
-    click = jsonMsg["data"]["position"]
-    pos_x = click["x"]
-    pos_y = click["y"]
-    pos_z = click["z"]
-    return (pos_x, pos_y, pos_z)
+    o = event.object_id.split("_")
+    camname = o[3] + "_" + o[4] + "_" + o[5]  # reconstruct data.source
+    hcolor = o[2]
+    color = tuple(int(hcolor[c:c + 2], 16) for c in (0, 2, 4))
+    users[camname].setTextRight(hcolor, color=color)
+    users[camname].target_style = hcolor
 
 
 def doMoveSelect(camname, object_id):
@@ -466,8 +530,8 @@ def doMoveSelect(camname, object_id):
     scale = (prop[0]["attributes"]["scale"]["x"],
              prop[0]["attributes"]["scale"]["y"],
              prop[0]["attributes"]["scale"]["z"])
-    hClr = prop[0]["attributes"]["color"].lstrip('#')
-    color = tuple(int(hClr[i:i + 2], 16) for i in (0, 2, 4))
+    hcolor = prop[0]["attributes"]["color"].lstrip('#')
+    color = tuple(int(hcolor[c:c + 2], 16) for c in (0, 2, 4))
     users[camname].clipboard = set_clipboard(
         camname,
         type=arena.Shape(prop[0]["attributes"]["object_type"]),
@@ -479,7 +543,6 @@ def doMoveSelect(camname, object_id):
 
 
 def doNudgeSelect(camname, object_id):
-    print("nudge select")
     global users
     prop = getNetworkPersistedObject(object_id)
     users[camname].target_id = object_id
@@ -505,19 +568,18 @@ def makeNudgeLine(deg, linelen, object_id):
         ey = linelen
     elif (deg == "z"):
         ez = linelen
-    # TODO: don't recreate child lines if they already exist
     nline = arena.Object(
         objType=arena.Shape.line,
         objName=(object_id + "_nudge_" + deg + dir),
         parent=object_id,
         data=('{"start": {"x":0,"y":0,"z":0}, ' +
               '"end": {"x":' + str(ex) + ',"y":' + str(ey) + ',"z":' + str(ez) + '}}'),
-        color=(255, 255, 0),
+        color=CLR_NUDGE,
         clickable=True,
         ttl=30,
         callback=nudge_callback,
     )
-    handle = arena.Object(  # TODO: temp object that is clickable in AR
+    handle = arena.Object(  # TODO: temp object that is clickable in AR?
         objType=arena.Shape.sphere,
         objName=(nline.objName + "_handle"),
         parent=object_id,
@@ -530,9 +592,8 @@ def makeNudgeLine(deg, linelen, object_id):
     )
 
 
-def doMoveRelocate(camname, jsonMsg):
+def doMoveRelocate(camname, newlocation):
     global users
-    newlocation = getClickLocation(jsonMsg)
     moveObj(users[camname].target_id, newlocation)
     users[camname].clipboard.delete()
     users[camname].target_id = None
@@ -556,39 +617,34 @@ def nudge_n(n):
 
 def nudge_callback(event=None):  # TODO: ClickEvent not GenericEvent
     global users
-
-    if event.event_type == arena.EventType.mousedown:
-        print("nudge it")
-        nudge_id = event.object_id.split("_nudge_")
-        object_id = nudge_id[0]
-        dir = (nudge_id[1])[:2]
-        prop = getNetworkPersistedObject(object_id)
-        loc = (prop[0]["attributes"]["position"]["x"],
-               prop[0]["attributes"]["position"]["y"],
-               prop[0]["attributes"]["position"]["z"])
-        nudged = loc
-        if (dir == "xp"):
-            nudged = (nudge_p(loc[0]), loc[1], loc[2])
-        elif (dir == "xn"):
-            nudged = (nudge_n(loc[0]), loc[1], loc[2])
-        elif (dir == "yp"):
-            nudged = (loc[0], nudge_p(loc[1]), loc[2])
-        elif (dir == "yn"):
-            nudged = (loc[0], nudge_n(loc[1]), loc[2])
-        elif (dir == "zp"):
-            nudged = (loc[0], loc[1], nudge_p(loc[2]))
-        elif (dir == "zn"):
-            nudged = (loc[0], loc[1], nudge_n(loc[2]))
-        print(str(loc) + " to " + str(nudged))
-        moveObj(object_id, nudged)
-    else:
+    if event.event_type != arena.EventType.mousedown:
         return
 
+    nudge_id = event.object_id.split("_nudge_")
+    object_id = nudge_id[0]
+    dir = (nudge_id[1])[:2]
+    prop = getNetworkPersistedObject(object_id)
+    loc = (prop[0]["attributes"]["position"]["x"],
+           prop[0]["attributes"]["position"]["y"],
+           prop[0]["attributes"]["position"]["z"])
+    nudged = loc
+    if (dir == "xp"):
+        nudged = (nudge_p(loc[0]), loc[1], loc[2])
+    elif (dir == "xn"):
+        nudged = (nudge_n(loc[0]), loc[1], loc[2])
+    elif (dir == "yp"):
+        nudged = (loc[0], nudge_p(loc[1]), loc[2])
+    elif (dir == "yn"):
+        nudged = (loc[0], nudge_n(loc[1]), loc[2])
+    elif (dir == "zp"):
+        nudged = (loc[0], loc[1], nudge_p(loc[2]))
+    elif (dir == "zn"):
+        nudged = (loc[0], loc[1], nudge_n(loc[2]))
+    print(str(loc) + " to " + str(nudged))
+    moveObj(object_id, nudged)
 
-def createObj(clipboard, jsonMsg):
-    # first way, place object at clickable clipboard
-    location = getClickLocation(jsonMsg)
 
+def createObj(clipboard, location):
     randstr = str(random.randrange(0, 1000000))
     # make a copy of static object in place
     newObj = arena.Object(
@@ -603,6 +659,34 @@ def createObj(clipboard, jsonMsg):
         url=clipboard.url,
         clickable=True)
     print("Created " + newObj.objName)
+
+
+def clipboard_callback(event=None):  # TODO: ClickEvent not GenericEvent
+    global users
+    if event.event_type != arena.EventType.mousedown:
+        return
+
+    o = event.object_id.split("_")
+    camname = o[1] + "_" + o[2] + "_" + o[3]  # reconstruct data.source
+    location = event.position
+    # clicked self HUD clipboard
+    if users[camname].mode == Mode.CREATE or users[camname].mode == Mode.MODEL:
+        createObj(users[camname].clipboard, location)
+    elif users[camname].mode == Mode.MOVE:
+        doMoveRelocate(camname, location)
+
+
+def panic_callback(event=None):  # TODO: ClickEvent not GenericEvent
+    global users
+    if event.event_type != arena.EventType.mousedown:
+        return
+
+    o = event.object_id.split("_")
+    camname = o[2] + "_" + o[3] + "_" + o[4]  # reconstruct data.source
+    # control panel panic button
+    users[camname].locky = LOCK_YOFF
+    users[camname].lockx = LOCK_XOFF
+    users[camname].follow_lock = False
 
 
 def scene_callback(msg):
@@ -661,31 +745,8 @@ def scene_callback(msg):
         elif jsonMsg["type"] == "mousedown":
             objId = jsonMsg["object_id"]
 
-            if "nudge" in objId:
-                print(msg)
-
-            # floating control panel
-            if objId in users[camname].panel:
-                doModeChange(camname, objId)
-
-            # control panel panic button
-            elif objId == users[camname].panic.button.objName:
-                users[camname].panic.button.update(color=randcolor())
-                users[camname].locky = LOCK_YOFF
-                users[camname].lockx = LOCK_XOFF
-                users[camname].follow_lock = False
-
-            # clicked self HUD clipboard
-            elif objId == users[camname].clipboard.objName:
-                if users[camname].mode == Mode.CREATE:
-                    createObj(users[camname].clipboard, jsonMsg)
-                elif users[camname].mode == Mode.MODEL:
-                    createObj(users[camname].clipboard, jsonMsg)
-                elif users[camname].mode == Mode.MOVE:
-                    doMoveRelocate(camname, jsonMsg)
-
-            # clicked another scene object
-            elif len(objId) > 0:
+            # clicked on persisted object to modify
+            if len(objId) > 0:
                 if users[camname].mode == Mode.DELETE:
                     deleteObj(objId)
                 elif users[camname].mode == Mode.MOVE:

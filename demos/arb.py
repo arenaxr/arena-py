@@ -218,7 +218,7 @@ class Button:
             objName=objName,
             objType=arena.Shape.cube,
             parent=parent,
-            data=('{"material": {"transparent":true,"opacity":0.4}'
+            data=('{"material":{"transparent":true,"shader":"flat","opacity":0.4}'
                   #',"sound": {"positional":true,"poolSize":8,"volume":0.1,'
                   #'"src":"' + CLICK_SND + '","on":"mousedown"}'
                   '}'),

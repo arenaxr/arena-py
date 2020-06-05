@@ -233,6 +233,7 @@ class EventType(enum.Enum):
 class ObjectType(enum.Enum):
     object = "object"
     rig = "rig"
+    bone = "bone"
 
 class EventAction(enum.Enum):
     """Kinds of actions"""
@@ -342,6 +343,49 @@ class updateRig:
                 },
             },
         }
+        if debug_toggle:
+            print(json.dumps(MESSAGE))
+        arena_publish(scene_path, MESSAGE)
+
+
+class updateBone:
+    object_id = ""
+    bone_id = ""
+    position = None
+    rotation = None
+    scale = None
+    def __init__(self, object_id=object_id, bone_id=bone_id, position=position, rotation=rotation, scale=scale):
+        global debug_toggle
+        MESSAGE = {
+            "object_id": object_id,
+            "bone": bone_id,
+            "action": "update",
+            "type": "bone",
+            "data": {}
+        }
+        if (position != None):
+            pos = {
+                "x": position[0],
+                "y": position[1],
+                "z": position[2]
+            }
+            MESSAGE["data"]["position"]=pos
+        if (rotation != None):
+            rot= {
+                "x": rotation[0],
+                "y": rotation[1],
+                "z": rotation[2],
+                "w": rotation[3]
+                }
+            MESSAGE["data"]["rotation"] = rot
+        if (scale != None):
+            sc = {
+                "x": scale[0],
+                "y": scale[1],
+                "z": scale[2]
+                }
+            MESSAGE["data"]["scale"] = sc
+                
         if debug_toggle:
             print(json.dumps(MESSAGE))
         arena_publish(scene_path, MESSAGE)

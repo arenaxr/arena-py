@@ -215,10 +215,12 @@ def draw_ray(click_pos, position):
     line = arena.Object(
         objName="line1",
         ttl=1,
-        objType=arena.Shape.line,
-        line=arena.Line( # slightly below camera so you can see line vs head-on
-            (click_pos[0],click_pos[1]-0.1,click_pos[2]),
-            (position[0],position[1],position[2]),1,"#FFFFFF")
+        objType=arena.Shape.thickline,
+        thickline=arena.Thickline( # slightly below camera so you can see line vs head-on
+            {
+                (click_pos[0],click_pos[1]-0.2,click_pos[2]),
+                (position[0],position[1],position[2])
+            },5,"#FF00FF")
     )
 
 

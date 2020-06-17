@@ -3,7 +3,7 @@ Draw objects in the ARENA using python.
 
 Install required packages:
 ```
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 (on my linux box only had to run `sudo apt-get install python3-paho-mqtt`)
 

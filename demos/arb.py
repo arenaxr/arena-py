@@ -35,7 +35,6 @@
 # TODO: arb: Show light sources
 # TODO: arb: Is camera inside a shape?
 # TODO: *arb: document theory/structure of builder
-# TODO: *arb: are other users prevented from clicking others buttons?
 # TODO: *arb: add easy doc overlay for each button operation
 # TODO: arb: keep local array of persist to prevent call updates each time?
 # TODO: *arb: models in clipboard origin may be outside reticle
@@ -395,13 +394,16 @@ def deleteObj(object_id):
     modifyPersistedObj(object_id, "Deleted", action="delete")
 
 
-def panel_callback(event=None):  # TODO: ClickEvent not GenericEvent
+def panel_callback(event=None):
     global users
     if event.event_type != arena.EventType.mousedown:
         return
-
     o = event.object_id.split("_")
-    camname = o[2] + "_" + o[3] + "_" + o[4]  # reconstruct data.source
+    camname = event.source
+    owner = o[2] + "_" + o[3] + "_" + o[4]  # callback owner in object_id
+    print(camname+" "+owner)
+    if owner != camname:
+        return  # only owner may activate
     objId = event.object_id
 
     # ignore disabled
@@ -476,13 +478,15 @@ def updateDropDown(camname, objId, mode, options, row, callback):
         users[camname].target_style = options[0]
 
 
-def models_callback(event=None):  # TODO: ClickEvent not GenericEvent
+def models_callback(event=None):
     global users
     if event.event_type != arena.EventType.mousedown:
         return
-
     o = event.object_id.split("_")
-    camname = o[3] + "_" + o[4] + "_" + o[5]  # reconstruct data.source
+    camname = event.source
+    owner = o[3] + "_" + o[4] + "_" + o[5]  # callback owner in object_id
+    if owner != camname:
+        return  # only owner may activate
     model = o[2]
     idx = MODELS.index(model)
     url = manifest[idx]['url_gltf']
@@ -493,26 +497,30 @@ def models_callback(event=None):  # TODO: ClickEvent not GenericEvent
     users[camname].target_style = model
 
 
-def shapes_callback(event=None):  # TODO: ClickEvent not GenericEvent
+def shapes_callback(event=None):
     global users
     if event.event_type != arena.EventType.mousedown:
         return
-
     o = event.object_id.split("_")
-    camname = o[3] + "_" + o[4] + "_" + o[5]  # reconstruct data.source
+    camname = event.source
+    owner = o[3] + "_" + o[4] + "_" + o[5]  # callback owner in object_id
+    if owner != camname:
+        return  # only owner may activate
     shape = o[2]
     users[camname].clipboard = set_clipboard(camname, type=arena.Shape(shape))
     users[camname].setTextRight(shape)
     users[camname].target_style = shape
 
 
-def colors_callback(event=None):  # TODO: ClickEvent not GenericEvent
+def colors_callback(event=None):
     global users
     if event.event_type != arena.EventType.mousedown:
         return
-
     o = event.object_id.split("_")
-    camname = o[3] + "_" + o[4] + "_" + o[5]  # reconstruct data.source
+    camname = event.source
+    owner = o[3] + "_" + o[4] + "_" + o[5]  # callback owner in object_id
+    if owner != camname:
+        return  # only owner may activate
     hcolor = o[2]
     color = tuple(int(hcolor[c:c + 2], 16) for c in (0, 2, 4))
     users[camname].setTextRight(hcolor, color=color)
@@ -615,11 +623,11 @@ def nudge_n(n):
     return float(format(r, '.1f'))
 
 
-def nudge_callback(event=None):  # TODO: ClickEvent not GenericEvent
+def nudge_callback(event=None):
     global users
     if event.event_type != arena.EventType.mousedown:
         return
-
+    # allow any user to nudge an object
     nudge_id = event.object_id.split("_nudge_")
     object_id = nudge_id[0]
     dir = (nudge_id[1])[:2]
@@ -661,13 +669,15 @@ def createObj(clipboard, location):
     print("Created " + newObj.objName)
 
 
-def clipboard_callback(event=None):  # TODO: ClickEvent not GenericEvent
+def clipboard_callback(event=None):
     global users
     if event.event_type != arena.EventType.mousedown:
         return
-
     o = event.object_id.split("_")
-    camname = o[1] + "_" + o[2] + "_" + o[3]  # reconstruct data.source
+    camname = event.source
+    owner = o[1] + "_" + o[2] + "_" + o[3]  # callback owner in object_id
+    if owner != camname:
+        return  # only owner may activate
     location = event.position
     # clicked self HUD clipboard
     if users[camname].mode == Mode.CREATE or users[camname].mode == Mode.MODEL:
@@ -676,13 +686,15 @@ def clipboard_callback(event=None):  # TODO: ClickEvent not GenericEvent
         doMoveRelocate(camname, location)
 
 
-def panic_callback(event=None):  # TODO: ClickEvent not GenericEvent
+def panic_callback(event=None):
     global users
     if event.event_type != arena.EventType.mousedown:
         return
-
     o = event.object_id.split("_")
-    camname = o[2] + "_" + o[3] + "_" + o[4]  # reconstruct data.source
+    camname = event.source
+    owner = o[2] + "_" + o[3] + "_" + o[4]  # callback owner in object_id
+    if owner != camname:
+        return  # only owner may activate
     # control panel panic button
     users[camname].locky = LOCK_YOFF
     users[camname].lockx = LOCK_XOFF

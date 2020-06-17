@@ -65,9 +65,8 @@ def process_message(msg):
                 Pos = (MESSAGE["data"]["position"]["x"],MESSAGE["data"]["position"]["y"],MESSAGE["data"]["position"]["z"])
             if ("rotation" in MESSAGE["data"]):
                 Rot = (MESSAGE["data"]["rotation"]["x"],MESSAGE["data"]["rotation"]["y"],MESSAGE["data"]["rotation"]["z"],MESSAGE["data"]["rotation"]["w"])
-        if ("source" in MESSAGE):
-            Src = MESSAGE["source"]
-
+            if ("source" in MESSAGE["data"]):
+                Src = MESSAGE["data"]["source"]
         # slight oversight: MQTT messages don't set 'type' for delete events
         if (Action == 'delete'):
             evtType = 'object'

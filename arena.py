@@ -49,6 +49,7 @@ def process_message(msg):
     clickPos=(0,0,0)
     Pos=(0,0,0)
     Rot=(0,0,0,1)
+    Src=""
 
     if object_id in callbacks:
 
@@ -64,6 +65,8 @@ def process_message(msg):
                 Pos = (MESSAGE["data"]["position"]["x"],MESSAGE["data"]["position"]["y"],MESSAGE["data"]["position"]["z"])
             if ("rotation" in MESSAGE["data"]):
                 Rot = (MESSAGE["data"]["rotation"]["x"],MESSAGE["data"]["rotation"]["y"],MESSAGE["data"]["rotation"]["z"],MESSAGE["data"]["rotation"]["w"])
+        if ("source" in MESSAGE):
+            Src = MESSAGE["source"]
 
         # slight oversight: MQTT messages don't set 'type' for delete events
         if (Action == 'delete'):
@@ -76,7 +79,8 @@ def process_message(msg):
             event_type=EventType[evtType],  # object/rig/mouseup/mousedown/mouseenter/mouseleave/collision/controller++
             position=Pos,
             rotation=Rot,
-            click_pos=clickPos)
+            click_pos=clickPos,
+            source=Src)
         callbacks[object_id](event_data)
 
     # else call general callback set at init time, for all messages
@@ -290,7 +294,7 @@ class Animation:
         self.repetitions = repetitions
         self.timeScale = timeScale
 
-        
+
 class GenericEvent:
     """Event data any ARENA event"""
     object_id = ""
@@ -300,8 +304,9 @@ class GenericEvent:
     position = (0, 0, 0)
     rotation = (0, 0, 0, 1)
     click_pos = (0, 0, 0)
+    source = ""
 
-    def __init__(self, object_id=object_id, event_action=event_action, event_type=event_type, update_type=update_type, position=position, rotation=rotation, click_pos=click_pos):
+    def __init__(self, object_id=object_id, event_action=event_action, event_type=event_type, update_type=update_type, position=position, rotation=rotation, click_pos=click_pos, source=source):
         self.object_id = object_id
         self.event_action = event_action
         self.event_type = event_type
@@ -309,18 +314,19 @@ class GenericEvent:
         self.position = position
         self.rotation = rotation
         self.click_pos = click_pos
-    
+        self.source = source
+
 class ClickEvent:
     """Event data e.g. mouse interaction"""
-
     object_id = ""
-    location = (0, 0, 0)
+    position = (0, 0, 0)
     click_pos = (0, 0, 0)
     event_type = EventType.mousedown
     source = ""
 
-    def __init__(self, location=location, click_pos=click_pos, event_type=event_type, source=source):
-        self.location = location
+    def __init__(self, object_id=object_id, position=position, click_pos=click_pos, event_type=event_type, source=source):
+        self.object_id = object_id
+        self.position = position
         self.click_pos=click_pos
         self.event_type = event_type
         self.source = source
@@ -385,7 +391,7 @@ class updateBone:
                 "z": scale[2]
                 }
             MESSAGE["data"]["scale"] = sc
-                
+
         if debug_toggle:
             print(json.dumps(MESSAGE))
         arena_publish(scene_path, MESSAGE)
@@ -394,7 +400,7 @@ class updateBone:
 def tuple_to_string(tuple):
     return str(tuple[0])+' '+str(tuple[1])+' '+str(tuple[2])
 
-        
+
 class Object:
     """Geometric shape object for the arena type Arena.Shape"""
 

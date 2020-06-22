@@ -16,24 +16,12 @@
    "url_sound": "https://xr.andrew.cmu.edu/audio/boing.wav"
   },
   {
-   "name": "BrainStem",
-   "url_gltf": "models/BrainStem.glb"
-  },
-  {
    "name": "Earth",
    "url_gltf": "models/Earth.glb"
   },
   {
    "name": "Lantern",
    "url_gltf": "models/Lantern.glb"
-  },
-  {
-   "name": "2CylinderEngine",
-   "url_gltf": "models/2CylinderEngine.glb"
-  },
-  {
-   "name": "BoomBox",
-   "url_gltf": "models/BoomBox.glb"
   },
   {
    "name": "AntiqueCamera",

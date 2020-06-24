@@ -182,6 +182,11 @@ def stop():
 #         print("its a sphere")
 
 
+def agran(float_num):
+    """Reduces floating point numbers to ARENA granularity."""
+    return round(float_num, 3)
+
+
 class Physics(enum.Enum):
     none = "none"
     static = "static"
@@ -339,12 +344,16 @@ class updateRig:
             "action": "update",
             "type": "rig",
             "data": {
-                "position": {"x": position[0], "y": position[1], "z": position[2]},
+                "position": {
+                    "x": agran(position[0]), 
+                    "y": agran(position[1]), 
+                    "z": agran(position[2])
+                    },
                 "rotation": {
-                    "x": rotation[0],
-                    "y": rotation[1],
-                    "z": rotation[2],
-                    "w": rotation[3],
+                    "x": agran(rotation[0]),
+                    "y": agran(rotation[1]),
+                    "z": agran(rotation[2]),
+                    "w": agran(rotation[3])
                 },
             },
         }
@@ -370,24 +379,24 @@ class updateBone:
         }
         if (position != None):
             pos = {
-                "x": position[0],
-                "y": position[1],
-                "z": position[2]
+                "x": agran(position[0]),
+                "y": agran(position[1]),
+                "z": agran(position[2])
             }
             MESSAGE["data"]["position"]=pos
         if (rotation != None):
             rot= {
-                "x": rotation[0],
-                "y": rotation[1],
-                "z": rotation[2],
-                "w": rotation[3]
+                "x": agran(rotation[0]),
+                "y": agran(rotation[1]),
+                "z": agran(rotation[2]),
+                "w": agran(rotation[3])
                 }
             MESSAGE["data"]["rotation"] = rot
         if (scale != None):
             sc = {
-                "x": scale[0],
-                "y": scale[1],
-                "z": scale[2]
+                "x": agran(scale[0]),
+                "y": agran(scale[1]),
+                "z": agran(scale[2])
                 }
             MESSAGE["data"]["scale"] = sc
 
@@ -601,9 +610,9 @@ class Object:
             "type": "object",
             "data": {
                 "position": {
-                    "x": self.location[0],
-                    "y": self.location[1],
-                    "z": self.location[2],
+                    "x": agran(self.location[0]),
+                    "y": agran(self.location[1]),
+                    "z": agran(self.location[2]),
                 }
             },
         }
@@ -626,17 +635,21 @@ class Object:
             "data": {
                 "object_type": self.objType.value,
                 "position": {
-                    "x": self.location[0],
-                    "y": self.location[1],
-                    "z": self.location[2],
+                    "x": agran(self.location[0]),
+                    "y": agran(self.location[1]),
+                    "z": agran(self.location[2])
                 },
                 "rotation": {
-                    "x": self.rotation[0],
-                    "y": self.rotation[1],
-                    "z": self.rotation[2],
-                    "w": self.rotation[3],
+                    "x": agran(self.rotation[0]),
+                    "y": agran(self.rotation[1]),
+                    "z": agran(self.rotation[2]),
+                    "w": agran(self.rotation[3])
                 },
-                "scale": {"x": self.scale[0], "y": self.scale[1], "z": self.scale[2]},
+                "scale": {
+                    "x": agran(self.scale[0]), 
+                    "y": agran(self.scale[1]), 
+                    "z": agran(self.scale[2])
+                    },
                 "color": color_str,
             },
         }
@@ -651,14 +664,14 @@ class Object:
                 }
         if self.line != None:
             MESSAGE["data"]["start"] = {
-                "x": self.line.start[0],
-                "y": self.line.start[1],
-                "z": self.line.start[2],
+                "x": agran(self.line.start[0]),
+                "y": agran(self.line.start[1]),
+                "z": agran(self.line.start[2])
             }
             MESSAGE["data"]["end"] = {
-                "x": self.line.end[0],
-                "y": self.line.end[1],
-                "z": self.line.end[2],
+                "x": agran(self.line.end[0]),
+                "y": agran(self.line.end[1]),
+                "z": agran(self.line.end[2])
             }
             MESSAGE["data"]["lineWidth"] = self.line.line_width
             MESSAGE["data"]["color"] = self.line.color
@@ -666,9 +679,9 @@ class Object:
             pathstring = ""
             for point in self.thickline.path:
                 pathstring = pathstring +\
-                             str(point[0])+' '+\
-                             str(point[1])+' '+\
-                             str(point[2])+','
+                             str(agran(point[0]))+' '+\
+                             str(agran(point[1]))+' '+\
+                             str(agran(point[2]))+','
             MESSAGE["data"]["path"] = pathstring.rstrip(',')
             MESSAGE["data"]["lineWidth"] = self.thickline.line_width
             MESSAGE["data"]["color"] = self.thickline.color

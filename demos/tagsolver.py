@@ -33,7 +33,7 @@ ORIGINTAG = [
     [1, 0, 0, 0],
     [0, 0, 1, 0],
     [0, -1, 0, 0],
-    [1, 0, 0, 1]
+    [0, 0, 0, 1]
 ]
 
 FLIP = [[1, 0, 0, 0],
@@ -188,6 +188,10 @@ def on_tag_detect(client, userdata, msg):
                     resp = requests.post(
                         TAG_URLBASE, json=new_tag, auth=HTTPBasicAuth("conix", "conix"),
                     )
+            print("Updating Tag %d", detected_tag.id)
+            print( ref_tag_pos )
+            print( ref_tag_rotq)
+
             mqtt_response = {
                 "object_id": "apriltag_" + str(detected_tag.id),
                 "action": "create",

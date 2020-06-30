@@ -49,3 +49,16 @@ You can import a json-formatted manifest of GLTF models to use on the **model** 
 python arb.py hello -m arb-manifest.json
 ```
 
+### MQTT Host and Realm
+By default all `arb` MQTT messages are published to the default message broker and topic (realm and scene you specify) using this scheme: 
+
+- *default broker*: `oz.andrew.cmu.edu`
+- *default topic*: `realm/s/hello`
+
+To use your own MQTT message broker (**-b**) and/or realm (**-r**):
+
+- *custom broker*: `arena-west1.conix.io`
+- *custom topic*: `foo/s/hello`
+```
+python arb.py hello -b arena-west1.conix.io -r foo
+```

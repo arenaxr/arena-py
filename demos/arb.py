@@ -8,10 +8,8 @@
 # TODO: rotate (with level meter 3Dof)
 # TODO: stretch (6Dof)
 # TODO: highlight mouseenter to avoid click
-# TODO: Add args for broker and realm.
 # TODO: fix follow unlock position relative, not default
 # TODO: handle click-listener objects with 1.1 x scale shield?
-# TODO: document theory/structure of builder
 # TODO: add easy doc overlay for each button operation
 # TODO: models in clipboard origin may be outside reticle
 
@@ -36,16 +34,25 @@ USERS = {}  # dictionary of user instances
 
 
 def init_args():
-    global SCENE, MODELS, MANIFEST
+    global BROKER, REALM, SCENE, MODELS, MANIFEST
     parser = argparse.ArgumentParser(description='ARENA AR Builder.')
-    parser.add_argument('scene', type=str, help='ARENA scene name')
-    parser.add_argument('-m', '--models', type=str, nargs=1,
-                        help='JSON GLTF manifest')
+    parser.add_argument(
+        'scene', type=str, help='ARENA scene name')
+    parser.add_argument(
+        '-b', '--broker', type=str, help='MQTT message broker hostname', default=BROKER)
+    parser.add_argument(
+        '-r', '--realm', type=str, help='ARENA realm name', default=REALM)
+    parser.add_argument(
+        '-m', '--models', type=str, help='JSON GLTF manifest')
     args = parser.parse_args()
     print(args)
     SCENE = args.scene
+    if args.broker is not None:
+        BROKER = args.broker
+    if args.realm is not None:
+        REALM = args.realm
     if args.models is not None:
-        mfile = open(args.models[0])
+        mfile = open(args.models)
         data = json.load(mfile)
         MODELS = []
         for i in data['models']:

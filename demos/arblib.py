@@ -10,29 +10,34 @@ import json
 import string
 import urllib.request
 
+from scipy.spatial.transform import Rotation
+
 import arena
 
-CLICKLINE_LEN = 1
-CLICKLINE_SCL = (1, 1, 1)
-FLOOR_Y = 0
-GRIDLEN = 20
-NUDGE_INCR = 0.1
-SCALE_INCR = 0.1
-CLIP_RADIUS = 1
-PANEL_RADIUS = 0.75
-LOCK_XOFF = 0
-LOCK_YOFF = 0.7
-TTL_TEMP = 30
-CLR_HUDTEXT = (200, 200, 200)
-CLR_NUDGE = (255, 255, 0)
-CLR_SCALE = (0, 0, 255)
-CLR_SELECT = (255, 255, 0)
-CLR_ENABLED = (255, 255, 255)
-CLR_DISABLED = (128, 128, 128)
-SCL_GLTF = (0.5, 0.5, 0.5)
+CLICKLINE_LEN = 1  # meters
+CLICKLINE_SCL = (1, 1, 1)  # meters
+FLOOR_Y = 0.001  # meters
+GRIDLEN = 20  # meters
+NUDGE_INCR = 0.1  # meters
+SCALE_INCR = 0.1  # meters
+ROTATE_INCR = 5  # degrees
+CLIP_RADIUS = 1  # meters
+PANEL_RADIUS = 0.75  # meters
+LOCK_XOFF = 0  # quaternion vector
+LOCK_YOFF = 0.7  # quaternion vector
+TTL_TEMP = 30  # seconds
+CLR_HUDTEXT = (200, 200, 200)  # light gray
+CLR_NUDGE = (255, 255, 0)  # yellow
+CLR_SCALE = (0, 0, 255)  # blue
+CLR_ROTATE = (255, 165, 0)  # orange
+CLR_SELECT = (255, 255, 0)  # yellow
+CLR_GRID = (0, 255, 0)  # green
+CLR_ENABLED = (255, 255, 255)  # white
+CLR_DISABLED = (128, 128, 128)  # gray
+SCL_GLTF = (0.5, 0.5, 0.5)  # meters
 QUAT_VEC_RGTS = [-0.7, -0.5, 0, 0.5, 0.7, 1]
 QUAT_DEV_RGT = 0.075
-WALL_WIDTH = 0.1
+WALL_WIDTH = 0.1  # meters
 
 GAZES = [
     [(0, 0, 0, 1), (0, 0, -0.7, 0.7), (0, 0, 1, 0), (0, 0, 0.7, 0.7),  # F
@@ -119,7 +124,7 @@ class User:
         self.hudtext_left = self.make_hudtext(
             "hudTextLeft", (-0.15, 0.15, -0.5), str(self.mode))
         self.hudtext_right = self.make_hudtext(
-            "hudTextRight", (0.15, 0.15, -0.5), "")
+            "hudTextRight", (0.1, 0.15, -0.5), "")
         self.hudtext_status = self.make_hudtext(
             "hudTextStatus", (0.02, -0.15, -0.5), "")  # workaround x=0 bad?
 
@@ -146,7 +151,7 @@ class User:
             [Mode.MODEL, 1, 1, True, ButtonType.ACTION],
             [Mode.SCALE, 2, 1, True, ButtonType.ACTION],
             # center row
-            [Mode.ROTATE, -2, 0, False, ButtonType.ACTION],
+            [Mode.ROTATE, -2, 0, True, ButtonType.ACTION],
             [Mode.MOVE, -1, 0, True, ButtonType.ACTION],
             [Mode.LOCK, 0, 0, True, ButtonType.TOGGLE],
             [Mode.DELETE, 1, 0, True, ButtonType.ACTION],
@@ -309,17 +314,15 @@ class ObjectPersistence:
         self.scale = (jData["attributes"]["scale"]["x"],
                       jData["attributes"]["scale"]["y"],
                       jData["attributes"]["scale"]["z"])
-        hcolor = jData["attributes"]["color"].lstrip('#')
-        self.color = tuple(int(hcolor[c:c + 2], 16) for c in (0, 2, 4))
+        self.color = hex2rgb(jData["attributes"]["color"])
         if "url" in jData["attributes"]:
             self.url = jData["attributes"]["url"]
         if "material" in jData["attributes"]:
             if "colorWrite" in jData["attributes"]["material"]:
                 self.transparent_occlude = not jData["attributes"]["material"]["colorWrite"]
             if "color" in jData["attributes"]["material"]:
-                hcolor = jData["attributes"]["material"]["color"].lstrip('#')
-                self.color_material = tuple(
-                    int(hcolor[c:c + 2], 16) for c in (0, 2, 4))
+                self.color_material = hex2rgb(
+                    jData["attributes"]["material"]["color"])
         if "parent" in jData["attributes"]:
             self.parent = jData["attributes"]["parent"]
         if "click-listener" in jData["attributes"]:
@@ -403,22 +406,44 @@ def color_obj(realm, scene, object_id, hcolor):
 
 
 def scale_obj(realm, scene, object_id, scale):
-    data = {"scale": {"x": scale[0], "y": scale[1], "z": scale[2]}}
+    data = {"scale": {
+        "x": arena.agran(scale[0]),
+        "y": arena.agran(scale[1]),
+        "z": arena.agran(scale[2])
+    }}
     update_persisted_obj(realm, scene, object_id, "Resized", data=data)
 
 
 def move_obj(realm, scene, object_id, pos):
-    data = {"position": {"x": pos[0], "y": pos[1], "z": pos[2]}}
+    data = {"position": {
+        "x": arena.agran(pos[0]),
+        "y": arena.agran(pos[1]),
+        "z": arena.agran(pos[2])
+    }}
     update_persisted_obj(realm, scene, object_id, "Relocated", data=data)
 
 
 def rotate_obj(realm, scene, object_id, rot):
-    data = {"rotation": {"x": rot[0], "y": rot[1], "z": rot[2], "w": rot[3]}}
+    data = {"rotation": {
+        "x": arena.agran(rot[0]),
+        "y": arena.agran(rot[1]),
+        "z": arena.agran(rot[2]),
+        "w": arena.agran(rot[3])
+    }}
     update_persisted_obj(realm, scene, object_id, "Rotated", data=data)
 
 
 def delete_obj(realm, scene, object_id):
     update_persisted_obj(realm, scene, object_id, "Deleted", action="delete")
+
+
+def rgb2hex(rgb):
+    return "#{:02x}{:02x}{:02x}".format(rgb[0], rgb[1], rgb[2])
+
+
+def hex2rgb(hcolor):
+    hcolor = hcolor.lstrip('#')
+    return tuple(int(hcolor[c:c + 2], 16) for c in (0, 2, 4))
 
 
 def temp_loc_marker(location, color):
@@ -430,6 +455,16 @@ def temp_loc_marker(location, color):
 def temp_rot_marker(location, rotation):
     return arena.Object(objType=arena.Shape.cube, ttl=120, rotation=rotation,
                         location=location, scale=(0.02, 0.01, 0.15), clickable=True)
+
+
+def rotation_quat2euler(quat):
+    rotq = Rotation.from_quat(list(quat))
+    return tuple(rotq.as_euler('xyz', degrees=True))
+
+
+def rotation_euler2quat(euler):
+    rote = Rotation.from_euler('xyz', list(euler), degrees=True)
+    return tuple(rote.as_quat())
 
 
 def probable_quat(num):

@@ -83,7 +83,8 @@ def vio_filter(vio, client_id, vio_threshold):
 def on_tag_detect(client, userdata, msg):
     json_msg = None
     try:
-        json_msg = json.loads(msg.payload.decode("utf-8"), object_hook=dict_to_sns)
+        json_msg = json.loads(msg.payload.decode(
+            "utf-8"), object_hook=dict_to_sns)
     except ValueError:
         pass
     if hasattr(json_msg, "vio"):
@@ -118,6 +119,10 @@ def on_tag_detect(client, userdata, msg):
             log("Too tag much error")
             return
 
+        if detected_tag.pose.s != 1:
+            log("Can't use solution 2")
+            return
+
         # Builder mode: solve for tag, assume client rig is previously logged
         if (
             hasattr(json_msg, "localize_tag")
@@ -138,7 +143,8 @@ def on_tag_detect(client, userdata, msg):
             # Calculate pose of apriltag
             ref_tag_pose = rig_pose @ vio_pose @ dtag_pose
             ref_tag_pos = ref_tag_pose[0:3, 3]
-            ref_tag_rotq = Rotation.from_matrix(ref_tag_pose[0:3, 0:3]).as_quat()
+            ref_tag_rotq = Rotation.from_matrix(
+                ref_tag_pose[0:3, 0:3]).as_quat()
 
             if not hasattr(json_msg, "geolocation"):
                 log("Builder provided no geolocation")
@@ -186,11 +192,12 @@ def on_tag_detect(client, userdata, msg):
                     }
                     log(new_tag)
                     resp = requests.post(
-                        TAG_URLBASE, json=new_tag, auth=HTTPBasicAuth("conix", "conix"),
+                        TAG_URLBASE, json=new_tag, auth=HTTPBasicAuth(
+                            "conix", "conix"),
                     )
             print("Updating Tag %d", detected_tag.id)
-            print( ref_tag_pos )
-            print( ref_tag_rotq)
+            print(ref_tag_pos)
+            print(ref_tag_rotq)
 
             mqtt_response = {
                 "object_id": "apriltag_" + str(detected_tag.id),
@@ -215,8 +222,8 @@ def on_tag_detect(client, userdata, msg):
             }
         else:  # Solving for client rig, default localization operation
             log("Localizing", client_id, "on", str(detected_tag.id))
-            if not vio_filter(vio_pose, client_id, VIO_MAX_DIFF_HIGH):
-                return
+            # if not vio_filter(vio_pose, client_id, VIO_MAX_DIFF_HIGH):
+            #     return
             if detected_tag.id == 0:
                 ref_tag_pose = ORIGINTAG
             elif hasattr(json_msg, "refTag"):
@@ -229,10 +236,18 @@ def on_tag_detect(client, userdata, msg):
                 # Tag not found. TODO: query ATLAS for it
                 log("Tag not found, not in build mode")
                 return
-            rig_pose = ref_tag_pose @ np.linalg.inv(dtag_pose) @ np.linalg.inv(vio_pose)
+            rig_pose = ref_tag_pose @ np.linalg.inv(
+                dtag_pose) @ np.linalg.inv(vio_pose)
             rig_pos = rig_pose[0:3, 3]
             rig_rotq = Rotation.from_matrix(rig_pose[0:3, 0:3]).as_quat()
             RIGS[client_id] = rig_pose
+
+            print('')
+            print('')
+            print('dtag:')
+            print(dtag_pose)
+            print(detected_tag.pose.e)
+            print(detected_tag.pose.s)
             # fmt: off
             mqtt_response = {
                 'object_id': client_id,

@@ -49,8 +49,10 @@ def get_keys():
     keys = []
     keys.extend(list("1234567890"))
     keys.extend(list("qwertyuiop"))
-    keys.extend(list("asdfghjkl_"))
-    keys.extend(list("zxcvbnm"))
+    keys.extend(list("asdfghjkl"))
+    keys.append('underline')
+    keys.extend(list("zxcvbnm-"))
+    keys.append('apriltag')
     keys.append('back')
     return keys
 

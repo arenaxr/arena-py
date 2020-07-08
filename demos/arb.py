@@ -248,8 +248,12 @@ def rename_callback(event=None):
     USERS[camname].set_textright(key)
     USERS[camname].target_style = key
     if key == 'back':
-        if USERS[camname].typetext:
+        if len(USERS[camname].typetext) > 0:
             USERS[camname].typetext = USERS[camname].typetext[:-1]
+    elif key == 'underline':
+        USERS[camname].typetext = USERS[camname].typetext + '_'
+    elif key == 'apriltag':  # special prefix, replace text with 'apriltag_'
+        USERS[camname].typetext = 'apriltag_'
     else:
         USERS[camname].typetext = USERS[camname].typetext + key
     USERS[camname].set_textright(USERS[camname].typetext)
@@ -300,6 +304,8 @@ def show_redpill_scene(enabled):
 
 
 def do_rename(old_id, new_id):
+    if new_id == old_id:
+        return
     pobjs = arblib.get_network_persisted_obj(old_id, BROKER, SCENE)
     if not pobjs:
         return
@@ -429,6 +435,7 @@ def make_clickline(deg, linelen, obj, delimiter, color, callback, ghost=False):
         objType=arena.Shape.thickline,
         objName=(object_id + delimiter + deg + direction+"_line"),
         # color=color,
+        persist=False,
         ttl=arblib.TTL_TEMP,
         # data=('{"start": {"x":' + str(start[0]) +
         #      ',"y":' + str(start[1]) +
@@ -445,6 +452,7 @@ def make_clickline(deg, linelen, obj, delimiter, color, callback, ghost=False):
             objType=arena.Shape.thickline,
             objName=(object_id + delimiter + deg + direction+"_ghost"),
             # color=color,
+            persist=False,
             ttl=arblib.TTL_TEMP,
             parent=object_id,
             # data=('{"start": {"x":0,"y":0,"z":0}, ' +
@@ -459,6 +467,7 @@ def make_clickline(deg, linelen, obj, delimiter, color, callback, ghost=False):
         objName=(object_id + delimiter + deg + direction),
         color=color_control,
         clickable=True,
+        persist=False,
         ttl=arblib.TTL_TEMP,
         callback=callback,
         location=(start[0]+endx, start[1]+endy, start[2]+endz),
@@ -812,9 +821,13 @@ def scene_callback(msg):
                 arblib.occlude_obj(REALM, SCENE, objid,
                                    USERS[camname].target_style)
             elif USERS[camname].mode == Mode.RENAME:
-                new_id = USERS[camname].typetext
-                USERS[camname].typetext = ""
-                do_rename(objid, new_id)
+                if len(USERS[camname].typetext) > 0:  # edits already made
+                    new_id = USERS[camname].typetext
+                    USERS[camname].typetext = ""
+                    do_rename(objid, new_id)
+                else:  # no edits yet, load previous name to change
+                    USERS[camname].typetext = objid
+                USERS[camname].set_textright(USERS[camname].typetext)
 
 
 # parse args and wait for events

@@ -19,6 +19,7 @@ object_count = 0
 callbacks = {}
 arena_callback = None
 messages = []
+users = {}
 debug_toggle = False
 
 

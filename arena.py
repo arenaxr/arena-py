@@ -30,7 +30,7 @@ def signal_handler(sig, frame):
 #    arena_callback(msg.payload)
 
 
-def arena_publish(scene_path, MESSAGE):
+def arena_publish(scene_path, MESSAGE, volatile=False):
     #print(json.dumps(MESSAGE))
 
     d = datetime.now().isoformat()[:-3]+'Z'
@@ -434,6 +434,7 @@ class Object:
     animation = None
     data = ""
     callback = None
+    volatile = False
 
     def __init__(
         self,
@@ -458,7 +459,8 @@ class Object:
         thickline=thickline,
         collision_listener=collision_listener,
         data=data,
-        callback=callback
+        callback=callback,
+        volatile=volatile
     ):
         """Initializes the data."""
         global object_count
@@ -484,6 +486,7 @@ class Object:
         self.impulse = impulse
         self.data = data
         self.callback = callback
+        self.volatile = volatile
         # print("loc: " + str(self.loc))
         # avoid name clashes by enumerating each new object
         if objName == "":
@@ -719,7 +722,7 @@ class Object:
         # print("publishing " + json.dumps(MESSAGE) + " to " + scene_path)
         if debug_toggle:
             print(json.dumps(MESSAGE))
-        arena_publish(scene_path, MESSAGE)
+        arena_publish(scene_path, MESSAGE, volatile=self.volatile)
 
 
 def __init__(self, name):

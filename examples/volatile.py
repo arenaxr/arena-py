@@ -14,21 +14,21 @@ REALM = "realm"
 SCENE = "volatile"
 
 
-def update_text(object_id, text, color, camera_id=None):
-    hcolor = "#{:02x}{:02x}{:02x}".format(color[0], color[1], color[2])
-    msg = {
-        "object_id": object_id,
-        "action": "update",
-        "type": "object",
-        "data": {
-            "text": text,
-            "material": {"color": hcolor},
-            "color": hcolor,
-        },
-    }
-    if camera_id is not None:
-        msg["camera_id"] = camera_id
-    arena.arena_publish(REALM + "/s/" + SCENE + "/" + object_id, msg)
+# def update_text(object_id, text, color, camera_id=None):
+#     hcolor = "#{:02x}{:02x}{:02x}".format(color[0], color[1], color[2])
+#     msg = {
+#         "object_id": object_id,
+#         "action": "update",
+#         "type": "object",
+#         "data": {
+#             "text": text,
+#             "material": {"color": hcolor},
+#             "color": hcolor,
+#         },
+#     }
+#     if camera_id is not None:
+#         msg["camera_id"] = camera_id
+#     arena.arena_publish(REALM + "/s/" + SCENE + "/" + object_id, msg)
 
 
 def scene_callback(msg):

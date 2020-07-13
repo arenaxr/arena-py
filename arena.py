@@ -16,7 +16,7 @@ client = mqtt.Client(
     "client-" + str(random.randrange(0, 1000000)), clean_session=True, userdata=None
 )
 object_count = 0
-object_list = {}
+volatile_objs = {}
 callbacks = {}
 arena_callback = None
 messages = []
@@ -41,7 +41,7 @@ def arena_publish(scene_path, MESSAGE, volatile=False):
 
 def process_message(msg):
     global arena_callback
-    global object_list
+    global volatile_objs
     #print("process_message: "+str(msg.payload))
     # first call specific objects' callbacks
     payload = msg.payload.decode("utf-8", "ignore")
@@ -52,6 +52,17 @@ def process_message(msg):
     Pos=(0,0,0)
     Rot=(0,0,0,1)
     Src=""
+
+    # volatile objects need updates applied
+    if object_id in volatile_objs:
+        if MESSAGE["action"] == "update" and "camera_id" in MESSAGE:
+            # update volatile elements
+            if ("position" in MESSAGE["data"]):
+                volatile_objs[object_id].location = (
+                    MESSAGE["data"]["position"]["x"], MESSAGE["data"]["position"]["y"], MESSAGE["data"]["position"]["z"])
+            if ("rotation" in MESSAGE["data"]):
+                volatile_objs[object_id].rotation = (
+                    MESSAGE["data"]["rotation"]["x"], MESSAGE["data"]["rotation"]["y"], MESSAGE["data"]["rotation"]["z"], MESSAGE["data"]["rotation"]["w"])
 
     if object_id in callbacks:
 
@@ -86,15 +97,6 @@ def process_message(msg):
 
     # else call general callback set at init time, for all messages
     elif arena_callback:
-
-        if MESSAGE["action"] == "update" and "camera_id" in MESSAGE:
-            if MESSAGE["object_id"] in object_list:
-                # update volatile elements
-                if ("position" in MESSAGE["data"]):
-                    object_list[MESSAGE["object_id"]].location = (MESSAGE["data"]["position"]["x"],MESSAGE["data"]["position"]["y"],MESSAGE["data"]["position"]["z"])
-                if ("rotation" in MESSAGE["data"]):
-                    object_list[MESSAGE["object_id"]].rotation = (MESSAGE["data"]["rotation"]["x"],MESSAGE["data"]["rotation"]["y"],MESSAGE["data"]["rotation"]["z"],MESSAGE["data"]["rotation"]["w"])
-          
         arena_callback(payload)
 
 
@@ -475,7 +477,7 @@ class Object:
     ):
         """Initializes the data."""
         global object_count
-        global object_list
+        global volatile_objs
         global debug_toggle
         self.objType = objType
         self.location = location
@@ -511,7 +513,7 @@ class Object:
 
         object_count = object_count + 1
         if (volatile):
-            object_list[self.objName] = self
+            volatile_objs[self.objName] = self
 
         # do all the work
         self.redraw()

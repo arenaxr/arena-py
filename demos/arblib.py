@@ -100,6 +100,7 @@ class Mode(enum.Enum):
     WALL = "wall"
     LAMP = "lamp"
     STRETCH = "stretch"
+    PARENT = "parent"
 
 
 class ButtonType(enum.Enum):
@@ -157,7 +158,8 @@ class User:
             [Mode.MOVE, -1, 0, True, ButtonType.ACTION],
             [Mode.LOCK, 0, 0, True, ButtonType.TOGGLE],
             [Mode.DELETE, 1, 0, True, ButtonType.ACTION],
-            [Mode.STRETCH, 2, 0, False, ButtonType.ACTION],
+            [Mode.PARENT, 2, 0, True, ButtonType.ACTION],
+            [Mode.STRETCH, 3, 0, False, ButtonType.ACTION],
             # bottom row
             [Mode.WALL, -2, -1, True, ButtonType.ACTION],
             [Mode.OCCLUDE, -1, -1, True, ButtonType.ACTION],
@@ -444,6 +446,11 @@ def rotate_obj(realm, scene, object_id, rot):
         "w": arena.agran(rot[3])
     }}
     update_persisted_obj(realm, scene, object_id, "Rotated", data=data)
+
+
+def parent_obj(realm, scene, object_id, parent_id):
+    data = {"parent": parent_id}
+    update_persisted_obj(realm, scene, object_id, "Parent set", data=data)
 
 
 def delete_obj(realm, scene, object_id):

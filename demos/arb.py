@@ -134,6 +134,9 @@ def panel_callback(event=None):
         USERS[camname].typetext = ""
         update_dropdown(camname, objid, mode, arblib.KEYS, -2, rename_callback)
         USERS[camname].set_textright(USERS[camname].typetext)
+    elif mode == Mode.PARENT:
+        USERS[camname].typetext = ""
+        USERS[camname].set_textright(USERS[camname].typetext)
     elif mode == Mode.WALL:
         USERS[camname].clipboard = arblib.set_clipboard(  # brick
             camname, obj_type=arena.Shape.cube, callback=wall_callback,
@@ -820,11 +823,14 @@ def scene_callback(msg):
             elif USERS[camname].mode == Mode.OCCLUDE:
                 arblib.occlude_obj(REALM, SCENE, objid,
                                    USERS[camname].target_style)
-            elif USERS[camname].mode == Mode.RENAME:
+            elif USERS[camname].mode == Mode.RENAME or USERS[camname].mode == Mode.PARENT:
                 if len(USERS[camname].typetext) > 0:  # edits already made
                     new_id = USERS[camname].typetext
                     USERS[camname].typetext = ""
-                    do_rename(objid, new_id)
+                    if USERS[camname].mode == Mode.PARENT:
+                        arblib.parent_obj(REALM, SCENE, objid, new_id)
+                    else:
+                        do_rename(objid, new_id)
                 else:  # no edits yet, load previous name to change
                     USERS[camname].typetext = objid
                 USERS[camname].set_textright(USERS[camname].typetext)

@@ -14,7 +14,7 @@ REALM = "realm"
 SCENE = "volatile"
 
 
-def update_text(object_id, text, color):
+def update_text(object_id, text, color, camera_id=None):
     hcolor = "#{:02x}{:02x}{:02x}".format(color[0], color[1], color[2])
     msg = {
         "object_id": object_id,
@@ -26,6 +26,8 @@ def update_text(object_id, text, color):
             "color": hcolor,
         },
     }
+    if camera_id is not None:
+        msg["camera_id"] = camera_id
     arena.arena_publish(REALM + "/s/" + SCENE + "/" + object_id, msg)
 
 
@@ -39,11 +41,10 @@ def scene_callback(msg):
                 color = (255, 0, 0)
             else:
                 color = (0, 255, 0)
-            update_text(
-                TIME.objName,
-                datetime.datetime.now().strftime('%H:%M:%S'),
-                color
-            )
+            text = now.strftime('%H:%M:%S')
+            #update_text(TIME.objName, text, color)
+            #update_text(TIME.objName, text, color, json_msg["camera_id"])
+            TIME.update(text=text, color=color)
 
 
 arena.init(BROKER, REALM, SCENE, scene_callback)
@@ -62,7 +63,9 @@ TIME = arena.Object(objName="apriltag_450",
                     text=datetime.datetime.now().strftime('%H:%M:%S'),
                     # parent=TAG.objName,
                     color=(255, 0, 0),
+                    location=(0, 1, -1),
                     volatile=True)
+
 
 # our main event loop
 arena.handle_events()

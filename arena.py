@@ -16,10 +16,10 @@ client = mqtt.Client(
     "client-" + str(random.randrange(0, 1000000)), clean_session=True, userdata=None
 )
 object_count = 0
+object_list = {}
 callbacks = {}
 arena_callback = None
 messages = []
-users = {}
 debug_toggle = False
 
 
@@ -36,11 +36,12 @@ def arena_publish(scene_path, MESSAGE, volatile=False):
 
     d = datetime.now().isoformat()[:-3]+'Z'
     MESSAGE["timestamp"] = d
-    client.publish(scene_path, json.dumps(MESSAGE), retain=False)
+    client.publish(scene_path, json.dumps(MESSAGE), retain=volatile)
 
 
 def process_message(msg):
     global arena_callback
+    global object_list
     #print("process_message: "+str(msg.payload))
     # first call specific objects' callbacks
     payload = msg.payload.decode("utf-8", "ignore")
@@ -85,6 +86,15 @@ def process_message(msg):
 
     # else call general callback set at init time, for all messages
     elif arena_callback:
+
+        if MESSAGE["action"] == "update" and "camera_id" in MESSAGE:
+            if MESSAGE["object_id"] in object_list:
+                # update volatile elements
+                if ("position" in MESSAGE["data"]):
+                    object_list[MESSAGE["object_id"]].location = (MESSAGE["data"]["position"]["x"],MESSAGE["data"]["position"]["y"],MESSAGE["data"]["position"]["z"])
+                if ("rotation" in MESSAGE["data"]):
+                    object_list[MESSAGE["object_id"]].rotation = (MESSAGE["data"]["rotation"]["x"],MESSAGE["data"]["rotation"]["y"],MESSAGE["data"]["rotation"]["z"],MESSAGE["data"]["rotation"]["w"])
+          
         arena_callback(payload)
 
 
@@ -500,7 +510,8 @@ class Object:
             callbacks[self.objName] = callback
 
         object_count = object_count + 1
-        #object_list.append(self)
+        if (volatile):
+            object_list[self.objName] = self
 
         # do all the work
         self.redraw()

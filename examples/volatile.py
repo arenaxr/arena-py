@@ -14,14 +14,19 @@ REALM = "realm"
 SCENE = "volatile"
 
 
-def update_text(object_id, text):
+def update_text(object_id, text, color):
+    hcolor = "#{:02x}{:02x}{:02x}".format(color[0], color[1], color[2])
     msg = {
         "object_id": object_id,
         "action": "update",
         "type": "object",
-        "data": {"text": text},
+        "data": {
+            "text": text,
+            "material": {"color": hcolor},
+            "color": hcolor,
+        },
     }
-    arena.arena_publish(REALM + "/s/" + SCENE, msg)
+    arena.arena_publish(REALM + "/s/" + SCENE + "/" + object_id, msg)
 
 
 def scene_callback(msg):
@@ -29,9 +34,15 @@ def scene_callback(msg):
     if json_msg["object_id"] == TIME.objName:
         print(msg)
         if json_msg["action"] == "update" and "camera_id" in json_msg:
+            now = datetime.datetime.now()
+            if (now.second % 2) == 0:
+                color = (255, 0, 0)
+            else:
+                color = (0, 255, 0)
             update_text(
                 TIME.objName,
-                datetime.datetime.now().strftime('%H:%M:%S')
+                datetime.datetime.now().strftime('%H:%M:%S'),
+                color
             )
 
 

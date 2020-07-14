@@ -16,7 +16,6 @@ client = mqtt.Client(
     "client-" + str(random.randrange(0, 1000000)), clean_session=True, userdata=None
 )
 object_count = 0
-volatile_objs = {}
 callbacks = {}
 arena_callback = None
 messages = []
@@ -31,17 +30,16 @@ def signal_handler(sig, frame):
 #    arena_callback(msg.payload)
 
 
-def arena_publish(scene_path, MESSAGE, volatile=False):
+def arena_publish(scene_path, MESSAGE):
     #print(json.dumps(MESSAGE))
 
     d = datetime.now().isoformat()[:-3]+'Z'
     MESSAGE["timestamp"] = d
-    client.publish(scene_path, json.dumps(MESSAGE), retain=volatile)
+    client.publish(scene_path, json.dumps(MESSAGE), retain=False)
 
 
 def process_message(msg):
     global arena_callback
-    global volatile_objs
     #print("process_message: "+str(msg.payload))
     # first call specific objects' callbacks
     payload = msg.payload.decode("utf-8", "ignore")
@@ -52,17 +50,6 @@ def process_message(msg):
     Pos=(0,0,0)
     Rot=(0,0,0,1)
     Src=""
-
-    # volatile objects need updates applied
-    if object_id in volatile_objs:
-        if MESSAGE["action"] == "update" and "camera_id" in MESSAGE:
-            # update volatile elements
-            if ("position" in MESSAGE["data"]):
-                volatile_objs[object_id].location = (
-                    MESSAGE["data"]["position"]["x"], MESSAGE["data"]["position"]["y"], MESSAGE["data"]["position"]["z"])
-            if ("rotation" in MESSAGE["data"]):
-                volatile_objs[object_id].rotation = (
-                    MESSAGE["data"]["rotation"]["x"], MESSAGE["data"]["rotation"]["y"], MESSAGE["data"]["rotation"]["z"], MESSAGE["data"]["rotation"]["w"])
 
     if object_id in callbacks:
 
@@ -447,7 +434,6 @@ class Object:
     animation = None
     data = ""
     callback = None
-    volatile = False
 
     def __init__(
         self,
@@ -472,12 +458,11 @@ class Object:
         thickline=thickline,
         collision_listener=collision_listener,
         data=data,
-        callback=callback,
-        volatile=volatile
+        callback=callback
     ):
         """Initializes the data."""
         global object_count
-        global volatile_objs
+        global object_list
         global debug_toggle
         self.objType = objType
         self.location = location
@@ -499,7 +484,6 @@ class Object:
         self.impulse = impulse
         self.data = data
         self.callback = callback
-        self.volatile = volatile
         # print("loc: " + str(self.loc))
         # avoid name clashes by enumerating each new object
         if objName == "":
@@ -512,8 +496,7 @@ class Object:
             callbacks[self.objName] = callback
 
         object_count = object_count + 1
-        if (volatile):
-            volatile_objs[self.objName] = self
+        #object_list.append(self)
 
         # do all the work
         self.redraw()
@@ -736,7 +719,7 @@ class Object:
         # print("publishing " + json.dumps(MESSAGE) + " to " + scene_path)
         if debug_toggle:
             print(json.dumps(MESSAGE))
-        arena_publish(scene_path, MESSAGE, volatile=self.volatile)
+        arena_publish(scene_path, MESSAGE)
 
 
 def __init__(self, name):

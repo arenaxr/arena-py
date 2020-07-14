@@ -1,8 +1,9 @@
 # volatile.py
 ''' Demonstrate setting apriltags which can receive external updates.
     The apriltag #450 must be visible from a webxr browser camera.
-    Position, Rotation, and Model should remain in sync across cameras.
-    # View: https://xr.andrew.cmu.edu/?scene=external&localTagSolver=true&camUpdateRate=16
+    Position, Rotation, and Model should remain in sync across subscribers.
+    Camera: https://xr.andrew.cmu.edu/?scene=volatile&localTagSolver=true&camUpdateRate=16
+    All: https://xr.andrew.cmu.edu/?scene=volatile
 '''
 import arena
 

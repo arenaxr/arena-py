@@ -1,6 +1,7 @@
-# core.py
+# camera.py
 #
-# examples of all the functions mentioned in http://github.com/conix-center/arena-core
+# Move (all) users' camera about a scene with cinematic slow movements
+# takes an argument: scene name for which to move the camera(s) in
 
 import arena
 import random

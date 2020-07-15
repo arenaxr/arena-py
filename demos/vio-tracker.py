@@ -15,9 +15,12 @@ with open("config.json") as config_file:
 
 CLIENT_ID = "apriltag_solver_" + str(random.randint(0, 100))
 
+
 HOST = CONFIG["host"]
 PORT = CONFIG["port"]
 TOPIC = CONFIG["default_realm"] + "/g/a/"
+VIO_BASE = "realm/s/"
+SCENE = "vio-test"
 TAG_URLBASE = "https://atlas.conix.io/record"
 DEBUG = True
 
@@ -294,11 +297,13 @@ def start_mqtt():
     mttqc = mqtt.Client(CLIENT_ID, clean_session=True, userdata=None)
     mttqc.connect(HOST, PORT)
     print("Connected MQTT")
+    print( "Go to the following web address:" )
+    print( "https://xr.andrew.cmu.edu/?scene=" + SCENE + "&mqttServer=oz.andrew.cmu.edu&networkedTagSolver=true&camUpdateRate=16" )
     # mttqc.subscribe( "realm/s/agr-test/#")
     mttqc.subscribe(TOPIC + "#")
     mttqc.message_callback_add(TOPIC + "#", on_tag_detect)
-    mttqc.subscribe("realm/s/agr-test/#")
-    mttqc.message_callback_add("realm/s/agr-test/#", on_camera_vio)
+    mttqc.subscribe(VIO_BASE + SCENE + "/#")
+    mttqc.message_callback_add(VIO_BASE + SCENE + "/#", on_camera_vio)
     mttqc.loop_forever()
 
 

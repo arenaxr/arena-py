@@ -7,18 +7,21 @@
 '''
 import arena
 
-BROKER = "oz.andrew.cmu.edu"
-REALM = "realm"
-SCENE = "volatile"
+
+def tag_callback(event=None):
+    # since we epxect the position/rotation updates, we can react here
+    if event.event_action == arena.EventAction.update and \
+            event.event_type == arena.EventType.object:
+        print("Tag position: " + str(event.position))
+        print("Tag rotation: " + str(event.rotation))
 
 
-arena.init(BROKER, REALM, SCENE)
-
+arena.init("oz.andrew.cmu.edu", "realm", "volatile")
 # apriltag_450 will receive position/rotation updates so don't set them
 TAG = arena.Object(objName="apriltag_450",
-                   data='{"material": {"transparent": true, "opacity": 0}}',
+                   transparency=arena.Transparency(True, 0),
+                   callback=tag_callback,
                    persist=True)
-
 # duck as child to it can can be rotated relative to apriltag
 arena.Object(objName="duck",
              objType=arena.Shape.gltf_model,

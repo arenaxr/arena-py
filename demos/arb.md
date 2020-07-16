@@ -22,14 +22,15 @@ python arb.py hello
 |**delete**|*action*|Tap object to delete it.|
 |**lamp**|*toggle*|Turns a headlamp on/off.|
 |**lock**|*toggle*|Off=panel maintains relative world position; On=panel follows camera rotation. *(in development)*|
-|**model**|*action*|Allows GLTF model select; tap clipboard object to create it in place *(default=duck.glb)*.|
+|**model**|*action*|Allows GLTF model select; tap clipboard object to create it in place *(default=duck.glb)*. Models may be imported via the **-m** argument *(see below)*.|
 |**move**|*action*|Tap an object to show it in the clipboard, tap clipboard object to move it to that place.|
-|**nudge**|*action*|Tap an object to show yellow nudge-lines; tap a nudge-line to move the object to the nearest 0.1m. A yellow circle will also show x,z position on the floor (y=0).|
+|**nudge**|*action*|Allows mm, cm, dm, m granularity; tap an object to show yellow nudge-lines; tap a positive (red) or negative (blue) ball to nudge the object in that direction according to selected granularity *(default=mm)*. A yellow circle will also show x,z position on the floor (y=0). Nudge-lines expire after 30 seconds of inactivity.|
 |**occlude**|*action*|Allows occlusion on/off select; tap object to occlude it *(default=on)*.|
-|**redpill**|*toggle*|Reveals useful debug data: ***gridlines*** on the floor (y=0) can be seen from above and below, ***occlusion mask*** will show all occluded objects, ***object data*** mouse hover on an object will shows its position, rotation, and scale.
-|**rename**|*action*|Allows typing a new name; tap an object to apply the new name.|
-|**rotate**|*action*|Allows object rotation. *(in development)*|
-|**scale**|*action*|Tap an object to show blue scale-lines; tap a scale-line to increase/decrease scale in 3 degrees 0.1m. Minimum 0.1m.
+|**parent**|*action*|Allows setting of parent object; first tap the parent object, then tap the child object.|
+|**redpill**|*toggle*|Reveals useful debug data: ***gridlines*** on the floor (y=0) can be seen from above and below, ***occlusion mask*** will show all occluded objects, ***object data*** mouse hover on an object will shows its position, rotation, and scale.|
+|**rename**|*action*|Allows typing a new name; start typing or just tap an object to load the old name into the editor, then tap the object to apply the new name to.|
+|**rotate**|*action*|Allows 1°, 5°, 10°, 45°, 90° Euler angle granularity; tap an object to show orange rotate-lines; tap a positive (red) or negative (blue) ball to change object rotation according to selected granularity *(default=1°)*. Additional 6Dof lines will show degree of rotation. Rotate-lines expire after 30 seconds of inactivity.|
+|**scale**|*action*|Allows mm, cm, dm, m granularity; tap an object to show blue scale-lines; tap a positive (red) or negative (blue) ball to increase or decrease object scale according to selected granularity *(default=mm)*. Scale-lines expire after 30 seconds of inactivity.|
 |**stretch**|*action*|Allows altering scale in one of 6Dof. *(in development)*|
 |**wall**|*action*|Allows creation of a basic wall 0.1m thick; tap clipboard brick once with your AR device flush with one corner of the wall, and tap the second time at the opposing corner. Three alignment markers will appear for 2 minutes. *(in development)*|
 
@@ -44,7 +45,7 @@ There is a small temporary object resting on position 0,0,0 in the shape of a co
 ## Run Options
 
 ### Importing Models
-You can import a json-formatted manifest of GLTF models to use on the **model** control panel option *(under development)*. You can write your own, or use the example, `arb-manifest.json`.
+You can import a json-formatted manifest of GLTF models using the command argument **-m** to use on the **model** control panel option. You can write your own, or use the example, [arb-manifest.json](arb-manifest.json).
 ```
 python arb.py hello -m arb-manifest.json
 ```

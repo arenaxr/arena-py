@@ -673,7 +673,7 @@ class Object:
                 "y": agran(self.line.end[1]),
                 "z": agran(self.line.end[2])
             }
-            MESSAGE["data"]["lineWidth"] = self.line.line_width
+            #MESSAGE["data"]["lineWidth"] = self.line.line_width
             MESSAGE["data"]["color"] = self.line.color
         if self.thickline != None:
             pathstring = ""

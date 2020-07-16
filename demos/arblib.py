@@ -7,7 +7,6 @@
 
 import enum
 import json
-import string
 import urllib.request
 
 from scipy.spatial.transform import Rotation
@@ -18,9 +17,6 @@ CLICKLINE_LEN = 1  # meters
 CLICKLINE_SCL = (1, 1, 1)  # meters
 FLOOR_Y = 0.001  # meters
 GRIDLEN = 20  # meters
-NUDGE_INCR = 0.1  # meters
-SCALE_INCR = 0.1  # meters
-ROTATE_INCR = 5  # degrees
 CLIP_RADIUS = 1  # meters
 PANEL_RADIUS = 0.75  # meters
 LOCK_XOFF = 0  # quaternion vector
@@ -34,7 +30,7 @@ CLR_SELECT = (255, 255, 0)  # yellow
 CLR_GRID = (0, 255, 0)  # green
 CLR_ENABLED = (255, 255, 255)  # white
 CLR_DISABLED = (128, 128, 128)  # gray
-SCL_GLTF = (0.5, 0.5, 0.5)  # meters
+SCL_GLTF = (0.1, 0.1, 0.1)  # meters
 QUAT_VEC_RGTS = [-0.7, -0.5, 0, 0.5, 0.7, 1]
 QUAT_DEV_RGT = 0.075
 WALL_WIDTH = 0.1  # meters
@@ -51,14 +47,20 @@ GAZES = [
 
 def get_keys():
     keys = []
-    keys.extend(list(string.digits))
-    keys.extend(list(string.ascii_lowercase))
+    keys.extend(list("1234567890"))
+    keys.extend(list("qwertyuiop"))
+    keys.extend(list("asdfghjkl"))
+    keys.append('underline')
+    keys.extend(list("zxcvbnm-"))
+    keys.append('apriltag')
     keys.append('back')
     return keys
 
 
 KEYS = get_keys()
 BOOLS = ["on", "off"]
+METERS = ["mm", "cm", "dm", "m"]
+DEGREES = ["1", "5", "10", "45", "90"]
 COLORS = ["ffffff", "ff0000", "ffa500", "ffff00", "00ff00",
           "0000ff", "4b0082", "800080", "a52a2a", "000000"]
 SHAPES = [arena.Shape.sphere.value,
@@ -98,6 +100,7 @@ class Mode(enum.Enum):
     WALL = "wall"
     LAMP = "lamp"
     STRETCH = "stretch"
+    PARENT = "parent"
 
 
 class ButtonType(enum.Enum):
@@ -155,7 +158,8 @@ class User:
             [Mode.MOVE, -1, 0, True, ButtonType.ACTION],
             [Mode.LOCK, 0, 0, True, ButtonType.TOGGLE],
             [Mode.DELETE, 1, 0, True, ButtonType.ACTION],
-            [Mode.STRETCH, 2, 0, False, ButtonType.ACTION],
+            [Mode.PARENT, 2, 0, True, ButtonType.ACTION],
+            [Mode.STRETCH, 3, 0, False, ButtonType.ACTION],
             # bottom row
             [Mode.WALL, -2, -1, True, ButtonType.ACTION],
             [Mode.OCCLUDE, -1, -1, True, ButtonType.ACTION],
@@ -361,14 +365,12 @@ def set_clipboard(camname,
                   obj_type=arena.Shape.sphere,
                   scale=(0.05, 0.05, 0.05),
                   color=CLR_ENABLED,
-                  rotation=(-0.1, -0.1, 0, 1),  # rotation for visibility
                   url=""):
-    return arena.Object(
+    clip = arena.Object(
         objName=("clipboard_" + camname),
         objType=obj_type,
         color=color,
         location=(0, 0, -CLIP_RADIUS),
-        rotation=rotation,
         parent=camname,
         scale=scale,
         data=('{"material":{"transparent":true,"opacity":0.4}}'),
@@ -376,6 +378,19 @@ def set_clipboard(camname,
         clickable=True,
         callback=callback,
     )
+    target_scale = (clip.scale[0]/10, clip.scale[1]/10, clip.scale[2]/10)
+    arena.Object(
+        objName=("cliptarget_" + camname),
+        objType=arena.Shape.sphere,
+        color=color,
+        location=(0, 0, 0),
+        parent=clip.objName,
+        scale=target_scale,
+        data=('{"material":{"transparent":true,"opacity":0.4}}'),
+        clickable=True,
+        callback=callback,
+    )
+    return clip
 
 
 def update_persisted_obj(realm, scene, object_id, label,
@@ -431,6 +446,11 @@ def rotate_obj(realm, scene, object_id, rot):
         "w": arena.agran(rot[3])
     }}
     update_persisted_obj(realm, scene, object_id, "Rotated", data=data)
+
+
+def parent_obj(realm, scene, object_id, parent_id):
+    data = {"parent": parent_id}
+    update_persisted_obj(realm, scene, object_id, "Parent set", data=data)
 
 
 def delete_obj(realm, scene, object_id):

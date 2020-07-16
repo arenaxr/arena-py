@@ -355,11 +355,8 @@ def do_nudge_select(camname, object_id):
     callback = nudgeline_callback
     # generate child 6dof non-persist, clickable lines
     make_clickline("x", 1, obj, delim, color, callback)
-    make_clickline("x", -1, obj, delim, color, callback)
     make_clickline("y", 1, obj, delim, color, callback)
-    make_clickline("y", -1, obj, delim, color, callback)
     make_clickline("z", 1, obj, delim, color, callback)
-    make_clickline("z", -1, obj, delim, color, callback)
     make_followspot(obj, delim, color)
     pos = obj.position
     position = (round(pos[0], 3), round(pos[1], 3), round(pos[2], 3))
@@ -377,7 +374,6 @@ def do_scale_select(camname, object_id):
     callback = scaleline_callback
     # generate 2 child non-persist, clickable lines
     make_clickline("x", 1, obj, delim, color, callback)
-    make_clickline("x", -1, obj, delim, color, callback)
     make_followspot(obj, delim, color)
     sca = obj.scale
     scale = (round(sca[0], 3), round(sca[1], 3), round(sca[2], 3))
@@ -394,11 +390,8 @@ def do_rotate_select(camname, object_id):
     callback = rotateline_callback
     # generate child 6dof non-persist, clickable lines
     make_clickline("x", 1, obj, delim, color, callback, True)
-    make_clickline("x", -1, obj, delim, color, callback, True)
     make_clickline("y", 1, obj, delim, color, callback, True)
-    make_clickline("y", -1, obj, delim, color, callback, True)
     make_clickline("z", 1, obj, delim, color, callback, True)
-    make_clickline("z", -1, obj, delim, color, callback, True)
     make_followspot(obj, delim, color)
     rote = arblib.rotation_quat2euler(obj.rotation)
     euler = (round(rote[0], 1), round(rote[1], 1), round(rote[2], 1))
@@ -409,73 +402,98 @@ def make_followspot(obj, delimiter, color):
     arena.Object(  # follow spot on ground
         objType=arena.Shape.circle,
         objName=(obj.object_id + delimiter + "_spot"),
-        scale=obj.scale,
+        scale=(0.1, 0.1, 0.1),
         color=color,
         location=(obj.position[0], arblib.FLOOR_Y, obj.position[2]),
         rotation=(-0.7, 0, 0, 0.7),
         ttl=arblib.TTL_TEMP,
-        data=('{"material":{"transparent":true,"opacity":0.5}}'),
-    )
+        data=('{"material":{"transparent":true,"opacity":0.5,"shader":"flat"}}'))
 
 
-def make_clickline(deg, linelen, obj, delimiter, color, callback, ghost=False):
+def cubeline(object_name, start, end, line_width, color, parent=None):
+    print(str(start) + " " + str(end))
+    if start[1] == end[1] and start[2] == end[2]:
+        scale = (abs(start[0] - end[0]), line_width, line_width)
+    elif start[0] == end[0] and start[2] == end[2]:
+        scale = (line_width, abs(start[1] - end[1]), line_width)
+    elif start[0] == end[0] and start[1] == end[1]:
+        scale = (line_width, line_width, abs(start[2] - end[2]))
+    return arena.Object(
+        objType=arena.Shape.cube,
+        objName=object_name,
+        color=color,
+        ttl=arblib.TTL_TEMP,
+        parent=parent,
+        scale=scale,
+        location=(statistics.median([start[0], end[0]]),
+                  statistics.median([start[1], end[1]]),
+                  statistics.median([start[2], end[2]])),
+        data=('{"material":{"transparent":true,"opacity":0.5,"shader":"flat"}}'))
+
+
+def dir_clicker(object_id, delimiter, axis, direction, color, location, callback):
+    # TODO: make long cone rotated to show direction
+    loc = location
+    if direction == "n":
+        if axis == "x":
+            loc = (location[0]-0.1, location[1], location[2])
+        elif axis == "y":
+            loc = (location[0], location[1]-0.1, location[2])
+        elif axis == "z":
+            loc = (location[0], location[1], location[2]-0.1)
+    return arena.Object(  # click object
+        objType=arena.Shape.sphere,
+        objName=(object_id + delimiter + axis + direction),
+        color=color,
+        clickable=True,
+        ttl=arblib.TTL_TEMP,
+        location=loc,
+        scale=(0.05, 0.05, 0.05),
+        callback=callback,
+        data=('{"material":{"shader":"flat"}}'))
+
+
+def make_clickline(axis, linelen, obj, delimiter, color, callback, ghost=False):
     endx = endy = endz = 0
     object_id = obj.object_id
     start = obj.position
-    direction = "p"
-    color_control = (255, 0, 0)  # red increase
-    if linelen < 0:
-        direction = "n"
-        color_control = (0, 0, 255)  # blue increase
-    if deg == "x":
+    if axis == "x":
         endx = linelen * arblib.CLICKLINE_LEN
-    elif deg == "y":
+    elif axis == "y":
         endy = linelen * arblib.CLICKLINE_LEN
-    elif deg == "z":
+    elif axis == "z":
         endz = linelen * arblib.CLICKLINE_LEN
-    arena.Object(  # reference line
-        # objType=arena.Shape.line,
-        objType=arena.Shape.thickline,
-        objName=(object_id + delimiter + deg + direction+"_line"),
-        # color=color,
-        persist=False,
-        ttl=arblib.TTL_TEMP,
-        # data=('{"start": {"x":' + str(start[0]) +
-        #      ',"y":' + str(start[1]) +
-        #      ',"z":' + str(start[2]) + '}, ' +
-        #      '"end": {"x":' + str(start[0]+endx) +
-        #      ',"y":' + str(start[1]+endy) +
-        #      ',"z":' + str(start[2]+endz) + '}}'),
-        thickline=arena.Thickline({
-            start, (start[0]+endx, start[1]+endy, start[2]+endz)}, 1, arblib.rgb2hex(color)),
-    )
+    end = (start[0]+endx, start[1]+endy, start[2]+endz)
+    cubeline(  # reference line
+        object_name=(object_id + delimiter + axis + "_line"),
+        color=color,
+        start=start,
+        end=end,
+        line_width=0.005)
     if ghost:
-        arena.Object(  # ghostline aligns to parent rotation
-            # objType=arena.Shape.line,
-            objType=arena.Shape.thickline,
-            objName=(object_id + delimiter + deg + direction+"_ghost"),
-            # color=color,
-            persist=False,
-            ttl=arblib.TTL_TEMP,
+        cubeline(  # ghostline aligns to parent rotation
+            object_name=(object_id + delimiter + axis + "_ghost"),
+            color=color,
             parent=object_id,
-            # data=('{"start": {"x":0,"y":0,"z":0}, ' +
-            #      '"end": {"x":' + str(endx * 10) +
-            #      ',"y":' + str(endy * 10) +
-            #      ',"z":' + str(endz * 10) + '}}'),
-            thickline=arena.Thickline({
-                (0, 0, 0), (endx*10, endy*10, endz*10)}, 1, arblib.rgb2hex(color)),
-        )
-    arena.Object(  # click object
-        objType=arena.Shape.sphere,
-        objName=(object_id + delimiter + deg + direction),
-        color=color_control,
-        clickable=True,
-        persist=False,
-        ttl=arblib.TTL_TEMP,
-        callback=callback,
-        location=(start[0]+endx, start[1]+endy, start[2]+endz),
-        scale=(0.05, 0.05, 0.05),
-    )
+            start=(0, 0, 0),
+            end=(endx*10, endy*10, endz*10),
+            line_width=0.005)
+    dir_clicker(  # click object positive
+        object_id=object_id,
+        delimiter=delimiter,
+        axis=axis,
+        direction="p",
+        color=(255, 0, 0),  # red increase
+        location=end,
+        callback=callback)
+    dir_clicker(  # click object negative
+        object_id=object_id,
+        delimiter=delimiter,
+        axis=axis,
+        direction="n",
+        color=(0, 0, 255),  # blue increase
+        location=end,
+        callback=callback)
 
 
 def do_move_relocate(camname, newlocation):

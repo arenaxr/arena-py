@@ -5,7 +5,6 @@
 
 # pylint: disable=missing-docstring
 
-# TODO: stretch (6Dof)
 # TODO: highlight mouseenter to avoid click
 # TODO: fix follow unlock position relative, not default
 # TODO: handle click-listener objects with 1.1 x scale shield?
@@ -145,6 +144,8 @@ def panel_callback(event=None):
     elif mode == Mode.NUDGE:
         update_dropdown(camname, objid, mode, arblib.METERS, 2, gen_callback)
     elif mode == Mode.SCALE:
+        update_dropdown(camname, objid, mode, arblib.METERS, 2, gen_callback)
+    elif mode == Mode.STRETCH:
         update_dropdown(camname, objid, mode, arblib.METERS, 2, gen_callback)
     elif mode == Mode.ROTATE:
         update_dropdown(camname, objid, mode, arblib.DEGREES, 2, gen_callback)
@@ -299,7 +300,7 @@ def show_redpill_scene(enabled):
                     color=obj.color,  # TODO: needs to use color_material
                     clickable=True,
                     url=obj.url,
-                    data=('{"material":{"transparent":true,"opacity":0.5}}'),
+                    transparency=arena.Transparency(True, 0.5),
                 )
                 print("Wrapping occlusion " + name)
             else:
@@ -380,6 +381,27 @@ def do_scale_select(camname, object_id):
     USERS[camname].set_textright(USERS[camname].target_style+" s"+str(scale))
 
 
+def do_stretch_select(camname, object_id):
+    pobjs = arblib.get_network_persisted_obj(object_id, BROKER, SCENE)
+    if not pobjs:
+        return
+    obj = arblib.ObjectPersistence(pobjs[0])
+    color = arblib.CLR_STRETCH
+    delim = "_click_"
+    callback = stretchline_callback
+    # generate 2 child non-persist, clickable lines
+    make_clickline("x", 1, obj, delim, color, callback)
+    make_clickline("x", -1, obj, delim, color, callback)
+    make_clickline("y", 1, obj, delim, color, callback)
+    make_clickline("y", -1, obj, delim, color, callback)
+    make_clickline("z", 1, obj, delim, color, callback)
+    make_clickline("z", -1, obj, delim, color, callback)
+    make_followspot(obj, delim, color)
+    sca = obj.scale
+    scale = (round(sca[0], 3), round(sca[1], 3), round(sca[2], 3))
+    USERS[camname].set_textright(USERS[camname].target_style+" s"+str(scale))
+
+
 def do_rotate_select(camname, object_id):
     pobjs = arblib.get_network_persisted_obj(object_id, BROKER, SCENE)
     if not pobjs:
@@ -418,7 +440,7 @@ def cubeline(object_name, start, end, line_width, color, parent=None):
         scale = (line_width, abs(start[1] - end[1]), line_width)
     elif start[0] == end[0] and start[1] == end[1]:
         scale = (line_width, line_width, abs(start[2] - end[2]))
-    return arena.Object(
+    arena.Object(
         objType=arena.Shape.cube,
         objName=object_name,
         color=color,
@@ -431,20 +453,32 @@ def cubeline(object_name, start, end, line_width, color, parent=None):
         data=('{"material":{"transparent":true,"opacity":0.5,"shader":"flat"}}'))
 
 
-def dir_clicker(object_id, delimiter, axis, direction, color, location, callback):
+def dir_clickers(object_id, delimiter, axis, direction, location, callback):
     # TODO: make long cone rotated to show direction
     loc = location
-    if direction == "n":
-        if axis == "x":
-            loc = (location[0]-0.1, location[1], location[2])
-        elif axis == "y":
-            loc = (location[0], location[1]-0.1, location[2])
-        elif axis == "z":
-            loc = (location[0], location[1], location[2]-0.1)
-    return arena.Object(  # click object
+    arena.Object(   # click object positive
         objType=arena.Shape.sphere,
-        objName=(object_id + delimiter + axis + direction),
-        color=color,
+        objName=(object_id + delimiter + axis + "p_" + direction),
+        color=(255, 0, 0),  # red increase
+        clickable=True,
+        ttl=arblib.TTL_TEMP,
+        location=loc,
+        scale=(0.05, 0.05, 0.05),
+        callback=callback,
+        data=('{"material":{"shader":"flat"}}'))
+    npos = 0.1
+    if direction == "p":
+        npos = -0.1
+    if axis == "x":
+        loc = (location[0]+npos, location[1], location[2])
+    elif axis == "y":
+        loc = (location[0], location[1]+npos, location[2])
+    elif axis == "z":
+        loc = (location[0], location[1], location[2]+npos)
+    arena.Object(  # click object negative
+        objType=arena.Shape.sphere,
+        objName=(object_id + delimiter + axis + "n_" + direction),
+        color=(0, 0, 255),  # blue increase
         clickable=True,
         ttl=arblib.TTL_TEMP,
         location=loc,
@@ -457,6 +491,9 @@ def make_clickline(axis, linelen, obj, delimiter, color, callback, ghost=False):
     endx = endy = endz = 0
     object_id = obj.object_id
     start = obj.position
+    direction = "p"
+    if linelen < 0:
+        direction = "n"
     if axis == "x":
         endx = linelen * arblib.CLICKLINE_LEN
     elif axis == "y":
@@ -465,33 +502,24 @@ def make_clickline(axis, linelen, obj, delimiter, color, callback, ghost=False):
         endz = linelen * arblib.CLICKLINE_LEN
     end = (start[0]+endx, start[1]+endy, start[2]+endz)
     cubeline(  # reference line
-        object_name=(object_id + delimiter + axis + "_line"),
+        object_name=(object_id + delimiter + axis + direction + "_line"),
         color=color,
         start=start,
         end=end,
         line_width=0.005)
     if ghost:
         cubeline(  # ghostline aligns to parent rotation
-            object_name=(object_id + delimiter + axis + "_ghost"),
+            object_name=(object_id + delimiter + axis + direction + "_ghost"),
             color=color,
             parent=object_id,
             start=(0, 0, 0),
             end=(endx*10, endy*10, endz*10),
             line_width=0.005)
-    dir_clicker(  # click object positive
+    dir_clickers(  # click objects
         object_id=object_id,
         delimiter=delimiter,
         axis=axis,
-        direction="p",
-        color=(255, 0, 0),  # red increase
-        location=end,
-        callback=callback)
-    dir_clicker(  # click object negative
-        object_id=object_id,
-        delimiter=delimiter,
-        axis=axis,
-        direction="n",
-        color=(0, 0, 255),  # blue increase
+        direction=direction,
         location=end,
         callback=callback)
 
@@ -579,6 +607,7 @@ def scaleline_callback(event=None):
         return
     obj = arblib.ObjectPersistence(pobjs[0])
     scaled = sca = obj.scale
+    nudged = loc = obj.position
     inc = meters_increment(USERS[event.source].target_style)
     if direction == "xp":
         scaled = (incr_pos(sca[0], inc), incr_pos(
@@ -591,6 +620,39 @@ def scaleline_callback(event=None):
     arblib.scale_obj(REALM, SCENE, object_id, scaled)
     print(str(obj.scale) + " to " + str(scaled))
     do_scale_select(event.source, object_id)  # update scalelines
+
+
+def stretchline_callback(event=None):
+    if event.event_type == arena.EventType.mouseenter:
+        USERS[event.source].set_textstatus(event.object_id)
+    elif event.event_type == arena.EventType.mouseleave:
+        USERS[event.source].set_textstatus("")
+    # allow any user to stretch an object
+    if event.event_type != arena.EventType.mousedown:
+        return
+    if USERS[event.source].mode != Mode.STRETCH:
+        return
+    stretch_id = event.object_id.split("_click_")
+    object_id = stretch_id[0]
+    direction = (stretch_id[1])[:2]
+    pobjs = arblib.get_network_persisted_obj(object_id, BROKER, SCENE)
+    if not pobjs:
+        return
+    obj = arblib.ObjectPersistence(pobjs[0])
+    stretched = sca = obj.scale
+    nudged = loc = obj.position
+    inc = meters_increment(USERS[event.source].target_style)
+    if direction == "xp":
+        stretched = (incr_pos(sca[0], inc), incr_pos(
+            sca[1], inc), incr_pos(sca[2], inc))
+    elif direction == "xn":
+        stretched = (incr_neg(sca[0], inc), incr_neg(
+            sca[1], inc), incr_neg(sca[2], inc))
+    if stretched[0] <= 0 or stretched[1] <= 0 or stretched[2] <= 0:
+        return
+    arblib.stretch_obj(REALM, SCENE, object_id, stretched, loc)
+    print(str(obj.scale) + " to " + str(stretched))
+    do_stretch_select(event.source, object_id)  # update stretchlines
 
 
 def rotateline_callback(event=None):
@@ -645,7 +707,7 @@ def create_obj(clipboard, location):
         rotation=(0, 0, 0, 1),  # undo clipboard rotation for visibility
         scale=clipboard.scale,
         color=clipboard.color,
-        data='{"material":{"transparent": false}}',
+        transparency=arena.Transparency(False),
         url=clipboard.url,
         clickable=True)
     print("Created " + new_obj.objName)
@@ -761,7 +823,7 @@ def make_wall(camname):
         rotation=(rotx, roty, rotz, rotw),
         scale=(scax, scay, scaz),
         color=(200, 200, 200),
-        data=('{"material":{"transparent":true,"opacity":0.5}}'),
+        transparency=arena.Transparency(True, 0.5),
     )
     print("Created " + new_wall.objName +
           " r" + str((rotx, roty, rotz, rotw)) +
@@ -833,6 +895,8 @@ def scene_callback(msg):
                 do_nudge_select(camname, objid)
             elif USERS[camname].mode == Mode.SCALE:
                 do_scale_select(camname, objid)
+            elif USERS[camname].mode == Mode.STRETCH:
+                do_stretch_select(camname, objid)
             elif USERS[camname].mode == Mode.ROTATE:
                 do_rotate_select(camname, objid)
             elif USERS[camname].mode == Mode.COLOR:

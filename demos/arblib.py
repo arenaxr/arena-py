@@ -25,6 +25,7 @@ TTL_TEMP = 30  # seconds
 CLR_HUDTEXT = (200, 200, 200)  # light gray
 CLR_NUDGE = (255, 255, 0)  # yellow
 CLR_SCALE = (0, 0, 255)  # blue
+CLR_STRETCH = (255, 0, 0)  # red
 CLR_ROTATE = (255, 165, 0)  # orange
 CLR_SELECT = (255, 255, 0)  # yellow
 CLR_GRID = (0, 255, 0)  # green
@@ -137,7 +138,7 @@ class User:
             objName=("follow_" + camname),
             objType=arena.Shape.cube,
             parent=camname,
-            data=('{"material":{"transparent":true,"opacity":0}}'),
+            transparency=arena.Transparency(True, 0),
             location=(0, 0, -PANEL_RADIUS * 0.1),
             scale=(0.1, 0.01, 0.1),
             rotation=(0.7, 0, 0, 0.7),
@@ -159,7 +160,7 @@ class User:
             [Mode.LOCK, 0, 0, True, ButtonType.TOGGLE],
             [Mode.DELETE, 1, 0, True, ButtonType.ACTION],
             [Mode.PARENT, 2, 0, True, ButtonType.ACTION],
-            [Mode.STRETCH, 3, 0, False, ButtonType.ACTION],
+            [Mode.STRETCH, 3, 0, True, ButtonType.ACTION],
             # bottom row
             [Mode.WALL, -2, -1, True, ButtonType.ACTION],
             [Mode.OCCLUDE, -1, -1, True, ButtonType.ACTION],
@@ -177,20 +178,20 @@ class User:
             objName=(label + "_" + self.camname),
             objType=arena.Shape.text,
             parent=self.camname,
-            data='{"text":"' + text + '"}',
+            text=text,
             location=location,
             color=CLR_HUDTEXT,
             scale=(0.1, 0.1, 0.1),
         )
 
     def set_textleft(self, mode):
-        self.hudtext_left.update(data='{"text":"' + str(mode) + '"}')
+        self.hudtext_left.update(text=str(mode))
 
     def set_textright(self, text, color=CLR_HUDTEXT):
-        self.hudtext_right.update(data='{"text":"' + text + '"}', color=color)
+        self.hudtext_right.update(text=text, color=color)
 
     def set_textstatus(self, text):
-        self.hudtext_status.update(data='{"text":"' + text + '"}')
+        self.hudtext_status.update(text=text)
 
     def set_lamp(self, enabled):
         if enabled:
@@ -243,8 +244,7 @@ class Button:
             objName=obj_name,
             objType=shape,
             parent=parent,
-            data=(
-                '{"material":{"transparent":true,"shader":"flat","opacity":0.4}}'),
+            data=('{"material":{"transparent":true,"opacity":0.4,"shader":"flat"}}'),
             location=(x * 1.1, PANEL_RADIUS, y * -1.1),
             scale=scale,
             color=self.colorbut,
@@ -258,7 +258,7 @@ class Button:
             objName=("text_" + self.button.objName),
             objType=arena.Shape.text,
             parent=self.button.objName,
-            data='{"text":"' + self.label + '"}',
+            text=self.label,
             location=(0, -0.1, 0),  # location inside to prevent ray events
             rotation=(-0.7, 0, 0, 0.7),
             scale=scale,
@@ -343,7 +343,7 @@ def init_origin():
     size = [0.2, 0.4, 0.2]
     arena.Object(  # 370mm x 370mm # 750mm
         objType=arena.Shape.cone, objName="arb-origin",
-        data='{"material":{"transparent":true,"shader":"flat","opacity":0.5}}',
+        transparency=arena.Transparency(True, 0.5),
         color=(255, 114, 33),
         location=(0, size[1] / 2, 0),
         scale=(size[0] / 2, size[1], size[2] / 2))
@@ -354,7 +354,7 @@ def init_origin():
         scale=(size[0] / 15, size[1] / 10, size[2] / 15))
     arena.Object(
         objType=arena.Shape.cube, objName="arb-origin-base",
-        data='{"material":{"transparent":true,"shader":"flat","opacity":0.5}}',
+        transparency=arena.Transparency(True, 0.5),
         color=(0, 0, 0),
         location=(0, size[1] / 20, 0),
         scale=(size[0], size[1] / 10, size[2]))
@@ -373,7 +373,7 @@ def set_clipboard(camname,
         location=(0, 0, -CLIP_RADIUS),
         parent=camname,
         scale=scale,
-        data=('{"material":{"transparent":true,"opacity":0.4}}'),
+        transparency=arena.Transparency(True, 0.4),
         url=url,
         clickable=True,
         callback=callback,
@@ -386,7 +386,7 @@ def set_clipboard(camname,
         location=(0, 0, 0),
         parent=clip.objName,
         scale=target_scale,
-        data=('{"material":{"transparent":true,"opacity":0.4}}'),
+        transparency=arena.Transparency(True, 0.4),
         clickable=True,
         callback=callback,
     )
@@ -418,6 +418,19 @@ def color_obj(realm, scene, object_id, hcolor):
     # "material":{"color"} updates raw color, IS reflected live.
     data = {"color": "#" + hcolor, "material": {"color": "#" + hcolor}}
     update_persisted_obj(realm, scene, object_id, "Recolored", data=data)
+
+
+def stretch_obj(realm, scene, object_id, scale, pos):
+    data = {"scale": {
+        "x": arena.agran(scale[0]),
+        "y": arena.agran(scale[1]),
+        "z": arena.agran(scale[2])
+    },"position": {
+        "x": arena.agran(pos[0]),
+        "y": arena.agran(pos[1]),
+        "z": arena.agran(pos[2])
+    }}
+    update_persisted_obj(realm, scene, object_id, "Stretched", data=data)
 
 
 def scale_obj(realm, scene, object_id, scale):
@@ -468,7 +481,7 @@ def hex2rgb(hcolor):
 
 def temp_loc_marker(location, color):
     return arena.Object(objType=arena.Shape.sphere, ttl=120, color=color,
-                        data=('{"material":{"transparent":true,"opacity":0.5}}'),
+                        transparency=arena.Transparency(True, 0.5),
                         location=location, scale=(0.02, 0.02, 0.02), clickable=True)
 
 

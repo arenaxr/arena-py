@@ -437,7 +437,7 @@ def make_followspot(object_id, position, delimiter, color):
         location=(position[0], arblib.FLOOR_Y, position[2]),
         rotation=(-0.7, 0, 0, 0.7),
         ttl=arblib.TTL_TEMP,
-        data=('{"material":{"transparent":true,"opacity":0.4,"shader":"flat"}}'))
+        data='{"material":{"transparent":true,"opacity":0.4,"shader":"flat"}}')
 
 
 def cubeline(object_id, start, end, line_width, color, parent=None):
@@ -458,7 +458,7 @@ def cubeline(object_id, start, end, line_width, color, parent=None):
         location=(statistics.median([start[0], end[0]]),
                   statistics.median([start[1], end[1]]),
                   statistics.median([start[2], end[2]])),
-        data=('{"material":{"transparent":true,"opacity":0.4,"shader":"flat"}}'))
+        data='{"material":{"transparent":true,"opacity":0.4,"shader":"flat"}}')
 
 
 def dir_clickers(object_id, delimiter, axis, direction, location, callback):
@@ -492,7 +492,7 @@ def dir_clickers(object_id, delimiter, axis, direction, location, callback):
         location=loc,
         scale=(0.05, 0.05, 0.05),
         callback=callback,
-        data=('{"material":{"shader":"flat"}}'))
+        data='{"material":{"shader":"flat"}}')
 
 
 def make_clickline(axis, linelen, objid, start, delimiter, color, callback, ghost=False):
@@ -669,7 +669,8 @@ def stretchline_callback(event=None):
         moved = (loc[0], loc[1], recenter(scaled[2], sca[2], loc[2], move))
     if scaled[0] <= 0 or scaled[1] <= 0 or scaled[2] <= 0:
         return
-    arblib.stretch_obj(REALM, SCENE, object_id, scale=scaled, position=moved)
+    arblib.stretch_obj(REALM, SCENE, object_id,
+                       scale=scaled, position=moved)
     print(str(obj.scale) + " to " + str(scaled))
     do_stretch_select(event.source, object_id, scale=scaled)
 

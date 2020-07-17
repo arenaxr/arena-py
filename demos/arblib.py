@@ -200,7 +200,7 @@ class User:
                 objType=arena.Shape.light,
                 parent=self.camname,
                 color=(144, 144, 173),
-                data=('{"light":{"type":"point","intensity":"0.75"}}'),
+                data='{"light":{"type":"point","intensity":"0.75"}}',
             )
         elif self.lamp:
             self.lamp.delete()
@@ -244,7 +244,7 @@ class Button:
             objName=obj_name,
             objType=shape,
             parent=parent,
-            data=('{"material":{"transparent":true,"opacity":0.4,"shader":"flat"}}'),
+            data='{"material":{"transparent":true,"opacity":0.4,"shader":"flat"}}',
             location=(x * 1.1, PANEL_RADIUS, y * -1.1),
             scale=scale,
             color=self.colorbut,
@@ -343,7 +343,7 @@ def init_origin():
     size = [0.2, 0.4, 0.2]
     arena.Object(  # 370mm x 370mm # 750mm
         objType=arena.Shape.cone, objName="arb-origin",
-        data=('{"material":{"transparent":true,"opacity":0.5,"shader":"flat"}}'),
+        data='{"material":{"transparent":true,"opacity":0.5,"shader":"flat"}}',
         color=(255, 114, 33),
         location=(0, size[1] / 2, 0),
         scale=(size[0] / 2, size[1], size[2] / 2))
@@ -354,7 +354,7 @@ def init_origin():
         scale=(size[0] / 15, size[1] / 10, size[2] / 15))
     arena.Object(
         objType=arena.Shape.cube, objName="arb-origin-base",
-        data=('{"material":{"transparent":true,"opacity":0.5,"shader":"flat"}}'),
+        data='{"material":{"transparent":true,"opacity":0.5,"shader":"flat"}}',
         color=(0, 0, 0),
         location=(0, size[1] / 20, 0),
         scale=(size[0], size[1] / 10, size[2]))

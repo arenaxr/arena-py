@@ -269,7 +269,6 @@ def show_redpill_scene(enabled):
     glen = arblib.GRIDLEN
     y = arblib.FLOOR_Y
     hcolor = arblib.rgb2hex(arblib.CLR_GRID)
-    # TODO make thickline?
     for z in range(-glen, glen + 1):
         name = "grid_z" + str(z)
         if enabled:
@@ -346,93 +345,102 @@ def do_move_select(camname, object_id):
     )
 
 
-def do_nudge_select(camname, object_id):
-    pobjs = arblib.get_network_persisted_obj(object_id, BROKER, SCENE)
-    if not pobjs:
-        return
-    obj = arblib.ObjectPersistence(pobjs[0])
+def do_nudge_select(camname, objid, position=None):
     color = arblib.CLR_NUDGE
     delim = "_click_"
     callback = nudgeline_callback
-    # generate child 6dof non-persist, clickable lines
-    make_clickline("x", 1, obj, delim, color, callback)
-    make_clickline("y", 1, obj, delim, color, callback)
-    make_clickline("z", 1, obj, delim, color, callback)
-    make_followspot(obj, delim, color)
-    pos = obj.position
-    position = (round(pos[0], 3), round(pos[1], 3), round(pos[2], 3))
-    USERS[camname].set_textright(
-        USERS[camname].target_style+" p"+str(position))
+    if not position:
+        pobjs = arblib.get_network_persisted_obj(objid, BROKER, SCENE)
+        if not pobjs:
+            return
+        obj = arblib.ObjectPersistence(pobjs[0])
+        position = obj.position
+    # nudge object + or - on 3 axis
+    make_clickline("x", 1, objid, position, delim, color, callback)
+    make_clickline("y", 1, objid, position, delim, color, callback)
+    make_clickline("z", 1, objid, position, delim, color, callback)
+    make_followspot(objid, position, delim, color)
+    pos = (round(position[0], 3), round(position[1], 3), round(position[2], 3))
+    USERS[camname].set_textright(USERS[camname].target_style+" p"+str(pos))
 
 
-def do_scale_select(camname, object_id):
-    pobjs = arblib.get_network_persisted_obj(object_id, BROKER, SCENE)
-    if not pobjs:
-        return
-    obj = arblib.ObjectPersistence(pobjs[0])
+def do_scale_select(camname, object_id, scale=None):
     color = arblib.CLR_SCALE
     delim = "_click_"
     callback = scaleline_callback
-    # generate 2 child non-persist, clickable lines
-    make_clickline("x", 1, obj, delim, color, callback)
-    make_followspot(obj, delim, color)
-    sca = obj.scale
-    scale = (round(sca[0], 3), round(sca[1], 3), round(sca[2], 3))
-    USERS[camname].set_textright(USERS[camname].target_style+" s"+str(scale))
+    if not scale:
+        pobjs = arblib.get_network_persisted_obj(object_id, BROKER, SCENE)
+        if not pobjs:
+            return
+        obj = arblib.ObjectPersistence(pobjs[0])
+        position = obj.position
+        scale = obj.scale
+        # scale entire object + or - on all axis
+        make_clickline("x", 1, object_id, position, delim, color, callback)
+        make_followspot(object_id, position, delim, color)
+    sca = (round(scale[0], 3), round(scale[1], 3), round(scale[2], 3))
+    USERS[camname].set_textright(USERS[camname].target_style+" s"+str(sca))
 
 
-def do_stretch_select(camname, object_id):
-    pobjs = arblib.get_network_persisted_obj(object_id, BROKER, SCENE)
-    if not pobjs:
-        return
-    obj = arblib.ObjectPersistence(pobjs[0])
+def do_stretch_select(camname, objid, scale=None):
     color = arblib.CLR_STRETCH
     delim = "_click_"
     callback = stretchline_callback
-    # generate 2 child non-persist, clickable lines
-    make_clickline("x", 1, obj, delim, color, callback)
-    make_clickline("x", -1, obj, delim, color, callback)
-    make_clickline("y", 1, obj, delim, color, callback)
-    make_clickline("y", -1, obj, delim, color, callback)
-    make_clickline("z", 1, obj, delim, color, callback)
-    make_clickline("z", -1, obj, delim, color, callback)
-    make_followspot(obj, delim, color)
-    sca = obj.scale
-    scale = (round(sca[0], 3), round(sca[1], 3), round(sca[2], 3))
-    USERS[camname].set_textright(USERS[camname].target_style+" s"+str(scale))
+    if not scale:
+        pobjs = arblib.get_network_persisted_obj(objid, BROKER, SCENE)
+        if not pobjs:
+            return
+        obj = arblib.ObjectPersistence(pobjs[0])
+        if obj.object_type == arena.Shape.gltf_model:  # scale too unpredictable
+            return
+        position = obj.position
+        scale = obj.scale
+        # generate 2 child non-persist, clickable lines
+        make_clickline("x", 1, objid, position, delim, color, callback)
+        make_clickline("x", -1, objid, position, delim, color, callback)
+        make_clickline("y", 1, objid, position, delim, color, callback)
+        make_clickline("y", -1, objid, position, delim, color, callback)
+        make_clickline("z", 1, objid, position, delim, color, callback)
+        make_clickline("z", -1, objid, position, delim, color, callback)
+        make_followspot(objid, position, delim, color)
+    sca = (round(scale[0], 3), round(scale[1], 3), round(scale[2], 3))
+    USERS[camname].set_textright(USERS[camname].target_style+" s"+str(sca))
 
 
-def do_rotate_select(camname, object_id):
-    pobjs = arblib.get_network_persisted_obj(object_id, BROKER, SCENE)
-    if not pobjs:
-        return
-    obj = arblib.ObjectPersistence(pobjs[0])
+def do_rotate_select(camname, objid, rotation=None):
     color = arblib.CLR_ROTATE
     delim = "_click_"
     callback = rotateline_callback
-    # generate child 6dof non-persist, clickable lines
-    make_clickline("x", 1, obj, delim, color, callback, True)
-    make_clickline("y", 1, obj, delim, color, callback, True)
-    make_clickline("z", 1, obj, delim, color, callback, True)
-    make_followspot(obj, delim, color)
-    rote = arblib.rotation_quat2euler(obj.rotation)
+    if not rotation:
+        pobjs = arblib.get_network_persisted_obj(objid, BROKER, SCENE)
+        if not pobjs:
+            return
+        obj = arblib.ObjectPersistence(pobjs[0])
+        position = obj.position
+        rotation = obj.rotation
+        # rotate object + or - on 3 axis, plus show orginal axis as after effect
+        make_clickline("x", 1, objid, position, delim, color, callback, True)
+        make_clickline("y", 1, objid, position, delim, color, callback, True)
+        make_clickline("z", 1, objid, position, delim, color, callback, True)
+        make_followspot(objid, position, delim, color)
+    rote = arblib.rotation_quat2euler(rotation)
     euler = (round(rote[0], 1), round(rote[1], 1), round(rote[2], 1))
     USERS[camname].set_textright(USERS[camname].target_style+"d r"+str(euler))
 
 
-def make_followspot(obj, delimiter, color):
+def make_followspot(object_id, position, delimiter, color):
     arena.Object(  # follow spot on ground
         objType=arena.Shape.circle,
-        objName=(obj.object_id + delimiter + "_spot"),
+        objName=(object_id + delimiter + "_spot"),
         scale=(0.1, 0.1, 0.1),
         color=color,
-        location=(obj.position[0], arblib.FLOOR_Y, obj.position[2]),
+        location=(position[0], arblib.FLOOR_Y, position[2]),
         rotation=(-0.7, 0, 0, 0.7),
         ttl=arblib.TTL_TEMP,
-        data=('{"material":{"transparent":true,"opacity":0.5,"shader":"flat"}}'))
+        data=('{"material":{"transparent":true,"opacity":0.4,"shader":"flat"}}'))
 
 
-def cubeline(object_name, start, end, line_width, color, parent=None):
+def cubeline(object_id, start, end, line_width, color, parent=None):
     print(str(start) + " " + str(end))
     if start[1] == end[1] and start[2] == end[2]:
         scale = (abs(start[0] - end[0]), line_width, line_width)
@@ -442,7 +450,7 @@ def cubeline(object_name, start, end, line_width, color, parent=None):
         scale = (line_width, line_width, abs(start[2] - end[2]))
     arena.Object(
         objType=arena.Shape.cube,
-        objName=object_name,
+        objName=object_id,
         color=color,
         ttl=arblib.TTL_TEMP,
         parent=parent,
@@ -450,7 +458,7 @@ def cubeline(object_name, start, end, line_width, color, parent=None):
         location=(statistics.median([start[0], end[0]]),
                   statistics.median([start[1], end[1]]),
                   statistics.median([start[2], end[2]])),
-        data=('{"material":{"transparent":true,"opacity":0.5,"shader":"flat"}}'))
+        data=('{"material":{"transparent":true,"opacity":0.4,"shader":"flat"}}'))
 
 
 def dir_clickers(object_id, delimiter, axis, direction, location, callback):
@@ -487,10 +495,8 @@ def dir_clickers(object_id, delimiter, axis, direction, location, callback):
         data=('{"material":{"shader":"flat"}}'))
 
 
-def make_clickline(axis, linelen, obj, delimiter, color, callback, ghost=False):
+def make_clickline(axis, linelen, objid, start, delimiter, color, callback, ghost=False):
     endx = endy = endz = 0
-    object_id = obj.object_id
-    start = obj.position
     direction = "p"
     if linelen < 0:
         direction = "n"
@@ -502,21 +508,21 @@ def make_clickline(axis, linelen, obj, delimiter, color, callback, ghost=False):
         endz = linelen * arblib.CLICKLINE_LEN
     end = (start[0]+endx, start[1]+endy, start[2]+endz)
     cubeline(  # reference line
-        object_name=(object_id + delimiter + axis + direction + "_line"),
+        object_id=(objid + delimiter + axis + direction + "_line"),
         color=color,
         start=start,
         end=end,
         line_width=0.005)
     if ghost:
         cubeline(  # ghostline aligns to parent rotation
-            object_name=(object_id + delimiter + axis + direction + "_ghost"),
+            object_id=(objid + delimiter + axis + direction + "_ghost"),
             color=color,
-            parent=object_id,
+            parent=objid,
             start=(0, 0, 0),
             end=(endx*10, endy*10, endz*10),
             line_width=0.005)
     dir_clickers(  # click objects
-        object_id=object_id,
+        object_id=objid,
         delimiter=delimiter,
         axis=axis,
         direction=direction,
@@ -586,7 +592,8 @@ def nudgeline_callback(event=None):
         nudged = (loc[0], loc[1], incr_neg(loc[2], inc))
     arblib.move_obj(REALM, SCENE, object_id, nudged)
     print(str(obj.position) + " to " + str(nudged))
-    do_nudge_select(event.source, object_id)  # update nudgelines
+    # always redraw nudgelines
+    do_nudge_select(event.source, object_id, position=nudged)
 
 
 def scaleline_callback(event=None):
@@ -607,7 +614,6 @@ def scaleline_callback(event=None):
         return
     obj = arblib.ObjectPersistence(pobjs[0])
     scaled = sca = obj.scale
-    nudged = loc = obj.position
     inc = meters_increment(USERS[event.source].target_style)
     if direction == "xp":
         scaled = (incr_pos(sca[0], inc), incr_pos(
@@ -619,7 +625,7 @@ def scaleline_callback(event=None):
         return
     arblib.scale_obj(REALM, SCENE, object_id, scaled)
     print(str(obj.scale) + " to " + str(scaled))
-    do_scale_select(event.source, object_id)  # update scalelines
+    do_scale_select(event.source, object_id, scale=scaled)
 
 
 def stretchline_callback(event=None):
@@ -634,25 +640,38 @@ def stretchline_callback(event=None):
         return
     stretch_id = event.object_id.split("_click_")
     object_id = stretch_id[0]
-    direction = (stretch_id[1])[:2]
+    direction = (stretch_id[1])[0:2]
+    move = (stretch_id[1])[1:4]
     pobjs = arblib.get_network_persisted_obj(object_id, BROKER, SCENE)
     if not pobjs:
         return
     obj = arblib.ObjectPersistence(pobjs[0])
-    stretched = sca = obj.scale
-    nudged = loc = obj.position
+    scaled = sca = obj.scale
+    moved = loc = obj.position
     inc = meters_increment(USERS[event.source].target_style)
     if direction == "xp":
-        stretched = (incr_pos(sca[0], inc), incr_pos(
-            sca[1], inc), incr_pos(sca[2], inc))
+        scaled = (incr_pos(sca[0], inc), sca[1], sca[2])
+        moved = (recenter(scaled[0], sca[0], loc[0], move), loc[1], loc[2])
     elif direction == "xn":
-        stretched = (incr_neg(sca[0], inc), incr_neg(
-            sca[1], inc), incr_neg(sca[2], inc))
-    if stretched[0] <= 0 or stretched[1] <= 0 or stretched[2] <= 0:
+        scaled = (incr_neg(sca[0], inc), sca[1], sca[2])
+        moved = (recenter(scaled[0], sca[0], loc[0], move), loc[1], loc[2])
+    elif direction == "yp":
+        scaled = (sca[0], incr_pos(sca[1], inc), sca[2])
+        moved = (loc[0], recenter(scaled[1], sca[1], loc[1], move), loc[2])
+    elif direction == "yn":
+        scaled = (sca[0], incr_neg(sca[1], inc), sca[2])
+        moved = (loc[0], recenter(scaled[1], sca[1], loc[1], move), loc[2])
+    elif direction == "zp":
+        scaled = (sca[0], sca[1], incr_pos(sca[2], inc))
+        moved = (loc[0], loc[1], recenter(scaled[2], sca[2], loc[2], move))
+    elif direction == "zn":
+        scaled = (sca[0], sca[1], incr_neg(sca[2], inc))
+        moved = (loc[0], loc[1], recenter(scaled[2], sca[2], loc[2], move))
+    if scaled[0] <= 0 or scaled[1] <= 0 or scaled[2] <= 0:
         return
-    arblib.stretch_obj(REALM, SCENE, object_id, stretched, loc)
-    print(str(obj.scale) + " to " + str(stretched))
-    do_stretch_select(event.source, object_id)  # update stretchlines
+    arblib.stretch_obj(REALM, SCENE, object_id, scale=scaled, position=moved)
+    print(str(obj.scale) + " to " + str(scaled))
+    do_stretch_select(event.source, object_id, scale=scaled)
 
 
 def rotateline_callback(event=None):
@@ -693,7 +712,14 @@ def rotateline_callback(event=None):
     rotated = arblib.rotation_euler2quat(rotated)
     arblib.rotate_obj(REALM, SCENE, object_id, rotated)
     print(str(obj.rotation) + " to " + str(rotated))
-    do_rotate_select(event.source, object_id)  # update rotatelines
+    do_rotate_select(event.source, object_id, rotation=rotated)
+
+
+def recenter(scaled, sca, loc, move):
+    if move == "p_p" or move == "n_n":
+        return loc+(abs(sca-scaled)/2)
+    else:
+        return loc-(abs(sca-scaled)/2)
 
 
 def create_obj(clipboard, location):

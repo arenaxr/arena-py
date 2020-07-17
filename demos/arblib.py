@@ -343,7 +343,7 @@ def init_origin():
     size = [0.2, 0.4, 0.2]
     arena.Object(  # 370mm x 370mm # 750mm
         objType=arena.Shape.cone, objName="arb-origin",
-        transparency=arena.Transparency(True, 0.5),
+        data=('{"material":{"transparent":true,"opacity":0.5,"shader":"flat"}}'),
         color=(255, 114, 33),
         location=(0, size[1] / 2, 0),
         scale=(size[0] / 2, size[1], size[2] / 2))
@@ -354,7 +354,7 @@ def init_origin():
         scale=(size[0] / 15, size[1] / 10, size[2] / 15))
     arena.Object(
         objType=arena.Shape.cube, objName="arb-origin-base",
-        transparency=arena.Transparency(True, 0.5),
+        data=('{"material":{"transparent":true,"opacity":0.5,"shader":"flat"}}'),
         color=(0, 0, 0),
         location=(0, size[1] / 20, 0),
         scale=(size[0], size[1] / 10, size[2]))
@@ -420,15 +420,15 @@ def color_obj(realm, scene, object_id, hcolor):
     update_persisted_obj(realm, scene, object_id, "Recolored", data=data)
 
 
-def stretch_obj(realm, scene, object_id, scale, pos):
+def stretch_obj(realm, scene, object_id, scale, position):
     data = {"scale": {
         "x": arena.agran(scale[0]),
         "y": arena.agran(scale[1]),
         "z": arena.agran(scale[2])
-    },"position": {
-        "x": arena.agran(pos[0]),
-        "y": arena.agran(pos[1]),
-        "z": arena.agran(pos[2])
+    }, "position": {
+        "x": arena.agran(position[0]),
+        "y": arena.agran(position[1]),
+        "z": arena.agran(position[2])
     }}
     update_persisted_obj(realm, scene, object_id, "Stretched", data=data)
 
@@ -442,21 +442,21 @@ def scale_obj(realm, scene, object_id, scale):
     update_persisted_obj(realm, scene, object_id, "Resized", data=data)
 
 
-def move_obj(realm, scene, object_id, pos):
+def move_obj(realm, scene, object_id, position):
     data = {"position": {
-        "x": arena.agran(pos[0]),
-        "y": arena.agran(pos[1]),
-        "z": arena.agran(pos[2])
+        "x": arena.agran(position[0]),
+        "y": arena.agran(position[1]),
+        "z": arena.agran(position[2])
     }}
     update_persisted_obj(realm, scene, object_id, "Relocated", data=data)
 
 
-def rotate_obj(realm, scene, object_id, rot):
+def rotate_obj(realm, scene, object_id, rotation):
     data = {"rotation": {
-        "x": arena.agran(rot[0]),
-        "y": arena.agran(rot[1]),
-        "z": arena.agran(rot[2]),
-        "w": arena.agran(rot[3])
+        "x": arena.agran(rotation[0]),
+        "y": arena.agran(rotation[1]),
+        "z": arena.agran(rotation[2]),
+        "w": arena.agran(rotation[3])
     }}
     update_persisted_obj(realm, scene, object_id, "Rotated", data=data)
 

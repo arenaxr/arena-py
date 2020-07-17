@@ -440,8 +440,17 @@ def make_followspot(object_id, position, delimiter, color):
         data='{"material":{"transparent":true,"opacity":0.4,"shader":"flat"}}')
 
 
+def regline(object_id, start, end, line_width, color, parent=None):
+    arena.Object(
+        objType=arena.Shape.line,
+        objName=object_id,
+        color=color,
+        ttl=arblib.TTL_TEMP,
+        parent=parent,
+        line=arena.Line(start, end, line_width, color))
+
+
 def cubeline(object_id, start, end, line_width, color, parent=None):
-    print(str(start) + " " + str(end))
     if start[1] == end[1] and start[2] == end[2]:
         scale = (abs(start[0] - end[0]), line_width, line_width)
     elif start[0] == end[0] and start[2] == end[2]:
@@ -514,13 +523,13 @@ def make_clickline(axis, linelen, objid, start, delimiter, color, callback, ghos
         end=end,
         line_width=0.005)
     if ghost:
-        cubeline(  # ghostline aligns to parent rotation
+        regline(  # ghostline aligns to parent rotation
             object_id=(objid + delimiter + axis + direction + "_ghost"),
             color=color,
             parent=objid,
             start=(0, 0, 0),
             end=(endx*10, endy*10, endz*10),
-            line_width=0.005)
+            line_width=0.05)
     dir_clickers(  # click objects
         object_id=objid,
         delimiter=delimiter,

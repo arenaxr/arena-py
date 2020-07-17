@@ -149,18 +149,18 @@ class User:
         self.dbuttons = []
         buttons = [
             # top row
-            [Mode.REDPILL, -2, 1, True, ButtonType.TOGGLE],
+            [Mode.ROTATE, -2, 1, True, ButtonType.ACTION],
             [Mode.NUDGE, -1, 1, True, ButtonType.ACTION],
-            [Mode.CREATE, 0, 1, True, ButtonType.ACTION],
-            [Mode.MODEL, 1, 1, True, ButtonType.ACTION],
-            [Mode.SCALE, 2, 1, True, ButtonType.ACTION],
+            [Mode.SCALE, 0, 1, True, ButtonType.ACTION],
+            [Mode.STRETCH, 1, 1, True, ButtonType.ACTION],
+            [Mode.MODEL, 2, 1, True, ButtonType.ACTION],
+            [Mode.CREATE, 3, 1, True, ButtonType.ACTION],
             # center row
-            [Mode.ROTATE, -2, 0, True, ButtonType.ACTION],
+            [Mode.REDPILL, -2, 0, True, ButtonType.TOGGLE],
             [Mode.MOVE, -1, 0, True, ButtonType.ACTION],
             [Mode.LOCK, 0, 0, True, ButtonType.TOGGLE],
             [Mode.DELETE, 1, 0, True, ButtonType.ACTION],
             [Mode.PARENT, 2, 0, True, ButtonType.ACTION],
-            [Mode.STRETCH, 3, 0, True, ButtonType.ACTION],
             # bottom row
             [Mode.WALL, -2, -1, True, ButtonType.ACTION],
             [Mode.OCCLUDE, -1, -1, True, ButtonType.ACTION],

@@ -318,7 +318,8 @@ class ObjectPersistence:
         self.scale = (jData["attributes"]["scale"]["x"],
                       jData["attributes"]["scale"]["y"],
                       jData["attributes"]["scale"]["z"])
-        self.color = hex2rgb(jData["attributes"]["color"])
+        if "color" in jData["attributes"]:
+            self.color = hex2rgb(jData["attributes"]["color"])
         if "url" in jData["attributes"]:
             self.url = jData["attributes"]["url"]
         if "material" in jData["attributes"]:

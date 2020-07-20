@@ -17,8 +17,8 @@ CLICKLINE_LEN = 1  # meters
 CLICKLINE_SCL = (1, 1, 1)  # meters
 FLOOR_Y = 0.001  # meters
 GRIDLEN = 20  # meters
-CLIP_RADIUS = 1  # meters
 PANEL_RADIUS = 1  # meters
+CLIP_RADIUS = PANEL_RADIUS + 0.25  # meters
 LOCK_XOFF = 0  # quaternion vector
 LOCK_YOFF = 0.7  # quaternion vector
 TTL_TEMP = 30  # seconds
@@ -44,6 +44,21 @@ GAZES = [
     [(-0.7, 0, 0, 0.7), (-0.5, 0.5, 0.5, 0.5), (-0.5, -0.5, -0.5, 0.5), (0, 0.7, 0.7, 0),  # D
      (0.7, 0, 0, 0.7), (0.5, 0.5, -0.5, 0.5), (0.5, -0.5, 0.5, 0.5), (0, -0.7, 0.7, 0)],  # U
 ]
+
+ROTATE_CONES = {
+    "xp": [(0.7, 0, 0, 0.7), (-0.7, 0, 0, 0.7)],
+    "yp": [(0, 0, -0.7, 0.7), (0, 0, 0.7, 0.7)],
+    "zp": [(0, 0, 0.7, 0.7), (0, 0, -0.7, 0.7)],
+}
+
+DIRECT_CONES = {
+    "xp": [(0, 0, -0.7, 0.7), (0, 0, 0.7, 0.7)],
+    "xn": [(0, 0, 0.7, 0.7), (0, 0, -0.7, 0.7)],
+    "yp": [(0, 0, 0, 1), (-1, 0, 0, 0)],
+    "yn": [(-1, 0, 0, 0), (0, 0, 0, 1)],
+    "zp": [(0.7, 0, 0, 0.7), (-0.7, 0, 0, 0.7)],
+    "zn": [(-0.7, 0, 0, 0.7), (0.7, 0, 0, 0.7)],
+}
 
 
 def get_keys():
@@ -318,7 +333,8 @@ class ObjectPersistence:
         self.scale = (jData["attributes"]["scale"]["x"],
                       jData["attributes"]["scale"]["y"],
                       jData["attributes"]["scale"]["z"])
-        self.color = hex2rgb(jData["attributes"]["color"])
+        if "color" in jData["attributes"]:
+            self.color = hex2rgb(jData["attributes"]["color"])
         if "url" in jData["attributes"]:
             self.url = jData["attributes"]["url"]
         if "material" in jData["attributes"]:
@@ -378,14 +394,13 @@ def set_clipboard(camname,
         clickable=True,
         callback=callback,
     )
-    target_scale = (clip.scale[0]/10, clip.scale[1]/10, clip.scale[2]/10)
     arena.Object(
         objName=("cliptarget_" + camname),
         objType=arena.Shape.sphere,
         color=color,
         location=(0, 0, 0),
-        parent=clip.objName,
-        scale=target_scale,
+        parent=camname,
+        scale=(0.01, 0.01, 0.01),
         transparency=arena.Transparency(True, 0.4),
         clickable=True,
         callback=callback,

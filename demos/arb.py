@@ -390,6 +390,8 @@ def do_stretch_select(camname, objid, scale=None):
         obj = arblib.ObjectPersistence(pobjs[0])
         if obj.object_type == arena.Shape.gltf_model:  # scale too unpredictable
             return
+        if obj.rotation != (0, 0, 0, 1):  # scale too unpredictable
+            return
         position = obj.position
         scale = obj.scale
         # scale and reposition on one of 6 sides
@@ -476,7 +478,7 @@ def cubeline(object_id, start, end, line_width, color=(255, 255, 255), parent=""
         data='{"material":{"transparent":true,"opacity":0.4,"shader":"flat"}}')
 
 
-def dir_clickers(object_id, delimiter, axis, direction, location, color, callback, parent=""):
+def dir_clickers(object_id, delimiter, axis, direction, location, color, cones, callback, parent=""):
     if parent:
         location = (location[0]*10, location[1]*10, location[2]*10)
     loc = location
@@ -496,7 +498,7 @@ def dir_clickers(object_id, delimiter, axis, direction, location, color, callbac
         clickable=True,
         ttl=arblib.TTL_TEMP,
         location=location,
-        rotation=(0, 0, 0, 1),
+        rotation=cones[axis+direction][0],
         scale=(0.05, 0.09, 0.05),
         parent=parent,
         callback=callback)
@@ -507,7 +509,7 @@ def dir_clickers(object_id, delimiter, axis, direction, location, color, callbac
         clickable=True,
         ttl=arblib.TTL_TEMP,
         location=loc,
-        rotation=(-1, 0, 0, 0),
+        rotation=cones[axis+direction][1],
         scale=(0.05, 0.09, 0.05),
         parent=parent,
         callback=callback)
@@ -540,6 +542,9 @@ def make_clickline(axis, linelen, objid, start, color, callback, ghost=False, pa
             end=end,
             line_width=0.05,
             parent=objid)
+    cones = arblib.DIRECT_CONES
+    if ghost:
+        cones = arblib.ROTATE_CONES
     dir_clickers(  # click objects
         object_id=objid,
         delimiter=delimiter,
@@ -547,6 +552,7 @@ def make_clickline(axis, linelen, objid, start, color, callback, ghost=False, pa
         direction=direction,
         location=end,
         color=color,
+        cones=cones,
         callback=callback,
         parent=parent)
 

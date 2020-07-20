@@ -394,14 +394,13 @@ def set_clipboard(camname,
         clickable=True,
         callback=callback,
     )
-    target_scale = (clip.scale[0] / 10, clip.scale[1] / 10, clip.scale[2] / 10)
     arena.Object(
         objName=("cliptarget_" + camname),
         objType=arena.Shape.sphere,
         color=color,
         location=(0, 0, 0),
-        parent=clip.objName,
-        scale=target_scale,
+        parent=camname,
+        scale=(0.01, 0.01, 0.01),
         transparency=arena.Transparency(True, 0.4),
         clickable=True,
         callback=callback,

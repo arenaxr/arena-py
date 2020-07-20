@@ -311,7 +311,7 @@ def do_rename(old_id, new_id):
     if not pobjs:
         return
     data = json.dumps(pobjs[0]["attributes"])
-    arena.Object(objName=new_id, data=data)
+    arena.Object(objName=new_id, persist=True, data=data)
     print("Duplicating " + old_id + " to " + new_id)
     arblib.delete_obj(REALM, SCENE, old_id)
 

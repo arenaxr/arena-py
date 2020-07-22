@@ -504,7 +504,7 @@ class Object:
     def fireEvent(self, event=None, position=(0, 0, 0), source=None):
         global debug_toggle
         if event is None:
-            event = arena.EventType.mousedown.value
+            event = EventType.mousedown.value
         else:
             event = event.value
         if source is None:

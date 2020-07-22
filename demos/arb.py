@@ -93,7 +93,7 @@ def panel_callback(event=None):
         USERS[camname].set_textleft(USERS[camname].mode)
         USERS[camname].set_textright("")
         USERS[camname].target_id = None
-        USERS[camname].clipboard.delete()
+        USERS[camname].del_clipboard()
         # clear last dropdown
         for but in USERS[camname].dbuttons:
             but.delete()
@@ -112,16 +112,17 @@ def panel_callback(event=None):
     # active buttons
     if mode == Mode.CREATE:
         update_dropdown(camname, objid, mode, arblib.SHAPES, 2, shape_callback)
-        USERS[camname].clipboard = arblib.set_clipboard(
-            camname, callback=clipboard_callback,
+        USERS[camname].set_clipboard(
+            callback=clipboard_callback,
             obj_type=arena.Shape(USERS[camname].target_style))
     elif mode == Mode.MODEL:
         update_dropdown(camname, objid, mode, MODELS, 2, model_callback)
         idx = MODELS.index(USERS[camname].target_style)
         url = MANIFEST[idx]['url_gltf']
-        USERS[camname].clipboard = arblib.set_clipboard(
-            camname, callback=clipboard_callback, obj_type=arena.Shape.gltf_model,
-            scale=arblib.SCL_GLTF, url=url)
+        sca = MANIFEST[idx]['scale']
+        USERS[camname].set_clipboard(
+            callback=clipboard_callback, obj_type=arena.Shape.gltf_model,
+            scale=(sca, sca, sca), url=url)
     elif mode == Mode.COLOR:
         update_dropdown(camname, objid, mode,
                         arblib.COLORS, -2, color_callback)
@@ -135,9 +136,9 @@ def panel_callback(event=None):
         USERS[camname].typetext = ""
         USERS[camname].set_textright(USERS[camname].typetext)
     elif mode == Mode.WALL:
-        USERS[camname].clipboard = arblib.set_clipboard(  # brick
-            camname, obj_type=arena.Shape.cube, callback=wall_callback,
-            color=(203, 65, 84), scale=(0.1, 0.05, 0.05))
+        USERS[camname].set_clipboard(
+            obj_type=arena.Shape.circle, callback=wall_callback,
+            scale=(0.005, 0.005, 0.005))
         USERS[camname].set_textright("Start: tap flush corner.")
     elif mode == Mode.NUDGE:
         update_dropdown(camname, objid, mode, arblib.METERS, 2, gen_callback)
@@ -189,9 +190,10 @@ def model_callback(event=None):
     model = obj[2]
     idx = MODELS.index(model)
     url = MANIFEST[idx]['url_gltf']
-    USERS[camname].clipboard = arblib.set_clipboard(
-        camname, callback=clipboard_callback, obj_type=arena.Shape.gltf_model,
-        scale=arblib.SCL_GLTF, url=url)
+    sca = MANIFEST[idx]['scale']
+    USERS[camname].set_clipboard(
+        callback=clipboard_callback, obj_type=arena.Shape.gltf_model,
+        scale=(sca, sca, sca), url=url)
     USERS[camname].set_textright(model)
     USERS[camname].target_style = model
 
@@ -205,8 +207,8 @@ def shape_callback(event=None):
     if owner != camname:
         return  # only owner may activate
     shape = obj[2]
-    USERS[camname].clipboard = arblib.set_clipboard(
-        camname, callback=clipboard_callback, obj_type=arena.Shape(shape))
+    USERS[camname].set_clipboard(
+        callback=clipboard_callback, obj_type=arena.Shape(shape))
     USERS[camname].set_textright(shape)
     USERS[camname].target_style = shape
 
@@ -333,8 +335,7 @@ def do_move_select(camname, object_id):
         return
     obj = arblib.ObjectPersistence(pobjs[0])
     USERS[camname].target_id = object_id
-    USERS[camname].clipboard = arblib.set_clipboard(
-        camname,
+    USERS[camname].set_clipboard(
         callback=clipboard_callback,
         obj_type=obj.object_type,
         scale=obj.scale,
@@ -353,7 +354,7 @@ def update_controls(objid):
 
 def do_nudge_select(camname, objid, position=None):
     color = arblib.CLR_NUDGE
-    delim = "_click_"
+    delim = "_nudge_"
     callback = nudgeline_callback
     if not position:
         pobjs = arblib.get_network_persisted_obj(objid, BROKER, SCENE)
@@ -366,14 +367,14 @@ def do_nudge_select(camname, objid, position=None):
     make_clickline("x", 1, objid, position, delim, color, callback)
     make_clickline("y", 1, objid, position, delim, color, callback)
     make_clickline("z", 1, objid, position, delim, color, callback)
-    make_followspot(objid, position, color)
+    make_followspot(objid, position, delim, color)
     pos = (round(position[0], 3), round(position[1], 3), round(position[2], 3))
     USERS[camname].set_textright(USERS[camname].target_style + " p" + str(pos))
 
 
 def do_scale_select(camname, objid, scale=None):
     color = arblib.CLR_SCALE
-    delim = "_click_"
+    delim = "_scale_"
     callback = scaleline_callback
     if not scale:
         pobjs = arblib.get_network_persisted_obj(objid, BROKER, SCENE)
@@ -385,14 +386,14 @@ def do_scale_select(camname, objid, scale=None):
         # scale entire object + or - on all axis
         update_controls(objid)
         make_clickline("x", 1, objid, position, delim, color, callback)
-        make_followspot(objid, position, color)
+        make_followspot(objid, position, delim, color)
     sca = (round(scale[0], 3), round(scale[1], 3), round(scale[2], 3))
     USERS[camname].set_textright(USERS[camname].target_style + " s" + str(sca))
 
 
 def do_stretch_select(camname, objid, scale=None):
     color = arblib.CLR_STRETCH
-    delim = "_click_"
+    delim = "_stretch_"
     callback = stretchline_callback
     if not scale:
         pobjs = arblib.get_network_persisted_obj(objid, BROKER, SCENE)
@@ -413,14 +414,14 @@ def do_stretch_select(camname, objid, scale=None):
         make_clickline("y", -1, objid, position, delim, color, callback)
         make_clickline("z", 1, objid, position, delim, color, callback)
         make_clickline("z", -1, objid, position, delim, color, callback)
-        make_followspot(objid, position, color)
+        make_followspot(objid, position, delim, color)
     sca = (round(scale[0], 3), round(scale[1], 3), round(scale[2], 3))
     USERS[camname].set_textright(USERS[camname].target_style + " s" + str(sca))
 
 
 def do_rotate_select(camname, objid, rotation=None):
     color = arblib.CLR_ROTATE
-    delim = "_click_"
+    delim = "_rotate_"
     callback = rotateline_callback
     if not rotation:
         pobjs = arblib.get_network_persisted_obj(objid, BROKER, SCENE)
@@ -435,17 +436,17 @@ def do_rotate_select(camname, objid, rotation=None):
         make_clickline("x", 1, objid, position, delim, color, callback, True)
         make_clickline("y", 1, objid, position, delim, color, callback, True)
         make_clickline("z", 1, objid, position, delim, color, callback, True)
-        make_followspot(objid, position, color)
+        make_followspot(objid, position, delim, color)
     rote = arblib.rotation_quat2euler(rotation)
     euler = (round(rote[0], 1), round(rote[1], 1), round(rote[2], 1))
     USERS[camname].set_textright(
         USERS[camname].target_style + "d r" + str(euler))
 
 
-def make_followspot(object_id, position, color):
+def make_followspot(object_id, position, delim, color):
     CONTROLS[object_id].append(arena.Object(  # follow spot on ground
         objType=arena.Shape.circle,
-        objName=(object_id + "_spot"),
+        objName=(object_id + delim + "spot"),
         scale=(0.1, 0.1, 0.1),
         color=color,
         location=(position[0], arblib.FLOOR_Y, position[2]),
@@ -472,17 +473,17 @@ def regline(object_id, axis, direction, delim, suffix, start,
 
 def cubeline(object_id, axis, direction, delim, suffix, start,
              end, line_width, color=(255, 255, 255), parent=""):
+    if parent:
+        end = ((end[0] - start[0]) * 10,
+               (end[1] - start[1]) * 10,
+               (end[2] - start[2]) * 10)
+        start = (0, 0, 0)
     if start[1] == end[1] and start[2] == end[2]:
         scale = (abs(start[0] - end[0]), line_width, line_width)
     elif start[0] == end[0] and start[2] == end[2]:
         scale = (line_width, abs(start[1] - end[1]), line_width)
     elif start[0] == end[0] and start[1] == end[1]:
         scale = (line_width, line_width, abs(start[2] - end[2]))
-    if parent:
-        end = ((end[0] - start[0]) * 10,
-               (end[1] - start[1]) * 10,
-               (end[2] - start[2]) * 10)
-        start = (0, 0, 0)
     CONTROLS[object_id].append(arena.Object(
         objType=arena.Shape.cube,
         objName=(object_id + delim + axis + direction + "_" + suffix),
@@ -552,9 +553,9 @@ def make_clickline(axis, linelen, objid, start, delim,
         suffix="line", color=color, start=start, end=end, line_width=0.005,
         parent=parent)
     if ghost:
-        regline(  # ghostline aligns to parent rotation
+        cubeline(  # ghostline aligns to parent rotation
             object_id=objid, axis=axis, direction=direction, delim=delim,
-            suffix="ghost", start=start, end=end, line_width=0.05, parent=objid)
+            suffix="ghost", start=start, end=end, line_width=0.005, parent=objid)
     if ghost:
         cones = arblib.ROTATE_CONES
     else:
@@ -566,7 +567,7 @@ def make_clickline(axis, linelen, objid, start, delim,
 
 def do_move_relocate(camname, newlocation):
     arblib.move_obj(REALM, SCENE, USERS[camname].target_id, newlocation)
-    USERS[camname].clipboard.delete()
+    USERS[camname].del_clipboard()
     USERS[camname].target_id = None
 
 
@@ -603,7 +604,7 @@ def nudgeline_callback(event=None):
         return
     if USERS[event.source].mode != Mode.NUDGE:
         return
-    nudge_id = event.object_id.split("_click_")
+    nudge_id = event.object_id.split("_nudge_")
     object_id = nudge_id[0]
     direction = (nudge_id[1])[: 2]
     pobjs = arblib.get_network_persisted_obj(object_id, BROKER, SCENE)
@@ -640,7 +641,7 @@ def scaleline_callback(event=None):
         return
     if USERS[event.source].mode != Mode.SCALE:
         return
-    scale_id = event.object_id.split("_click_")
+    scale_id = event.object_id.split("_scale_")
     object_id = scale_id[0]
     direction = (scale_id[1])[: 2]
     pobjs = arblib.get_network_persisted_obj(object_id, BROKER, SCENE)
@@ -672,7 +673,7 @@ def stretchline_callback(event=None):
         return
     if USERS[event.source].mode != Mode.STRETCH:
         return
-    stretch_id = event.object_id.split("_click_")
+    stretch_id = event.object_id.split("_stretch_")
     object_id = stretch_id[0]
     direction = (stretch_id[1])[0: 2]
     move = (stretch_id[1])[1: 4]
@@ -719,7 +720,7 @@ def rotateline_callback(event=None):
         return
     if USERS[event.source].mode != Mode.ROTATE:
         return
-    rotate_id = event.object_id.split("_click_")
+    rotate_id = event.object_id.split("_rotate_")
     object_id = rotate_id[0]
     direction = (rotate_id[1])[: 2]
     pobjs = arblib.get_network_persisted_obj(object_id, BROKER, SCENE)
@@ -783,7 +784,6 @@ def clipboard_callback(event=None):
     if owner != camname:
         return  # only owner may activate
     location = event.position
-    # clicked self HUD clipboard
     if USERS[camname].mode == Mode.CREATE or USERS[camname].mode == Mode.MODEL:
         create_obj(USERS[camname].clipboard, location)
     elif USERS[camname].mode == Mode.MOVE:

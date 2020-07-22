@@ -119,9 +119,10 @@ def panel_callback(event=None):
         update_dropdown(camname, objid, mode, MODELS, 2, model_callback)
         idx = MODELS.index(USERS[camname].target_style)
         url = MANIFEST[idx]['url_gltf']
+        sca = MANIFEST[idx]['scale']
         USERS[camname].set_clipboard(
             callback=clipboard_callback, obj_type=arena.Shape.gltf_model,
-            scale=arblib.SCL_GLTF, url=url)
+            scale=(sca, sca, sca), url=url)
     elif mode == Mode.COLOR:
         update_dropdown(camname, objid, mode,
                         arblib.COLORS, -2, color_callback)
@@ -189,9 +190,10 @@ def model_callback(event=None):
     model = obj[2]
     idx = MODELS.index(model)
     url = MANIFEST[idx]['url_gltf']
+    sca = MANIFEST[idx]['scale']
     USERS[camname].set_clipboard(
         callback=clipboard_callback, obj_type=arena.Shape.gltf_model,
-        scale=arblib.SCL_GLTF, url=url)
+        scale=(sca, sca, sca), url=url)
     USERS[camname].set_textright(model)
     USERS[camname].target_style = model
 

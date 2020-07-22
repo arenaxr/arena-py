@@ -31,7 +31,6 @@ CLR_SELECT = (255, 255, 0)  # yellow
 CLR_GRID = (0, 255, 0)  # green
 CLR_ENABLED = (255, 255, 255)  # white
 CLR_DISABLED = (128, 128, 128)  # gray
-SCL_GLTF = (0.1, 0.1, 0.1)  # meters
 QUAT_VEC_RGTS = [-0.7, -0.5, 0, 0.5, 0.7, 1]
 QUAT_DEV_RGT = 0.075
 WALL_WIDTH = 0.1  # meters
@@ -93,6 +92,7 @@ SHAPES = [arena.Shape.sphere.value,
 DEF_MANIFEST = [{  # default model, if none loaded
     "name": "duck",
     "url_gltf": "models/Duck.glb",
+    "scale": 0.1
 }]
 
 
@@ -220,13 +220,12 @@ class User:
                       callback=None,
                       obj_type=arena.Shape.sphere,
                       scale=(0.05, 0.05, 0.05),
-                      color=CLR_ENABLED,
+                      position=(0, 0, -CLIP_RADIUS),
                       url=""):
         self.clipboard = arena.Object(  # show item to be created
             objName=("clipboard_" + self.camname),
             objType=obj_type,
-            color=color,
-            location=(0, 0, -CLIP_RADIUS),
+            location=position,
             parent=self.camname,
             scale=scale,
             transparency=arena.Transparency(True, 0.4),
@@ -236,8 +235,7 @@ class User:
         self.cliptarget = arena.Object(  # add helper target object to find true origin
             objName=("cliptarget_" + self.camname),
             objType=arena.Shape.circle,
-            color=color,
-            location=(0, 0, -CLIP_RADIUS),
+            location=position,
             parent=self.camname,
             scale=(0.005, 0.005, 0.005),
             transparency=arena.Transparency(True, 0.4),

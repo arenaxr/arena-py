@@ -35,7 +35,6 @@ SCL_GLTF = (0.1, 0.1, 0.1)  # meters
 QUAT_VEC_RGTS = [-0.7, -0.5, 0, 0.5, 0.7, 1]
 QUAT_DEV_RGT = 0.075
 WALL_WIDTH = 0.1  # meters
-
 GAZES = [
     [(0, 0, 0, 1), (0, 0, -0.7, 0.7), (0, 0, 1, 0), (0, 0, 0.7, 0.7),  # F
      (0, 1, 0, 0), (-0.7, -0.7, 0, 0), (0.7, 0.7, 0, 0), (1, 0, 0, 0)],  # B
@@ -44,13 +43,11 @@ GAZES = [
     [(-0.7, 0, 0, 0.7), (-0.5, 0.5, 0.5, 0.5), (-0.5, -0.5, -0.5, 0.5), (0, 0.7, 0.7, 0),  # D
      (0.7, 0, 0, 0.7), (0.5, 0.5, -0.5, 0.5), (0.5, -0.5, 0.5, 0.5), (0, -0.7, 0.7, 0)],  # U
 ]
-
 ROTATE_CONES = {
     "xp": [(0.7, 0, 0, 0.7), (-0.7, 0, 0, 0.7)],
     "yp": [(0, 0, -0.7, 0.7), (0, 0, 0.7, 0.7)],
     "zp": [(0, 0, 0.7, 0.7), (0, 0, -0.7, 0.7)],
 }
-
 DIRECT_CONES = {
     "xp": [(0, 0, -0.7, 0.7), (0, 0, 0.7, 0.7)],
     "xn": [(0, 0, 0.7, 0.7), (0, 0, -0.7, 0.7)],
@@ -128,6 +125,7 @@ class User:
     def __init__(self, camname, panel_callback):
         self.camname = camname
         self.mode = Mode.NONE
+        self.clipboard = self.cliptarget = None
         self.target_id = self.location = self.rotation = None
         self.target_style = self.typetext = ""
         self.locky = LOCK_YOFF
@@ -138,8 +136,6 @@ class User:
         init_origin()
 
         # set HUD to each user
-        self.clipboard = arena.Object(scale=(0, 0, 0))
-        self.clipboard.delete()  # workaround for non-empty object
         self.hudtext_left = self.make_hudtext(
             "hudTextLeft", (-0.15, 0.15, -0.5), str(self.mode))
         self.hudtext_right = self.make_hudtext(
@@ -219,6 +215,40 @@ class User:
             )
         elif self.lamp:
             self.lamp.delete()
+
+    def set_clipboard(self,
+                      callback=None,
+                      obj_type=arena.Shape.sphere,
+                      scale=(0.05, 0.05, 0.05),
+                      color=CLR_ENABLED,
+                      url=""):
+        self.clipboard = arena.Object(  # show item to be created
+            objName=("clipboard_" + self.camname),
+            objType=obj_type,
+            color=color,
+            location=(0, 0, -CLIP_RADIUS),
+            parent=self.camname,
+            scale=scale,
+            transparency=arena.Transparency(True, 0.4),
+            url=url,
+            clickable=True,
+            callback=callback)
+        self.cliptarget = arena.Object(  # add helper target object to find true origin
+            objName=("cliptarget_" + self.camname),
+            objType=arena.Shape.circle,
+            color=color,
+            location=(0, 0, -CLIP_RADIUS),
+            parent=self.camname,
+            scale=(0.005, 0.005, 0.005),
+            transparency=arena.Transparency(True, 0.4),
+            clickable=True,
+            callback=callback)
+
+    def del_clipboard(self):
+        if self.cliptarget:
+            self.cliptarget.delete()
+        if self.clipboard:
+            self.clipboard.delete()
 
 
 class Button:
@@ -376,38 +406,6 @@ def init_origin():
         scale=(size[0], size[1] / 10, size[2]))
 
 
-def set_clipboard(camname,
-                  callback=None,
-                  obj_type=arena.Shape.sphere,
-                  scale=(0.05, 0.05, 0.05),
-                  color=CLR_ENABLED,
-                  url=""):
-    clip = arena.Object(
-        objName=("clipboard_" + camname),
-        objType=obj_type,
-        color=color,
-        location=(0, 0, -CLIP_RADIUS),
-        parent=camname,
-        scale=scale,
-        transparency=arena.Transparency(True, 0.4),
-        url=url,
-        clickable=True,
-        callback=callback,
-    )
-    arena.Object(
-        objName=("cliptarget_" + camname),
-        objType=arena.Shape.sphere,
-        color=color,
-        location=(0, 0, 0),
-        parent=camname,
-        scale=(0.01, 0.01, 0.01),
-        transparency=arena.Transparency(True, 0.4),
-        clickable=True,
-        callback=callback,
-    )
-    return clip
-
-
 def update_persisted_obj(realm, scene, object_id, label,
                          action="update", data=None, persist="true", ttl=None):
     msg = {
@@ -432,7 +430,7 @@ def color_obj(realm, scene, object_id, hcolor):
     # NOTE: "color" updates base color, NOT reflected live.
     # "material":{"color"} updates raw color, IS reflected live.
     data = {"color": "#" + hcolor, "material": {"color": "#" + hcolor}}
-    update_persisted_obj(realm, scene, object_id, "Recolored", data=data)
+    update_persisted_obj(realm, scene, object_id, "Colored", data=data)
 
 
 def stretch_obj(realm, scene, object_id, scale, position):
@@ -454,7 +452,7 @@ def scale_obj(realm, scene, object_id, scale):
         "y": arena.agran(scale[1]),
         "z": arena.agran(scale[2])
     }}
-    update_persisted_obj(realm, scene, object_id, "Resized", data=data)
+    update_persisted_obj(realm, scene, object_id, "Scaled", data=data)
 
 
 def move_obj(realm, scene, object_id, position):
@@ -463,7 +461,7 @@ def move_obj(realm, scene, object_id, position):
         "y": arena.agran(position[1]),
         "z": arena.agran(position[2])
     }}
-    update_persisted_obj(realm, scene, object_id, "Relocated", data=data)
+    update_persisted_obj(realm, scene, object_id, "Positioned", data=data)
 
 
 def rotate_obj(realm, scene, object_id, rotation):
@@ -478,7 +476,8 @@ def rotate_obj(realm, scene, object_id, rotation):
 
 def parent_obj(realm, scene, object_id, parent_id):
     data = {"parent": parent_id}
-    update_persisted_obj(realm, scene, object_id, "Parent set", data=data)
+    update_persisted_obj(realm, scene, object_id,
+                         parent_id + " adopted", data=data)
 
 
 def delete_obj(realm, scene, object_id):

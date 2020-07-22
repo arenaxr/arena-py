@@ -93,7 +93,7 @@ def panel_callback(event=None):
         USERS[camname].set_textleft(USERS[camname].mode)
         USERS[camname].set_textright("")
         USERS[camname].target_id = None
-        USERS[camname].clipboard.delete()
+        USERS[camname].del_clipboard()
         # clear last dropdown
         for but in USERS[camname].dbuttons:
             but.delete()
@@ -112,15 +112,15 @@ def panel_callback(event=None):
     # active buttons
     if mode == Mode.CREATE:
         update_dropdown(camname, objid, mode, arblib.SHAPES, 2, shape_callback)
-        USERS[camname].clipboard = arblib.set_clipboard(
-            camname, callback=clipboard_callback,
+        USERS[camname].set_clipboard(
+            callback=clipboard_callback,
             obj_type=arena.Shape(USERS[camname].target_style))
     elif mode == Mode.MODEL:
         update_dropdown(camname, objid, mode, MODELS, 2, model_callback)
         idx = MODELS.index(USERS[camname].target_style)
         url = MANIFEST[idx]['url_gltf']
-        USERS[camname].clipboard = arblib.set_clipboard(
-            camname, callback=clipboard_callback, obj_type=arena.Shape.gltf_model,
+        USERS[camname].set_clipboard(
+            callback=clipboard_callback, obj_type=arena.Shape.gltf_model,
             scale=arblib.SCL_GLTF, url=url)
     elif mode == Mode.COLOR:
         update_dropdown(camname, objid, mode,
@@ -135,8 +135,8 @@ def panel_callback(event=None):
         USERS[camname].typetext = ""
         USERS[camname].set_textright(USERS[camname].typetext)
     elif mode == Mode.WALL:
-        USERS[camname].clipboard = arblib.set_clipboard(  # brick
-            camname, obj_type=arena.Shape.cube, callback=wall_callback,
+        USERS[camname].set_clipboard(  # brick
+            obj_type=arena.Shape.cube, callback=wall_callback,
             color=(203, 65, 84), scale=(0.1, 0.05, 0.05))
         USERS[camname].set_textright("Start: tap flush corner.")
     elif mode == Mode.NUDGE:
@@ -189,8 +189,8 @@ def model_callback(event=None):
     model = obj[2]
     idx = MODELS.index(model)
     url = MANIFEST[idx]['url_gltf']
-    USERS[camname].clipboard = arblib.set_clipboard(
-        camname, callback=clipboard_callback, obj_type=arena.Shape.gltf_model,
+    USERS[camname].set_clipboard(
+        callback=clipboard_callback, obj_type=arena.Shape.gltf_model,
         scale=arblib.SCL_GLTF, url=url)
     USERS[camname].set_textright(model)
     USERS[camname].target_style = model
@@ -205,8 +205,8 @@ def shape_callback(event=None):
     if owner != camname:
         return  # only owner may activate
     shape = obj[2]
-    USERS[camname].clipboard = arblib.set_clipboard(
-        camname, callback=clipboard_callback, obj_type=arena.Shape(shape))
+    USERS[camname].set_clipboard(
+        callback=clipboard_callback, obj_type=arena.Shape(shape))
     USERS[camname].set_textright(shape)
     USERS[camname].target_style = shape
 
@@ -333,8 +333,7 @@ def do_move_select(camname, object_id):
         return
     obj = arblib.ObjectPersistence(pobjs[0])
     USERS[camname].target_id = object_id
-    USERS[camname].clipboard = arblib.set_clipboard(
-        camname,
+    USERS[camname].set_clipboard(
         callback=clipboard_callback,
         obj_type=obj.object_type,
         scale=obj.scale,
@@ -566,7 +565,7 @@ def make_clickline(axis, linelen, objid, start, delim,
 
 def do_move_relocate(camname, newlocation):
     arblib.move_obj(REALM, SCENE, USERS[camname].target_id, newlocation)
-    USERS[camname].clipboard.delete()
+    USERS[camname].del_clipboard()
     USERS[camname].target_id = None
 
 
@@ -783,7 +782,6 @@ def clipboard_callback(event=None):
     if owner != camname:
         return  # only owner may activate
     location = event.position
-    # clicked self HUD clipboard
     if USERS[camname].mode == Mode.CREATE or USERS[camname].mode == Mode.MODEL:
         create_obj(USERS[camname].clipboard, location)
     elif USERS[camname].mode == Mode.MOVE:

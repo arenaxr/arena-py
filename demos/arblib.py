@@ -9,6 +9,7 @@ import enum
 import json
 import urllib.request
 
+import webcolors
 from scipy.spatial.transform import Rotation
 
 import arena
@@ -350,26 +351,30 @@ class ObjectPersistence:
         # Warning: We may lose some object detail, not useful for full copy.
         self.object_id = jData["object_id"]
         self.persist = True  # by nature
-        self.object_type = arena.Shape(jData["attributes"]["object_type"])
-        self.position = (jData["attributes"]["position"]["x"],
-                         jData["attributes"]["position"]["y"],
-                         jData["attributes"]["position"]["z"])
-        self.rotation = (jData["attributes"]["rotation"]["x"],
-                         jData["attributes"]["rotation"]["y"],
-                         jData["attributes"]["rotation"]["z"],
-                         jData["attributes"]["rotation"]["w"])
-        self.scale = (jData["attributes"]["scale"]["x"],
-                      jData["attributes"]["scale"]["y"],
-                      jData["attributes"]["scale"]["z"])
+        if "object_type" in jData["attributes"]:
+            self.object_type = arena.Shape(jData["attributes"]["object_type"])
+        if "position" in jData["attributes"]:
+            self.position = (jData["attributes"]["position"]["x"],
+                             jData["attributes"]["position"]["y"],
+                             jData["attributes"]["position"]["z"])
+        if "rotation" in jData["attributes"]:
+            self.rotation = (jData["attributes"]["rotation"]["x"],
+                             jData["attributes"]["rotation"]["y"],
+                             jData["attributes"]["rotation"]["z"],
+                             jData["attributes"]["rotation"]["w"])
+        if "scale" in jData["attributes"]:
+            self.scale = (jData["attributes"]["scale"]["x"],
+                          jData["attributes"]["scale"]["y"],
+                          jData["attributes"]["scale"]["z"])
         if "color" in jData["attributes"]:
-            self.color = hex2rgb(jData["attributes"]["color"])
+            self.color = arena_color2rgb(jData["attributes"]["color"])
         if "url" in jData["attributes"]:
             self.url = jData["attributes"]["url"]
         if "material" in jData["attributes"]:
             if "colorWrite" in jData["attributes"]["material"]:
                 self.transparent_occlude = not jData["attributes"]["material"]["colorWrite"]
             if "color" in jData["attributes"]["material"]:
-                self.color_material = hex2rgb(
+                self.color_material = arena_color2rgb(
                     jData["attributes"]["material"]["color"])
         if "parent" in jData["attributes"]:
             self.parent = jData["attributes"]["parent"]
@@ -486,9 +491,12 @@ def rgb2hex(rgb):
     return "#{:02x}{:02x}{:02x}".format(rgb[0], rgb[1], rgb[2])
 
 
-def hex2rgb(hcolor):
-    hcolor = hcolor.lstrip('#')
-    return tuple(int(hcolor[c:c + 2], 16) for c in (0, 2, 4))
+def arena_color2rgb(color):
+    if color[0] != '#':
+        wcrgb = webcolors.name_to_rgb(color)
+        return (wcrgb.red, wcrgb.green, wcrgb.blue)
+    color = color.lstrip('#')
+    return tuple(int(color[c:c + 2], 16) for c in (0, 2, 4))
 
 
 def temp_loc_marker(location, color):

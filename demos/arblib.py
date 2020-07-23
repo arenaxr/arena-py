@@ -23,7 +23,7 @@ CLIP_RADIUS = PANEL_RADIUS + 0.25  # meters
 LOCK_XOFF = 0  # quaternion vector
 LOCK_YOFF = 0.7  # quaternion vector
 TTL_TEMP = 30  # seconds
-CLR_HUDTEXT = (200, 200, 200)  # light gray
+CLR_HUDTEXT = (128, 128, 128)  # gray
 CLR_NUDGE = (255, 255, 0)  # yellow
 CLR_SCALE = (0, 0, 255)  # blue
 CLR_STRETCH = (255, 0, 0)  # red
@@ -32,7 +32,7 @@ CLR_SELECT = (255, 255, 0)  # yellow
 CLR_GRID = (0, 255, 0)  # green
 CLR_ENABLED = (255, 255, 255)  # white
 CLR_DISABLED = (128, 128, 128)  # gray
-QUAT_VEC_RGTS = [-0.7, -0.5, 0, 0.5, 0.7, 1]
+QUAT_VEC_RGTS = [-1, -0.7, -0.5, 0, 0.5, 0.7, 1]
 QUAT_DEV_RGT = 0.075
 WALL_WIDTH = 0.1  # meters
 GAZES = [
@@ -288,7 +288,8 @@ class Button:
             objName=obj_name,
             objType=shape,
             parent=parent,
-            data='{"material":{"transparent":true,"opacity":0.4,"shader":"flat"}}',
+            data=('{"material":{"transparent":true,"opacity":' +
+                  str(0.4)+',"shader":"flat"}}'),
             location=(x * 1.1, PANEL_RADIUS, y * -1.1),
             scale=scale,
             color=self.colorbut,

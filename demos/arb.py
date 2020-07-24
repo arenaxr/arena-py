@@ -27,10 +27,11 @@ MANIFEST = arblib.DEF_MANIFEST
 MODELS = []
 USERS = {}  # dictionary of user instances
 CONTROLS = {}  # dictionary of active controls
+DEMO = False
 
 
 def init_args():
-    global BROKER, REALM, SCENE, MODELS, MANIFEST
+    global BROKER, REALM, SCENE, MODELS, MANIFEST, DEMO
     parser = argparse.ArgumentParser(description='ARENA AR Builder.')
     parser.add_argument(
         'scene', type=str, help='ARENA scene name')
@@ -40,9 +41,13 @@ def init_args():
         '-r', '--realm', type=str, help='ARENA realm name', default=REALM)
     parser.add_argument(
         '-m', '--models', type=str, help='JSON GLTF manifest')
+    parser.add_argument('-d', '--demo', default=False,
+                        action='store_true', help='Demo mode.')
     args = parser.parse_args()
     print(args)
     SCENE = args.scene
+    if args.demo:
+        DEMO = True
     if args.broker is not None:
         BROKER = args.broker
     if args.realm is not None:
@@ -130,6 +135,7 @@ def panel_callback(event=None):
     if not USERS[camname].panel[objid].enabled:
         return
 
+    update_controls(USERS[camname].target_id)
     mode = USERS[camname].panel[objid].mode
     btype = USERS[camname].panel[objid].type
     if btype == ButtonType.TOGGLE:
@@ -140,6 +146,7 @@ def panel_callback(event=None):
             # button click is same, then goes off and NONE
             USERS[camname].panel[objid].set_active(False)
             USERS[camname].mode = Mode.NONE
+            USERS[camname].target_id = None
         else:
             # if button goes on, last button must go off
             prev_objid = camname + "_button_" + USERS[camname].mode.value
@@ -149,7 +156,6 @@ def panel_callback(event=None):
             USERS[camname].mode = mode
         USERS[camname].set_textleft(USERS[camname].mode)
         USERS[camname].set_textright("")
-        USERS[camname].target_id = None
         USERS[camname].del_clipboard()
         # clear last dropdown
         for but in USERS[camname].dbuttons:
@@ -199,12 +205,20 @@ def panel_callback(event=None):
         USERS[camname].set_textright("Start: tap flush corner.")
     elif mode == Mode.NUDGE:
         update_dropdown(camname, objid, mode, arblib.METERS, 2, gen_callback)
+        if USERS[camname].target_id:
+            do_nudge_select(camname, USERS[camname].target_id)
     elif mode == Mode.SCALE:
         update_dropdown(camname, objid, mode, arblib.METERS, 2, gen_callback)
+        if USERS[camname].target_id:
+            do_scale_select(camname, USERS[camname].target_id)
     elif mode == Mode.STRETCH:
         update_dropdown(camname, objid, mode, arblib.METERS, 2, gen_callback)
+        if USERS[camname].target_id:
+            do_stretch_select(camname, USERS[camname].target_id)
     elif mode == Mode.ROTATE:
         update_dropdown(camname, objid, mode, arblib.DEGREES, 2, gen_callback)
+        if USERS[camname].target_id:
+            do_rotate_select(camname, USERS[camname].target_id)
 
 
 def update_dropdown(camname, objid, mode, options, row, callback):
@@ -399,7 +413,6 @@ def do_nudge_select(camname, objid, position=None):
             return
         obj = arblib.ObjectPersistence(pobjs[0])
         position = obj.position
-    update_controls(objid)
     # nudge object + or - on 3 axis
     make_clickline("x", 1, objid, position, delim, color, callback)
     make_clickline("y", 1, objid, position, delim, color, callback)
@@ -421,7 +434,6 @@ def do_scale_select(camname, objid, scale=None):
         position = obj.position
         scale = obj.scale
         # scale entire object + or - on all axis
-        update_controls(objid)
         make_clickline("x", 1, objid, position, delim, color, callback)
         make_followspot(objid, position, delim, color)
     sca = (round(scale[0], 3), round(scale[1], 3), round(scale[2], 3))
@@ -443,7 +455,6 @@ def do_stretch_select(camname, objid, scale=None):
             return
         position = obj.position
         scale = obj.scale
-        update_controls(objid)
         # scale and reposition on one of 6 sides
         make_clickline("x", 1, objid, position, delim, color, callback)
         make_clickline("x", -1, objid, position, delim, color, callback)
@@ -467,7 +478,6 @@ def do_rotate_select(camname, objid, rotation=None):
         obj = arblib.ObjectPersistence(pobjs[0])
         position = obj.position
         rotation = obj.rotation
-        update_controls(objid)
         # rotate object + or - on 3 axis, plus show orginal axis as after
         # effect
         make_clickline("x", 1, objid, position, delim, color, callback, True)
@@ -489,7 +499,6 @@ def make_followspot(object_id, position, delim, color):
         color=color,
         location=(position[0], arblib.FLOOR_Y, position[2]),
         rotation=(-0.7, 0, 0, 0.7),
-        ttl=arblib.TTL_TEMP,
         data='{"material":{"transparent":true,"opacity":0.4,"shader":"flat"}}'))
 
 
@@ -505,7 +514,6 @@ def regline(object_id, axis, direction, delim, suffix, start,
         objType=arena.Shape.line,
         objName=name,
         color=color,
-        ttl=arblib.TTL_TEMP,
         parent=parent,
         line=arena.Line(start, end, line_width, color)))
 
@@ -528,7 +536,6 @@ def cubeline(object_id, axis, direction, delim, suffix, start,
         objType=arena.Shape.cube,
         objName=name,
         color=color,
-        ttl=arblib.TTL_TEMP,
         parent=parent,
         scale=scale,
         location=(statistics.median([start[0], end[0]]),
@@ -557,7 +564,6 @@ def dir_clickers(object_id, axis, direction, delim, location,
         objName=name,
         color=color,
         clickable=True,
-        ttl=arblib.TTL_TEMP,
         location=location,
         rotation=cones[axis + direction][0],
         scale=(0.05, 0.09, 0.05),
@@ -570,7 +576,6 @@ def dir_clickers(object_id, axis, direction, delim, location,
         objName=name,
         color=color,
         clickable=True,
-        ttl=arblib.TTL_TEMP,
         location=loc,
         rotation=cones[axis + direction][1],
         scale=(0.05, 0.09, 0.05),
@@ -581,6 +586,8 @@ def dir_clickers(object_id, axis, direction, delim, location,
 
 def make_clickline(axis, linelen, objid, start, delim,
                    color, callback, ghost=False, parent=None):
+    if objid not in CONTROLS.keys():
+        CONTROLS[objid] = {}
     endx = endy = endz = 0
     direction = "p"
     if linelen < 0:
@@ -837,13 +844,13 @@ def make_wall(camname):
     print("wall rotation " + str(rot))
     # which axis to use for wall? use camera gaze
     # TODO: rotation still off
-    if (rot in arblib.GAZES[0]):
+    if rot in arblib.GAZES[0]:
         height = abs(sloc[1] - eloc[1])
         width = abs(sloc[0] - eloc[0])
-    elif (rot in arblib.GAZES[1]):
+    elif rot in arblib.GAZES[1]:
         height = abs(sloc[1] - eloc[1])
         width = abs(sloc[2] - eloc[2])
-    elif (rot in arblib.GAZES[2]):
+    elif rot in arblib.GAZES[2]:
         height = abs(sloc[2] - eloc[2])
         width = abs(sloc[0] - eloc[0])
     else:
@@ -931,6 +938,7 @@ def scene_callback(msg):
         # handle click
         elif json_msg["type"] == "mousedown":
             # clicked on persisted object to modify
+            USERS[camname].target_id = objid  # always update
             if USERS[camname].mode == Mode.DELETE:
                 arblib.delete_obj(REALM, SCENE, objid)
             elif USERS[camname].mode == Mode.MOVE:
@@ -965,5 +973,5 @@ def scene_callback(msg):
 # parse args and wait for events
 init_args()
 random.seed()
-arena.init(BROKER, REALM, SCENE, scene_callback)
+arena.init(BROKER, REALM, SCENE, callback=scene_callback, democlick=DEMO)
 arena.handle_events()

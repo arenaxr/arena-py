@@ -36,6 +36,8 @@ CLR_DISABLED = (128, 128, 128)  # gray
 CLR_BUTTON_TEXT = (0, 0, 0)  # black
 OPC_BUTTON = 0.3  # % opacity
 OPC_BUTTON_HOVER = 0.6  # % opacity
+OPC_CLINE = 0.6  # % opacity
+OPC_CLINE_HOVER = 0.9  # % opacity
 QUAT_VEC_RGTS = [-1, -0.7, -0.5, 0, 0.5, 0.7, 1]
 QUAT_DEV_RGT = 0.075
 WALL_WIDTH = 0.1  # meters
@@ -436,6 +438,11 @@ def update_persisted_obj(realm, scene, object_id, label,
         msg["data"] = data
     arena.arena_publish(realm + "/s/" + scene + "/" + object_id, msg)
     print(label + " " + object_id)
+
+
+def opaque_obj(realm, scene, object_id, opacity):
+    data = {"material": {"transparent": True, "opacity": opacity}}
+    update_persisted_obj(realm, scene, object_id, "Opaqued", data=data)
 
 
 def occlude_obj(realm, scene, object_id, occlude):

@@ -100,19 +100,21 @@ def handle_clip_event(event):
 
 def handle_clickline_event(event, mode):
     # naming order: objectname_clicktype_axis_direction
+    click_id = event.object_id.split("_"+mode.value+"_")
+    object_id = click_id[0]
+    direction = (click_id[1])[0: 2]
+    move = (click_id[1])[1: 4]
     if event.event_type == arena.EventType.mouseenter:
-        USERS[event.source].set_textstatus(event.object_id)
+        CONTROLS[object_id][event.object_id].update(
+            transparency=arena.Transparency(True, arblib.OPC_CLINE_HOVER))
     elif event.event_type == arena.EventType.mouseleave:
-        USERS[event.source].set_textstatus("")
+        CONTROLS[object_id][event.object_id].update(
+            transparency=arena.Transparency(True, arblib.OPC_CLINE))
     # allow any user to change an object
     if event.event_type != arena.EventType.mousedown:
         return None, None, None
     if USERS[event.source].mode != mode:
         return None, None, None
-    click_id = event.object_id.split("_"+mode.value+"_")
-    object_id = click_id[0]
-    direction = (click_id[1])[0: 2]
-    move = (click_id[1])[1: 4]
     pobjs = arblib.get_network_persisted_obj(object_id, BROKER, SCENE)
     if not pobjs:
         return None, None, None
@@ -381,9 +383,9 @@ def do_move_select(camname, object_id):
 
 def update_controls(objid):
     if objid not in CONTROLS.keys():
-        CONTROLS[objid] = []
+        CONTROLS[objid] = {}
     for ctrl in CONTROLS[objid]:
-        ctrl.delete()
+        CONTROLS[objid][ctrl].delete()
     CONTROLS[objid].clear()
 
 
@@ -479,9 +481,10 @@ def do_rotate_select(camname, objid, rotation=None):
 
 
 def make_followspot(object_id, position, delim, color):
-    CONTROLS[object_id].append(arena.Object(  # follow spot on ground
+    name = (object_id + delim + "spot")
+    CONTROLS[object_id][name] = (arena.Object(  # follow spot on ground
         objType=arena.Shape.circle,
-        objName=(object_id + delim + "spot"),
+        objName=name,
         scale=(0.1, 0.1, 0.1),
         color=color,
         location=(position[0], arblib.FLOOR_Y, position[2]),
@@ -497,9 +500,10 @@ def regline(object_id, axis, direction, delim, suffix, start,
                (end[1] - start[1]) * 10,
                (end[2] - start[2]) * 10)
         start = (0, 0, 0)
-    CONTROLS[object_id].append(arena.Object(
+    name = (object_id + delim + axis + direction + "_" + suffix)
+    CONTROLS[object_id][name] = (arena.Object(
         objType=arena.Shape.line,
-        objName=(object_id + delim + axis + direction + "_" + suffix),
+        objName=name,
         color=color,
         ttl=arblib.TTL_TEMP,
         parent=parent,
@@ -519,9 +523,10 @@ def cubeline(object_id, axis, direction, delim, suffix, start,
         scale = (line_width, abs(start[1] - end[1]), line_width)
     elif start[0] == end[0] and start[1] == end[1]:
         scale = (line_width, line_width, abs(start[2] - end[2]))
-    CONTROLS[object_id].append(arena.Object(
+    name = (object_id + delim + axis + direction + "_" + suffix)
+    CONTROLS[object_id][name] = (arena.Object(
         objType=arena.Shape.cube,
-        objName=(object_id + delim + axis + direction + "_" + suffix),
+        objName=name,
         color=color,
         ttl=arblib.TTL_TEMP,
         parent=parent,
@@ -546,26 +551,30 @@ def dir_clickers(object_id, axis, direction, delim, location,
         loc = (location[0], location[1] + npos, location[2])
     elif axis == "z":
         loc = (location[0], location[1], location[2] + npos)
-    CONTROLS[object_id].append(arena.Object(   # click object positive
+    name = (object_id + delim + axis + "p_" + direction)
+    CONTROLS[object_id][name] = (arena.Object(   # click object positive
         objType=arena.Shape.cone,
-        objName=(object_id + delim + axis + "p_" + direction),
+        objName=name,
         color=color,
         clickable=True,
         ttl=arblib.TTL_TEMP,
         location=location,
         rotation=cones[axis + direction][0],
         scale=(0.05, 0.09, 0.05),
+        transparency=arena.Transparency(True, arblib.OPC_CLINE),
         parent=parent,
         callback=callback))
-    CONTROLS[object_id].append(arena.Object(  # click object negative
+    name = (object_id + delim + axis + "n_" + direction)
+    CONTROLS[object_id][name] = (arena.Object(  # click object negative
         objType=arena.Shape.cone,
-        objName=(object_id + delim + axis + "n_" + direction),
+        objName=name,
         color=color,
         clickable=True,
         ttl=arblib.TTL_TEMP,
         location=loc,
         rotation=cones[axis + direction][1],
         scale=(0.05, 0.09, 0.05),
+        transparency=arena.Transparency(True, arblib.OPC_CLINE),
         parent=parent,
         callback=callback))
 

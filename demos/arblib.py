@@ -33,7 +33,8 @@ CLR_SELECT = (255, 255, 0)  # yellow
 CLR_GRID = (0, 255, 0)  # green
 CLR_ENABLED = (255, 255, 255)  # white
 CLR_DISABLED = (128, 128, 128)  # gray
-OPC_BUTTON = 0.4  # % opacity
+CLR_BUTTON_TEXT = (0, 0, 0)  # black
+OPC_BUTTON = 0.3  # % opacity
 OPC_BUTTON_HOVER = 0.6  # % opacity
 QUAT_VEC_RGTS = [-1, -0.7, -0.5, 0, 0.5, 0.7, 1]
 QUAT_DEV_RGT = 0.075
@@ -270,10 +271,9 @@ class Button:
         self.enabled = enable
         if enable:
             self.colorbut = color
-            self.colortxt = CLR_ENABLED
         else:
             self.colorbut = CLR_DISABLED
-            self.colortxt = CLR_DISABLED
+        self.colortxt = CLR_BUTTON_TEXT
         if len(label) > 8:  # easier to read
             self.label = label[:6] + "..."
         else:

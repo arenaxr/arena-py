@@ -23,7 +23,6 @@ PANEL_RADIUS = 1  # meters
 CLIP_RADIUS = PANEL_RADIUS + 0.25  # meters
 LOCK_XOFF = 0  # quaternion vector
 LOCK_YOFF = 0.7  # quaternion vector
-TTL_TEMP = 30  # seconds
 CLR_HUDTEXT = (128, 128, 128)  # gray
 CLR_NUDGE = (255, 255, 0)  # yellow
 CLR_SCALE = (0, 0, 255)  # blue
@@ -31,12 +30,12 @@ CLR_STRETCH = (255, 0, 0)  # red
 CLR_ROTATE = (255, 165, 0)  # orange
 CLR_SELECT = (255, 255, 0)  # yellow
 CLR_GRID = (0, 255, 0)  # green
-CLR_ENABLED = (255, 255, 255)  # white
-CLR_DISABLED = (128, 128, 128)  # gray
+CLR_BUTTON = (200, 200, 200)  # white-ish
+CLR_BUTTON_DISABLED = (128, 128, 128)  # gray
 CLR_BUTTON_TEXT = (0, 0, 0)  # black
-OPC_BUTTON = 0.3  # % opacity
-OPC_BUTTON_HOVER = 0.6  # % opacity
-OPC_CLINE = 0.6  # % opacity
+OPC_BUTTON = 0.2  # % opacity
+OPC_BUTTON_HOVER = 0.5  # % opacity
+OPC_CLINE = 0.3  # % opacity
 OPC_CLINE_HOVER = 0.9  # % opacity
 QUAT_VEC_RGTS = [-1, -0.7, -0.5, 0, 0.5, 0.7, 1]
 QUAT_DEV_RGT = 0.075
@@ -260,7 +259,7 @@ class User:
 
 class Button:
     def __init__(self, camname, mode, x=0, y=0, label="", parent=None,
-                 drop=None, color=CLR_ENABLED, enable=True, callback=None,
+                 drop=None, color=CLR_BUTTON, enable=True, callback=None,
                  btype=ButtonType.ACTION):
         if label == "":
             label = mode.value
@@ -274,7 +273,7 @@ class Button:
         if enable:
             self.colorbut = color
         else:
-            self.colorbut = CLR_DISABLED
+            self.colorbut = CLR_BUTTON_DISABLED
         self.colortxt = CLR_BUTTON_TEXT
         if len(label) > 8:  # easier to read
             self.label = label[:6] + "..."
@@ -322,7 +321,7 @@ class Button:
         if active:
             self.button.update(color=CLR_SELECT)
         else:
-            self.button.update(color=CLR_ENABLED)
+            self.button.update(color=CLR_BUTTON)
             self.text.update(color=self.colortxt)
 
     def set_hover(self, hover):

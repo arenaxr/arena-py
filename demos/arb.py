@@ -27,10 +27,11 @@ MANIFEST = arblib.DEF_MANIFEST
 MODELS = []
 USERS = {}  # dictionary of user instances
 CONTROLS = {}  # dictionary of active controls
+DEMO = False
 
 
 def init_args():
-    global BROKER, REALM, SCENE, MODELS, MANIFEST
+    global BROKER, REALM, SCENE, MODELS, MANIFEST, DEMO
     parser = argparse.ArgumentParser(description='ARENA AR Builder.')
     parser.add_argument(
         'scene', type=str, help='ARENA scene name')
@@ -40,9 +41,13 @@ def init_args():
         '-r', '--realm', type=str, help='ARENA realm name', default=REALM)
     parser.add_argument(
         '-m', '--models', type=str, help='JSON GLTF manifest')
+    parser.add_argument('-d', '--demo', default=False,
+                        action='store_true', help='Demo mode.')
     args = parser.parse_args()
     print(args)
     SCENE = args.scene
+    if args.demo:
+        DEMO = True
     if args.broker is not None:
         BROKER = args.broker
     if args.realm is not None:
@@ -968,5 +973,5 @@ def scene_callback(msg):
 # parse args and wait for events
 init_args()
 random.seed()
-arena.init(BROKER, REALM, SCENE, scene_callback)
+arena.init(BROKER, REALM, SCENE, callback=scene_callback, democlick=DEMO)
 arena.handle_events()

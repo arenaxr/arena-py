@@ -20,6 +20,7 @@ callbacks = {}
 arena_callback = None
 messages = []
 debug_toggle = False
+pseudoclick = False
 
 
 def signal_handler(sig, frame):
@@ -40,6 +41,7 @@ def arena_publish(scene_path, MESSAGE):
 
 def process_message(msg):
     global arena_callback
+    global pseudoclick
     #print("process_message: "+str(msg.payload))
     # first call specific objects' callbacks
     payload = msg.payload.decode("utf-8", "ignore")
@@ -50,6 +52,10 @@ def process_message(msg):
     Pos=(0,0,0)
     Rot=(0,0,0,1)
     Src=""
+
+    if pseudoclick:  # display random clicks in right corner for demos
+        if MESSAGE["action"] == "clientEvent" and MESSAGE["type"] == "mousedown":
+            draw_psuedoclick()
 
     if object_id in callbacks:
 
@@ -87,6 +93,14 @@ def process_message(msg):
         arena_callback(payload)
 
 
+def draw_psuedoclick():
+    x = 0.04+(random.randrange(-10, 10)/5000)
+    y = -0.025+(random.randrange(-10, 10)/5000)
+    Object(objType=Shape.circle, scale=(
+        0.003, 0.003, 0.003), location=(x, y, -0.1), ttl=0.1,
+        transparency=Transparency(True, 0.3), parent="myCamera")
+
+
 def on_message(client, userdata, msg):
     messages.append(msg)
 
@@ -99,16 +113,18 @@ def on_connect(client, userdata, flags, rc):
 #    print("log:" + buf)
 
 
-def init(broker, realm, scene, callback=None, port=None):
+def init(broker, realm, scene, callback=None, port=None, democlick=False):
     global client
     global scene_path
     global mqtt_broker
     global arena_callback
     global debug_toggle
+    global pseudoclick
     debug_toggle = False
     mqtt_broker = broker
     scene_path = realm + "/s/" + scene
     arena_callback = callback
+    pseudoclick = democlick
 
     #print("arena callback:", callback)
     #print("connecting to broker ", mqtt_broker)

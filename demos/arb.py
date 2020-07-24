@@ -60,7 +60,7 @@ def init_args():
 
 
 def handle_panel_event(event, dropdown=False):
-    # universal naming order: camera_number_name_button_bname_dname
+    # naming order: camera_number_name_button_bname_dname
     drop = None
     obj = event.object_id.split("_")
     camname = event.source
@@ -87,6 +87,7 @@ def handle_panel_event(event, dropdown=False):
 
 
 def handle_clip_event(event):
+    # naming order: camera_number_name_object
     obj = event.object_id.split("_")
     camname = event.source
     owner = obj[0] + "_" + obj[1] + "_" + obj[2]  # callback owner in object_id
@@ -95,6 +96,28 @@ def handle_clip_event(event):
     if event.event_type != arena.EventType.mousedown:
         return None
     return camname
+
+
+def handle_clickline_event(event, mode):
+    # naming order: objectname_clicktype_axis_direction
+    if event.event_type == arena.EventType.mouseenter:
+        USERS[event.source].set_textstatus(event.object_id)
+    elif event.event_type == arena.EventType.mouseleave:
+        USERS[event.source].set_textstatus("")
+    # allow any user to change an object
+    if event.event_type != arena.EventType.mousedown:
+        return None, None, None
+    if USERS[event.source].mode != mode:
+        return None, None, None
+    click_id = event.object_id.split("_"+mode.value+"_")
+    object_id = click_id[0]
+    direction = (click_id[1])[0: 2]
+    move = (click_id[1])[1: 4]
+    pobjs = arblib.get_network_persisted_obj(object_id, BROKER, SCENE)
+    if not pobjs:
+        return None, None, None
+    obj = arblib.ObjectPersistence(pobjs[0])
+    return (obj, direction, move)
 
 
 def panel_callback(event=None):
@@ -366,7 +389,7 @@ def update_controls(objid):
 
 def do_nudge_select(camname, objid, position=None):
     color = arblib.CLR_NUDGE
-    delim = "_nudge_"
+    delim = "_"+Mode.NUDGE.value+"_"
     callback = nudgeline_callback
     if not position:
         pobjs = arblib.get_network_persisted_obj(objid, BROKER, SCENE)
@@ -386,7 +409,7 @@ def do_nudge_select(camname, objid, position=None):
 
 def do_scale_select(camname, objid, scale=None):
     color = arblib.CLR_SCALE
-    delim = "_scale_"
+    delim = "_"+Mode.SCALE.value+"_"
     callback = scaleline_callback
     if not scale:
         pobjs = arblib.get_network_persisted_obj(objid, BROKER, SCENE)
@@ -405,7 +428,7 @@ def do_scale_select(camname, objid, scale=None):
 
 def do_stretch_select(camname, objid, scale=None):
     color = arblib.CLR_STRETCH
-    delim = "_stretch_"
+    delim = "_"+Mode.STRETCH.value+"_"
     callback = stretchline_callback
     if not scale:
         pobjs = arblib.get_network_persisted_obj(objid, BROKER, SCENE)
@@ -433,7 +456,7 @@ def do_stretch_select(camname, objid, scale=None):
 
 def do_rotate_select(camname, objid, rotation=None):
     color = arblib.CLR_ROTATE
-    delim = "_rotate_"
+    delim = "_"+Mode.ROTATE.value+"_"
     callback = rotateline_callback
     if not rotation:
         pobjs = arblib.get_network_persisted_obj(objid, BROKER, SCENE)
@@ -607,22 +630,9 @@ def meters_increment(meters_style):
 
 
 def nudgeline_callback(event=None):
-    if event.event_type == arena.EventType.mouseenter:
-        USERS[event.source].set_textstatus(event.object_id)
-    elif event.event_type == arena.EventType.mouseleave:
-        USERS[event.source].set_textstatus("")
-    # allow any user to nudge an object
-    if event.event_type != arena.EventType.mousedown:
+    obj, direction, move = handle_clickline_event(event, Mode.NUDGE)
+    if not obj and not direction:
         return
-    if USERS[event.source].mode != Mode.NUDGE:
-        return
-    nudge_id = event.object_id.split("_nudge_")
-    object_id = nudge_id[0]
-    direction = (nudge_id[1])[: 2]
-    pobjs = arblib.get_network_persisted_obj(object_id, BROKER, SCENE)
-    if not pobjs:
-        return
-    obj = arblib.ObjectPersistence(pobjs[0])
     nudged = loc = obj.position
     inc = meters_increment(USERS[event.source].target_style)
     if direction == "xp":
@@ -637,29 +647,16 @@ def nudgeline_callback(event=None):
         nudged = (loc[0], loc[1], incr_pos(loc[2], inc))
     elif direction == "zn":
         nudged = (loc[0], loc[1], incr_neg(loc[2], inc))
-    arblib.move_obj(REALM, SCENE, object_id, nudged)
+    arblib.move_obj(REALM, SCENE, obj.object_id, nudged)
     print(str(obj.position) + " to " + str(nudged))
     # always redraw nudgelines
-    do_nudge_select(event.source, object_id, position=nudged)
+    do_nudge_select(event.source, obj.object_id, position=nudged)
 
 
 def scaleline_callback(event=None):
-    if event.event_type == arena.EventType.mouseenter:
-        USERS[event.source].set_textstatus(event.object_id)
-    elif event.event_type == arena.EventType.mouseleave:
-        USERS[event.source].set_textstatus("")
-    # allow any user to scale an object
-    if event.event_type != arena.EventType.mousedown:
+    obj, direction, move = handle_clickline_event(event, Mode.SCALE)
+    if not obj and not direction:
         return
-    if USERS[event.source].mode != Mode.SCALE:
-        return
-    scale_id = event.object_id.split("_scale_")
-    object_id = scale_id[0]
-    direction = (scale_id[1])[: 2]
-    pobjs = arblib.get_network_persisted_obj(object_id, BROKER, SCENE)
-    if not pobjs:
-        return
-    obj = arblib.ObjectPersistence(pobjs[0])
     scaled = sca = obj.scale
     inc = meters_increment(USERS[event.source].target_style)
     if direction == "xp":
@@ -670,29 +667,15 @@ def scaleline_callback(event=None):
             sca[1], inc), incr_neg(sca[2], inc))
     if scaled[0] <= 0 or scaled[1] <= 0 or scaled[2] <= 0:
         return
-    arblib.scale_obj(REALM, SCENE, object_id, scaled)
+    arblib.scale_obj(REALM, SCENE, obj.object_id, scaled)
     print(str(obj.scale) + " to " + str(scaled))
-    do_scale_select(event.source, object_id, scale=scaled)
+    do_scale_select(event.source, obj.object_id, scale=scaled)
 
 
 def stretchline_callback(event=None):
-    if event.event_type == arena.EventType.mouseenter:
-        USERS[event.source].set_textstatus(event.object_id)
-    elif event.event_type == arena.EventType.mouseleave:
-        USERS[event.source].set_textstatus("")
-    # allow any user to stretch an object
-    if event.event_type != arena.EventType.mousedown:
+    obj, direction, move = handle_clickline_event(event, Mode.STRETCH)
+    if not obj and not direction and not move:
         return
-    if USERS[event.source].mode != Mode.STRETCH:
-        return
-    stretch_id = event.object_id.split("_stretch_")
-    object_id = stretch_id[0]
-    direction = (stretch_id[1])[0: 2]
-    move = (stretch_id[1])[1: 4]
-    pobjs = arblib.get_network_persisted_obj(object_id, BROKER, SCENE)
-    if not pobjs:
-        return
-    obj = arblib.ObjectPersistence(pobjs[0])
     scaled = sca = obj.scale
     moved = loc = obj.position
     inc = meters_increment(USERS[event.source].target_style)
@@ -716,29 +699,16 @@ def stretchline_callback(event=None):
         moved = (loc[0], loc[1], recenter(scaled[2], sca[2], loc[2], move))
     if scaled[0] <= 0 or scaled[1] <= 0 or scaled[2] <= 0:
         return
-    arblib.stretch_obj(REALM, SCENE, object_id,
+    arblib.stretch_obj(REALM, SCENE, obj.object_id,
                        scale=scaled, position=moved)
     print(str(obj.scale) + " to " + str(scaled))
-    do_stretch_select(event.source, object_id, scale=scaled)
+    do_stretch_select(event.source, obj.object_id, scale=scaled)
 
 
 def rotateline_callback(event=None):
-    if event.event_type == arena.EventType.mouseenter:
-        USERS[event.source].set_textstatus(event.object_id)
-    elif event.event_type == arena.EventType.mouseleave:
-        USERS[event.source].set_textstatus("")
-    # allow any user to rotate an object
-    if event.event_type != arena.EventType.mousedown:
+    obj, direction, move = handle_clickline_event(event, Mode.ROTATE)
+    if not obj and not direction:
         return
-    if USERS[event.source].mode != Mode.ROTATE:
-        return
-    rotate_id = event.object_id.split("_rotate_")
-    object_id = rotate_id[0]
-    direction = (rotate_id[1])[: 2]
-    pobjs = arblib.get_network_persisted_obj(object_id, BROKER, SCENE)
-    if not pobjs:
-        return
-    obj = arblib.ObjectPersistence(pobjs[0])
     rotated = rot = obj.rotation
     inc = float(USERS[event.source].target_style)
     rot = arblib.rotation_quat2euler(rot)
@@ -758,9 +728,9 @@ def rotateline_callback(event=None):
     if abs(rotated[0]) > 180 or abs(rotated[1]) > 180 or abs(rotated[2]) > 180:
         return
     rotated = arblib.rotation_euler2quat(rotated)
-    arblib.rotate_obj(REALM, SCENE, object_id, rotated)
+    arblib.rotate_obj(REALM, SCENE, obj.object_id, rotated)
     print(str(obj.rotation) + " to " + str(rotated))
-    do_rotate_select(event.source, object_id, rotation=rotated)
+    do_rotate_select(event.source, obj.object_id, rotation=rotated)
 
 
 def recenter(scaled, sca, loc, move):

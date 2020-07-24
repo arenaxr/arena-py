@@ -17,7 +17,7 @@ import arena
 
 CLICKLINE_LEN = 1  # meters
 CLICKLINE_SCL = (1, 1, 1)  # meters
-FLOOR_Y = 0.001  # meters
+FLOOR_Y = 0  # meters
 GRIDLEN = 20  # meters
 PANEL_RADIUS = 1  # meters
 CLIP_RADIUS = PANEL_RADIUS + 0.25  # meters
@@ -175,7 +175,7 @@ class User:
             [Mode.MOVE, -1, 0, True, ButtonType.ACTION],
             [Mode.LOCK, 0, 0, True, ButtonType.TOGGLE],
             [Mode.DELETE, 1, 0, True, ButtonType.ACTION],
-            [Mode.PARENT, 2, 0, False, ButtonType.ACTION],
+            [Mode.PARENT, 2, 0, True, ButtonType.ACTION],
             # bottom row
             [Mode.WALL, -2, -1, True, ButtonType.ACTION],
             [Mode.OCCLUDE, -1, -1, True, ButtonType.ACTION],
@@ -225,11 +225,13 @@ class User:
                       obj_type=arena.Shape.sphere,
                       scale=(0.05, 0.05, 0.05),
                       position=(0, 0, -CLIP_RADIUS),
+                      color=(255, 255, 255),
                       url=""):
         self.clipboard = arena.Object(  # show item to be created
             objName=(self.camname+"_clipboard"),
             objType=obj_type,
             location=position,
+            color=color,
             parent=self.camname,
             scale=scale,
             transparency=arena.Transparency(True, 0.4),
@@ -437,7 +439,11 @@ def update_persisted_obj(realm, scene, object_id, label,
 
 
 def occlude_obj(realm, scene, object_id, occlude):
-    data = {"material": {"colorWrite": occlude == BOOLS[1]}, "render-order": 0}
+    # NOTE: transparency does not allow occlusion so remove transparency here.
+    data = {"material": {"colorWrite": occlude == BOOLS[1],
+                         "transparent": False,
+                         "opacity": 1},
+            "render-order": 0}
     update_persisted_obj(realm, scene, object_id, "Occluded", data=data)
 
 

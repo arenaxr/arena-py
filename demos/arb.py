@@ -59,16 +59,48 @@ def init_args():
         MODELS.append(i['name'])
 
 
-def panel_callback(event=None):
-    if event.event_type != arena.EventType.mousedown:
-        return
+def handle_panel_event(event, dropdown=False):
+    # universal naming order: camera_number_name_button_bname_dname
+    drop = None
     obj = event.object_id.split("_")
     camname = event.source
-    owner = obj[2] + "_" + obj[3] + "_" + obj[4]  # callback owner in object_id
+    owner = obj[0] + "_" + obj[1] + "_" + obj[2]  # callback owner in object_id
     if owner != camname:
-        return  # only owner may activate
+        return None, None, None  # only owner may activate
     objid = event.object_id
+    if event.event_type == arena.EventType.mouseenter or \
+            event.event_type == arena.EventType.mouseleave:
+        if event.event_type == arena.EventType.mouseenter:
+            hover = True
+        elif event.event_type == arena.EventType.mouseleave:
+            hover = False
+        if dropdown:
+            button = USERS[camname].dbuttons[objid].set_hover(hover)
+        else:
+            button = USERS[camname].panel[objid].set_hover(hover)
 
+    if event.event_type != arena.EventType.mousedown:
+        return None, None, None
+    if dropdown:
+        drop = obj[5]
+    return (camname, objid, drop)
+
+
+def handle_clip_event(event):
+    obj = event.object_id.split("_")
+    camname = event.source
+    owner = obj[0] + "_" + obj[1] + "_" + obj[2]  # callback owner in object_id
+    if owner != camname:
+        return None  # only owner may activate
+    if event.event_type != arena.EventType.mousedown:
+        return None
+    return camname
+
+
+def panel_callback(event=None):
+    camname, objid, drop = handle_panel_event(event)
+    if not camname or not objid:
+        return
     # ignore disabled
     if not USERS[camname].panel[objid].enabled:
         return
@@ -85,7 +117,7 @@ def panel_callback(event=None):
             USERS[camname].mode = Mode.NONE
         else:
             # if button goes on, last button must go off
-            prev_objid = "button_" + USERS[camname].mode.value + "_" + camname
+            prev_objid = camname + "_button_" + USERS[camname].mode.value
             if prev_objid in USERS[camname].panel:
                 USERS[camname].panel[prev_objid].set_active(False)
             USERS[camname].panel[objid].set_active(True)
@@ -96,7 +128,7 @@ def panel_callback(event=None):
         USERS[camname].del_clipboard()
         # clear last dropdown
         for but in USERS[camname].dbuttons:
-            but.delete()
+            USERS[camname].dbuttons[but].delete()
         USERS[camname].dbuttons.clear()
 
     active = USERS[camname].panel[objid].active
@@ -158,13 +190,13 @@ def update_dropdown(camname, objid, mode, options, row, callback):
         drop_button_offset = -math.floor(maxwidth / 2)
         for i, option in enumerate(options):
             if mode is Mode.COLOR:
-                bcolor = tuple(int(option[c:c + 2], 16) for c in (0, 2, 4))
+                bcolor = arblib.arena_color2rgb(option)
             else:
                 bcolor = arblib.CLR_SELECT
             dbutton = arblib.Button(
                 camname, mode, (i % maxwidth) + drop_button_offset, row,
                 label=option, parent=followname, color=bcolor, drop=option, callback=callback)
-            USERS[camname].dbuttons.append(dbutton)
+            USERS[camname].dbuttons[dbutton.button.objName] = dbutton
             if (i + 1) % maxwidth == 0:  # next row
                 if row < 0:
                     row -= 1
@@ -172,7 +204,7 @@ def update_dropdown(camname, objid, mode, options, row, callback):
                     row += 1
         # make default selection
         if mode is Mode.COLOR:
-            rcolor = tuple(int(options[0][c:c + 2], 16) for c in (0, 2, 4))
+            rcolor = arblib.arena_color2rgb(options[0])
         else:
             rcolor = arblib.CLR_HUDTEXT
         USERS[camname].set_textright(options[0], color=rcolor)
@@ -180,14 +212,10 @@ def update_dropdown(camname, objid, mode, options, row, callback):
 
 
 def model_callback(event=None):
-    if event.event_type != arena.EventType.mousedown:
+    camname, objid, drop = handle_panel_event(event, dropdown=True)
+    if not camname or not drop:
         return
-    obj = event.object_id.split("_")
-    camname = event.source
-    owner = obj[3] + "_" + obj[4] + "_" + obj[5]  # callback owner in object_id
-    if owner != camname:
-        return  # only owner may activate
-    model = obj[2]
+    model = drop
     idx = MODELS.index(model)
     url = MANIFEST[idx]['url_gltf']
     sca = MANIFEST[idx]['scale']
@@ -199,14 +227,10 @@ def model_callback(event=None):
 
 
 def shape_callback(event=None):
-    if event.event_type != arena.EventType.mousedown:
+    camname, objid, drop = handle_panel_event(event, dropdown=True)
+    if not camname or not drop:
         return
-    obj = event.object_id.split("_")
-    camname = event.source
-    owner = obj[3] + "_" + obj[4] + "_" + obj[5]  # callback owner in object_id
-    if owner != camname:
-        return  # only owner may activate
-    shape = obj[2]
+    shape = drop
     USERS[camname].set_clipboard(
         callback=clipboard_callback, obj_type=arena.Shape(shape))
     USERS[camname].set_textright(shape)
@@ -214,41 +238,29 @@ def shape_callback(event=None):
 
 
 def color_callback(event=None):
-    if event.event_type != arena.EventType.mousedown:
+    camname, objid, drop = handle_panel_event(event, dropdown=True)
+    if not camname or not objid:
         return
-    obj = event.object_id.split("_")
-    camname = event.source
-    owner = obj[3] + "_" + obj[4] + "_" + obj[5]  # callback owner in object_id
-    if owner != camname:
-        return  # only owner may activate
-    hcolor = obj[2]
-    color = tuple(int(hcolor[c:c + 2], 16) for c in (0, 2, 4))
+    hcolor = drop
+    color = arblib.arena_color2rgb(hcolor)
     USERS[camname].set_textright(hcolor, color=color)
     USERS[camname].target_style = hcolor
 
 
 def gen_callback(event=None):
-    if event.event_type != arena.EventType.mousedown:
+    camname, objid, drop = handle_panel_event(event, dropdown=True)
+    if not camname or not drop:
         return
-    obj = event.object_id.split("_")
-    camname = event.source
-    owner = obj[3] + "_" + obj[4] + "_" + obj[5]  # callback owner in object_id
-    if owner != camname:
-        return  # only owner may activate
-    style = obj[2]
+    style = drop
     USERS[camname].set_textright(style)
     USERS[camname].target_style = style
 
 
 def rename_callback(event=None):
-    if event.event_type != arena.EventType.mousedown:
+    camname, objid, drop = handle_panel_event(event, dropdown=True)
+    if not camname or not drop:
         return
-    obj = event.object_id.split("_")
-    camname = event.source
-    owner = obj[3] + "_" + obj[4] + "_" + obj[5]  # callback owner in object_id
-    if owner != camname:
-        return  # only owner may activate
-    key = obj[2]
+    key = drop
     USERS[camname].set_textright(key)
     USERS[camname].target_style = key
     if key == 'back':
@@ -776,13 +788,9 @@ def create_obj(clipboard, location):
 
 
 def clipboard_callback(event=None):
-    if event.event_type != arena.EventType.mousedown:
+    camname = handle_clip_event(event)
+    if not camname:
         return
-    obj = event.object_id.split("_")
-    camname = event.source
-    owner = obj[1] + "_" + obj[2] + "_" + obj[3]  # callback owner in object_id
-    if owner != camname:
-        return  # only owner may activate
     location = event.position
     if USERS[camname].mode == Mode.CREATE or USERS[camname].mode == Mode.MODEL:
         create_obj(USERS[camname].clipboard, location)
@@ -791,13 +799,9 @@ def clipboard_callback(event=None):
 
 
 def wall_callback(event=None):
-    if event.event_type != arena.EventType.mousedown:
+    camname = handle_clip_event(event)
+    if not camname:
         return
-    obj = event.object_id.split("_")
-    camname = event.source
-    owner = obj[1] + "_" + obj[2] + "_" + obj[3]  # callback owner in object_id
-    if owner != camname:
-        return  # only owner may activate
     if not USERS[camname].wloc_start:
         do_wall_start(camname)
         USERS[camname].set_textright("End: tap opposing corner.")

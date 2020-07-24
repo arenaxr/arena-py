@@ -7,6 +7,7 @@
 
 import enum
 import json
+import re
 import urllib.request
 
 import webcolors
@@ -32,6 +33,8 @@ CLR_SELECT = (255, 255, 0)  # yellow
 CLR_GRID = (0, 255, 0)  # green
 CLR_ENABLED = (255, 255, 255)  # white
 CLR_DISABLED = (128, 128, 128)  # gray
+OPC_BUTTON = 0.4  # % opacity
+OPC_BUTTON_HOVER = 0.6  # % opacity
 QUAT_VEC_RGTS = [-1, -0.7, -0.5, 0, 0.5, 0.7, 1]
 QUAT_DEV_RGT = 0.075
 WALL_WIDTH = 0.1  # meters
@@ -158,7 +161,7 @@ class User:
         self.redpill = False
         self.panel = {}  # button dictionary
         followname = self.follow.objName
-        self.dbuttons = []
+        self.dbuttons = {}
         buttons = [
             # top row
             [Mode.ROTATE, -2, 1, True, ButtonType.ACTION],
@@ -172,7 +175,7 @@ class User:
             [Mode.MOVE, -1, 0, True, ButtonType.ACTION],
             [Mode.LOCK, 0, 0, True, ButtonType.TOGGLE],
             [Mode.DELETE, 1, 0, True, ButtonType.ACTION],
-            [Mode.PARENT, 2, 0, True, ButtonType.ACTION],
+            [Mode.PARENT, 2, 0, False, ButtonType.ACTION],
             # bottom row
             [Mode.WALL, -2, -1, True, ButtonType.ACTION],
             [Mode.OCCLUDE, -1, -1, True, ButtonType.ACTION],
@@ -208,7 +211,7 @@ class User:
     def set_lamp(self, enabled):
         if enabled:
             self.lamp = arena.Object(
-                objName="lamp_" + self.camname,
+                objName=self.camname+"_lamp",
                 objType=arena.Shape.light,
                 parent=self.camname,
                 color=(144, 144, 173),
@@ -224,7 +227,7 @@ class User:
                       position=(0, 0, -CLIP_RADIUS),
                       url=""):
         self.clipboard = arena.Object(  # show item to be created
-            objName=("clipboard_" + self.camname),
+            objName=(self.camname+"_clipboard"),
             objType=obj_type,
             location=position,
             parent=self.camname,
@@ -234,7 +237,7 @@ class User:
             clickable=True,
             callback=callback)
         self.cliptarget = arena.Object(  # add helper target object to find true origin
-            objName=("cliptarget_" + self.camname),
+            objName=(self.camname+"_cliptarget"),
             objType=arena.Shape.circle,
             location=position,
             parent=self.camname,
@@ -277,9 +280,9 @@ class Button:
         self.dropdown = drop
         self.active = False
         if drop is None:
-            obj_name = "button_" + mode.value + "_" + camname
+            obj_name = camname + "_button_" + mode.value
         else:
-            obj_name = "button_" + mode.value + "_" + drop + "_" + camname
+            obj_name = camname + "_button_" + mode.value + "_" + drop
         shape = arena.Shape.cube
         if btype == ButtonType.TOGGLE:
             shape = arena.Shape.cylinder
@@ -289,7 +292,7 @@ class Button:
             objType=shape,
             parent=parent,
             data=('{"material":{"transparent":true,"opacity":' +
-                  str(0.4)+',"shader":"flat"}}'),
+                  str(OPC_BUTTON)+',"shader":"flat"}}'),
             location=(x * 1.1, PANEL_RADIUS, y * -1.1),
             scale=scale,
             color=self.colorbut,
@@ -300,7 +303,7 @@ class Button:
         if btype == ButtonType.TOGGLE:
             scale = (scale[0] * 2, scale[1] * 2, scale[2])
         self.text = arena.Object(  # text child of button
-            objName=("text_" + self.button.objName),
+            objName=(self.button.objName + "_text"),
             objType=arena.Shape.text,
             parent=self.button.objName,
             text=self.label,
@@ -317,6 +320,14 @@ class Button:
         else:
             self.button.update(color=CLR_ENABLED)
             self.text.update(color=self.colortxt)
+
+    def set_hover(self, hover):
+        if hover:
+            opacity = OPC_BUTTON_HOVER
+        else:
+            opacity = OPC_BUTTON
+        self.button.update(data=('{"material":{"transparent":true,"opacity":' +
+                                 str(opacity)+',"shader":"flat"}}'))
 
     def delete(self):
         """Delete method so that child text object also gets deleted."""
@@ -493,10 +504,11 @@ def rgb2hex(rgb):
 
 
 def arena_color2rgb(color):
-    if color[0] != '#':
+    color = color.lstrip('#')
+    hexcolor = re.search(r'^(?:[0-9a-fA-F]{3}){1,2}$', color)
+    if not hexcolor:
         wcrgb = webcolors.name_to_rgb(color)
         return (wcrgb.red, wcrgb.green, wcrgb.blue)
-    color = color.lstrip('#')
     return tuple(int(color[c:c + 2], 16) for c in (0, 2, 4))
 
 

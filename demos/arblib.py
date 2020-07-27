@@ -37,6 +37,7 @@ OPC_BUTTON = 0.1  # % opacity
 OPC_BUTTON_HOVER = 0.25  # % opacity
 OPC_CLINE = 0.1  # % opacity
 OPC_CLINE_HOVER = 0.9  # % opacity
+TTL_TEMP = 30  # seconds
 QUAT_VEC_RGTS = [-1, -0.7, -0.5, 0, 0.5, 0.7, 1]
 QUAT_DEV_RGT = 0.075
 WALL_WIDTH = 0.1  # meters

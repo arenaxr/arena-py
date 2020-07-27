@@ -146,7 +146,7 @@ def panel_callback(event=None):
             # button click is same, then goes off and NONE
             USERS[camname].panel[objid].set_active(False)
             USERS[camname].mode = Mode.NONE
-            USERS[camname].target_id = None
+            mode = Mode.NONE
         else:
             # if button goes on, last button must go off
             prev_objid = camname + "_button_" + USERS[camname].mode.value
@@ -357,7 +357,7 @@ def show_redpill_scene(enabled):
                 arblib.delete_obj(REALM, SCENE, name)
 
 
-def do_rename(old_id, new_id):
+def do_rename(camname, old_id, new_id):
     if new_id == old_id:
         return
     pobjs = arblib.get_network_persisted_obj(old_id, BROKER, SCENE)
@@ -365,6 +365,7 @@ def do_rename(old_id, new_id):
         return
     data = json.dumps(pobjs[0]["attributes"])
     arena.Object(objName=new_id, persist=True, data=data)
+    USERS[camname].target_id = new_id
     print("Duplicating " + old_id + " to " + new_id)
     arblib.delete_obj(REALM, SCENE, old_id)
 
@@ -514,6 +515,7 @@ def regline(object_id, axis, direction, delim, suffix, start,
         objType=arena.Shape.line,
         objName=name,
         color=color,
+        ttl=arblib.TTL_TEMP,
         parent=parent,
         line=arena.Line(start, end, line_width, color)))
 
@@ -536,6 +538,7 @@ def cubeline(object_id, axis, direction, delim, suffix, start,
         objType=arena.Shape.cube,
         objName=name,
         color=color,
+        ttl=arblib.TTL_TEMP,
         parent=parent,
         scale=scale,
         location=(statistics.median([start[0], end[0]]),
@@ -568,6 +571,7 @@ def dir_clickers(object_id, axis, direction, delim, location,
         rotation=cones[axis + direction][0],
         scale=(0.05, 0.09, 0.05),
         transparency=arena.Transparency(True, arblib.OPC_CLINE),
+        ttl=arblib.TTL_TEMP,
         parent=parent,
         callback=callback))
     name = (object_id + delim + axis + "n_" + direction)
@@ -580,6 +584,7 @@ def dir_clickers(object_id, axis, direction, delim, location,
         rotation=cones[axis + direction][1],
         scale=(0.05, 0.09, 0.05),
         transparency=arena.Transparency(True, arblib.OPC_CLINE),
+        ttl=arblib.TTL_TEMP,
         parent=parent,
         callback=callback))
 
@@ -619,7 +624,6 @@ def make_clickline(axis, linelen, objid, start, delim,
 def do_move_relocate(camname, newlocation):
     arblib.move_obj(REALM, SCENE, USERS[camname].target_id, newlocation)
     USERS[camname].del_clipboard()
-    USERS[camname].target_id = None
 
 
 def incr_pos(coord, incr):
@@ -756,7 +760,7 @@ def recenter(scaled, sca, loc, move):
         return loc - (abs(sca - scaled) / 2)
 
 
-def create_obj(clipboard, location):
+def create_obj(camname, clipboard, location):
     randstr = str(random.randrange(0, 1000000))
     # make a copy of static object in place
     new_obj = arena.Object(
@@ -770,6 +774,7 @@ def create_obj(clipboard, location):
         transparency=arena.Transparency(False),
         url=clipboard.url,
         clickable=True)
+    USERS[camname].target_id = new_obj.objName
     print("Created " + new_obj.objName)
 
 
@@ -779,7 +784,7 @@ def clipboard_callback(event=None):
         return
     location = event.position
     if USERS[camname].mode == Mode.CREATE or USERS[camname].mode == Mode.MODEL:
-        create_obj(USERS[camname].clipboard, location)
+        create_obj(camname, USERS[camname].clipboard, location)
     elif USERS[camname].mode == Mode.MOVE:
         do_move_relocate(camname, location)
 
@@ -876,6 +881,7 @@ def make_wall(camname):
         color=(200, 200, 200),
         transparency=arena.Transparency(True, 0.5),
     )
+    USERS[camname].target_id = new_wall.objName
     print("Created " + new_wall.objName +
           " r" + str((rotx, roty, rotz, rotw)) +
           " s" + str((scax, scay, scaz)))
@@ -938,6 +944,7 @@ def scene_callback(msg):
         # handle click
         elif json_msg["type"] == "mousedown":
             # clicked on persisted object to modify
+            update_controls(USERS[camname].target_id)
             USERS[camname].target_id = objid  # always update
             if USERS[camname].mode == Mode.DELETE:
                 arblib.delete_obj(REALM, SCENE, objid)
@@ -964,7 +971,7 @@ def scene_callback(msg):
                     if USERS[camname].mode == Mode.PARENT:
                         arblib.parent_obj(REALM, SCENE, objid, new_id)
                     else:
-                        do_rename(objid, new_id)
+                        do_rename(camname, objid, new_id)
                 else:  # no edits yet, load previous name to change
                     USERS[camname].typetext = objid
                 USERS[camname].set_textright(USERS[camname].typetext)
@@ -973,5 +980,9 @@ def scene_callback(msg):
 # parse args and wait for events
 init_args()
 random.seed()
-arena.init(BROKER, REALM, SCENE, callback=scene_callback, democlick=DEMO)
+if DEMO:
+    arena.init(BROKER, REALM, SCENE, callback=scene_callback,
+               democlick=(400, -250))
+else:
+    arena.init(BROKER, REALM, SCENE, callback=scene_callback)
 arena.handle_events()

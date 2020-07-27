@@ -12,67 +12,67 @@ import json
 from scipy.spatial import distance
 
 HOST = "oz.andrew.cmu.edu"
-SCENE = "sampledata"
-OBJECT = "face"
+SCENE = "face-agr"
+OBJECT = "face-agr-model"
 
 users = {}
 SCALE_FACTOR = 100
 
 
 anims=[
-    "blendShape1.browInnerUp",
-    "blendShape1.browDown_L",
-    "blendShape1.browDown_R",
-    "blendShape1.browOuterUp_L",
-    "blendShape1.browOuterUp_R",
-    "blendShape1.eyeLookUp_L",
-    "blendShape1.eyeLookUp_R",
-    "blendShape1.eyeLookDown_L",
-    "blendShape1.eyeLookDown_R",
-    "blendShape1.eyeLookIn_L",
-    "blendShape1.eyeLookIn_R",
-    "blendShape1.eyeLookOut_L",
-    "blendShape1.eyeLookOut_R",
-    "blendShape1.eyeBlink_L",
-    "blendShape1.eyeBlink_R",
-    "blendShape1.eyeSquint_L",
-    "blendShape1.eyeSquint_R",
-    "blendShape1.eyeWide_L",
-    "blendShape1.eyeWide_R",
-    "blendShape1.cheekPuff",
-    "blendShape1.cheekSquint_L",
-    "blendShape1.cheekSquint_R",
-    "blendShape1.noseSneer_L",
-    "blendShape1.noseSneer_R",
-    "blendShape1.jawOpen",
-    "blendShape1.jawForward",
-    "blendShape1.jawLeft",
-    "blendShape1.jawRight",
-    "blendShape1.mouthFunnel",
-    "blendShape1.mouthPucker",
-    "blendShape1.mouthLeft",
-    "blendShape1.mouthRight",
-    "blendShape1.mouthRollUpper",
-    "blendShape1.mouthRollLower",
-    "blendShape1.mouthShrugUpper",
-    "blendShape1.mouthShrugLower",
-    "blendShape1.mouthClose",
-    "blendShape1.mouthSmile_L",
-    "blendShape1.mouthSmile_R",
-    "blendShape1.mouthFrown_L",
-    "blendShape1.mouthFrown_R",
-    "blendShape1.mouthDimple_L",
-    "blendShape1.mouthDimple_R",
-    "blendShape1.mouthUpperUp_L",
-    "blendShape1.mouthUpperUp_R",
-    "blendShape1.mouthLowerDown_L",
-    "blendShape1.mouthLowerDown_R",
-    "blendShape1.mouthPress_L",
-    "blendShape1.mouthPress_R",
-    "blendShape1.mouthStretch_L",
-    "blendShape1.mouthStretch_R",
-]
-
+    "shapes.browInnerUp",
+    "shapes.browDown_L",
+    "shapes.browDown_R",
+    "shapes.browOuterUp_L",
+    "shapes.browOuterUp_R",
+    "shapes.eyeLookUp_L",
+    "shapes.eyeLookUp_R",
+    "shapes.eyeLookDown_L",
+    "shapes.eyeLookDown_R",
+    "shapes.eyeLookIn_L",
+    "shapes.eyeLookIn_R",
+    "shapes.eyeLookOut_L",
+    "shapes.eyeLookOut_R",
+    "shapes.eyeBlink_L",
+    "shapes.eyeBlink_R",
+    "shapes.eyeSquint_L",
+    "shapes.eyeSquint_R",
+    "shapes.eyeWide_L",
+    "shapes.eyeWide_R",
+    "shapes.cheekPuff",
+    "shapes.cheekSquint_L",
+    "shapes.cheekSquint_R",
+    "shapes.noseSneer_L",
+    "shapes.noseSneer_R",
+    "shapes.jawOpen",
+    "shapes.jawForward",
+    "shapes.jawLeft",
+    "shapes.jawRight",
+    "shapes.mouthFunnel",
+    "shapes.mouthPucker",
+    "shapes.mouthLeft",
+    "shapes.mouthRight",
+    "shapes.mouthRollUpper",
+    "shapes.mouthRollLower",
+    "shapes.mouthShrugUpper",
+    "shapes.mouthShrugLower",
+    "shapes.mouthClose",
+    "shapes.mouthSmile_L",
+    "shapes.mouthSmile_R",
+    "shapes.mouthFrown_L",
+    "shapes.mouthFrown_R",
+    "shapes.mouthDimple_L",
+    "shapes.mouthDimple_R",
+    "shapes.mouthUpperUp_L",
+    "shapes.mouthUpperUp_R",
+    "shapes.mouthLowerDown_L",
+    "shapes.mouthLowerDown_R",
+    "shapes.mouthPress_L",
+    "shapes.mouthPress_R",
+    "shapes.mouthStretch_L",
+    "shapes.mouthStretch_R",
+    "tongue_out"
+    ]
 
 class FacePart(object):
     def __init__(self, ID, name, width, height, pts, closed=True):
@@ -255,15 +255,15 @@ def callback(msg):
 
 
 
-        morphStr ='{ "gltf-morph": {"morphtarget": "blendShape1.mouthUpperUp_L", "value": "' + str(mouthLeft) + '" },'
-        morphStr += '"gltf-morph__2": {"morphtarget": "blendShape1.mouthUpperUp_R", "value": "' + str(mouthRight) + '" },'
-        morphStr += '"gltf-morph__3": {"morphtarget": "blendShape1.mouthLowerDown_L", "value": "' + str(mouthLeft) + '" },'
-        morphStr += '"gltf-morph__4": {"morphtarget": "blendShape1.mouthLowerDown_R", "value": "' + str(mouthRight) + '" },'
-        morphStr += '"gltf-morph__5": {"morphtarget": "blendShape1.eyeBlink_L", "value": "' + str(eyeLeft) + '" },'
-        morphStr += '"gltf-morph__6": {"morphtarget": "blendShape1.eyeBlink_R", "value": "' + str(eyeRight) + '" },'
-        morphStr += '"gltf-morph__7": {"morphtarget": "blendShape1.browOuterUp_L", "value": "' + str(browOuterUp_L) + '" },'
-        morphStr += '"gltf-morph__8": {"morphtarget": "blendShape1.browOuterUp_R", "value": "' + str(browOuterUp_R) + '" },'
-        morphStr += '"gltf-morph__9": {"morphtarget": "blendShape1.mouthPucker", "value": "' + str(mouthPucker) + '" }'
+        morphStr ='{ "gltf-morph": {"morphtarget": "shapes.mouthUpperUp_L", "value": "' + str(mouthLeft) + '" },'
+        morphStr += '"gltf-morph__2": {"morphtarget": "shapes.mouthUpperUp_R", "value": "' + str(mouthRight) + '" },'
+        morphStr += '"gltf-morph__3": {"morphtarget": "shapes.mouthLowerDown_L", "value": "' + str(mouthLeft) + '" },'
+        morphStr += '"gltf-morph__4": {"morphtarget": "shapes.mouthLowerDown_R", "value": "' + str(mouthRight) + '" },'
+        morphStr += '"gltf-morph__5": {"morphtarget": "shapes.eyeBlink_L", "value": "' + str(eyeLeft) + '" },'
+        morphStr += '"gltf-morph__6": {"morphtarget": "shapes.eyeBlink_R", "value": "' + str(eyeRight) + '" },'
+        morphStr += '"gltf-morph__7": {"morphtarget": "shapes.browOuterUp_L", "value": "' + str(browOuterUp_L) + '" },'
+        morphStr += '"gltf-morph__8": {"morphtarget": "shapes.browOuterUp_R", "value": "' + str(browOuterUp_R) + '" },'
+        morphStr += '"gltf-morph__9": {"morphtarget": "shapes.mouthPucker", "value": "' + str(mouthPucker) + '" }'
         morphStr += '}'
 
 
@@ -276,8 +276,8 @@ def callback(msg):
             objName=OBJECT,
 #           url="models/Facegltf/sampledata.gltf", 
             objType=arena.Shape.gltf_model,
-            scale=(40,40,40),
-            location=(0,3,10),
+            scale=(15,15,15),
+            location=(0,2,-5),
             data = morphStr
         )
         

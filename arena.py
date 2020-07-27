@@ -20,7 +20,7 @@ callbacks = {}
 arena_callback = None
 messages = []
 debug_toggle = False
-pseudoclick = False
+pseudoclick = None  # (x,y) tuple of pixel coordinates to display clicks
 
 
 def signal_handler(sig, frame):
@@ -55,7 +55,7 @@ def process_message(msg):
 
     if pseudoclick:  # display random clicks in right corner for demos
         if MESSAGE["action"] == "clientEvent" and MESSAGE["type"] == "mousedown":
-            draw_psuedoclick()
+            draw_psuedoclick(xpix=pseudoclick[0], ypix=pseudoclick[1])
 
     if object_id in callbacks:
 
@@ -93,9 +93,9 @@ def process_message(msg):
         arena_callback(payload)
 
 
-def draw_psuedoclick():
-    x = 0.04+(random.randrange(-10, 10)/5000)
-    y = -0.025+(random.randrange(-10, 10)/5000)
+def draw_psuedoclick(xpix, ypix):
+    x = (xpix + random.randrange(-10, 10)) / 10000
+    y = (ypix + random.randrange(-10, 10)) / 10000
     Object(objType=Shape.circle, scale=(
         0.003, 0.003, 0.003), location=(x, y, -0.1), ttl=0.1,
         transparency=Transparency(True, 0.3), parent="myCamera")
@@ -113,7 +113,7 @@ def on_connect(client, userdata, flags, rc):
 #    print("log:" + buf)
 
 
-def init(broker, realm, scene, callback=None, port=None, democlick=False):
+def init(broker, realm, scene, callback=None, port=None, democlick=None):
     global client
     global scene_path
     global mqtt_broker

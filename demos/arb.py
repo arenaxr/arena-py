@@ -973,5 +973,9 @@ def scene_callback(msg):
 # parse args and wait for events
 init_args()
 random.seed()
-arena.init(BROKER, REALM, SCENE, callback=scene_callback, democlick=DEMO)
+if DEMO:
+    arena.init(BROKER, REALM, SCENE, callback=scene_callback,
+               democlick=(400, -250))
+else:
+    arena.init(BROKER, REALM, SCENE, callback=scene_callback)
 arena.handle_events()

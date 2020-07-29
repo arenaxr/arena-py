@@ -17,7 +17,7 @@ HOST = "oz.andrew.cmu.edu"
 SCENE = "face-agr"
 OBJECT = "face-agr-model"
 
-EYE_THRES = 0.225
+EYE_THRES = 0.16
 MOUTH_THRES = 0.25
 
 last_face_state = { 'jawOpen': 0.0, 'eyeBlink_L':0.0, 'eyeBlink_R':0.0, 'browOuterUp_L':0.0, 'browOuterUp_R':0.0,'rotation':[1.0,1.0,1.0,1.0] }
@@ -95,15 +95,18 @@ class Face(object):
 
         self.landmarksRaw = np.array(msg_json["landmarks"]) # [x1, y1, x2, y2...]
         self.landmarks = self.landmarksRaw.reshape((self.landmarksRaw.size//2,-1)) # [[x1,y1],[x2,y2]...]
-
+        self.landmarks = self.unrotateLandmarks(self.landmarks, self.rot)
         self.com = np.mean(self.landmarks, axis=0) # "center of mass" of face
+        self.landmarks = self.normalizeToCOM(self.landmarks, self.com)
 
-    @property
-    def unrotatedLandmarks(self):
-        homoPts = np.vstack([self.landmarks.T, np.ones(len(self.landmarks))])
-        transformed = (R.from_quat(self.rot).as_matrix() @ homoPts)
+    def unrotateLandmarks(self, landmarks, rot):
+        homoPts = np.vstack([landmarks.T, np.ones(len(landmarks))])
+        transformed = (R.from_quat(rot).as_matrix() @ homoPts)
         unrot = transformed / transformed[-1]
         return unrot[:-1].T
+
+    def normalizeToCOM(self, landmarks, com):
+        return (landmarks - com) / (np.max(landmarks, axis=0)-np.min(landmarks, axis=0))
 
     def mouthAspect(self):
         height1 = distance.euclidean(self.lipInnerPts[1], self.lipInnerPts[7])
@@ -125,7 +128,7 @@ class Face(object):
         return distance.euclidean(self.jawPts[0],self.jawPts[-1])
 
     @property
-    def is_blinking(self):
+    def blinkAmount(self):
         return (self.eyeAspect(self.eyeRPts) + self.eyeAspect(self.eyeLPts)) / 2
 
     @property
@@ -225,10 +228,11 @@ def callback(msg):
         mouthPucker = 0.0
         # print( "MouthPucker: ", mouthPucker )
 
-        openness = face.mouthAspect() * 1.5
+        openness = face.mouthAspect() * 2
         if openness < MOUTH_THRES: openness = 0.0
 
-        blink = int(face.is_blinking < EYE_THRES)
+        # print(face.blinkAmount)
+        blink = int(face.blinkAmount < EYE_THRES)
 
         morphStr = '{ "gltf-morph": {"morphtarget": "shapes.jawOpen", "value": "' + str(openness) + '" },'
         # morphStr = '{ "gltf-morph": {"morphtarget": "shapes.mouthUpperUp_L", "value": "' + str(mouthLeft) + '" },'

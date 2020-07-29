@@ -9,12 +9,16 @@ import random
 import time
 import signal
 import json
-import numpy as np 
+import numpy as np
 from scipy.spatial import distance
+from scipy.spatial.transform import Rotation as R
 
 HOST = "oz.andrew.cmu.edu"
 SCENE = "face-agr"
 OBJECT = "face-agr-model"
+
+EYE_THRES = 0.225
+MOUTH_THRES = 0.25
 
 last_face_state = { 'jawOpen': 0.0, 'eyeBlink_L':0.0, 'eyeBlink_R':0.0, 'browOuterUp_L':0.0, 'browOuterUp_R':0.0,'rotation':[1.0,1.0,1.0,1.0] }
 
@@ -73,81 +77,108 @@ anims = [
     "tongue_out"
 ]
 
-def minmax(theArray):
-    xmin = theArray[0][0]
-    xmax = theArray[0][0]
-    ymin = theArray[0][1]
-    ymax = theArray[0][1]
-    for i in range(1, len(theArray)):
-        if theArray[i][0] < xmin:
-            xmin = theArray[i][0]
-        if theArray[i][0] > xmax:
-            xmax = theArray[i][0]
-        if theArray[i][1] < ymin:
-            ymin = theArray[i][1]
-        if theArray[i][1] > ymax:
-            ymax = theArray[i][1]
-    return(xmin,ymin,xmax,ymax)
-
-
-class FaceFeatures(object):
+class Face(object):
     def __init__(self, msg_json):
-        self.landmarksRaw = msg_json["landmarks"] # [x1, y1, x2, y2...]
+        self.counter = 0
+        self.update(msg_json)
 
-        self.landmarks = [] # [[x1, y1], [x2, y2], ...]
-        for i in range(0, len(self.landmarksRaw), 2):
-            self.landmarks += [[self.landmarksRaw[i], self.landmarksRaw[i+1]]]
+    def update(self, msg_json):
+        self.counter += 1
 
-        self.width = msg_json["image"]["width"]
-        self.height = msg_json["image"]["height"]
-
-        bboxx = msg_json["bbox"][0]
-        bboxy = msg_json["bbox"][1]
-        bboxX = msg_json["bbox"][2]
-        bboxY = msg_json["bbox"][3]
-        self.bbox = [[bboxx,bboxy],[bboxX,bboxY]]
+        self.srcWidth = msg_json["image"]["width"]
+        self.srcHeight = msg_json["image"]["height"]
 
         self.rot = msg_json["pose"]["quaternions"]
         self.trans = msg_json["pose"]["translation"]
 
-        self.jawPts = self.landmarks[0:17]
-        self.eyebrowLPts = self.landmarks[17:22]
-        self.eyebrowRPts = self.landmarks[22:27]
-        self.noseBridgePts = self.landmarks[27:31]
-        self.noseLowerPts = self.landmarks[30:36] # both parts of nose are connected, so index is 30:36 and not 31:36
-        self.eyeLPts = self.landmarks[36:42]
-        self.eyeRPts = self.landmarks[42:48]
-        self.lipOuterPts = self.landmarks[48:60]
-        self.lipInnerPts = self.landmarks[60:68]
+        self.bbox = np.array(msg_json["bbox"]).reshape((2,-1))
+
+        self.landmarksRaw = np.array(msg_json["landmarks"]) # [x1, y1, x2, y2...]
+        self.landmarks = self.landmarksRaw.reshape((self.landmarksRaw.size//2,-1)) # [[x1,y1],[x2,y2]...]
+
+        self.com = np.mean(self.landmarks, axis=0) # "center of mass" of face
+
+    @property
+    def unrotatedLandmarks(self):
+        homoPts = np.vstack([self.landmarks.T, np.ones(len(self.landmarks))])
+        transformed = (R.from_quat(self.rot).as_matrix() @ homoPts)
+        unrot = transformed / transformed[-1]
+        return unrot[:-1].T
+
+    def mouthAspect(self):
+        height1 = distance.euclidean(self.lipInnerPts[1], self.lipInnerPts[7])
+        height2 = distance.euclidean(self.lipInnerPts[2], self.lipInnerPts[6])
+        height3 = distance.euclidean(self.lipInnerPts[3], self.lipInnerPts[5])
+        width = distance.euclidean(self.lipInnerPts[0], self.lipInnerPts[4])
+        return ((height1 + height2 + height3) / 3) / width
+
+    def eyeAspect(self, eyePts):
+        height1 = distance.euclidean(eyePts[1], eyePts[5])
+        height2 = distance.euclidean(eyePts[2], eyePts[4])
+        width = distance.euclidean(eyePts[0], eyePts[3])
+        return ((height1 + height2) / 2) / width
+
+    @property
+    def faceWidth(self):
+        # Grab some point to normalize face with distance
+        # Not sure if width of face is good?
+        return distance.euclidean(self.jawPts[0],self.jawPts[-1])
+
+    @property
+    def is_blinking(self):
+        return (self.eyeAspect(self.eyeRPts) + self.eyeAspect(self.eyeLPts)) / 2
+
+    @property
+    def jawPts(self):
+        return self.landmarks[0:17]
+
+    @property
+    def eyebrowLPts(self):
+        return self.landmarks[17:22]
+
+    @property
+    def eyebrowRPts(self):
+        return self.landmarks[22:27]
+
+    @property
+    def noseBridgePts(self):
+        return self.landmarks[27:31]
+
+    @property
+    def noseLowerPts(self):
+        return self.landmarks[30:36] # both parts of nose are connected, so index is 30:36 and not 31:36
+
+    @property
+    def eyeLPts(self):
+        return self.landmarks[36:42]
+
+    @property
+    def eyeRPts(self):
+        return self.landmarks[42:48]
+
+    @property
+    def lipOuterPts(self):
+        return self.landmarks[48:60]
+
+    @property
+    def lipInnerPts(self):
+        return self.landmarks[60:68]
 
 
-counter = 0
+face = None
 
 def callback(msg):
-    global counter
-    global last_face_state
+    global face, last_face_state
     msg_json = json.loads(msg)
     if "hasFace" in msg_json and msg_json["hasFace"]:
-        features = FaceFeatures(msg_json)
-
-        # print( features.eyebrowLPts )
-        xmin,ymin,xmax,ymax = minmax(features.lipOuterPts)
-        #  boxPts = [[xmin,ymin],[xmin,ymax],[xmax,ymax],[xmax,ymin]]
-        # print("outer mouth box size:", xmin, ymin, xmax, ymax);
-        # print("scale:", xmax-xmin, ymax-ymin)
-        openness = ((xmax-xmin) / (ymax-ymin)) / 10
-        # print (openness)
-
-
-        # Grab some point to normalize features with distance
-        # Not sure if width of face is good?
-        faceWidth = distance.euclidean(features.landmarks[1],features.landmarks[15])
-        # print ("FaceWidth", faceWidth)
-
+        if face is None:
+            face = Face(msg_json)
+        else:
+            face.update(msg_json)
 
         # Outer Brow is set as a normalized scaler compared to face width
-        browOuterUp_L = distance.euclidean(features.landmarks[19],features.landmarks[37])
-        browOuterUp_R = distance.euclidean(features.landmarks[44],features.landmarks[24])
+        browOuterUp_L = distance.euclidean(face.landmarks[19],face.landmarks[37])
+        browOuterUp_R = distance.euclidean(face.landmarks[44],face.landmarks[24])
         # print( "Raw Brow Left:" , browOuterUp_L )
         # print( "Raw Brow Right:" , browOuterUp_R )
 
@@ -155,8 +186,8 @@ def callback(msg):
         browOuterUp_L -= 0.04
         browOuterUp_R -= 0.04
 
-        browOuterUp_L = (browOuterUp_L/faceWidth) * browOuterScalar
-        browOuterUp_R = (browOuterUp_R/faceWidth) * browOuterScalar
+        browOuterUp_L = (browOuterUp_L/face.faceWidth) * browOuterScalar
+        browOuterUp_R = (browOuterUp_R/face.faceWidth) * browOuterScalar
 
         if browOuterUp_L < 0:
             browOuterUp_L = 0
@@ -166,7 +197,7 @@ def callback(msg):
         if abs(last_face_state['browOuterUp_L']-browOuterUp_L) < 0.3:
             browOuterUp_L = last_face_state['browOuterUp_L']
         last_face_state['browOuterUp_L'] = browOuterUp_L
-        
+
         if abs(last_face_state['browOuterUp_R']-browOuterUp_R) < 0.3:
             browOuterUp_R = last_face_state['browOuterUp_R']
         last_face_state['browOuterUp_R'] = browOuterUp_R
@@ -174,56 +205,17 @@ def callback(msg):
         # print( "Brow Left:" , browOuterUp_L )
         # print( "Brow Right:" , browOuterUp_R )
 
-
-        # Eye blink is set as a normalized scaler compared to face width
-        # and then thresholded
-        eyeScalar = 1.0
-        eyeThresh = 0.2
-
-        eyeRight = distance.euclidean(features.landmarks[44],features.landmarks[46])
-        eyeLeft = distance.euclidean(features.landmarks[37],features.landmarks[41])
-
-        eyeRight = (eyeRight/faceWidth) * eyeScalar
-        eyeLeft = (eyeLeft/faceWidth) * eyeScalar
-
-
-        if eyeLeft < 0.06:
-            eyeLeft = 1.0
-        else:
-            eyeLeft = 0.0
-
-        if eyeRight< 0.06:
-            eyeRight = 1.0
-        else:
-            eyeRight = 0.0
-
-
-
-
-        if abs(last_face_state['eyeBlink_L']-eyeLeft) < 0.1:
-            eyeLeft = last_face_state['eyeBlink_L']
-        last_face_state['eyeBlink_L'] = eyeLeft
-
-        if abs(last_face_state['eyeBlink_R']-eyeRight) < 0.1:
-            eyeRight = last_face_state['eyeBlink_R']
-        last_face_state['eyeBlink_R'] = eyeRight
-
-
-        
-
         # Mouth is set as a normalized scaler compared to face width
-        jawOpen = distance.euclidean(features.landmarks[62],features.landmarks[66])
-        mouthRight = distance.euclidean(features.landmarks[63],features.landmarks[65])
-        mouthLeft = distance.euclidean(features.landmarks[61],features.landmarks[67])
-        mouthPucker = distance.euclidean(features.landmarks[48],features.landmarks[54])
+        mouthRight = distance.euclidean(face.landmarks[63],face.landmarks[65])
+        mouthLeft = distance.euclidean(face.landmarks[61],face.landmarks[67])
+        mouthPucker = distance.euclidean(face.landmarks[48],face.landmarks[54])
 
         mouthScalar = 5.0
         mouthThresh = 0.2
 
-        jawOpen = (jawOpen/faceWidth) * mouthScalar
-        mouthRight = (mouthRight/faceWidth) * mouthScalar
-        mouthLeft = (mouthLeft/faceWidth) * mouthScalar
-        mouthPucker = (mouthPucker/faceWidth)
+        mouthRight = (mouthRight/face.faceWidth) * mouthScalar
+        mouthLeft = (mouthLeft/face.faceWidth) * mouthScalar
+        mouthPucker = (mouthPucker/face.faceWidth)
         # print( "RawPucker: ", mouthPucker )
         mouthPucker -= 0.35 # remove DC offset
         if mouthPucker < 0.0:
@@ -233,53 +225,41 @@ def callback(msg):
         mouthPucker = 0.0
         # print( "MouthPucker: ", mouthPucker )
 
-        
-        if mouthRight < mouthThresh:
-            mouthRight = 0.0
-        if mouthLeft < mouthThresh:
-            mouthLeft = 0.0
+        openness = face.mouthAspect() * 1.5
+        if openness < MOUTH_THRES: openness = 0.0
 
-        if jawOpen < mouthThresh:
-            jawOpen = 0.0
-        else:
-             if abs(last_face_state['jawOpen']-jawOpen) < 0.4:
-                jawOpen = last_face_state['jawOpen']
-        
-        
-        last_face_state['jawOpen'] = jawOpen
+        blink = int(face.is_blinking < EYE_THRES)
 
-        morphStr = '{ "gltf-morph": {"morphtarget": "shapes.jawOpen", "value": "' + str(jawOpen) + '" },'
-#        morphStr = '{ "gltf-morph": {"morphtarget": "shapes.mouthUpperUp_L", "value": "' + str(mouthLeft) + '" },'
-#        morphStr += '"gltf-morph__2": {"morphtarget": "shapes.mouthUpperUp_R", "value": "' + str(mouthRight) + '" },'
-#        morphStr += '"gltf-morph__3": {"morphtarget": "shapes.mouthLowerDown_L", "value": "' + str(mouthLeft) + '" },'
-#        morphStr += '"gltf-morph__4": {"morphtarget": "shapes.mouthLowerDown_R", "value": "' + str(mouthRight) + '" },'
-        morphStr += '"gltf-morph__5": {"morphtarget": "shapes.eyeBlink_L", "value": "' + str(eyeLeft) + '" },'
-        morphStr += '"gltf-morph__6": {"morphtarget": "shapes.eyeBlink_R", "value": "' + str(eyeRight) + '" },'
+        morphStr = '{ "gltf-morph": {"morphtarget": "shapes.jawOpen", "value": "' + str(openness) + '" },'
+        # morphStr = '{ "gltf-morph": {"morphtarget": "shapes.mouthUpperUp_L", "value": "' + str(mouthLeft) + '" },'
+        # morphStr += '"gltf-morph__2": {"morphtarget": "shapes.mouthUpperUp_R", "value": "' + str(mouthRight) + '" },'
+        # morphStr += '"gltf-morph__3": {"morphtarget": "shapes.mouthLowerDown_L", "value": "' + str(mouthLeft) + '" },'
+        # morphStr += '"gltf-morph__4": {"morphtarget": "shapes.mouthLowerDown_R", "value": "' + str(mouthRight) + '" },'
+        morphStr += '"gltf-morph__5": {"morphtarget": "shapes.eyeBlink_L", "value": "' + str(blink) + '" },'
+        morphStr += '"gltf-morph__6": {"morphtarget": "shapes.eyeBlink_R", "value": "' + str(blink) + '" },'
         morphStr += '"gltf-morph__7": {"morphtarget": "shapes.browOuterUp_L", "value": "' + str(browOuterUp_L) + '" },'
         morphStr += '"gltf-morph__8": {"morphtarget": "shapes.browOuterUp_R", "value": "' + str(browOuterUp_R) + '" },'
         morphStr += '"gltf-morph__9": {"morphtarget": "shapes.mouthPucker", "value": "' + str(mouthPucker) + '" }'
         morphStr += '}'
 
-        rotChange = distance.euclidean(features.rot,last_face_state['rotation'])
-        if rotChange < 0.04:
-            features.rot = last_face_state['rotation'] 
-        last_face_state['rotation']=features.rot
+        rotChange = distance.euclidean(face.rot,last_face_state['rotation'])
+        if rotChange < 0.03:
+            face.rot = last_face_state['rotation']
+        last_face_state['rotation'] = face.rot
 
         # print(morphStr)
-        if counter > 1:
+        if face.counter % 2 == 0:
             obj = arena.Object(
-                rotation=features.rot, # quaternion value roughly between -.05 and .05
-#                location=(features.trans[0]/10, features.trans[1]/10+3, (features.trans[2]+50)/10-5),
-#               rotation=(0,0,0.6-openness,1), # quaternion value roughly between -.05 and .05
+                rotation=face.rot,
+                # location=(face.trans[0]/10, face.trans[1]/10+3, (face.trans[2]+50)/10-5),
+                # rotation=(0,0,0.6-openness,1), # quaternion value roughly between -.05 and .05
                 objName=OBJECT,
-#               url="models/Facegltf/sampledata.gltf",
+                # url="models/Facegltf/sampledata.gltf",
                 objType=arena.Shape.gltf_model,
                 scale=(15,15,15),
                 location=(0,2,-5),
                 data=morphStr
             )
-            counter=0
-        counter+=1
 
 
 arena.init(HOST, "realm", SCENE, callback=callback)

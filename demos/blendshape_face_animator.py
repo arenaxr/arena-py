@@ -9,11 +9,14 @@ import random
 import time
 import signal
 import json
+import numpy as np 
 from scipy.spatial import distance
 
 HOST = "oz.andrew.cmu.edu"
 SCENE = "face-agr"
 OBJECT = "face-agr-model"
+
+last_face_state = { 'jawOpen': 0.0, 'eyeBlink_L':0.0, 'eyeBlink_R':0.0, 'browOuterUp_L':0.0, 'browOuterUp_R':0.0,'rotation':[1.0,1.0,1.0,1.0] }
 
 anims = [
     "shapes.browInnerUp",
@@ -122,6 +125,7 @@ counter = 0
 
 def callback(msg):
     global counter
+    global last_face_state
     msg_json = json.loads(msg)
     if "hasFace" in msg_json and msg_json["hasFace"]:
         features = FaceFeatures(msg_json)
@@ -158,6 +162,15 @@ def callback(msg):
             browOuterUp_L = 0
         if browOuterUp_R < 0:
             browOuterUp_R = 0
+
+        if abs(last_face_state['browOuterUp_L']-browOuterUp_L) < 0.3:
+            browOuterUp_L = last_face_state['browOuterUp_L']
+        last_face_state['browOuterUp_L'] = browOuterUp_L
+        
+        if abs(last_face_state['browOuterUp_R']-browOuterUp_R) < 0.3:
+            browOuterUp_R = last_face_state['browOuterUp_R']
+        last_face_state['browOuterUp_R'] = browOuterUp_R
+
         # print( "Brow Left:" , browOuterUp_L )
         # print( "Brow Right:" , browOuterUp_R )
 
@@ -173,6 +186,7 @@ def callback(msg):
         eyeRight = (eyeRight/faceWidth) * eyeScalar
         eyeLeft = (eyeLeft/faceWidth) * eyeScalar
 
+
         if eyeLeft < 0.06:
             eyeLeft = 1.0
         else:
@@ -182,6 +196,20 @@ def callback(msg):
             eyeRight = 1.0
         else:
             eyeRight = 0.0
+
+
+
+
+        if abs(last_face_state['eyeBlink_L']-eyeLeft) < 0.1:
+            eyeLeft = last_face_state['eyeBlink_L']
+        last_face_state['eyeBlink_L'] = eyeLeft
+
+        if abs(last_face_state['eyeBlink_R']-eyeRight) < 0.1:
+            eyeRight = last_face_state['eyeBlink_R']
+        last_face_state['eyeBlink_R'] = eyeRight
+
+
+        
 
         # Mouth is set as a normalized scaler compared to face width
         jawOpen = distance.euclidean(features.landmarks[62],features.landmarks[66])
@@ -205,13 +233,20 @@ def callback(msg):
         mouthPucker = 0.0
         # print( "MouthPucker: ", mouthPucker )
 
-        if jawOpen < mouthThresh:
-            jawOpen = 0.0
+        
         if mouthRight < mouthThresh:
             mouthRight = 0.0
         if mouthLeft < mouthThresh:
             mouthLeft = 0.0
 
+        if jawOpen < mouthThresh:
+            jawOpen = 0.0
+        else:
+             if abs(last_face_state['jawOpen']-jawOpen) < 0.4:
+                jawOpen = last_face_state['jawOpen']
+        
+        
+        last_face_state['jawOpen'] = jawOpen
 
         morphStr = '{ "gltf-morph": {"morphtarget": "shapes.jawOpen", "value": "' + str(jawOpen) + '" },'
 #        morphStr = '{ "gltf-morph": {"morphtarget": "shapes.mouthUpperUp_L", "value": "' + str(mouthLeft) + '" },'
@@ -225,49 +260,27 @@ def callback(msg):
         morphStr += '"gltf-morph__9": {"morphtarget": "shapes.mouthPucker", "value": "' + str(mouthPucker) + '" }'
         morphStr += '}'
 
+        rotChange = distance.euclidean(features.rot,last_face_state['rotation'])
+        if rotChange < 0.04:
+            features.rot = last_face_state['rotation'] 
+        last_face_state['rotation']=features.rot
 
         # print(morphStr)
-        obj = arena.Object(
-            rotation=features.rot, # quaternion value roughly between -.05 and .05
-            location=(features.trans[0]/10, features.trans[1]/10+3, (features.trans[2]+50)/10-5),
-#           rotation=(0,0,0.6-openness,1), # quaternion value roughly between -.05 and .05
-            objName=OBJECT,
-#           url="models/Facegltf/sampledata.gltf",
-            objType=arena.Shape.gltf_model,
-            scale=(15,15,15),
-            # location=(0,2,-5),
-            data=morphStr
-        )
+        if counter > 1:
+            obj = arena.Object(
+                rotation=features.rot, # quaternion value roughly between -.05 and .05
+#                location=(features.trans[0]/10, features.trans[1]/10+3, (features.trans[2]+50)/10-5),
+#               rotation=(0,0,0.6-openness,1), # quaternion value roughly between -.05 and .05
+                objName=OBJECT,
+#               url="models/Facegltf/sampledata.gltf",
+                objType=arena.Shape.gltf_model,
+                scale=(15,15,15),
+                location=(0,2,-5),
+                data=morphStr
+            )
+            counter=0
+        counter+=1
 
 
 arena.init(HOST, "realm", SCENE, callback=callback)
 arena.handle_events()
-
-def signal_handler(sig, frame):
-    exit()
-
-signal.signal(signal.SIGINT, signal_handler)
-
-counter = 0
-while True:
-    counter = counter + 1
-
-    rando = random.random()
-    anim = anims[counter % len(anims)]
-    print (anim, rando)
-
-    obj = arena.Object(
-        objName=OBJECT,
-#        url="models/Facegltf/sampledata.gltf",
-        objType=arena.Shape.gltf_model,
-        scale=(40,40,40),
-        location=(0,3,10),
-        data ='{"gltf-morph": {"morphtarget": "'+
-        anim +
-        '", "value": ' +
-        str(rando) +
-        '}}'
-        )
-    time.sleep(0.5)
-exit()
-

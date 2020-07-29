@@ -173,17 +173,18 @@ def callback(msg):
         eyeRight = (eyeRight/faceWidth) * eyeScalar
         eyeLeft = (eyeLeft/faceWidth) * eyeScalar
 
-        if eyeLeft < 0.04:
+        if eyeLeft < 0.06:
             eyeLeft = 1.0
         else:
             eyeLeft = 0.0
 
-        if eyeRight< 0.04:
+        if eyeRight< 0.06:
             eyeRight = 1.0
         else:
             eyeRight = 0.0
 
         # Mouth is set as a normalized scaler compared to face width
+        jawOpen = distance.euclidean(features.landmarks[62],features.landmarks[66])
         mouthRight = distance.euclidean(features.landmarks[63],features.landmarks[65])
         mouthLeft = distance.euclidean(features.landmarks[61],features.landmarks[67])
         mouthPucker = distance.euclidean(features.landmarks[48],features.landmarks[54])
@@ -191,6 +192,7 @@ def callback(msg):
         mouthScalar = 5.0
         mouthThresh = 0.2
 
+        jawOpen = (jawOpen/faceWidth) * mouthScalar
         mouthRight = (mouthRight/faceWidth) * mouthScalar
         mouthLeft = (mouthLeft/faceWidth) * mouthScalar
         mouthPucker = (mouthPucker/faceWidth)
@@ -203,16 +205,19 @@ def callback(msg):
         mouthPucker = 0.0
         # print( "MouthPucker: ", mouthPucker )
 
+        if jawOpen < mouthThresh:
+            jawOpen = 0.0
         if mouthRight < mouthThresh:
             mouthRight = 0.0
         if mouthLeft < mouthThresh:
             mouthLeft = 0.0
 
 
-        morphStr = '{ "gltf-morph": {"morphtarget": "shapes.mouthUpperUp_L", "value": "' + str(mouthLeft) + '" },'
-        morphStr += '"gltf-morph__2": {"morphtarget": "shapes.mouthUpperUp_R", "value": "' + str(mouthRight) + '" },'
-        morphStr += '"gltf-morph__3": {"morphtarget": "shapes.mouthLowerDown_L", "value": "' + str(mouthLeft) + '" },'
-        morphStr += '"gltf-morph__4": {"morphtarget": "shapes.mouthLowerDown_R", "value": "' + str(mouthRight) + '" },'
+        morphStr = '{ "gltf-morph": {"morphtarget": "shapes.jawOpen", "value": "' + str(jawOpen) + '" },'
+#        morphStr = '{ "gltf-morph": {"morphtarget": "shapes.mouthUpperUp_L", "value": "' + str(mouthLeft) + '" },'
+#        morphStr += '"gltf-morph__2": {"morphtarget": "shapes.mouthUpperUp_R", "value": "' + str(mouthRight) + '" },'
+#        morphStr += '"gltf-morph__3": {"morphtarget": "shapes.mouthLowerDown_L", "value": "' + str(mouthLeft) + '" },'
+#        morphStr += '"gltf-morph__4": {"morphtarget": "shapes.mouthLowerDown_R", "value": "' + str(mouthRight) + '" },'
         morphStr += '"gltf-morph__5": {"morphtarget": "shapes.eyeBlink_L", "value": "' + str(eyeLeft) + '" },'
         morphStr += '"gltf-morph__6": {"morphtarget": "shapes.eyeBlink_R", "value": "' + str(eyeRight) + '" },'
         morphStr += '"gltf-morph__7": {"morphtarget": "shapes.browOuterUp_L", "value": "' + str(browOuterUp_L) + '" },'

@@ -125,8 +125,8 @@ def on_tag_detect(client, userdata, msg):
 
         # Builder mode: solve for tag, assume client rig is previously logged
         if (
-            hasattr(json_msg, "localize_tag")
-            and json_msg.localize_tag
+            hasattr(detected_tag, "localize_tag")
+            and detected_tag.localize_tag
             and detected_tag.id != 0
         ):
             log("Solve for tag", str(detected_tag.id))
@@ -161,8 +161,8 @@ def on_tag_detect(client, userdata, msg):
             # either UUID is supplied from builder request, or its recently
             # added as new
             ref_uuid = None
-            if hasattr(json_msg, "refTag") and hasattr(json_msg.refTag, "uuid"):
-                ref_uuid = json_msg.refTag.uuid
+            if hasattr(detected_tag, "refTag") and hasattr(detected_tag.refTag, "uuid"):
+                ref_uuid = detected_tag.refTag.uuid
             elif ADDED_TAGS.get(new_uuid) is not None:
                 ref_uuid = new_uuid
             if ref_uuid is not None:
@@ -226,9 +226,9 @@ def on_tag_detect(client, userdata, msg):
             #     return
             if detected_tag.id == 0:
                 ref_tag_pose = ORIGINTAG
-            elif hasattr(json_msg, "refTag"):
+            elif hasattr(detected_tag, "refTag"):
                 # comes in as col-major
-                arr = json_msg.refTag.pose.elements
+                arr = detected_tag.refTag.pose.elements
                 ref_tag_pose = np.array(
                     [arr[0:4], arr[4:8], arr[8:12], arr[12:16]]
                 ).T

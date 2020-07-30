@@ -1,31 +1,34 @@
 {
- "models": [
-  {
-   "name": "Avocado",
-   "url_gltf": "models/Avocado.glb",
-   "url_sound": "https://xr.andrew.cmu.edu/audio/flesh.ogg"
-  },
-  {
-   "name": "Shuttle",
-   "url_gltf": "models/Shuttle.glb",
-   "url_sound": "https://xr.andrew.cmu.edu/audio/glass.ogg"
-  },
-  {
-   "name": "Duck",
-   "url_gltf": "models/Duck.glb",
-   "url_sound": "https://xr.andrew.cmu.edu/audio/boing.wav"
-  },
-  {
-   "name": "Earth",
-   "url_gltf": "models/Earth.glb"
-  },
-  {
-   "name": "Lantern",
-   "url_gltf": "models/Lantern.glb"
-  },
-  {
-   "name": "AntiqueCamera",
-   "url_gltf": "models/AntiqueCamera.glb"
-  }
- ]
+    "models": [
+        {
+            "name": "avocado",
+            "url_gltf": "models/Avocado.glb",
+            "scale": 5
+        },
+        {
+            "name": "shuttle",
+            "url_gltf": "models/Shuttle.glb",
+            "scale": 5
+        },
+        {
+            "name": "duck",
+            "url_gltf": "models/Duck.glb",
+            "scale": 0.2
+        },
+        {
+            "name": "earth",
+            "url_gltf": "models/Earth.glb",
+            "scale": 2
+        },
+        {
+            "name": "lantern",
+            "url_gltf": "models/Lantern.glb",
+            "scale": 0.015
+        },
+        {
+            "name": "camera",
+            "url_gltf": "models/AntiqueCamera.glb",
+            "scale": 0.05
+        }
+    ]
 }

@@ -498,6 +498,7 @@ def make_followspot(object_id, position, delim, color):
         objName=name,
         scale=(0.1, 0.1, 0.1),
         color=color,
+        ttl=arblib.TTL_TEMP,
         location=(position[0], arblib.FLOOR_Y, position[2]),
         rotation=(-0.7, 0, 0, 0.7),
         data='{"material":{"transparent":true,"opacity":0.4,"shader":"flat"}}'))

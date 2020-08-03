@@ -94,14 +94,14 @@ class Face(object):
         self.bbox = np.array(msg_json["bbox"]).reshape((2,-1))
 
         self.landmarksRaw = np.array(msg_json["landmarks"]) # [x1, y1, x2, y2...]
-        self.landmarks = self.landmarksRaw.reshape((self.landmarksRaw.size//2,-1)) # [[x1,y1],[x2,y2]...]
+        self.landmarks = self.landmarksRaw.reshape((-1,2)) # [[x1,y1],[x2,y2]...]
         self.landmarks = self.unrotateLandmarks(self.landmarks, self.rot)
         self.com = np.mean(self.landmarks, axis=0) # "center of mass" of face
         self.landmarks = self.normalizeToCOM(self.landmarks, self.com)
 
     def unrotateLandmarks(self, landmarks, rot):
         homoPts = np.vstack([landmarks.T, np.ones(len(landmarks))])
-        transformed = (R.from_quat(rot).as_matrix() @ homoPts)
+        transformed = (np.linalg.inv(R.from_quat(rot).as_matrix()) @ homoPts)
         unrot = transformed / transformed[-1]
         return unrot[:-1].T
 
@@ -120,6 +120,57 @@ class Face(object):
         height2 = distance.euclidean(eyePts[2], eyePts[4])
         width = distance.euclidean(eyePts[0], eyePts[3])
         return ((height1 + height2) / 2) / width
+
+    def create_line(self, pts1, pts2, name):
+        x1 = pts1[0]
+        y1 = pts1[1] + 2
+        x2 = pts2[0]
+        y2 = pts2[1] + 2
+
+        line = arena.Line(
+                    (x1,y1,-0.5),
+                    (x2,y2,-0.5),
+                    2,
+                    "#ffffff"
+                )
+        arena.Object(
+            objName=name,
+            objType=arena.Shape.line,
+            line=line,
+            persist=False
+        )
+
+    def drawLandmarks(self):
+        arena.Object(
+            objName="origin",
+            objType=arena.Shape.sphere,
+            scale=(0.01,0.01,0.01),
+            location=(0,2,-0.5),
+            persist=False
+        )
+        for i in range(0, len(self.jawPts)-1):
+            self.create_line(self.jawPts[i], self.jawPts[i+1], "jaw"+str(i))
+        for i in range(0, len(self.eyebrowLPts)-1):
+            self.create_line(self.eyebrowLPts[i], self.eyebrowLPts[i+1], "browL"+str(i))
+        for i in range(0, len(self.eyebrowRPts)-1):
+            self.create_line(self.eyebrowRPts[i], self.eyebrowRPts[i+1], "browR"+str(i))
+        for i in range(0, len(self.noseBridgePts)-1):
+            self.create_line(self.noseBridgePts[i], self.noseBridgePts[i+1], "noseB"+str(i))
+        for i in range(0, len(self.noseLowerPts)-1):
+            self.create_line(self.noseLowerPts[i], self.noseLowerPts[i+1], "noseL"+str(i))
+        self.create_line(self.noseLowerPts[0], self.noseLowerPts[-1], "noseL"+str(i+1))
+        for i in range(0, len(self.eyeLPts)-1):
+            self.create_line(self.eyeLPts[i], self.eyeLPts[i+1], "eyeL"+str(i))
+        self.create_line(self.eyeLPts[0], self.eyeLPts[-1], "eyeL"+str(i+1))
+        for i in range(0, len(self.eyeRPts)-1):
+            self.create_line(self.eyeRPts[i], self.eyeRPts[i+1], "eyeR"+str(i))
+        self.create_line(self.eyeRPts[0], self.eyeRPts[-1], "eyeR"+str(i+1))
+        for i in range(0, len(self.lipOuterPts)-1):
+            self.create_line(self.lipOuterPts[i], self.lipOuterPts[i+1], "lipO"+str(i))
+        self.create_line(self.lipOuterPts[0], self.lipOuterPts[-1], "lipO"+str(i+1))
+        for i in range(0, len(self.lipInnerPts)-1):
+            self.create_line(self.lipInnerPts[i], self.lipInnerPts[i+1], "lipI"+str(i))
+        self.create_line(self.lipInnerPts[0], self.lipInnerPts[-1], "lipI"+str(i+1))
 
     @property
     def faceWidth(self):
@@ -179,6 +230,8 @@ def callback(msg):
         else:
             face.update(msg_json)
 
+        # face.drawLandmarks()
+
         # Outer Brow is set as a normalized scaler compared to face width
         browOuterUp_L = distance.euclidean(face.landmarks[19],face.landmarks[37])
         browOuterUp_R = distance.euclidean(face.landmarks[44],face.landmarks[24])
@@ -228,7 +281,7 @@ def callback(msg):
         mouthPucker = 0.0
         # print( "MouthPucker: ", mouthPucker )
 
-        openness = face.mouthAspect() * 2
+        openness = face.mouthAspect()
         if openness < MOUTH_THRES: openness = 0.0
 
         # print(face.blinkAmount)

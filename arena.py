@@ -59,6 +59,10 @@ def process_message(msg):
 
     if object_id in callbacks:
 
+        # Make event type object by default to avoid bad lookup on EventType[] below
+        # FIXME: added this hack to avoid crash.  Crash occurs when object is linked to a users camera and the page is refreshed
+        evtType = 'object'
+
         # Unpack JSON data
         objId  = MESSAGE["object_id"]
         Action = MESSAGE["action"] # create/delete/update/clientEvent

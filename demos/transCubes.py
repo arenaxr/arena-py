@@ -8,7 +8,7 @@ import time
 import signal
 
 HOST = "oz.andrew.cmu.edu"
-SCENE = "transCubes"
+SCENE = "airport"
 
 arena.init(HOST, "realm", SCENE)
 

@@ -16,7 +16,7 @@ HOST = "oz.andrew.cmu.edu"
 SCENE = "head-rig"
 
 EYE_THRES = 0.16
-MOUTH_THRES = 0.25
+MOUTH_THRES = 0.05
 
 users = {}
 
@@ -274,7 +274,7 @@ class Head(object):
         mouthPucker = distance.euclidean(self.face.landmarks[48],self.face.landmarks[54])
 
         mouthScalar = 5.0
-        mouthThresh = 0.2
+        mouthThresh = 0.10
 
         mouthRight = (mouthRight/self.face.faceWidth) * mouthScalar
         mouthLeft = (mouthLeft/self.face.faceWidth) * mouthScalar
@@ -315,9 +315,10 @@ class Head(object):
             arena.Object(
                 objName=f"head_{self.id}",
                 objType=arena.Shape.gltf_model,
-                scale=(5,5,5),
+                scale=(1.6,1.6,1.6),
                 rotation=q_mult(q_mult(self.face.rot, [1,0,0,0]), [0,0,1,0]),
-                location=(self.face.trans[0]/100, self.face.trans[1]/100, (self.face.trans[2]+50)/100),
+                location=(0.01, 0.0, 0.025),
+                #location=(self.face.trans[0]/100, self.face.trans[1]/100, (self.face.trans[2]+50)/100+.25),
                 url="/models/FaceCapHeadGeneric/FaceCapHeadGeneric.gltf",
                 parent=self.id,
                 data=morphStr

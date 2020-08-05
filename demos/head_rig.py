@@ -78,11 +78,11 @@ anims = [
 def q_mult(q1, q2):
     x1, y1, z1, w1 = q1
     x2, y2, z2, w2 = q2
-    w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
     x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2
     y = w1 * y2 + y1 * w2 + z1 * x2 - x1 * z2
     z = w1 * z2 + z1 * w2 + x1 * y2 - y1 * x2
-    return [w, x, y, z]
+    w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
+    return [x, y, z, w]
 
 class Face(object):
     def __init__(self, msg_json):
@@ -311,12 +311,18 @@ class Head(object):
             self.face.rot = self.last_face_state['rotation']
         self.last_face_state['rotation'] = self.face.rot
 
+        # head faces backward at first, rotate head 180 to correct
+        corrected_rot = q_mult(self.face.rot, [0,1,0,0])
+        # flips up and down
+        corrected_rot[0] *= -1
+        corrected_rot[1] *= -1
+
         if self.face.counter % 2 == 0:
             arena.Object(
                 objName=f"head_{self.id}",
                 objType=arena.Shape.gltf_model,
                 scale=(1.6,1.6,1.6),
-                rotation=q_mult(q_mult(self.face.rot, [1,0,0,0]), [0,0,1,0]),
+                rotation=corrected_rot,
                 location=(0.01, 0.0, 0.025),
                 #location=(self.face.trans[0]/100, self.face.trans[1]/100, (self.face.trans[2]+50)/100+.25),
                 url="/models/FaceCapHeadGeneric/FaceCapHeadGeneric.gltf",

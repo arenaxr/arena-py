@@ -321,9 +321,9 @@ class Head(object):
             arena.Object(
                 objName=f"head_{self.id}",
                 objType=arena.Shape.gltf_model,
-                scale=(1.6,1.6,1.6),
+                scale=(1.75,1.75,1.75),
                 rotation=corrected_rot,
-                location=(0.01, 0.0, 0.025),
+                location=(0.0, -0.075, 0.035),
                 #location=(self.face.trans[0]/100, self.face.trans[1]/100, (self.face.trans[2]+50)/100+.25),
                 url="/models/FaceCapHeadGeneric/FaceCapHeadGeneric.gltf",
                 parent=self.id,

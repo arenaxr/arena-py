@@ -86,12 +86,9 @@ def q_mult(q1, q2):
 
 class Face(object):
     def __init__(self, msg_json):
-        self.counter = 0
         self.update(msg_json)
 
     def update(self, msg_json):
-        self.counter += 1
-
         self.srcWidth = msg_json["image"]["width"]
         self.srcHeight = msg_json["image"]["height"]
 
@@ -228,6 +225,7 @@ class Face(object):
 class Head(object):
     def __init__(self, msg_json):
         self.id = msg_json["object_id"]
+        self.counter = 0
         self.has_face = False
 
     def add_face(self, face_json):
@@ -237,6 +235,8 @@ class Head(object):
         self.update_face(face_json)
 
     def update_face(self, face_json):
+        self.counter += 1
+
         self.face.update(face_json)
 
         # Outer Brow is set as a normalized scaler compared to face width
@@ -313,11 +313,11 @@ class Head(object):
 
         # head faces backward at first, rotate head 180 to correct
         corrected_rot = q_mult(self.face.rot, [0,1,0,0])
-        # flips up and down
-        corrected_rot[0] *= -1
-        corrected_rot[1] *= -1
+        # flip left right rotations
+        corrected_rot[2] *= -1
+        corrected_rot[3] *= -1
 
-        if self.face.counter % 2 == 0:
+        if self.counter % 2 == 0:
             arena.Object(
                 objName=f"head_{self.id}",
                 objType=arena.Shape.gltf_model,
@@ -330,22 +330,21 @@ class Head(object):
                 data=morphStr
             )
 
-face = None
+def extract_user_id(obj_id):
+    return "".join(obj_id.split("_")[1:])
 
 def callback(msg):
     global users
 
     msg_json = json.loads(msg)
     if "data" in msg_json and "object_type" in msg_json["data"] and "camera" == msg_json["data"]["object_type"]:
-        user = "".join(msg_json["object_id"].split("_")[1:])
+        user = extract_user_id(msg_json["object_id"])
         if user not in users:
             users[user] = Head(msg_json)
 
     if "hasFace" in msg_json and msg_json["hasFace"]:
-        user = "".join(msg_json["object_id"].split("_")[1:])
-        if user not in users:
-            return
-        else:
+        user = extract_user_id(msg_json["object_id"])
+        if user in users:
             if not users[user].has_face:
                 users[user].add_face(msg_json)
             else:

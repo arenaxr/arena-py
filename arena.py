@@ -130,6 +130,10 @@ def init(broker, realm, scene, callback=None, port=None, democlick=None):
     arena_callback = callback
     pseudoclick = democlick
 
+    # use JWT for authentication
+    token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjb25peCIsImlhdCI6MTU5Njg3NDA4OCwiZXhwIjoxNjI4NDEwMDg4fQ.6Z_zmxmQDw7WTdtXa6MtHa7isMlJ1YOyIv_nwpmfRO4"
+    client.username_pw_set("conix", password=token)
+
     #print("arena callback:", callback)
     #print("connecting to broker ", mqtt_broker)
     #print("scene_path ", scene_path)

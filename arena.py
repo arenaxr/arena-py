@@ -4,6 +4,7 @@ import signal
 import sys
 import time
 import enum
+import urllib.request
 from datetime import datetime
 
 import paho.mqtt.client as mqtt
@@ -116,8 +117,10 @@ def on_connect(client, userdata, flags, rc):
 # def on_log(client, userdata, level, buf):
 #    print("log:" + buf)
 
+def get_token(user):
+    return urllib.request.urlopen('https://xr.andrew.cmu.edu:8888/?username='+user).read()
 
-def init(broker, realm, scene, callback=None, port=None, democlick=None):
+def init(broker, realm, scene, callback=None, port=None, user=None, democlick=None):
     global client
     global scene_path
     global mqtt_broker
@@ -131,8 +134,12 @@ def init(broker, realm, scene, callback=None, port=None, democlick=None):
     pseudoclick = democlick
 
     # use JWT for authentication
-    token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjb25peCIsImlhdCI6MTU5Njg3NDA4OCwiZXhwIjoxNjI4NDEwMDg4fQ.6Z_zmxmQDw7WTdtXa6MtHa7isMlJ1YOyIv_nwpmfRO4"
-    client.username_pw_set("conix", password=token)
+    if user != None:
+        tokeninfo = json.loads(get_token(user).decode('utf-8'))
+        user = tokeninfo['username']
+        token = tokeninfo['token']
+        print('user: '+user+', token: '+token)
+        client.username_pw_set(username=user, password=token)
 
     #print("arena callback:", callback)
     #print("connecting to broker ", mqtt_broker)

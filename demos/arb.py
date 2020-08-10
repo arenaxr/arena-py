@@ -22,6 +22,7 @@ import arena
 
 BROKER = "oz.andrew.cmu.edu"
 PORT = None
+USER = None
 REALM = "realm"
 SCENE = ""  # no default scene, arb works on any scene
 MANIFEST = arblib.DEF_MANIFEST
@@ -32,7 +33,7 @@ DEMO = False
 
 
 def init_args():
-    global BROKER, PORT, REALM, SCENE, MODELS, MANIFEST, DEMO
+    global BROKER, PORT, USER, REALM, SCENE, MODELS, MANIFEST, DEMO
     parser = argparse.ArgumentParser(description='ARENA AR Builder.')
     parser.add_argument(
         'scene', type=str, help='ARENA scene name')
@@ -40,6 +41,8 @@ def init_args():
         '-b', '--broker', type=str, help='MQTT message broker hostname', default=BROKER)
     parser.add_argument(
         '-p', '--port', type=int, help='MQTT message broker port')
+    parser.add_argument(
+        '-u', '--user', type=str, help='MQTT message broker username')
     parser.add_argument(
         '-r', '--realm', type=str, help='ARENA realm name', default=REALM)
     parser.add_argument(
@@ -55,6 +58,8 @@ def init_args():
         BROKER = args.broker
     if args.port is not None:
         PORT = args.port
+    if args.user is not None:
+        USER = args.user
     if args.realm is not None:
         REALM = args.realm
     if args.models is not None:
@@ -897,6 +902,7 @@ def make_wall(camname):
 
 def scene_callback(msg):
     # This is the MQTT message callback function for the scene
+    print(msg)
     json_msg = json.loads(msg)
     if json_msg["action"] == "create" and json_msg["data"]["object_type"] == "camera":
         # camera updates define users present
@@ -987,8 +993,9 @@ def scene_callback(msg):
 init_args()
 random.seed()
 if DEMO:
-    arena.init(BROKER, REALM, SCENE, port=PORT, callback=scene_callback,
+    arena.init(BROKER, REALM, SCENE, port=PORT, user=USER, callback=scene_callback,
                democlick=(400, -250))
 else:
-    arena.init(BROKER, REALM, SCENE, port=PORT, callback=scene_callback)
+    arena.init(BROKER, REALM, SCENE, port=PORT,
+               user=USER, callback=scene_callback)
 arena.handle_events()

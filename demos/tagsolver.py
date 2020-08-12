@@ -83,14 +83,12 @@ def vio_filter(vio, client_id, vio_threshold):
 def on_tag_detect(client, userdata, msg):
     json_msg = None
     try:
-        json_msg = json.loads(msg.payload.decode(
-            "utf-8"), object_hook=dict_to_sns)
+        json_msg = json.loads(msg.payload.decode("utf-8"), object_hook=dict_to_sns)
     except ValueError:
         pass
+    client_id = msg.topic.split("/")[-1]
+    scene = json_msg.scene
     if hasattr(json_msg, "vio"):
-        client_id = msg.topic.split("/")[-1]
-        scene = json_msg.scene
-
         # Only take first marker for now, later iterate and avg all markers
         detected_tag = json_msg.detections[0]
         pos = json_msg.vio.position
@@ -119,16 +117,11 @@ def on_tag_detect(client, userdata, msg):
             log("Too tag much error")
             return
 
-        if detected_tag.pose.s != 1:
-            log("Can't use solution 2")
-            return
+        unknown_tag = hasattr(json_msg, "refTag") and json_msg.refTag is None
+        builder =  hasattr(json_msg, "builder") and json_msg.builder
 
-        # Builder mode: solve for tag, assume client rig is previously logged
-        if (
-            hasattr(detected_tag, "localize_tag")
-            and detected_tag.localize_tag
-            and detected_tag.id != 0
-        ):
+        # Solve for tag, not for user
+        if (builder or unknown_tag) and detected_tag.id != 0:
             log("Solve for tag", str(detected_tag.id))
 
             if not vio_filter(vio_pose, client_id, VIO_MAX_DIFF_LOW):
@@ -143,68 +136,66 @@ def on_tag_detect(client, userdata, msg):
             # Calculate pose of apriltag
             ref_tag_pose = rig_pose @ vio_pose @ dtag_pose
             ref_tag_pos = ref_tag_pose[0:3, 3]
-            ref_tag_rotq = Rotation.from_matrix(
-                ref_tag_pose[0:3, 0:3]).as_quat()
+            ref_tag_rotq = Rotation.from_matrix(ref_tag_pose[0:3, 0:3]).as_quat()
 
-            if not hasattr(json_msg, "geolocation"):
-                log("Builder provided no geolocation")
-                return
-            newu_uuid_name = (
-                str(detected_tag.id)
-                + "_"
-                + str(json_msg.geolocation.latitude)
-                + "_"
-                + str(json_msg.geolocation.longitude)
-            )
-            new_uuid = str(uuid.uuid5(uuid.NAMESPACE_OID, newu_uuid_name))
-
-            # either UUID is supplied from builder request, or its recently
-            # added as new
-            ref_uuid = None
-            if hasattr(detected_tag, "refTag") and hasattr(detected_tag.refTag, "uuid"):
-                ref_uuid = detected_tag.refTag.uuid
-            elif ADDED_TAGS.get(new_uuid) is not None:
-                ref_uuid = new_uuid
-            if ref_uuid is not None:
-                log("Builder updating existing tag")
-                resp = requests.patch(
-                    TAG_URLBASE + "/" + ref_uuid,
-                    json={"pose": ref_tag_pose.tolist()},
-                    auth=HTTPBasicAuth("conix", "conix"),
+            if builder:
+                if not hasattr(json_msg, "geolocation"):
+                    log("Builder provided no geolocation")
+                    return
+                newu_uuid_name = (
+                    str(detected_tag.id)
+                    + "_"
+                    + str(json_msg.geolocation.latitude)
+                    + "_"
+                    + str(json_msg.geolocation.longitude)
                 )
-            else:
-                log("Builder create new tag")
-                # retain tags known to be have been created as hashed by
-                # tagid, lat, long. Prevents duplicated entries (ideally)
-                if ADDED_TAGS.get(new_uuid) is not None:
-                    log("Tag already added recently")
-                else:
-                    ADDED_TAGS[new_uuid] = True
-                    new_tag = {
-                        "id": new_uuid,
-                        "name": "apriltag_" + str(detected_tag.id),
-                        "pose": ref_tag_pose.tolist(),
-                        "lat": json_msg.geolocation.latitude,
-                        "long": json_msg.geolocation.longitude,
-                        "ele": 0,
-                        "objectType": "apriltag",
-                        "url": "https://conix.io",
-                    }
-                    log(new_tag)
-                    resp = requests.post(
-                        TAG_URLBASE, json=new_tag, auth=HTTPBasicAuth(
-                            "conix", "conix"),
+                new_uuid = str(uuid.uuid5(uuid.NAMESPACE_OID, newu_uuid_name))
+
+                # either UUID is supplied from builder request, or its recently
+                # added as new
+                ref_uuid = None
+                if hasattr(detected_tag, "refTag") and hasattr(detected_tag.refTag, "uuid"):
+                    ref_uuid = json_msg.refTag.uuid
+                elif ADDED_TAGS.get(new_uuid) is not None:
+                    ref_uuid = new_uuid
+                if ref_uuid is not None:
+                    log("Builder updating existing tag")
+                    resp = requests.patch(
+                        TAG_URLBASE + "/" + ref_uuid,
+                        json={"pose": ref_tag_pose.tolist()},
+                        auth=HTTPBasicAuth("conix", "conix"),
                     )
-            print("Updating Tag %d", detected_tag.id)
-            print(ref_tag_pos)
-            print(ref_tag_rotq)
+                else:
+                    log("Builder create new tag")
+                    # retain tags known to be have been created as hashed by
+                    # tagid, lat, long. Prevents duplicated entries (ideally)
+                    if ADDED_TAGS.get(new_uuid) is not None:
+                        log("Tag already added recently")
+                    else:
+                        ADDED_TAGS[new_uuid] = True
+                        new_tag = {
+                            "id": new_uuid,
+                            "name": "apriltag_" + str(detected_tag.id),
+                            "pose": ref_tag_pose.tolist(),
+                            "lat": json_msg.geolocation.latitude,
+                            "long": json_msg.geolocation.longitude,
+                            "ele": 0,
+                            "objectType": "apriltag",
+                            "url": "https://conix.io",
+                        }
+                        log(new_tag)
+                        resp = requests.post(
+                            TAG_URLBASE, json=new_tag, auth=HTTPBasicAuth("conix", "conix"),
+                        )
+                print("Updating Tag %d", detected_tag.id)
+                print( ref_tag_pos )
+                print( ref_tag_rotq)
 
             mqtt_response = {
                 "object_id": "apriltag_" + str(detected_tag.id),
-                "action": "create",
+                "action": "update",
                 "type": "object",
                 "data": {
-                    "object_type": "cube",
                     "position": {
                         "x": ref_tag_pos[0],
                         "y": ref_tag_pos[1],
@@ -216,14 +207,23 @@ def on_tag_detect(client, userdata, msg):
                         "z": ref_tag_rotq[2],
                         "w": ref_tag_rotq[3],
                     },
-                    "scale": {"x": 0.15, "y": 0.15, "z": 0.02},
-                    "color": "#ff0000",
+
                 },
             }
+            if builder:
+                builder_mqtt = {
+                    "action": "create",
+                    "data": {
+                        "object_type": "cube",
+                        "scale": {"x": 0.15, "y": 0.15, "z": 0.02},
+                        "color": "#ff0000"
+                    }
+                }
+                mqtt_response = {**mqtt_response, **builder_mqtt}
         else:  # Solving for client rig, default localization operation
             log("Localizing", client_id, "on", str(detected_tag.id))
-            # if not vio_filter(vio_pose, client_id, VIO_MAX_DIFF_HIGH):
-            #     return
+            if not vio_filter(vio_pose, client_id, VIO_MAX_DIFF_HIGH):
+                return
             if detected_tag.id == 0:
                 ref_tag_pose = ORIGINTAG
             elif hasattr(detected_tag, "refTag"):
@@ -236,18 +236,10 @@ def on_tag_detect(client, userdata, msg):
                 # Tag not found. TODO: query ATLAS for it
                 log("Tag not found, not in build mode")
                 return
-            rig_pose = ref_tag_pose @ np.linalg.inv(
-                dtag_pose) @ np.linalg.inv(vio_pose)
+            rig_pose = ref_tag_pose @ np.linalg.inv(dtag_pose) @ np.linalg.inv(vio_pose)
             rig_pos = rig_pose[0:3, 3]
             rig_rotq = Rotation.from_matrix(rig_pose[0:3, 0:3]).as_quat()
             RIGS[client_id] = rig_pose
-
-            print('')
-            print('')
-            print('dtag:')
-            print(dtag_pose)
-            print(detected_tag.pose.e)
-            print(detected_tag.pose.s)
             # fmt: off
             mqtt_response = {
                 'object_id': client_id,
@@ -278,7 +270,8 @@ def on_tag_detect(client, userdata, msg):
         if mqtt_response is not None:
             client.publish("realm/s/" + scene, json.dumps(mqtt_response))
         # client.publish(TOPIC + client_id, json.dumps(mqtt_response))
-
+    elif hasattr(json_msg, "rigMatrix"):  # Local solved, probably tag 0
+        RIGS[client_id] = json_msg.rigMatrix
 
 def start_mqtt():
     mttqc = mqtt.Client(CLIENT_ID, clean_session=True, userdata=None)

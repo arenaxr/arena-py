@@ -1,8 +1,7 @@
-# blendshapes.py
+# head_rig.py
 #
-# animate the bones of the 'Facegltf/sampledata.gltf' GLTF model
-# bone names came from inspecting scene.gltf
-# assumes the model 'izzy' already exists in ARENA scene 'cesium'
+# makes the head found in the 'Facegltf/sampledata.gltf' GLTF model
+# into the camera head
 
 import arena
 import random
@@ -14,13 +13,12 @@ from scipy.spatial import distance
 from scipy.spatial.transform import Rotation as R
 
 HOST = "oz.andrew.cmu.edu"
-SCENE = "face-agr"
-OBJECT = "face-agr-model"
+SCENE = "head-rig"
 
 EYE_THRES = 0.16
-MOUTH_THRES = 0.25
+MOUTH_THRES = 0.05
 
-last_face_state = { 'jawOpen': 0.0, 'eyeBlink_L':0.0, 'eyeBlink_R':0.0, 'browOuterUp_L':0.0, 'browOuterUp_R':0.0,'rotation':[1.0,1.0,1.0,1.0] }
+users = {}
 
 anims = [
     "shapes.browInnerUp",
@@ -77,14 +75,20 @@ anims = [
     "tongue_out"
 ]
 
+def q_mult(q1, q2):
+    x1, y1, z1, w1 = q1
+    x2, y2, z2, w2 = q2
+    x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2
+    y = w1 * y2 + y1 * w2 + z1 * x2 - x1 * z2
+    z = w1 * z2 + z1 * w2 + x1 * y2 - y1 * x2
+    w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
+    return [x, y, z, w]
+
 class Face(object):
     def __init__(self, msg_json):
-        self.counter = 0
         self.update(msg_json)
 
     def update(self, msg_json):
-        self.counter += 1
-
         self.srcWidth = msg_json["image"]["width"]
         self.srcHeight = msg_json["image"]["height"]
 
@@ -218,23 +222,26 @@ class Face(object):
     def lipInnerPts(self):
         return self.landmarks[60:68]
 
+class Head(object):
+    def __init__(self, msg_json):
+        self.id = msg_json["object_id"]
+        self.counter = 0
+        self.has_face = False
 
-face = None
+    def add_face(self, face_json):
+        self.last_face_state = { 'jawOpen': 0.0, 'eyeBlink_L':0.0, 'eyeBlink_R':0.0, 'browOuterUp_L':0.0, 'browOuterUp_R':0.0,'rotation':[1.0,1.0,1.0,1.0] }
+        self.face = Face(face_json)
+        self.has_face = True
+        self.update_face(face_json)
 
-def callback(msg):
-    global face, last_face_state
-    msg_json = json.loads(msg)
-    if "hasFace" in msg_json and msg_json["hasFace"]:
-        if face is None:
-            face = Face(msg_json)
-        else:
-            face.update(msg_json)
+    def update_face(self, face_json):
+        self.counter += 1
 
-        # face.drawLandmarks()
+        self.face.update(face_json)
 
         # Outer Brow is set as a normalized scaler compared to face width
-        browOuterUp_L = distance.euclidean(face.landmarks[19],face.landmarks[37])
-        browOuterUp_R = distance.euclidean(face.landmarks[44],face.landmarks[24])
+        browOuterUp_L = distance.euclidean(self.face.landmarks[19],self.face.landmarks[37])
+        browOuterUp_R = distance.euclidean(self.face.landmarks[44],self.face.landmarks[24])
         # print( "Raw Brow Left:" , browOuterUp_L )
         # print( "Raw Brow Right:" , browOuterUp_R )
 
@@ -242,36 +249,36 @@ def callback(msg):
         browOuterUp_L -= 0.04
         browOuterUp_R -= 0.04
 
-        browOuterUp_L = (browOuterUp_L/face.faceWidth) * browOuterScalar
-        browOuterUp_R = (browOuterUp_R/face.faceWidth) * browOuterScalar
+        browOuterUp_L = (browOuterUp_L/self.face.faceWidth) * browOuterScalar
+        browOuterUp_R = (browOuterUp_R/self.face.faceWidth) * browOuterScalar
 
         if browOuterUp_L < 0:
             browOuterUp_L = 0
         if browOuterUp_R < 0:
             browOuterUp_R = 0
 
-        if abs(last_face_state['browOuterUp_L']-browOuterUp_L) < 0.3:
-            browOuterUp_L = last_face_state['browOuterUp_L']
-        last_face_state['browOuterUp_L'] = browOuterUp_L
+        if abs(self.last_face_state['browOuterUp_L']-browOuterUp_L) < 0.3:
+            browOuterUp_L = self.last_face_state['browOuterUp_L']
+        self.last_face_state['browOuterUp_L'] = browOuterUp_L
 
-        if abs(last_face_state['browOuterUp_R']-browOuterUp_R) < 0.3:
-            browOuterUp_R = last_face_state['browOuterUp_R']
-        last_face_state['browOuterUp_R'] = browOuterUp_R
+        if abs(self.last_face_state['browOuterUp_R']-browOuterUp_R) < 0.3:
+            browOuterUp_R = self.last_face_state['browOuterUp_R']
+        self.last_face_state['browOuterUp_R'] = browOuterUp_R
 
         # print( "Brow Left:" , browOuterUp_L )
         # print( "Brow Right:" , browOuterUp_R )
 
         # Mouth is set as a normalized scaler compared to face width
-        mouthRight = distance.euclidean(face.landmarks[63],face.landmarks[65])
-        mouthLeft = distance.euclidean(face.landmarks[61],face.landmarks[67])
-        mouthPucker = distance.euclidean(face.landmarks[48],face.landmarks[54])
+        mouthRight = distance.euclidean(self.face.landmarks[63],self.face.landmarks[65])
+        mouthLeft = distance.euclidean(self.face.landmarks[61],self.face.landmarks[67])
+        mouthPucker = distance.euclidean(self.face.landmarks[48],self.face.landmarks[54])
 
         mouthScalar = 5.0
-        mouthThresh = 0.2
+        mouthThresh = 0.10
 
-        mouthRight = (mouthRight/face.faceWidth) * mouthScalar
-        mouthLeft = (mouthLeft/face.faceWidth) * mouthScalar
-        mouthPucker = (mouthPucker/face.faceWidth)
+        mouthRight = (mouthRight/self.face.faceWidth) * mouthScalar
+        mouthLeft = (mouthLeft/self.face.faceWidth) * mouthScalar
+        mouthPucker = (mouthPucker/self.face.faceWidth)
         # print( "RawPucker: ", mouthPucker )
         mouthPucker -= 0.35 # remove DC offset
         if mouthPucker < 0.0:
@@ -281,11 +288,11 @@ def callback(msg):
         mouthPucker = 0.0
         # print( "MouthPucker: ", mouthPucker )
 
-        openness = face.mouthAspect()
+        openness = self.face.mouthAspect()
         if openness < MOUTH_THRES: openness = 0.0
 
-        # print(face.blinkAmount)
-        blink = int(face.blinkAmount < EYE_THRES)
+        # print(self.face.blinkAmount)
+        blink = int(self.face.blinkAmount < EYE_THRES)
 
         morphStr = '{ "gltf-morph": {"morphtarget": "shapes.jawOpen", "value": "' + str(openness) + '" },'
         # morphStr = '{ "gltf-morph": {"morphtarget": "shapes.mouthUpperUp_L", "value": "' + str(mouthLeft) + '" },'
@@ -299,25 +306,49 @@ def callback(msg):
         morphStr += '"gltf-morph__9": {"morphtarget": "shapes.mouthPucker", "value": "' + str(mouthPucker) + '" }'
         morphStr += '}'
 
-        rotChange = distance.euclidean(face.rot,last_face_state['rotation'])
+        rotChange = distance.euclidean(self.face.rot,self.last_face_state['rotation'])
         if rotChange < 0.03:
-            face.rot = last_face_state['rotation']
-        last_face_state['rotation'] = face.rot
+            self.face.rot = self.last_face_state['rotation']
+        self.last_face_state['rotation'] = self.face.rot
 
-        # print(morphStr)
-        if face.counter % 2 == 0:
-            obj = arena.Object(
-                rotation=face.rot,
-                # location=(face.trans[0]/10, face.trans[1]/10+3, (face.trans[2]+50)/10-5),
-                # rotation=(0,0,0.6-openness,1), # quaternion value roughly between -.05 and .05
-                objName=OBJECT,
-                # url="models/Facegltf/sampledata.gltf",
+        # head faces backward at first, rotate head 180 to correct
+        corrected_rot = q_mult(self.face.rot, [0,1,0,0])
+        # flip left right rotations
+        # corrected_rot[2] *= -1
+        # corrected_rot[3] *= -1
+
+        if self.counter % 2 == 0:
+            arena.Object(
+                objName=f"head_{self.id}",
                 objType=arena.Shape.gltf_model,
-                scale=(15,15,15),
-                location=(0,2,-5),
+                scale=(1.75,1.75,1.75),
+                rotation=corrected_rot,
+                location=(0.0, -0.07, 0.035),
+                #location=(self.face.trans[0]/100, self.face.trans[1]/100, (self.face.trans[2]+50)/100+.25),
+                url="/models/FaceCapHeadGeneric/FaceCapHeadGeneric.gltf",
+                parent=self.id,
                 data=morphStr
             )
 
+def extract_user_id(obj_id):
+    return "".join(obj_id.split("_")[1:])
+
+def callback(msg):
+    global users
+
+    msg_json = json.loads(msg)
+    if "data" in msg_json and "object_type" in msg_json["data"] and "camera" == msg_json["data"]["object_type"]:
+        user = extract_user_id(msg_json["object_id"])
+        if user not in users:
+            users[user] = Head(msg_json)
+
+    if "hasFace" in msg_json and msg_json["hasFace"]:
+        user = extract_user_id(msg_json["object_id"])
+        if user in users:
+            if not users[user].has_face:
+                users[user].add_face(msg_json)
+            else:
+                users[user].update_face(msg_json)
 
 arena.init(HOST, "realm", SCENE, callback=callback)
 arena.handle_events()

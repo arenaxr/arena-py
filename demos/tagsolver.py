@@ -82,7 +82,13 @@ def vio_filter(vio, client_id, vio_threshold):
 
 
 def resolve_pose_ambiguity(pose1, err1, pose2, err2, vio):
-    vertical_vector = np.array([0, 1, 0])
+    vertical_vector = np.array([[0, 1, 0, 1]]).T
+    pose1_vertical = pose1 @ vertical_vector
+    pose2_vertical = pose2 @ vertical_vector
+    vio_vertical = np.linalg.inv(vio) @ vertical_vector
+    print(pose1_vertical)
+    print(pose2_vertical)
+    print(vio_vertical)
     return pose1, err1
 
 

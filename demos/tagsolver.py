@@ -86,30 +86,36 @@ def resolve_pose_ambiguity(pose1, err1, pose2, err2, vio):
     pose1_vertical = pose1[0:3, 0:3] @ vertical_vector
     pose2_vertical = pose2[0:3, 0:3] @ vertical_vector
     vio_vertical = vio[0:3, 0:3].T @ vertical_vector
-    print(pose1_vertical)
-    print(pose2_vertical)
-    print(vio_vertical)
-    return pose1, err1
+    pose1_vertical = pose1_vertical / np.linalg.norm(pose1_vertical)
+    pose2_vertical = pose2_vertical / np.linalg.norm(pose2_vertical)
+    vio_vertical = vio_vertical / np.linalg.norm(vio_vertical)
+    verr1 = 1.0 - abs(np.dot(pose1_vertical.T, vio_vertical))
+    verr2 = 1.0 - abs(np.dot(pose2_vertical.T, vio_vertical))
+    if verr1 <= verr2 and err1 <= err2:
+        return pose1, err1
+    if verr2 <= verr1 and err2 <= err1:
+        return pose2, err2
+    return pose1, 99999999.9
 
 
-test_pose1 = np.array(
-    [[.72, -.01, -.69, -.06],
-     [-.05, 1.00, -.06, -.03],
-     [.69, .07, .72, -1.15],
-     [.00, .00, .00, 1.00]])
-test_error1 = 1e-6
-test_pose2 = np.array(
-    [[.65, -.02, .76, -.05],
-     [-.09, .99, .10, -.03],
-     [-.75, -.13, .65, -1.14],
-     [.00, .00, .00, 1.00]])
-test_error2 = 181e-6
-test_vio = np.identity(4)
-test_pose, test_error = resolve_pose_ambiguity(
-    test_pose1, test_error1, test_pose2, test_error2, test_vio)
-print(test_pose)
-print(test_error)
-sys.exit()
+# test_pose1 = np.array(
+#     [[.72, -.01, -.69, -.06],
+#      [-.05, 1.00, -.06, -.03],
+#      [.69, .07, .72, -1.15],
+#      [.00, .00, .00, 1.00]])
+# test_error1 = 1e-6
+# test_pose2 = np.array(
+#     [[.65, -.02, .76, -.05],
+#      [-.09, .99, .10, -.03],
+#      [-.75, -.13, .65, -1.14],
+#      [.00, .00, .00, 1.00]])
+# test_error2 = 181e-6
+# test_vio = np.identity(4)
+# test_pose, test_error = resolve_pose_ambiguity(
+#     test_pose1, test_error1, test_pose2, test_error2, test_vio)
+# print(test_pose)
+# print(test_error)
+# sys.exit()
 
 
 def on_tag_detect(client, userdata, msg):

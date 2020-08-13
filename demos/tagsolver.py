@@ -80,10 +80,15 @@ def vio_filter(vio, client_id, vio_threshold):
     return True
 
 
+def resolve_pose_ambiguity(pose1, err1, pose2, err2, vio):
+    return pose1, err1
+
+
 def on_tag_detect(client, userdata, msg):
     json_msg = None
     try:
-        json_msg = json.loads(msg.payload.decode("utf-8"), object_hook=dict_to_sns)
+        json_msg = json.loads(msg.payload.decode(
+            "utf-8"), object_hook=dict_to_sns)
     except ValueError:
         pass
     client_id = msg.topic.split("/")[-1]
@@ -102,23 +107,37 @@ def on_tag_detect(client, userdata, msg):
         vio_pose[0:3, 3] = [pos.x, pos.y, pos.z]
 
         # Construct pose matrix for detected tag
-        dtag_pose = np.identity(4)
+        dtag_pose_s1 = np.identity(4)
         # Correct for column-major format of detected tag pose
-        R_correct = np.array(detected_tag.pose.R).T
-        dtag_pose[0:3, 0:3] = R_correct
-        dtag_pose[0:3, 3] = detected_tag.pose.t
+        R_correct = np.array(detected_tag.s1.R).T
+        dtag_pose_s1[0:3, 0:3] = R_correct
+        dtag_pose_s1[0:3, 3] = detected_tag.s1.t
         # Swap x/y axis of detected tag coordinate system
-        dtag_pose = np.array(FLIP) @ dtag_pose @ np.array(FLIP)
+        dtag_pose_s1 = np.array(FLIP) @ dtag_pose_s1 @ np.array(FLIP)
+        dtag_error_s1 = detected_tag.s1.e
 
-        mqtt_response = None
+        # Construct pose matrix for detected tag
+        dtag_pose_s2 = np.identity(4)
+        # Correct for column-major format of detected tag pose
+        R_correct = np.array(detected_tag.s2.R).T
+        dtag_pose_s2[0:3, 0:3] = R_correct
+        dtag_pose_s2[0:3, 3] = detected_tag.s2.t
+        # Swap x/y axis of detected tag coordinate system
+        dtag_pose_s2 = np.array(FLIP) @ dtag_pose_s2 @ np.array(FLIP)
+        dtag_error_s2 = detected_tag.s2.e
+
+        dtag_pose, dtag_error = resolve_pose_ambiguity(
+            dtag_pose_s1, dtag_error_s1, dtag_pose_s2, dtag_error_s2, vio_pose)
 
         # Just guessed the threshold for tag error
-        if detected_tag.pose.e > 5e-6:
+        if dtag_error > 5e-6:
             log("Too tag much error")
             return
 
+        mqtt_response = None
+
         unknown_tag = hasattr(json_msg, "refTag") and json_msg.refTag is None
-        builder =  hasattr(json_msg, "builder") and json_msg.builder
+        builder = hasattr(json_msg, "builder") and json_msg.builder
 
         # Solve for tag, not for user
         if (builder or unknown_tag) and detected_tag.id != 0:
@@ -136,7 +155,8 @@ def on_tag_detect(client, userdata, msg):
             # Calculate pose of apriltag
             ref_tag_pose = rig_pose @ vio_pose @ dtag_pose
             ref_tag_pos = ref_tag_pose[0:3, 3]
-            ref_tag_rotq = Rotation.from_matrix(ref_tag_pose[0:3, 0:3]).as_quat()
+            ref_tag_rotq = Rotation.from_matrix(
+                ref_tag_pose[0:3, 0:3]).as_quat()
 
             if builder:
                 if not hasattr(json_msg, "geolocation"):
@@ -185,11 +205,12 @@ def on_tag_detect(client, userdata, msg):
                         }
                         log(new_tag)
                         resp = requests.post(
-                            TAG_URLBASE, json=new_tag, auth=HTTPBasicAuth("conix", "conix"),
+                            TAG_URLBASE, json=new_tag, auth=HTTPBasicAuth(
+                                "conix", "conix"),
                         )
                 print("Updating Tag %d", detected_tag.id)
-                print( ref_tag_pos )
-                print( ref_tag_rotq)
+                print(ref_tag_pos)
+                print(ref_tag_rotq)
 
             mqtt_response = {
                 "object_id": "apriltag_" + str(detected_tag.id),
@@ -236,7 +257,8 @@ def on_tag_detect(client, userdata, msg):
                 # Tag not found. TODO: query ATLAS for it
                 log("Tag not found, not in build mode")
                 return
-            rig_pose = ref_tag_pose @ np.linalg.inv(dtag_pose) @ np.linalg.inv(vio_pose)
+            rig_pose = ref_tag_pose @ np.linalg.inv(
+                dtag_pose) @ np.linalg.inv(vio_pose)
             rig_pos = rig_pose[0:3, 3]
             rig_rotq = Rotation.from_matrix(rig_pose[0:3, 0:3]).as_quat()
             RIGS[client_id] = rig_pose
@@ -272,6 +294,7 @@ def on_tag_detect(client, userdata, msg):
         # client.publish(TOPIC + client_id, json.dumps(mqtt_response))
     elif hasattr(json_msg, "rigMatrix"):  # Local solved, probably tag 0
         RIGS[client_id] = json_msg.rigMatrix
+
 
 def start_mqtt():
     mttqc = mqtt.Client(CLIENT_ID, clean_session=True, userdata=None)

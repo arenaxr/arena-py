@@ -1,3 +1,4 @@
+import sys
 import json
 import random
 import uuid
@@ -81,7 +82,28 @@ def vio_filter(vio, client_id, vio_threshold):
 
 
 def resolve_pose_ambiguity(pose1, err1, pose2, err2, vio):
+    vertical_vector = np.array([0, 1, 0])
     return pose1, err1
+
+
+test_pose1 = np.array(
+    [[.72, -.01, -.69, -.06],
+     [-.05, 1.00, -.06, -.03],
+     [.69, .07, .72, -1.15],
+     [.00, .00, .00, 1.00]])
+test_error1 = 1e-6
+test_pose2 = np.array(
+    [[.65, -.02, .76, -.05],
+     [-.09, .99, .10, -.03],
+     [-.75, -.13, .65, -1.14],
+     [.00, .00, .00, 1.00]])
+test_error2 = 181e-6
+test_vio = np.identity(4)
+test_pose, test_error = resolve_pose_ambiguity(
+    test_pose1, test_error1, test_pose2, test_error2, test_vio)
+print(test_pose)
+print(test_error)
+sys.exit()
 
 
 def on_tag_detect(client, userdata, msg):

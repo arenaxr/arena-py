@@ -117,8 +117,9 @@ def on_connect(client, userdata, flags, rc):
 # def on_log(client, userdata, level, buf):
 #    print("log:" + buf)
 
-def get_token(user):
-    return urllib.request.urlopen('https://xr.andrew.cmu.edu:8888/?username='+user).read()
+def get_token(scene, user):
+    url = 'https://xr.andrew.cmu.edu:8888/?scene='+scene+'&username='+user
+    return urllib.request.urlopen(url).read()
 
 def init(broker, realm, scene, callback=None, port=None, user=None, democlick=None):
     global client
@@ -135,7 +136,7 @@ def init(broker, realm, scene, callback=None, port=None, user=None, democlick=No
 
     # use JWT for authentication
     if user != None:
-        tokeninfo = json.loads(get_token(user).decode('utf-8'))
+        tokeninfo = json.loads(get_token(scene, user).decode('utf-8'))
         user = tokeninfo['username']
         token = tokeninfo['token']
         print('user: '+user+', token: '+token)

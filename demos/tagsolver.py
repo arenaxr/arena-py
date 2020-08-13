@@ -95,7 +95,9 @@ def resolve_pose_ambiguity(pose1, err1, pose2, err2, vio):
         return pose1, err1
     if verr2 <= verr1 and err2 <= err1:
         return pose2, err2
-    return pose1, 99999999.9
+    if verr1 <= verr2:
+        return pose1, 99999999.9
+    return pose2, 99999999.9
 
 
 # test_pose1 = np.array(

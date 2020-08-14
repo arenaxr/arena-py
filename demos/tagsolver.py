@@ -145,22 +145,22 @@ def on_tag_detect(client, userdata, msg):
         # Construct pose matrix for detected tag
         dtag_pose_s1 = np.identity(4)
         # Correct for column-major format of detected tag pose
-        R_correct = np.array(detected_tag.s1.R).T
+        R_correct = np.array(detected_tag.pose.R).T
         dtag_pose_s1[0:3, 0:3] = R_correct
-        dtag_pose_s1[0:3, 3] = detected_tag.s1.t
+        dtag_pose_s1[0:3, 3] = detected_tag.pose.t
         # Swap x/y axis of detected tag coordinate system
         dtag_pose_s1 = np.array(FLIP) @ dtag_pose_s1 @ np.array(FLIP)
-        dtag_error_s1 = detected_tag.s1.e
+        dtag_error_s1 = detected_tag.pose.e
 
         # Construct pose matrix for detected tag
         dtag_pose_s2 = np.identity(4)
         # Correct for column-major format of detected tag pose
-        R_correct = np.array(detected_tag.s2.R).T
+        R_correct = np.array(detected_tag.pose.asol.R).T
         dtag_pose_s2[0:3, 0:3] = R_correct
-        dtag_pose_s2[0:3, 3] = detected_tag.s2.t
+        dtag_pose_s2[0:3, 3] = detected_tag.pose.asol.t
         # Swap x/y axis of detected tag coordinate system
         dtag_pose_s2 = np.array(FLIP) @ dtag_pose_s2 @ np.array(FLIP)
-        dtag_error_s2 = detected_tag.s2.e
+        dtag_error_s2 = detected_tag.pose.asol.e
 
         dtag_pose, dtag_error = resolve_pose_ambiguity(
             dtag_pose_s1, dtag_error_s1, dtag_pose_s2, dtag_error_s2, vio_pose)

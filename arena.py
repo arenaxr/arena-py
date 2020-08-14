@@ -17,6 +17,7 @@ client = mqtt.Client(
 )
 object_count = 0
 callbacks = {}
+secondary_callbacks = {}
 arena_callback = None
 messages = []
 debug_toggle = False
@@ -42,6 +43,13 @@ def arena_publish(scene_path, MESSAGE):
 def process_message(msg):
     global arena_callback
     global pseudoclick
+
+    # manage secondary subcriptions to the same bus
+    for sub in secondary_callbacks:
+        if mqtt.topic_matches_sub(sub, msg.topic):
+            secondary_callbacks[sub](msg)
+            return
+
     #print("process_message: "+str(msg.payload))
     # first call specific objects' callbacks
     payload = msg.payload.decode("utf-8", "ignore")
@@ -176,6 +184,13 @@ def start():
     print("starting network loop")
     client.loop_start()  # start MQTT network loop
     print("started")
+
+
+def add_topic(sub, callback):
+    """Subscribes to new topic and adds filter for callback to on_message()"""
+    global client
+    secondary_callbacks[sub] = callback # save as regex
+    client.subscribe(sub)
 
 
 def debug():

@@ -314,8 +314,8 @@ class Head(object):
         # head faces backward at first, rotate head 180 to correct
         corrected_rot = q_mult(self.face.rot, [0,1,0,0])
         # flip left right rotations
-        corrected_rot[2] *= -1
-        corrected_rot[3] *= -1
+        # corrected_rot[2] *= -1
+        # corrected_rot[3] *= -1
 
         if self.counter % 2 == 0:
             arena.Object(

@@ -111,7 +111,10 @@ def on_message(client, userdata, msg):
 
 
 def on_connect(client, userdata, flags, rc):
-    print("connected")
+    if rc == 0:
+        print("connected")
+    else:
+        print("connection refused, result code: "+str(rc))
 
 
 # def on_log(client, userdata, level, buf):

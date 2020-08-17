@@ -43,34 +43,30 @@ def arena_publish(scene_path, MESSAGE):
 def process_message(msg):
     global arena_callback
     global pseudoclick
+    #print("process_message: "+str(msg.payload))
 
-    # manage secondary subcriptions to the same bus
+    # manage secondary subcriptions to the same bus, not always JSON
     for sub in secondary_callbacks:
         if mqtt.topic_matches_sub(sub, msg.topic):
             secondary_callbacks[sub](msg)
             return
 
-    #print("process_message: "+str(msg.payload))
+    # otherwise, all arena object data is required to be JSON
     # first call specific objects' callbacks
     payload = msg.payload.decode("utf-8", "ignore")
     MESSAGE = json.loads(payload)
     object_id = MESSAGE["object_id"]
-    evtType=""
-    clickPos=(0,0,0)
-    Pos=(0,0,0)
-    Rot=(0,0,0,1)
-    Src=""
 
     if pseudoclick:  # display random clicks in right corner for demos
         if MESSAGE["action"] == "clientEvent" and MESSAGE["type"] == "mousedown":
             draw_psuedoclick(xpix=pseudoclick[0], ypix=pseudoclick[1])
-
+ 
     if object_id in callbacks:
-
-        # Make event type object by default to avoid bad lookup on EventType[] below
-        # FIXME: added this hack to avoid crash.  Crash occurs when object is linked to a users camera and the page is refreshed
-        evtType = 'object'
-
+        evtType = 'object' # event type is required
+        clickPos=(0,0,0)
+        Pos=(0,0,0)
+        Rot=(0,0,0,1)
+        Src=""
         # Unpack JSON data
         objId  = MESSAGE["object_id"]
         Action = MESSAGE["action"] # create/delete/update/clientEvent

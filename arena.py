@@ -118,7 +118,10 @@ def on_message(client, userdata, msg):
 
 
 def on_connect(client, userdata, flags, rc):
-    print("connected")
+    if rc == 0:
+        print("connected")
+    else:
+        print("connection error, result code: " + rc)
 
 
 # def on_log(client, userdata, level, buf):
@@ -151,6 +154,7 @@ def init(broker, realm, scene, callback=None, port=None, democlick=None):
 
     # fall-thru callback for all things on scene
     # not on specific subscribed topics
+    client.on_connect = on_connect
     client.on_message = on_message
 
     # client.on_log = on_log
@@ -189,8 +193,14 @@ def start():
 def add_topic(sub, callback):
     """Subscribes to new topic and adds filter for callback to on_message()"""
     global client
-    secondary_callbacks[sub] = callback # save as regex
+    secondary_callbacks[sub] = callback
     client.subscribe(sub)
+
+
+def remove_topic(sub):
+    """Unsubscribes to topic and removes filter for callback"""
+    global client
+    client.unsubscribe(sub)
 
 
 def debug():

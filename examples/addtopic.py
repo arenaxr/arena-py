@@ -22,5 +22,8 @@ arena.Object(objType=arena.Shape.sphere,
 # subscribe to secondary
 arena.add_topic("$SYS/#", secondary_callback)
 
+# unsubscribe to secondary
+arena.remove_topic("$SYS/#")
+
 # our main event loop
 arena.handle_events()

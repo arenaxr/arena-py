@@ -10,40 +10,55 @@ def get_token(scene, user):
 
 
 def on_connect(client, userdata, flags, rc):
-    # The callback for when the client receives a CONNACK response from the server.
-    # print(client.__dict__)
-    # print(userdata)
-    # print(flags)
-    # print(rc)
-
-    if rc == 0:
-        print("connected")
-    else:
-        print("connection refused, result code: "+str(rc))
+    print("on_connect")
+    print(userdata)
+    print(flags)
+    print(rc)
 
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
     client.subscribe("realm/s/auth-test/#")
 
-    client.publish("realm/s/auth-test", "TEST MESSAGE from python  ")
+    msg = '{"object_id" : "cube_1", "action": "create", "type": "object", "data": {"object_type": "cube", "position": {"x": 1, "y": 1, "z": -1}, "rotation": {"x": 0, "y": 0, "z": 0, "w": 1}, "scale": {"x": 1, "y": 1, "z": 1}, "color": "#FF0000"}}'
+    client.publish("realm/s/auth-test/cube_1", msg)
+
+
+def on_subscribe(client, userdata, mid, granted_qos):
+    print("on_subscribe")
+    print(userdata)
+    print(mid)
+    print(granted_qos)
+
+
+def on_publish(client, userdata, mid):
+    print("on_publish")
+    print(userdata)
+    print(mid)
 
 
 def on_message(client, userdata, msg):
-    # The callback for when a PUBLISH message is received from the server.
-    # print(client.__dict__)
-    # print(userdata)
-    # print(msg.__dict__)
+    print("on_message")
+    print(userdata)
+    print(msg)
 
-    print(msg.topic+" "+str(msg.payload))
+
+def on_disconnect(client, userdata, rc):
+    print("on_disconnect")
+    print(userdata)
+    print(rc)
 
 
 client = mqtt.Client()
 client.on_connect = on_connect
+client.on_subscribe = on_subscribe
+client.on_publish = on_publish
 client.on_message = on_message
+client.on_disconnect = on_disconnect
 
 user = "editor"
 tokeninfo = json.loads(get_token("auth-test", "editor").decode('utf-8'))
-token = tokeninfo['token']
+#token = tokeninfo['token']
+token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJlZGl0b3IiLCJzdWJzIjpbInJlYWxtL3MvYXV0aC10ZXN0LyMiXSwicHVibCI6WyJyZWFsbS9zL2F1dGgtdGVzdC8jIl0sImlhdCI6MTU5Njg3NDA4OCwiZXhwIjoxNjI4NDEwMDg4fQ.yPe9TFzsgAIJ3sSPu5LHfSDOR19JoSsbBL1G05Ph7Ms"
 print('user: '+user+', token: '+token)
 client.username_pw_set(username=user, password=token)
 

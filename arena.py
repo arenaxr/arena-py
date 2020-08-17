@@ -17,6 +17,7 @@ client = mqtt.Client(
 )
 object_count = 0
 callbacks = {}
+secondary_callbacks = {}
 arena_callback = None
 messages = []
 debug_toggle = False
@@ -43,26 +44,29 @@ def process_message(msg):
     global arena_callback
     global pseudoclick
     #print("process_message: "+str(msg.payload))
+
+    # manage secondary subcriptions to the same bus, not always JSON
+    for sub in secondary_callbacks:
+        if mqtt.topic_matches_sub(sub, msg.topic):
+            secondary_callbacks[sub](msg)
+            return
+
+    # otherwise, all arena object data is required to be JSON
     # first call specific objects' callbacks
     payload = msg.payload.decode("utf-8", "ignore")
     MESSAGE = json.loads(payload)
     object_id = MESSAGE["object_id"]
-    evtType=""
-    clickPos=(0,0,0)
-    Pos=(0,0,0)
-    Rot=(0,0,0,1)
-    Src=""
 
     if pseudoclick:  # display random clicks in right corner for demos
         if MESSAGE["action"] == "clientEvent" and MESSAGE["type"] == "mousedown":
             draw_psuedoclick(xpix=pseudoclick[0], ypix=pseudoclick[1])
-
+ 
     if object_id in callbacks:
-
-        # Make event type object by default to avoid bad lookup on EventType[] below
-        # FIXME: added this hack to avoid crash.  Crash occurs when object is linked to a users camera and the page is refreshed
-        evtType = 'object'
-
+        evtType = 'object' # event type is required
+        clickPos=(0,0,0)
+        Pos=(0,0,0)
+        Rot=(0,0,0,1)
+        Src=""
         # Unpack JSON data
         objId  = MESSAGE["object_id"]
         Action = MESSAGE["action"] # create/delete/update/clientEvent
@@ -110,7 +114,10 @@ def on_message(client, userdata, msg):
 
 
 def on_connect(client, userdata, flags, rc):
-    print("connected")
+    if rc == 0:
+        print("connected")
+    else:
+        print("connection error, result code: " + rc)
 
 
 # def on_log(client, userdata, level, buf):
@@ -143,6 +150,7 @@ def init(broker, realm, scene, callback=None, port=None, democlick=None):
 
     # fall-thru callback for all things on scene
     # not on specific subscribed topics
+    client.on_connect = on_connect
     client.on_message = on_message
 
     # client.on_log = on_log
@@ -176,6 +184,19 @@ def start():
     print("starting network loop")
     client.loop_start()  # start MQTT network loop
     print("started")
+
+
+def add_topic(sub, callback):
+    """Subscribes to new topic and adds filter for callback to on_message()"""
+    global client
+    secondary_callbacks[sub] = callback
+    client.subscribe(sub)
+
+
+def remove_topic(sub):
+    """Unsubscribes to topic and removes filter for callback"""
+    global client
+    client.unsubscribe(sub)
 
 
 def debug():

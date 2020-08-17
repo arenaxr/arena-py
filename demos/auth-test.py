@@ -30,6 +30,12 @@ def on_subscribe(client, userdata, mid, granted_qos):
     print(granted_qos)
 
 
+def on_unsubscribe(client, userdata, mid):
+    print("on_unsubscribe")
+    print(userdata)
+    print(mid)
+
+
 def on_publish(client, userdata, mid):
     print("on_publish")
     print(userdata)
@@ -51,6 +57,7 @@ def on_disconnect(client, userdata, rc):
 client = mqtt.Client()
 client.on_connect = on_connect
 client.on_subscribe = on_subscribe
+client.on_unsubscribe = on_unsubscribe
 client.on_publish = on_publish
 client.on_message = on_message
 client.on_disconnect = on_disconnect

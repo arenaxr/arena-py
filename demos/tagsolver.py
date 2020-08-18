@@ -77,21 +77,21 @@ def vio_filter(vio, client_id, vio_threshold):
     return True
 
 
-def resolve_pose_ambiguity(pose1, err1, pose2, err2, vio):
-    vertical_vector = np.array([[0, 1, 0]]).T
+def resolve_pose_ambiguity(pose1, err1, pose2, err2, vio, tagpose):
+    vertical_vector = tagpose[0:3, 0:3].T @ np.array([[0, 1, 0]]).T
     pose1_vertical = pose1[0:3, 0:3] @ vertical_vector
     pose2_vertical = pose2[0:3, 0:3] @ vertical_vector
     vio_vertical = vio[0:3, 0:3].T @ vertical_vector
     pose1_vertical = pose1_vertical / np.linalg.norm(pose1_vertical)
     pose2_vertical = pose2_vertical / np.linalg.norm(pose2_vertical)
     vio_vertical = vio_vertical / np.linalg.norm(vio_vertical)
-    verr1 = 1.0 - abs(np.dot(pose1_vertical.T, vio_vertical))
-    verr2 = 1.0 - abs(np.dot(pose2_vertical.T, vio_vertical))
-    if verr1 <= verr2 and err1 <= err2:
+    valign1 = np.dot(pose1_vertical.T, vio_vertical)
+    valign2 = np.dot(pose2_vertical.T, vio_vertical)
+    if valign1 >= valign2 and err1 <= err2:
         return pose1, err1
-    if verr2 <= verr1 and err2 <= err1:
+    if valign2 >= valign1 and err2 <= err1:
         return pose2, err2
-    if verr1 <= verr2:
+    if valign1 >= valign2:
         return pose1, 99999999.9
     return pose2, 99999999.9
 
@@ -109,8 +109,9 @@ def resolve_pose_ambiguity(pose1, err1, pose2, err2, vio):
 #      [.00, .00, .00, 1.00]])
 # test_error2 = 181e-6
 # test_vio = np.identity(4)
+# test_tagpose = np.identity(4)
 # test_pose, test_error = resolve_pose_ambiguity(
-#     test_pose1, test_error1, test_pose2, test_error2, test_vio)
+#     test_pose1, test_error1, test_pose2, test_error2, test_vio, test_tagpose)
 # print(test_pose)
 # print(test_error)
 # sys.exit()
@@ -183,7 +184,7 @@ def on_tag_detect(client, userdata, msg):
 
     # Fix detection ambiguity using gravity from vio
     dtag_pose, dtag_error = resolve_pose_ambiguity(
-        dtag_pose_s1, dtag_error_s1, dtag_pose_s2, dtag_error_s2, vio_pose)
+        dtag_pose_s1, dtag_error_s1, dtag_pose_s2, dtag_error_s2, vio_pose, ref_tag_pose)
     if dtag_error > 5e-6:
         log("Too tag much error")
         return

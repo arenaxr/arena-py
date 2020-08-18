@@ -12,7 +12,11 @@ def printhelp():
 
 
 def on_tag_detect():
-    pass
+    json_msg = None
+    try:
+        json_msg = json.loads(msg.payload.decode("utf-8"))
+    except ValueError:
+        return
 
 
 def main():

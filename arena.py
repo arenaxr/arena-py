@@ -114,7 +114,7 @@ def on_connect(client, userdata, flags, rc):
     if rc == 0:
         print("connected")
     else:
-        print("connection refused, result code: "+str(rc))
+        print("connection error, result code: " + rc)
 
 
 # def on_log(client, userdata, level, buf):
@@ -140,7 +140,6 @@ def init(broker, realm, scene, callback=None, port=None, user=None, democlick=No
     # use JWT for authentication
     if user != None:
         tokeninfo = json.loads(get_token(scene, user).decode('utf-8'))
-        user = tokeninfo['username']
         token = tokeninfo['token']
         print('user: '+user+', token: '+token)
         client.username_pw_set(username=user, password=token)
@@ -158,6 +157,7 @@ def init(broker, realm, scene, callback=None, port=None, user=None, democlick=No
 
     # fall-thru callback for all things on scene
     # not on specific subscribed topics
+    client.on_message = on_connect
     client.on_message = on_message
 
     # client.on_log = on_log

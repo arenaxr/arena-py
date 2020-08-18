@@ -45,7 +45,8 @@ def on_publish(client, userdata, mid):
 def on_message(client, userdata, msg):
     print("on_message")
     print(userdata)
-    print(msg)
+    print(msg.topic)
+    print(str(msg.payload))
 
 
 def on_disconnect(client, userdata, rc):
@@ -63,9 +64,9 @@ client.on_message = on_message
 client.on_disconnect = on_disconnect
 
 user = "editor"
-tokeninfo = json.loads(get_token("auth-test", "editor").decode('utf-8'))
-#token = tokeninfo['token']
-token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJlZGl0b3IiLCJzdWJzIjpbInJlYWxtL3MvYXV0aC10ZXN0LyMiXSwicHVibCI6WyJyZWFsbS9zL2F1dGgtdGVzdC8jIl0sImlhdCI6MTU5Njg3NDA4OCwiZXhwIjoxNjI4NDEwMDg4fQ.yPe9TFzsgAIJ3sSPu5LHfSDOR19JoSsbBL1G05Ph7Ms"
+scene = "auth-test"
+tokeninfo = json.loads(get_token(scene, user).decode('utf-8'))
+token = tokeninfo['token']
 print('user: '+user+', token: '+token)
 client.username_pw_set(username=user, password=token)
 

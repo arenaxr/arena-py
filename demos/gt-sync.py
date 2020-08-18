@@ -17,9 +17,7 @@ def on_tag_detect():
 
 def main():
     BROKER = 'oz.andrew.cmu.edu'
-    PORT = 1883
     REALM = 'realm'
-    CLIENT_ID = "gt-sync_" + str(random.randint(0, 100))
     TOPIC = REALM + '/g/a/#'
     COLOR_WALK = (0, 255, 0)
     COLOR_FINDTAG = (255, 0, 0)
@@ -51,24 +49,19 @@ def main():
         obj_str = "circle_" + user
         camera_str = "camera_" + user + "_" + user
         arena.Object(objName=obj_str,
-                    objType=arena.Shape.circle,
-                    parent=camera_str,
-                    location=(-.5, 0, -.5),
-                    rotation=(0, 0, 0, 1),
-                    scale=(0.05, 0.05, 0.05),
-                    color=color,
-                    persist=True)
+                     objType=arena.Shape.circle,
+                     parent=camera_str,
+                     location=(-.5, 0, -.5),
+                     rotation=(0, 0, 0, 1),
+                     scale=(0.05, 0.05, 0.05),
+                     color=color,
+                     persist=True)
 
-        print("Go to URL: https://xr.andrew.cmu.edu/?scene=" + scene + "&fixedCamera=" + user)
+        print("Go to URL: https://xr.andrew.cmu.edu/?scene=" +
+              scene + "&fixedCamera=" + user)
 
+    arena.add_topic(TOPIC, on_tag_detect)
     arena.handle_events()
-
-    mqttc = mqtt.Client(CLIENT_ID, clean_session=True, userdata=None)
-    mqttc.connect(BROKER, PORT)
-    print("Connected MQTT")
-    mqttc.subscribe(TOPIC)
-    mqttc.message_callback_add(TOPIC, on_tag_detect)
-    mqttc.loop_forever()
 
 
 if __name__ == '__main__':

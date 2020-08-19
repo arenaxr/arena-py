@@ -1,7 +1,5 @@
-import sys
 import json
 import random
-import uuid
 from types import SimpleNamespace
 
 import requests

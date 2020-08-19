@@ -1,4 +1,37 @@
 import numpy as np
+from scipy.spatial.transform import Rotation
+
+
+def pose_to_matrix4(pos, rotq):
+    mat = np.identity(4)
+    mat[0:3, 0:3] = Rotation.from_quat(
+        rotq._x, rotq._y, rotq._z, rotq._w).as_matrix()
+    mat[0:3, 3] = [pos.x, pos.y, pose.z]
+    return mat
+
+
+def matrix4_to_pose(mat):
+    pos = mat[0:3, 3]
+    rotq = Rotation.from_matrix(mat[0:3, 0:3]).as_quat()
+    return pos, rotq
+
+
+def dtag_pose_to_matrix4(dtag_pose):
+    FLIP = np.diag([1, -1, -1, 1])
+    mat = np.identity(4)
+    # Correct for column-major format of detected tag pose
+    mat[0:3, 0:3] = np.array(dtag_pose.R).T
+    mat[0:3, 3] = dtag_pose.t
+    # Swap x/y axis of detected tag coordinate system
+    mat = FLIP @ mat @ FLIP
+    return mat
+
+
+def reftag_pose_to_matrix4(reftag_pose):
+    # comes in as col-major
+    arr = reftag_pose.elements
+    mat = np.array([arr[0:4], arr[4:8], arr[8:12], arr[12:16]]).T
+    return mat
 
 
 def resolve_pose_ambiguity(pose1, err1, pose2, err2, vio, tagpose):

@@ -3,8 +3,9 @@
 import arena
 import getopt
 import numpy as np
-import paho.mqtt.client as mqtt
 import sys
+import pose
+from types import SimpleNamespace
 
 
 def printhelp():
@@ -12,53 +13,29 @@ def printhelp():
     print('   ex: python3 gt-sync.py -s myScene name1 name2 name3')
 
 
-def get_tag_pose(json_msg):
-    # Only take first marker for now, later iterate and avg all markers
-    detected_tag = json_msg['detections'][0]
-    pos = json_msg['vio']['position']
-    rot = json_msg['vio']['rotation']
-
-    # Construct pose matrix4 for camera
-    vio_pose = np.identity(4)
-    vio_pose[0:3, 0:3] = Rotation.from_quat(
-        [rot._x, rot._y, rot._z, rot._w]
-    ).as_matrix()
-    vio_pose[0:3, 3] = [pos.x, pos.y, pos.z]
-
-    # Construct pose matrix for detected tag
-    dtag_pose_s1 = np.identity(4)
-    # Correct for column-major format of detected tag pose
-    R_correct = np.array(detected_tag.pose.R).T
-    dtag_pose_s1[0:3, 0:3] = R_correct
-    dtag_pose_s1[0:3, 3] = detected_tag.pose.t
-    # Swap x/y axis of detected tag coordinate system
-    dtag_pose_s1 = np.array(FLIP) @ dtag_pose_s1 @ np.array(FLIP)
-    dtag_error_s1 = detected_tag.pose.e
-
-    # Construct pose matrix for detected tag
-    dtag_pose_s2 = np.identity(4)
-    # Correct for column-major format of detected tag pose
-    R_correct = np.array(detected_tag.pose.asol.R).T
-    dtag_pose_s2[0:3, 0:3] = R_correct
-    dtag_pose_s2[0:3, 3] = detected_tag.pose.asol.t
-    # Swap x/y axis of detected tag coordinate system
-    dtag_pose_s2 = np.array(FLIP) @ dtag_pose_s2 @ np.array(FLIP)
-    dtag_error_s2 = detected_tag.pose.asol.e
-
-    return resolve_pose_ambiguity(dtag_pose_s1, dtag_error_s1, dtag_pose_s2, dtag_error_s2, vio_pose, ref_tag_pose)
+def dict_to_sns(d):
+    return SimpleNamespace(**d)
 
 
-def on_tag_detect():
-    json_msg = None
-    try:
-        json_msg = json.loads(msg.payload.decode('utf-8'))
-    except ValueError:
-        return
+def get_tag_pose(msg):
+    detected_tag = msg.detections[0]
+    vio_pose = pose.pose_to_matrix4(msg.vio.position, msg.vio.rotation)
+    dtag_pose1 = pose.dtag_pose_to_matrix4(detected_tag.pose)
+    dtag_pose2 = pose.dtag_pose_to_matrix4(detected_tag.pose.asol)
+    dtag_error1 = detected_tag.pose.e
+    dtag_error2 = detected_tag.pose.asol.e
+    reftag_pose = pose.reftag_pose_to_matrix4(detected_tag.refTag.pose)
+    return resolve_pose_ambiguity(dtag_pose1, dtag_error1, dtag_pose2, dtag_error2, vio_pose, reftag_pose)
+
+
+def on_tag_detect(client, userdata, msg):
+    json_msg = json.loads(msg.payload.decode('utf-8'), object_hook=dict_to_sns)
     client_id = msg.topic.split('/')[-1]
-    if 'vio' in json_msg:
-        detected_tag = json_msg['detections'][0]
-        pos = json_msg['vio']['position']
-        rot = json_msg['vio']['rotation']
+    if 'detections' in json_msg:
+        dtag = msg.detections[0]
+        dtag_pose = get_tag_pose(json_msg)
+        reftag_pose = pose.reftag_pose_to_matrix4(dtag.refTag.pose)
+        cam_pose = reftag_pose @ np.linalg.inv(dtag_pose)
 
 
 def main():

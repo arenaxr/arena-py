@@ -2,6 +2,7 @@
 '''
 import arena
 from datetime import datetime
+import json
 import getopt
 import numpy as np
 import pose
@@ -12,6 +13,7 @@ BROKER = 'oz.andrew.cmu.edu'
 REALM = 'realm'
 TOPIC = REALM + '/g/a/#'
 TIME_FMT = '%Y-%m-%dTH:M:S.%fZ'
+OUTFILE = datetime.now().strftime(TIME_FMT) + '.txt'
 COLOR_WALK = (0, 255, 0)
 COLOR_FINDTAG = (255, 0, 0)
 COLOR_WAIT = (0, 0, 255)
@@ -55,6 +57,9 @@ class SyncUser:
             self.hud.update(color=COLOR_WAIT)
         if all(users[user].state == 2 for user in users):
             for user in users:
+                data = {'timestamp': time, 'poses': users}
+                with open(OUTFILE, 'a') as outfile:
+                    outfile.write(json.dumps(data))
                 users[user].state = 0
                 users[user].hud.update(color=COLOR_WALK)
                 last_detection = time

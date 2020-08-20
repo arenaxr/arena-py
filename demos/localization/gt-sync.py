@@ -1,6 +1,5 @@
 ''' Synchronize users for ground truth collection with apriltags
 '''
-import arena
 from datetime import datetime
 import json
 import getopt
@@ -8,6 +7,8 @@ import numpy as np
 import pose
 import sys
 from types import SimpleNamespace
+sys.path.append("..")
+import arena
 
 BROKER = 'oz.andrew.cmu.edu'
 REALM = 'realm'
@@ -140,7 +141,8 @@ def main():
         elif opt in ('-s', '--scene'):
             scene = arg
 
-    if len(users) < 1:
+    if len(args) < 1:
+        print('bar')
         printhelp()
         sys.exit(1)
 

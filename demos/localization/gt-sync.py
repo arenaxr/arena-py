@@ -59,7 +59,7 @@ class SyncUser:
     def on_vio(self, vio, time):
         if self.state == 2:
             pos_diff, rot_diff = pose.pose_diff(self.last_vio, vio)
-            time_diff = time - self.last_time
+            time_diff = (time - self.last_time).total_seconds()
             if pos_diff > MOVE_THRESH or rot_diff > ROT_THRESH or time_diff > TIME_THRESH:
                 self.state = 1
                 self.hud.update(color=COLOR_FINDTAG)

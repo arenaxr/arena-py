@@ -152,17 +152,6 @@ def main():
     arena.init(BROKER, REALM, scene)
     for user in args:
         users[user] = SyncUser(user)
-        obj_str = "circle_" + user
-        camera_str = "camera_" + user + "_" + user
-        arena.Object(objName=obj_str,
-                     objType=arena.Shape.circle,
-                     parent=camera_str,
-                     location=(-.5, 0, -.5),
-                     rotation=(0, 0, 0, 1),
-                     scale=(0.05, 0.05, 0.05),
-                     color=color,
-                     persist=True)
-
         print("Go to URL: https://xr.andrew.cmu.edu/?scene=" +
               scene + "&fixedCamera=" + user)
 

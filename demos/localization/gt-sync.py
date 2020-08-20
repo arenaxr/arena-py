@@ -14,7 +14,11 @@ TOPIC = REALM + '/g/a/#'
 TIME_FMT = '%Y-%m-%dTH:M:S.%fZ'
 COLOR_WALK = (0, 255, 0)
 COLOR_FINDTAG = (255, 0, 0)
-COLOR_WAIT = (255, 255, 0)
+COLOR_WAIT = (0, 0, 255)
+DTAG_ERROR_THRESH = 5e-6
+MOVE_THRESH = .05   # 5cm
+ROT_THRESH = .087   # 5deg
+TIME_THRESH = 3     # 3sec
 users = {}
 
 
@@ -28,28 +32,37 @@ class SyncHUD(arena.Object):
                          location=(-.5, 0, -.5),
                          rotation=(0, 0, 0, 1),
                          scale=(0.05, 0.05, 0.05),
-                         color=COLOR_WALK,
                          persist=True)
-
-    def setstate_walk(self):
-        self.update(color=COLOR_WALK)
-
-    def setstate_findtag(self):
-        self.update(color=COLOR_FINDTAG)
-
-    def setstate_wait(self):
-        self.update(color=COLOR_WAIT)
 
 
 class SyncUser:
     def __init__(self, name):
         self.hud = SyncHUD(name)
         self.pose = None
-        self.posetime = datetime.min
+        self.last_time = datetime.min
+        self.state = 0
+        self.hud.update(color=COLOR_WALK)
 
-    def on_tag_detect(self, campose, time):
-        self.pose = campose
-        self.posetime = time
+    def on_tag_detect(self, cam_pose, vio, time):
+        global users
+        self.pose = cam_pose
+        self.last_vio = vio
+        self.last_time = time
+        if self.state == 1:
+            self.state = 2
+            self.hud.update(color=COLOR_WAIT)
+        if all(users[user].state == 2 for user in users):
+            for user in users:
+                users[user].state = 0
+                users[user].hud.update(color=COLOR_WALK)
+
+    def on_vio(self, vio, time):
+        if self.state == 2:
+            pos_diff, rot_diff = pose.pose_diff(self.last_vio, vio)
+            time_diff = time - self.last_time
+            if pos_diff > MOVE_THRESH or rot_diff > ROT_THRESH or time_diff > TIME_THRESH:
+                self.state = 1
+                self.hud.update(color=COLOR_FINDTAG)
 
 
 def printhelp():
@@ -76,13 +89,21 @@ def on_tag_detect(msg):
     global users
     json_msg = json.loads(msg.payload.decode('utf-8'), object_hook=dict_to_sns)
     client_id = msg.topic.split('/')[-1]
-    if client_id in users:
+    if client_id not in users:
+        return
+    if hasattr(json_msg, 'detections'):
         dtag = json_msg.detections[0]
-        dtag_pose = get_tag_pose(json_msg)
+        dtag_pose, dtag_error = get_tag_pose(json_msg)
+        if dtag_error > DTAG_ERROR_THRESH:
+            return
         reftag_pose = pose.reftag_pose_to_matrix4(dtag.refTag.pose)
         cam_pose = reftag_pose @ np.linalg.inv(dtag_pose)
+        vio_pose = pose.pose_to_matrix4(
+            json_msg.vio.position, json_msg.vio.rotation)
         time = datetime.strptime(json_msg.timestamp, TIME_FMT)
-        users[client_id].on_tag_detect(cam_pose, json_msg.timestamp)
+        users[client_id].on_tag_detect(cam_pose, vio_pose, json_msg.timestamp)
+    elif hasattr(json_msg, 'object_id') and json_msg.object_id.endswith('_local'):
+        users[client_id].on_vio(vio_pose, time)
 
 
 def main():

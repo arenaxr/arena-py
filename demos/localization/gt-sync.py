@@ -7,6 +7,41 @@ import sys
 import pose
 from types import SimpleNamespace
 
+BROKER = 'oz.andrew.cmu.edu'
+REALM = 'realm'
+TOPIC = REALM + '/g/a/#'
+COLOR_WALK = (0, 255, 0)
+COLOR_FINDTAG = (255, 0, 0)
+COLOR_WAIT = (255, 255, 0)
+
+
+class SyncHUD(arena.Object):
+    def __init__(self, name):
+        obj_str = "circle_" + name
+        camera_str = "camera_" + name + "_" + name
+        super().__init__(objName=obj_str,
+                         objType=arena.Shape.circle,
+                         parent=camera_str,
+                         location=(-.5, 0, -.5),
+                         rotation=(0, 0, 0, 1),
+                         scale=(0.05, 0.05, 0.05),
+                         color=COLOR_WALK,
+                         persist=True)
+
+    def setstate_walk(self):
+        self.update(color=COLOR_WALK)
+
+    def setstate_findtag(self):
+        self.update(color=COLOR_FINDTAG)
+
+    def setstate_wait(self):
+        self.update(color=COLOR_WAIT)
+
+
+class SyncUser:
+    def __init__(self, name):
+        self.hud = SyncHUD(name)
+
 
 def printhelp():
     print('gt-sync.py [-s <scene>] <user1> [user2 ...]')
@@ -28,27 +63,24 @@ def get_tag_pose(msg):
     return resolve_pose_ambiguity(dtag_pose1, dtag_error1, dtag_pose2, dtag_error2, vio_pose, reftag_pose)
 
 
-def on_tag_detect(client, userdata, msg):
+def on_tag_detect(msg):
+    global users
     json_msg = json.loads(msg.payload.decode('utf-8'), object_hook=dict_to_sns)
     client_id = msg.topic.split('/')[-1]
-    if 'detections' in json_msg:
+    if 'detections' in json_msg and client_id in users:
         dtag = msg.detections[0]
         dtag_pose = get_tag_pose(json_msg)
         reftag_pose = pose.reftag_pose_to_matrix4(dtag.refTag.pose)
         cam_pose = reftag_pose @ np.linalg.inv(dtag_pose)
 
 
-def main():
-    BROKER = 'oz.andrew.cmu.edu'
-    REALM = 'realm'
-    TOPIC = REALM + '/g/a/#'
-    COLOR_WALK = (0, 255, 0)
-    COLOR_FINDTAG = (255, 0, 0)
-    COLOR_WAIT = (255, 255, 0)
-    scene = 'cic-tags'
+users = {}
 
+
+def main():
+    scene = 'cic-tags'
     try:
-        opts, users = getopt.getopt(sys.argv[1:], 'hs:', ['scene='])
+        opts, args = getopt.getopt(sys.argv[1:], 'hs:', ['scene='])
     except getopt.GetoptError:
         printhelp()
         sys.exit(1)
@@ -65,10 +97,11 @@ def main():
         sys.exit(1)
 
     print("Scene: " + scene)
-    print("Users: " + str(users))
+    print("Users: " + str(args))
 
     arena.init(BROKER, REALM, scene)
-    for user in users:
+    for user in args:
+        users[user] = SyncUser(user)
         obj_str = "circle_" + user
         camera_str = "camera_" + user + "_" + user
         arena.Object(objName=obj_str,

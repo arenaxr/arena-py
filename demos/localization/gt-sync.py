@@ -1,18 +1,21 @@
 ''' Synchronize users for ground truth collection with apriltags
 '''
 import arena
+from datetime import datetime
 import getopt
 import numpy as np
-import sys
 import pose
+import sys
 from types import SimpleNamespace
 
 BROKER = 'oz.andrew.cmu.edu'
 REALM = 'realm'
 TOPIC = REALM + '/g/a/#'
+TIME_FMT = '%Y-%m-%dTH:M:S.%fZ'
 COLOR_WALK = (0, 255, 0)
 COLOR_FINDTAG = (255, 0, 0)
 COLOR_WAIT = (255, 255, 0)
+users = {}
 
 
 class SyncHUD(arena.Object):
@@ -41,6 +44,12 @@ class SyncHUD(arena.Object):
 class SyncUser:
     def __init__(self, name):
         self.hud = SyncHUD(name)
+        self.pose = None
+        self.posetime = datetime.min
+
+    def on_tag_detect(self, campose, time):
+        self.pose = campose
+        self.posetime = time
 
 
 def printhelp():
@@ -67,14 +76,13 @@ def on_tag_detect(msg):
     global users
     json_msg = json.loads(msg.payload.decode('utf-8'), object_hook=dict_to_sns)
     client_id = msg.topic.split('/')[-1]
-    if 'detections' in json_msg and client_id in users:
-        dtag = msg.detections[0]
+    if client_id in users:
+        dtag = json_msg.detections[0]
         dtag_pose = get_tag_pose(json_msg)
         reftag_pose = pose.reftag_pose_to_matrix4(dtag.refTag.pose)
         cam_pose = reftag_pose @ np.linalg.inv(dtag_pose)
-
-
-users = {}
+        time = datetime.strptime(json_msg.timestamp, TIME_FMT)
+        users[client_id].on_tag_detect(cam_pose, json_msg.timestamp)
 
 
 def main():

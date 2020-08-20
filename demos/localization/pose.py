@@ -1,3 +1,4 @@
+import math
 import numpy as np
 from scipy.spatial.transform import Rotation
 
@@ -32,6 +33,15 @@ def reftag_pose_to_matrix4(reftag_pose):
     arr = reftag_pose.elements
     mat = np.array([arr[0:4], arr[4:8], arr[8:12], arr[12:16]]).T
     return mat
+
+
+def pose_diff(pose1, pose2):
+    pos1, rot1 = matrix4_to_pose(pose1)
+    pos2, rot2 = matrix4_to_pose(pose2)
+    pos_diff = np.linalg.norm(pos2 - pos1)
+    rotmat_diff = rot2 @ rot1.T
+    rot_diff = math.acos((np.trace(rotmat_diff) - 1) / 2)
+    return pos_diff, rot_diff
 
 
 def resolve_pose_ambiguity(pose1, err1, pose2, err2, vio, tagpose):

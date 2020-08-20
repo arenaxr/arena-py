@@ -19,7 +19,9 @@ DTAG_ERROR_THRESH = 5e-6
 MOVE_THRESH = .05   # 5cm
 ROT_THRESH = .087   # 5deg
 TIME_THRESH = 3     # 3sec
+TIME_INTERVAL = 10  # 10sec
 users = {}
+last_detection = datetime.min
 
 
 class SyncHUD(arena.Object):
@@ -55,6 +57,7 @@ class SyncUser:
             for user in users:
                 users[user].state = 0
                 users[user].hud.update(color=COLOR_WALK)
+                last_detection = time
 
     def on_vio(self, vio, time):
         if self.state == 2:
@@ -63,6 +66,11 @@ class SyncUser:
             if pos_diff > MOVE_THRESH or rot_diff > ROT_THRESH or time_diff > TIME_THRESH:
                 self.state = 1
                 self.hud.update(color=COLOR_FINDTAG)
+
+    def on_timer(self):
+        if self.state == 0:
+            self.state = 1
+            self.hud.update(color=COLOR_FINDTAG)
 
 
 def printhelp():
@@ -107,6 +115,9 @@ def on_tag_detect(msg):
             json_msg.data.position, json_msg.data.rotation)
         time = datetime.strptime(json_msg.timestamp, TIME_FMT)
         users[client_id].on_vio(vio_pose, time)
+        if (time - last_detection).total_seconds() > TIME_INTERVAL:
+            for user in users:
+                users[user].on_timer()
 
 
 def main():

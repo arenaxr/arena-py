@@ -103,6 +103,9 @@ def on_tag_detect(msg):
         time = datetime.strptime(json_msg.timestamp, TIME_FMT)
         users[client_id].on_tag_detect(cam_pose, vio_pose, json_msg.timestamp)
     elif hasattr(json_msg, 'object_id') and json_msg.object_id.endswith('_local'):
+        vio_pose = pose.pose_to_matrix4(
+            json_msg.data.position, json_msg.data.rotation)
+        time = datetime.strptime(json_msg.timestamp, TIME_FMT)
         users[client_id].on_vio(vio_pose, time)
 
 

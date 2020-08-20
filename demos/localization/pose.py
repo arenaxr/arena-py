@@ -5,8 +5,12 @@ from scipy.spatial.transform import Rotation
 
 def pose_to_matrix4(pos, rotq):
     mat = np.identity(4)
-    mat[0:3, 0:3] = Rotation.from_quat(
-        rotq._x, rotq._y, rotq._z, rotq._w).as_matrix()
+    if hasattr(rotq, '_x'):
+        mat[0:3, 0:3] = Rotation.from_quat(
+            rotq._x, rotq._y, rotq._z, rotq._w).as_matrix()
+    else:
+        mat[0:3, 0:3] = Rotation.from_quat(
+            rotq.x, rotq.y, rotq.z, rotq.w).as_matrix()
     mat[0:3, 3] = [pos.x, pos.y, pose.z]
     return mat
 

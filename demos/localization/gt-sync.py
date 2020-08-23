@@ -97,7 +97,7 @@ def get_tag_pose(msg):
     dtag_error1 = detected_tag.pose.e
     dtag_error2 = detected_tag.pose.asol.e
     reftag_pose = pose.reftag_pose_to_matrix4(detected_tag.refTag.pose)
-    return resolve_pose_ambiguity(dtag_pose1, dtag_error1, dtag_pose2, dtag_error2, vio_pose, reftag_pose)
+    return pose.resolve_pose_ambiguity(dtag_pose1, dtag_error1, dtag_pose2, dtag_error2, vio_pose, reftag_pose)
 
 
 def on_tag_detect(msg):
@@ -108,6 +108,9 @@ def on_tag_detect(msg):
         return
     if hasattr(json_msg, 'detections'):
         dtag = json_msg.detections[0]
+        if not hasattr(dtag, 'refTag'):
+            print('tag not in atlas: ' + dtag.id)
+            return
         dtag_pose, dtag_error = get_tag_pose(json_msg)
         if dtag_error > DTAG_ERROR_THRESH:
             return

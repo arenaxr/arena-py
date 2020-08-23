@@ -40,11 +40,9 @@ def reftag_pose_to_matrix4(reftag_pose):
 
 
 def pose_diff(pose1, pose2):
-    pos1, rot1 = matrix4_to_pose(pose1)
-    pos2, rot2 = matrix4_to_pose(pose2)
-    pos_diff = np.linalg.norm(pos2 - pos1)
-    rotmat_diff = rot2 @ rot1.T
-    rot_diff = math.acos((np.trace(rotmat_diff) - 1) / 2)
+    posediff = pose2 @ np.linalg.inv(pose1)
+    pos_diff = np.linalg.norm(posediff[0:3, 3])
+    rot_diff = math.acos((np.trace(posediff[0:3, 0:3]) - 1) / 2)
     return pos_diff, rot_diff
 
 

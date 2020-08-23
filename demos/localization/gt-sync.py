@@ -12,7 +12,8 @@ import arena
 
 BROKER = 'oz.andrew.cmu.edu'
 REALM = 'realm'
-TOPIC = REALM + '/g/a/#'
+TOPIC_DETECT = REALM + '/g/a/#'
+TOPIC_VIO = '/topic/vio/#'
 TIME_FMT = '%Y-%m-%dTH:M:S.%fZ'
 OUTFILE = datetime.now().strftime(TIME_FMT) + '.txt'
 COLOR_WALK = (0, 255, 0)
@@ -31,12 +32,15 @@ class SyncHUD(arena.Object):
     def __init__(self, name):
         obj_str = "circle_" + name
         camera_str = "camera_" + name + "_" + name
+        print('hud init')
+        print(obj_str)
+        print(camera_str)
         super().__init__(objName=obj_str,
                          objType=arena.Shape.circle,
                          parent=camera_str,
-                         location=(-.5, 0, -.5),
+                         location=(0, 0, -.5),
                          rotation=(0, 0, 0, 1),
-                         scale=(0.05, 0.05, 0.05),
+                         scale=(0.02, 0.02, 0.02),
                          persist=True)
 
 
@@ -116,7 +120,17 @@ def on_tag_detect(msg):
             json_msg.vio.position, json_msg.vio.rotation)
         time = datetime.strptime(json_msg.timestamp, TIME_FMT)
         users[client_id].on_tag_detect(cam_pose, vio_pose, json_msg.timestamp)
-    elif hasattr(json_msg, 'object_id') and json_msg.object_id.endswith('_local'):
+
+
+def on_vio(msg):
+    global users
+    json_msg = json.loads(msg.payload.decode('utf-8'), object_hook=dict_to_sns)
+    client_id = msg.topic.split('/')[-1]
+    print(client_id)
+    if client_id not in users:
+        return
+    if hasattr(json_msg, 'object_id') and json_msg.object_id.endswith('_local'):
+        print('got vio ' + json_msg.object_id)
         vio_pose = pose.pose_to_matrix4(
             json_msg.data.position, json_msg.data.rotation)
         time = datetime.strptime(json_msg.timestamp, TIME_FMT)
@@ -142,7 +156,6 @@ def main():
             scene = arg
 
     if len(args) < 1:
-        print('bar')
         printhelp()
         sys.exit(1)
 
@@ -151,11 +164,12 @@ def main():
 
     arena.init(BROKER, REALM, scene)
     for user in args:
-        users[user] = SyncUser(user)
+        users['camera_' + user + '_' + user] = SyncUser(user)
         print("Go to URL: https://xr.andrew.cmu.edu/?scene=" +
               scene + "&fixedCamera=" + user)
 
-    arena.add_topic(TOPIC, on_tag_detect)
+    arena.add_topic(TOPIC_DETECT, on_tag_detect)
+    arena.add_topic(TOPIC_VIO, on_vio)
     arena.handle_events()
 
 

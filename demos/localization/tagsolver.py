@@ -94,7 +94,7 @@ def on_tag_detect(client, userdata, msg):
     reftag_pose = pose.reftag_pose_to_matrix4(detected_tag.refTag.pose)
 
     # Fix detection ambiguity using gravity from vio
-    dtag_pose, dtag_error = resolve_pose_ambiguity(
+    dtag_pose, dtag_error = pose.resolve_pose_ambiguity(
         dtag_pose1, dtag_error1, dtag_pose2, dtag_error2, vio_pose, reftag_pose)
     if dtag_error > 5e-6:
         log("Too much detection error")

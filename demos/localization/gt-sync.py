@@ -3,7 +3,6 @@
 from datetime import datetime
 import json
 import getopt
-import numpy as np
 import pose
 import sys
 from types import SimpleNamespace
@@ -80,17 +79,6 @@ def dict_to_sns(d):
     return SimpleNamespace(**d)
 
 
-def get_tag_pose(msg):
-    detected_tag = msg.detections[0]
-    vio_pose = pose.pose_to_matrix4(msg.vio.position, msg.vio.rotation)
-    dtag_pose1 = pose.dtag_pose_to_matrix4(detected_tag.pose)
-    dtag_pose2 = pose.dtag_pose_to_matrix4(detected_tag.pose.asol)
-    dtag_error1 = detected_tag.pose.e
-    dtag_error2 = detected_tag.pose.asol.e
-    reftag_pose = pose.reftag_pose_to_matrix4(detected_tag.refTag.pose)
-    return pose.resolve_pose_ambiguity(dtag_pose1, dtag_error1, dtag_pose2, dtag_error2, vio_pose, reftag_pose)
-
-
 def on_tag_detect(msg):
     global users
     global last_detection
@@ -103,12 +91,10 @@ def on_tag_detect(msg):
         if not hasattr(dtag, 'refTag'):
             print('tag not in atlas: ' + dtag.id)
             return
-        dtag_pose, dtag_error = get_tag_pose(json_msg)
+        cam_pose, dtag_error = pose.get_cam_pose(json_msg)
         if dtag_error > DTAG_ERROR_THRESH:
             return
-        reftag_pose = pose.reftag_pose_to_matrix4(dtag.refTag.pose)
-        cam_pose = reftag_pose @ np.linalg.inv(dtag_pose)
-        vio_pose = pose.pose_to_matrix4(json_msg.vio.position, json_msg.vio.rotation)
+        vio_pose = pose.get_vio_pose(json_msg)
         time = datetime.strptime(json_msg.timestamp, TIME_FMT)
         users[client_id].on_tag_detect(cam_pose, vio_pose, time)
         if all(users[u].state == STATE_WAIT for u in users):
@@ -130,13 +116,13 @@ def on_vio(msg):
     if client_id not in users:
         return
     if hasattr(json_msg, 'object_id') and json_msg.object_id.endswith('_local'):
-        vio_pose = pose.pose_to_matrix4(json_msg.data.position, json_msg.data.rotation)
+        vio_pose = pose.get_vio_pose(json_msg)
         time = datetime.strptime(json_msg.timestamp, TIME_FMT)
+        users[client_id].on_vio(vio_pose, time)
         data = {'timestamp': time.strftime(TIME_FMT), 'type': 'vio', 'user': client_id, 'pose': vio_pose.tolist()}
         with open(OUTFILE, 'a') as outfile:
             outfile.write(json.dumps(data))
             outfile.write(',\n')
-        users[client_id].on_vio(vio_pose, time)
         if (time - last_detection).total_seconds() > TIME_INTERVAL:
             for u in users:
                 users[u].on_timer()

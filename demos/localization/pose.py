@@ -86,5 +86,28 @@ def _test_resolve_pose_ambiguity():
     print(test_error)
 
 
+def get_dtag_pose(msg):
+    detected_tag = msg.detections[0]
+    vio_pose = pose_to_matrix4(msg.vio.position, msg.vio.rotation)
+    dtag_pose1 = dtag_pose_to_matrix4(detected_tag.pose)
+    dtag_pose2 = dtag_pose_to_matrix4(detected_tag.pose.asol)
+    dtag_error1 = detected_tag.pose.e
+    dtag_error2 = detected_tag.pose.asol.e
+    reftag_pose = reftag_pose_to_matrix4(detected_tag.refTag.pose)
+    return resolve_pose_ambiguity(dtag_pose1, dtag_error1, dtag_pose2, dtag_error2, vio_pose, reftag_pose)
+
+
+def get_cam_pose(msg):
+    detected_tag = msg.detections[0]
+    dtag_pose, dtag_error = get_dtag_pose(msg)
+    reftag_pose = reftag_pose_to_matrix4(detected_tag.refTag.pose)
+    cam_pose = reftag_pose @ np.linalg.inv(dtag_pose)
+    return cam_pose, dtag_error
+
+
+def get_vio_pose(msg):
+    return pose_to_matrix4(msg.vio.position, msg.vio.rotation)
+
+
 if __name__ == '__main__':
     _test_resolve_pose_ambiguity()

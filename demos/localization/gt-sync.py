@@ -119,7 +119,7 @@ def on_tag_detect(msg):
         vio_pose = pose.pose_to_matrix4(
             json_msg.vio.position, json_msg.vio.rotation)
         time = datetime.strptime(json_msg.timestamp, TIME_FMT)
-        users[client_id].on_tag_detect(cam_pose, vio_pose, json_msg.timestamp)
+        users[client_id].on_tag_detect(cam_pose, vio_pose, time)
 
 
 def on_vio(msg):

@@ -1,16 +1,18 @@
+''' Publish rig transforms using apriltags for global localization
+'''
+import getopt
 import json
-import paho.mqtt.client as mqtt
 import pose
-import random
+import sys
 from types import SimpleNamespace
+sys.path.append('..')
+import arena
 
 
-with open("config.json") as config_file:
-    CONFIG = json.load(config_file)
-CLIENT_ID = "apriltag_solver_" + str(random.randint(0, 100))
-HOST = CONFIG["host"]
-PORT = CONFIG["port"]
-TOPIC = CONFIG["default_realm"] + "/g/a/"
+BROKER = 'oz.andrew.cmu.edu'
+REALM = 'realm'
+TOPIC = REALM + '/g/a/#'
+
 DTAG_ERROR_THRESH = 5e-6    # tag detection error units?
 MOVE_THRESH = .05           # 5cm
 ROT_THRESH = .087           # 5deg
@@ -22,6 +24,11 @@ vio_state = {}
 def log(*s):
     if DEBUG:
         print(*s)
+
+
+def printhelp():
+    print('tagsolver.py -s <scene>')
+    print('   ex: python3 tagsolver.py -s myScene')
 
 
 def dict_to_sns(d):
@@ -41,9 +48,9 @@ def vio_filter(vio, client_id):
     return True
 
 
-def on_tag_detect(client, userdata, msg):
-    json_msg = json.loads(msg.payload.decode("utf-8"), object_hook=dict_to_sns)
-    client_id = msg.topic.split("/")[-1]
+def on_tag_detect(msg):
+    json_msg = json.loads(msg.payload.decode('utf-8'), object_hook=dict_to_sns)
+    client_id = msg.topic.split('/')[-1]
     dtag = json_msg.detections[0]
     if not hasattr(dtag, 'refTag'):
         print('tag not in atlas: ' + dtag.id)
@@ -54,10 +61,10 @@ def on_tag_detect(client, userdata, msg):
         return
     rig_pose, dtag_error = pose.get_rig_pose(json_msg)
     if dtag_error > 5e-6:
-        log("too much detection error")
+        log('too much detection error')
         return
     rig_pos, rig_rotq = pose.matrix4_to_pose(rig_pose)
-    log("Localizing", client_id, "on", str(dtag.id))
+    log('Localizing', client_id, 'on', str(dtag.id))
     mqtt_response = {
         'object_id': client_id,
         'action': 'update',
@@ -76,16 +83,40 @@ def on_tag_detect(client, userdata, msg):
             }
         }
     }
-    client.publish("realm/s/" + json_msg.scene, json.dumps(mqtt_response))
+    arena.arena_publish('realm/s/' + json_msg.scene, json.dumps(mqtt_response))
 
 
-def start_mqtt():
-    mqttc = mqtt.Client(CLIENT_ID, clean_session=True, userdata=None)
-    mqttc.connect(HOST, PORT)
-    print("Connected MQTT")
-    mqttc.subscribe(TOPIC + "#")
-    mqttc.message_callback_add(TOPIC + "#", on_tag_detect)
-    mqttc.loop_forever()
+def main():
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'hs:', ['scene='])
+    except getopt.GetoptError:
+        printhelp()
+        sys.exit(1)
+
+    scene = None
+    for opt, arg in opts:
+        if opt == '-h':
+            printhelp()
+            sys.exit(1)
+        elif opt in ('-s', '--scene'):
+            scene = arg
+        else:
+            printhelp()
+            sys.exit(1)
+
+    if scene is None:
+        printhelp()
+        sys.exit(1)
+
+    print('Scene: ' + scene)
+    arena.init(BROKER, REALM, scene)
+    print('Go to URL: https://xr.andrew.cmu.edu/?networkedTagSolver=true&scene=' + scene + '&fixedCamera=<name>')
+    arena.add_topic(TOPIC, on_tag_detect)
+    arena.handle_events()
 
 
-start_mqtt()
+if __name__ == '__main__':
+    try:
+        main()
+    except SystemExit:
+        pass

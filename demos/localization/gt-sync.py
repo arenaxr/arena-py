@@ -1,8 +1,8 @@
 ''' Synchronize users for ground truth collection with apriltags
 '''
 from datetime import datetime
-import json
 import getopt
+import json
 import pose
 import sys
 from types import SimpleNamespace
@@ -15,6 +15,7 @@ TOPIC_DETECT = REALM + '/g/a/#'
 TOPIC_VIO = '/topic/vio/#'
 TIME_FMT = '%Y-%m-%dT%H:%M:%S.%fZ'
 OUTFILE = datetime.now().strftime(TIME_FMT) + '.txt'
+
 DTAG_ERROR_THRESH = 5e-6    # tag detection error units?
 TIME_INTERVAL = 10          # 10sec
 
@@ -142,6 +143,9 @@ def main():
             sys.exit(1)
         elif opt in ('-s', '--scene'):
             scene = arg
+        else:
+            printhelp()
+            sys.exit(1)
 
     if scene is None or len(args) < 1:
         printhelp()

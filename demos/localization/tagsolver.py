@@ -1,9 +1,8 @@
 import json
-import random
-from types import SimpleNamespace
-import numpy as np
 import paho.mqtt.client as mqtt
 import pose
+import random
+from types import SimpleNamespace
 
 
 with open("config.json") as config_file:
@@ -12,13 +11,12 @@ CLIENT_ID = "apriltag_solver_" + str(random.randint(0, 100))
 HOST = CONFIG["host"]
 PORT = CONFIG["port"]
 TOPIC = CONFIG["default_realm"] + "/g/a/"
-TAG_URLBASE = "https://atlas.conix.io/record"
+DTAG_ERROR_THRESH = 5e-6
+MOVE_THRESH = .05   # 5cm
+ROT_THRESH = .087   # 5deg
 DEBUG = True
 
-VIO_STATE = {}
-VIO_MAX_DIFF_LOW = 0.05  # set diff to a more strict threshold
-VIO_MAX_DIFF_HIGH = 0.2  # set diff to a less strict threshold
-DTAG_ERROR_THRESH = 5e-6
+vio_state = {}
 
 
 def log(*s):
@@ -30,26 +28,15 @@ def dict_to_sns(d):
     return SimpleNamespace(**d)
 
 
-def vio_filter(vio, client_id, vio_threshold):
-    global VIO_STATE
-    # Add some extremely simple filtering based on camera motion
-    # make sure we get two readings with minimal vio movement
-    vio_pose_last = VIO_STATE.get(client_id)
+def vio_filter(vio, client_id):
+    global vio_state
+    vio_pose_last = vio_state.get(client_id)
     if vio_pose_last is None:
-        log("skip, no previous camera location")
-        VIO_STATE[client_id] = vio
+        vio_state[client_id] = vio
         return False
-    else:
-        # Directly subtract the current and previous pose matrix
-        vio_pose_delta = np.subtract(vio, vio_pose_last)
-        # take absolute value of matrix elements and find max change value
-        vio_pose_delta = abs(vio_pose_delta)
-        vio_max_diff = vio_pose_delta.max()
-    # save state of last vio position for this camera
-    VIO_STATE[client_id] = vio
-    # Just guessed the threshold for motion
-    if abs(vio_max_diff) > vio_threshold:
-        log("Too much camera movement")
+    pos_diff, rot_diff = pose.pose_diff(vio, vio_pose_last)
+    vio_state[client_id] = vio
+    if pos_diff > MOVE_THRESH or rot_diff > ROT_THRESH:
         return False
     return True
 

@@ -110,7 +110,7 @@ def main():
 
     print('Scene: ' + scene)
     arena.init(BROKER, REALM, scene)
-    print('Go to URL: https://xr.andrew.cmu.edu/?networkedTagSolver=true&scene=' + scene + '&fixedCamera=<name>')
+    print('Go to URL: https://xr.andrew.cmu.edu/?networkedTagSolver=true&scene=' + scene + '&fixedCamera=<username>')
     arena.add_topic(TOPIC, on_tag_detect)
     arena.handle_events()
 

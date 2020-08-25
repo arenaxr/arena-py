@@ -1,10 +1,6 @@
 import json
 import random
 from types import SimpleNamespace
-
-import requests
-from requests.auth import HTTPBasicAuth
-
 import numpy as np
 import paho.mqtt.client as mqtt
 

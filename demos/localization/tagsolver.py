@@ -11,9 +11,9 @@ CLIENT_ID = "apriltag_solver_" + str(random.randint(0, 100))
 HOST = CONFIG["host"]
 PORT = CONFIG["port"]
 TOPIC = CONFIG["default_realm"] + "/g/a/"
-DTAG_ERROR_THRESH = 5e-6
-MOVE_THRESH = .05   # 5cm
-ROT_THRESH = .087   # 5deg
+DTAG_ERROR_THRESH = 5e-6    # tag detection error units?
+MOVE_THRESH = .05           # 5cm
+ROT_THRESH = .087           # 5deg
 DEBUG = True
 
 vio_state = {}

@@ -15,23 +15,23 @@ TOPIC_DETECT = REALM + '/g/a/#'
 TOPIC_VIO = '/topic/vio/#'
 TIME_FMT = '%Y-%m-%dT%H:%M:%S.%fZ'
 OUTFILE = datetime.now().strftime(TIME_FMT) + '.txt'
-STATE_WALK = 0
-STATE_FINDTAG = 1
-STATE_WAIT = 2
-COLOR_WALK = (0, 255, 0)
-COLOR_FINDTAG = (255, 0, 0)
-COLOR_WAIT = (0, 0, 255)
-DTAG_ERROR_THRESH = 5e-6
-MOVE_THRESH = .05   # 5cm
-ROT_THRESH = .087   # 5deg
-TIME_THRESH = 3     # 3sec
-TIME_INTERVAL = 10  # 10sec
+DTAG_ERROR_THRESH = 5e-6    # tag detection error units?
+TIME_INTERVAL = 10          # 10sec
 
 users = {}
 last_detection = datetime.min
 
 
 class SyncUser:
+    STATE_WALK = 0
+    STATE_FINDTAG = 1
+    STATE_WAIT = 2
+    COLOR_WALK = (0, 255, 0)
+    COLOR_FINDTAG = (255, 0, 0)
+    COLOR_WAIT = (0, 0, 255)
+    MOVE_THRESH = .05   # 5cm
+    ROT_THRESH = .087   # 5deg
+    TIME_THRESH = 3     # 3sec
     def __init__(self, client_id):
         self.hud = arena.Object(objName='circle_' + client_id,
                                 parent=client_id,
@@ -97,7 +97,7 @@ def on_tag_detect(msg):
         vio_pose = pose.get_vio_pose(json_msg)
         time = datetime.strptime(json_msg.timestamp, TIME_FMT)
         users[client_id].on_tag_detect(cam_pose, vio_pose, time)
-        if all(users[u].state == STATE_WAIT for u in users):
+        if all(users[u].state == SyncUser.STATE_WAIT for u in users):
             data = {'timestamp': time.strftime(TIME_FMT), 'type': 'gt', 'poses': [{'user': u, 'pose': users[u].pose.tolist()} for u in users]}
             print(data)
             with open(OUTFILE, 'a') as outfile:

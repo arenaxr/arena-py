@@ -109,5 +109,12 @@ def get_vio_pose(msg):
     return pose_to_matrix4(msg.vio.position, msg.vio.rotation)
 
 
+def get_rig_pose(msg):
+    vio_pose = get_vio_pose(msg)
+    cam_pose, dtag_error = get_cam_pose(msg)
+    rig_pose = cam_pose @ np.linalg.inv(vio_pose)
+    return rig_pose, dtag_error
+
+
 if __name__ == '__main__':
     _test_resolve_pose_ambiguity()

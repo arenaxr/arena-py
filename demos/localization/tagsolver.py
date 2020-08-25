@@ -3,7 +3,6 @@ import random
 from types import SimpleNamespace
 import numpy as np
 import paho.mqtt.client as mqtt
-
 import pose
 
 
@@ -19,6 +18,7 @@ DEBUG = True
 VIO_STATE = {}
 VIO_MAX_DIFF_LOW = 0.05  # set diff to a more strict threshold
 VIO_MAX_DIFF_HIGH = 0.2  # set diff to a less strict threshold
+DTAG_ERROR_THRESH = 5e-6
 
 
 def log(*s):
@@ -55,55 +55,22 @@ def vio_filter(vio, client_id, vio_threshold):
 
 
 def on_tag_detect(client, userdata, msg):
-    json_msg = None
-    try:
-        json_msg = json.loads(msg.payload.decode(
-            "utf-8"), object_hook=dict_to_sns)
-    except ValueError:
-        pass
+    json_msg = json.loads(msg.payload.decode("utf-8"), object_hook=dict_to_sns)
     client_id = msg.topic.split("/")[-1]
-    if not hasattr(json_msg, "scene"):
+    dtag = json_msg.detections[0]
+    if not hasattr(dtag, 'refTag'):
+        print('tag not in atlas: ' + dtag.id)
         return
-    if not hasattr(json_msg, "vio"):
-        return
-    if not hasattr(json_msg, "refTag"):
-        return
-    if not hasattr(json_msg, "detections") or len(json_msg.detections) < 1:
-        return
-    builder = hasattr(json_msg, "builder") and json_msg.builder
-    if builder:
-        return
-
-    scene = json_msg.scene
-
-    # Only take first marker for now, later iterate and avg all markers
-    detected_tag = json_msg.detections[0]
-
-    # Require camera to be stationary
-    vio_pose = pose.pose_to_matrix4(json_msg.vio.pos, json_msg.vio.rot)
+    vio_pose = pose.get_vio_pose(json_msg)
     if not vio_filter(vio_pose, client_id, VIO_MAX_DIFF_HIGH):
+        log('too much movement')
         return
-
-    # Construct pose matrix for detected tag solutions 1 and 2
-    dtag_pose1 = pose.dtag_pose_to_matrix4(detected_tag.pose)
-    dtag_pose2 = pose.dtag_pose_to_matrix4(detected_tag.pose.asol)
-    dtag_error1 = detected_tag.pose.e
-    dtag_error2 = detected_tag.pose.asol.e
-
-    # Determine arena pose of the tag
-    reftag_pose = pose.reftag_pose_to_matrix4(detected_tag.refTag.pose)
-
-    # Fix detection ambiguity using gravity from vio
-    dtag_pose, dtag_error = pose.resolve_pose_ambiguity(
-        dtag_pose1, dtag_error1, dtag_pose2, dtag_error2, vio_pose, reftag_pose)
+    rig_pose, dtag_error = pose.get_rig_pose(json_msg)
     if dtag_error > 5e-6:
-        log("Too much detection error")
+        log("too much detection error")
         return
-
-    # Localize and publish result
-    rig_pose = reftag_pose @ np.linalg.inv(dtag_pose) @ np.linalg.inv(vio_pose)
     rig_pos, rig_rotq = pose.matrix4_to_pose(rig_pose)
-    log("Localizing", client_id, "on", str(detected_tag.id))
+    log("Localizing", client_id, "on", str(dtag.id))
     mqtt_response = {
         'object_id': client_id,
         'action': 'update',
@@ -122,7 +89,7 @@ def on_tag_detect(client, userdata, msg):
             }
         }
     }
-    client.publish("realm/s/" + scene, json.dumps(mqtt_response))
+    client.publish("realm/s/" + json_msg.scene, json.dumps(mqtt_response))
 
 
 def start_mqtt():

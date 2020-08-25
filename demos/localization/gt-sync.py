@@ -51,6 +51,7 @@ class SyncUser:
 
     def on_tag_detect(self, cam_pose, vio, time):
         global users
+        global last_detection
         self.pose = cam_pose
         self.last_vio = vio
         self.last_time = time
@@ -59,7 +60,8 @@ class SyncUser:
             self.hud.update(color=COLOR_WAIT)
         if all(users[user].state == 2 for user in users):
             for user in users:
-                data = {'timestamp': time, 'poses': users}
+                data = {'timestamp': time.strftime(TIME_FMT), 'poses': {u: str(users[u].pose) for u in users}}
+                print(data)
                 with open(OUTFILE, 'a') as outfile:
                     outfile.write(json.dumps(data))
                 users[user].state = 0
@@ -124,6 +126,7 @@ def on_tag_detect(msg):
 
 def on_vio(msg):
     global users
+    global last_detection
     json_msg = json.loads(msg.payload.decode('utf-8'), object_hook=dict_to_sns)
     client_id = msg.topic.split('/')[-1]
     if client_id not in users:

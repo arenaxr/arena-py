@@ -106,7 +106,9 @@ def get_cam_pose(msg):
 
 
 def get_vio_pose(msg):
-    return pose_to_matrix4(msg.vio.position, msg.vio.rotation)
+    if hasattr(msg, 'vio'):
+        return pose_to_matrix4(msg.vio.position, msg.vio.rotation)
+    return pose_to_matrix4(msg.data.position, msg.data.rotation)
 
 
 def get_rig_pose(msg):

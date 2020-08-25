@@ -16,6 +16,9 @@ TOPIC_DETECT = REALM + '/g/a/#'
 TOPIC_VIO = '/topic/vio/#'
 TIME_FMT = '%Y-%m-%dT%H:%M:%S.%fZ'
 OUTFILE = datetime.now().strftime(TIME_FMT) + '.txt'
+STATE_WALK = 0
+STATE_FINDTAG = 1
+STATE_WAIT = 2
 COLOR_WALK = (0, 255, 0)
 COLOR_FINDTAG = (255, 0, 0)
 COLOR_WAIT = (0, 0, 255)
@@ -24,72 +27,52 @@ MOVE_THRESH = .05   # 5cm
 ROT_THRESH = .087   # 5deg
 TIME_THRESH = 3     # 3sec
 TIME_INTERVAL = 10  # 10sec
+
 users = {}
 last_detection = datetime.min
-first_detection = True
-
-
-class SyncHUD(arena.Object):
-    def __init__(self, name):
-        obj_str = "circle_" + name
-        camera_str = "camera_" + name + "_" + name
-        super().__init__(objName=obj_str,
-                         objType=arena.Shape.circle,
-                         parent=camera_str,
-                         location=(0, 0, -.5),
-                         rotation=(0, 0, 0, 1),
-                         scale=(0.02, 0.02, 0.02),
-                         persist=True)
 
 
 class SyncUser:
-    def __init__(self, name):
-        self.hud = SyncHUD(name)
+    def __init__(self, client_id):
+        self.hud = arena.Object(objName='circle_' + client_id,
+                                parent=client_id,
+                                objType=arena.Shape.circle,
+                                location=(0, 0, -0.5),
+                                rotation=(0, 0, 0, 1),
+                                scale=(0.02, 0.02, 0.02),
+                                persist=True)
+        self.reset()
+
+    def reset(self):
         self.pose = None
         self.last_time = datetime.min
-        self.state = 0
+        self.state = STATE_WALK
         self.hud.update(color=COLOR_WALK)
 
     def on_tag_detect(self, cam_pose, vio, time):
-        global users
-        global last_detection
-        global first_detection
         self.pose = cam_pose
         self.last_vio = vio
         self.last_time = time
-        if self.state == 1:
-            self.state = 2
+        if self.state == STATE_FINDTAG:
+            self.state = STATE_WAIT
             self.hud.update(color=COLOR_WAIT)
-        if all(users[user].state == 2 for user in users):
-            for user in users:
-                data = {'timestamp': time.strftime(TIME_FMT), 'poses': {u: users[u].pose.tolist() for u in users}}
-                print(data)
-                with open(OUTFILE, 'a') as outfile:
-                    if not first_detection:
-                        outfile.write(',')
-                        first_detection = False
-                    outfile.write(json.dumps(data))
-                    outfile.write('\n')
-                users[user].state = 0
-                users[user].hud.update(color=COLOR_WALK)
-                last_detection = time
 
     def on_vio(self, vio, time):
         if self.state == 2:
             pos_diff, rot_diff = pose.pose_diff(self.last_vio, vio)
             time_diff = (time - self.last_time).total_seconds()
             if pos_diff > MOVE_THRESH or rot_diff > ROT_THRESH or time_diff > TIME_THRESH:
-                self.state = 1
+                self.state = STATE_FINDTAG
                 self.hud.update(color=COLOR_FINDTAG)
 
     def on_timer(self):
-        if self.state == 0:
-            self.state = 1
+        if self.state == STATE_WALK:
+            self.state = STATE_FINDTAG
             self.hud.update(color=COLOR_FINDTAG)
 
 
 def printhelp():
-    print('gt-sync.py [-s <scene>] <user1> [user2 ...]')
+    print('gt-sync.py -s <scene> <user1> [user2 ...]')
     print('   ex: python3 gt-sync.py -s myScene name1 name2 name3')
 
 
@@ -110,6 +93,7 @@ def get_tag_pose(msg):
 
 def on_tag_detect(msg):
     global users
+    global last_detection
     json_msg = json.loads(msg.payload.decode('utf-8'), object_hook=dict_to_sns)
     client_id = msg.topic.split('/')[-1]
     if client_id not in users:
@@ -124,10 +108,18 @@ def on_tag_detect(msg):
             return
         reftag_pose = pose.reftag_pose_to_matrix4(dtag.refTag.pose)
         cam_pose = reftag_pose @ np.linalg.inv(dtag_pose)
-        vio_pose = pose.pose_to_matrix4(
-            json_msg.vio.position, json_msg.vio.rotation)
+        vio_pose = pose.pose_to_matrix4(json_msg.vio.position, json_msg.vio.rotation)
         time = datetime.strptime(json_msg.timestamp, TIME_FMT)
         users[client_id].on_tag_detect(cam_pose, vio_pose, time)
+        if all(users[u].state == STATE_WAIT for u in users):
+            data = {'timestamp': time.strftime(TIME_FMT), 'type': 'gt', 'poses': [{'user': u, 'pose': users[u].pose.tolist()} for u in users]}
+            print(data)
+            with open(OUTFILE, 'a') as outfile:
+                outfile.write(json.dumps(data))
+                outfile.write(',\n')
+            last_detection = time
+            for u in users:
+                users[u].reset()
 
 
 def on_vio(msg):
@@ -138,23 +130,26 @@ def on_vio(msg):
     if client_id not in users:
         return
     if hasattr(json_msg, 'object_id') and json_msg.object_id.endswith('_local'):
-        vio_pose = pose.pose_to_matrix4(
-            json_msg.data.position, json_msg.data.rotation)
+        vio_pose = pose.pose_to_matrix4(json_msg.data.position, json_msg.data.rotation)
         time = datetime.strptime(json_msg.timestamp, TIME_FMT)
+        data = {'timestamp': time.strftime(TIME_FMT), 'type': 'vio', 'user': client_id, 'pose': vio_pose.tolist()}
+        with open(OUTFILE, 'a') as outfile:
+            outfile.write(json.dumps(data))
+            outfile.write(',\n')
         users[client_id].on_vio(vio_pose, time)
         if (time - last_detection).total_seconds() > TIME_INTERVAL:
-            for user in users:
-                users[user].on_timer()
+            for u in users:
+                users[u].on_timer()
 
 
 def main():
-    scene = 'cic-tags'
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hs:', ['scene='])
     except getopt.GetoptError:
         printhelp()
         sys.exit(1)
 
+    scene = None
     for opt, arg in opts:
         if opt == '-h':
             printhelp()
@@ -162,7 +157,7 @@ def main():
         elif opt in ('-s', '--scene'):
             scene = arg
 
-    if len(args) < 1:
+    if scene is None or len(args) < 1:
         printhelp()
         sys.exit(1)
 
@@ -170,10 +165,10 @@ def main():
     print("Users: " + str(args))
 
     arena.init(BROKER, REALM, scene)
-    for user in args:
-        users['camera_' + user + '_' + user] = SyncUser(user)
-        print("Go to URL: https://xr.andrew.cmu.edu/?scene=" +
-              scene + "&fixedCamera=" + user)
+    for username in args:
+        client_id = 'camera_' + username + '_' + username
+        users[client_id] = SyncUser(client_id)
+        print("Go to URL: https://xr.andrew.cmu.edu/?networkedTagSolver=true&scene=" + scene + "&fixedCamera=" + username)
 
     arena.add_topic(TOPIC_DETECT, on_tag_detect)
     arena.add_topic(TOPIC_VIO, on_vio)

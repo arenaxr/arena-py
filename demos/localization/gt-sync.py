@@ -15,6 +15,7 @@ TOPIC_DETECT = REALM + '/g/a/#'
 TOPIC_VIO = '/topic/vio/#'
 TOPIC_UWB = REALM + '/g/uwb/#'
 TIME_FMT = '%Y-%m-%dT%H:%M:%S.%fZ'
+TIME_FMT_UWB = '%Y-%m-%dT%H:%M:%S.%f'
 OUTFILE = datetime.now().strftime('%Y-%m-%d_%H_%M_%S') + '.txt'
 
 STATE_WALK = 0
@@ -100,7 +101,7 @@ def on_tag_detect(msg):
         time = datetime.strptime(json_msg.timestamp, TIME_FMT)
         users[client_id].on_tag_detect(cam_pose, vio_pose, time)
         if all(users[u].state == STATE_WAIT for u in users):
-            data = {'timestamp': time.strftime(TIME_FMT), 'type': 'gt', 'poses': [{'user': u, 'pose': users[u].pose.tolist()} for u in users]}
+            data = {'timestamp': time.strftime(TIME_FMT_UWB), 'type': 'gt', 'poses': [{'user': u, 'pose': users[u].pose.tolist()} for u in users]}
             print(data)
             with open(OUTFILE, 'a') as outfile:
                 outfile.write(json.dumps(data))
@@ -121,7 +122,7 @@ def on_vio(msg):
         vio_pose = pose.get_vio_pose(json_msg)
         time = datetime.strptime(json_msg.timestamp, TIME_FMT)
         users[client_id].on_vio(vio_pose, time)
-        data = {'timestamp': time.strftime(TIME_FMT), 'type': 'vio', 'user': client_id, 'pose': vio_pose.tolist()}
+        data = {'timestamp': time.strftime(TIME_FMT_UWB), 'type': 'vio', 'user': client_id, 'pose': vio_pose.tolist()}
         with open(OUTFILE, 'a') as outfile:
             outfile.write(json.dumps(data))
             outfile.write(',\n')
@@ -132,6 +133,12 @@ def on_vio(msg):
 
 def on_uwb(msg):
     pass
+    # json_msg = json.loads(msg.payload.decode('utf-8'), object_hook=dict_to_sns)
+    # time = datetime.strptime(json_msg.timestamp, TIME_FMT_UWB)
+    # data = {'timestamp': time.strftime(TIME_FMT_UWB), 'type': 'uwb', 'src': , 'dst': , 'range': , 'ble_rssi', }
+    # with open(OUTFILE, 'a') as outfile:
+    #     outfile.write(json.dumps(data))
+    #     outfile.write(',\n')
 
 
 def main():

@@ -35,14 +35,16 @@ last_detection = datetime.min
 
 
 class SyncUser:
-    def __init__(self, client_id):
-        self.hud = arena.Object(objName='circle_' + client_id,
-                                parent=client_id,
+    def __init__(self, arenaname, uwbname):
+        self.hud = arena.Object(objName='circle_' + arenaname,
+                                parent='camera_' + arenaname + '_' + arenaname,
                                 objType=arena.Shape.circle,
                                 location=(0, 0, -0.5),
                                 rotation=(0, 0, 0, 1),
                                 scale=(0.02, 0.02, 0.02),
                                 persist=True)
+        self.arenaname = arenaname
+        self.uwbname = uwbname
         self.reset()
 
     def reset(self):
@@ -74,8 +76,8 @@ class SyncUser:
 
 
 def printhelp():
-    print('gt-sync.py -s <scene> <user1> [user2 ...]')
-    print('   ex: python3 gt-sync.py -s myScene name1 name2 name3')
+    print('gt-sync.py -s <scene> <arenaname1> <uwbname1> [arenaname2 uwbname2 ...]')
+    print('   ex: python3 gt-sync.py -s myScene nuno 1 john 2')
 
 
 def dict_to_sns(d):
@@ -101,7 +103,7 @@ def on_tag_detect(msg):
         time = datetime.strptime(json_msg.timestamp, TIME_FMT)
         users[client_id].on_tag_detect(cam_pose, vio_pose, time)
         if all(users[u].state == STATE_WAIT for u in users):
-            data = {'timestamp': time.strftime(TIME_FMT_UWB), 'type': 'gt', 'poses': [{'user': u, 'pose': users[u].pose.tolist()} for u in users]}
+            data = {'timestamp': time.strftime(TIME_FMT_UWB), 'type': 'gt', 'poses': [{'user': users[u].arenaname, 'pose': users[u].pose.tolist()} for u in users]}
             print(data)
             with open(OUTFILE, 'a') as outfile:
                 outfile.write(json.dumps(data))
@@ -122,7 +124,7 @@ def on_vio(msg):
         vio_pose = pose.get_vio_pose(json_msg)
         time = datetime.strptime(json_msg.timestamp, TIME_FMT)
         users[client_id].on_vio(vio_pose, time)
-        data = {'timestamp': time.strftime(TIME_FMT_UWB), 'type': 'vio', 'user': client_id, 'pose': vio_pose.tolist()}
+        data = {'timestamp': time.strftime(TIME_FMT_UWB), 'type': 'vio', 'user': users[client_id].arenaname, 'pose': vio_pose.tolist()}
         with open(OUTFILE, 'a') as outfile:
             outfile.write(json.dumps(data))
             outfile.write(',\n')
@@ -159,18 +161,14 @@ def main():
             printhelp()
             sys.exit(1)
 
-    if scene is None or len(args) < 1:
+    if scene is None or len(args) < 1 or len(args) % 2 > 0:
         printhelp()
         sys.exit(1)
 
-    print("Scene: " + scene)
-    print("Users: " + str(args))
-
     arena.init(BROKER, REALM, scene)
-    for username in args:
-        client_id = 'camera_' + username + '_' + username
-        users[client_id] = SyncUser(client_id)
-        print("Go to URL: https://xr.andrew.cmu.edu/?networkedTagSolver=true&scene=" + scene + "&fixedCamera=" + username)
+    for arenaname, uwbname in zip(args[::2], args[1::2]):
+        users['camera_' + arenaname + '_' + arenaname] = SyncUser(arenaname, uwbname)
+        print("Go to URL: https://xr.andrew.cmu.edu/?networkedTagSolver=true&scene=" + scene + "&fixedCamera=" + arenaname)
 
     arena.add_topic(TOPIC_DETECT, on_tag_detect)
     arena.add_topic(TOPIC_VIO, on_vio)

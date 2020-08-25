@@ -14,7 +14,7 @@ REALM = 'realm'
 TOPIC_DETECT = REALM + '/g/a/#'
 TOPIC_VIO = '/topic/vio/#'
 TIME_FMT = '%Y-%m-%dT%H:%M:%S.%fZ'
-OUTFILE = datetime.now().strftime(TIME_FMT) + '.txt'
+OUTFILE = datetime.now().strftime('%Y-%m-%d_%H_%M_%S') + '.txt'
 
 STATE_WALK = 0
 STATE_FINDTAG = 1

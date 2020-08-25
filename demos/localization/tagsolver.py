@@ -49,7 +49,7 @@ def on_tag_detect(client, userdata, msg):
         print('tag not in atlas: ' + dtag.id)
         return
     vio_pose = pose.get_vio_pose(json_msg)
-    if not vio_filter(vio_pose, client_id, VIO_MAX_DIFF_HIGH):
+    if not vio_filter(vio_pose, client_id):
         log('too much movement')
         return
     rig_pose, dtag_error = pose.get_rig_pose(json_msg)

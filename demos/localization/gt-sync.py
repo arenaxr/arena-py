@@ -26,6 +26,7 @@ TIME_THRESH = 3     # 3sec
 TIME_INTERVAL = 10  # 10sec
 users = {}
 last_detection = datetime.min
+first_detection = True
 
 
 class SyncHUD(arena.Object):
@@ -52,6 +53,7 @@ class SyncUser:
     def on_tag_detect(self, cam_pose, vio, time):
         global users
         global last_detection
+        global first_detection
         self.pose = cam_pose
         self.last_vio = vio
         self.last_time = time
@@ -60,10 +62,14 @@ class SyncUser:
             self.hud.update(color=COLOR_WAIT)
         if all(users[user].state == 2 for user in users):
             for user in users:
-                data = {'timestamp': time.strftime(TIME_FMT), 'poses': {u: str(users[u].pose) for u in users}}
+                data = {'timestamp': time.strftime(TIME_FMT), 'poses': {u: users[u].pose.tolist() for u in users}}
                 print(data)
                 with open(OUTFILE, 'a') as outfile:
+                    if not first_detection:
+                        outfile.write(',')
+                        first_detection = False
                     outfile.write(json.dumps(data))
+                    outfile.write('\n')
                 users[user].state = 0
                 users[user].hud.update(color=COLOR_WALK)
                 last_detection = time

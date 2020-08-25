@@ -13,6 +13,7 @@ BROKER = 'oz.andrew.cmu.edu'
 REALM = 'realm'
 TOPIC_DETECT = REALM + '/g/a/#'
 TOPIC_VIO = '/topic/vio/#'
+TOPIC_UWB = REALM + '/g/uwb/#'
 TIME_FMT = '%Y-%m-%dT%H:%M:%S.%fZ'
 OUTFILE = datetime.now().strftime('%Y-%m-%d_%H_%M_%S') + '.txt'
 
@@ -129,6 +130,10 @@ def on_vio(msg):
                 users[u].on_timer()
 
 
+def on_uwb(msg):
+    pass
+
+
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hs:', ['scene='])
@@ -162,6 +167,7 @@ def main():
 
     arena.add_topic(TOPIC_DETECT, on_tag_detect)
     arena.add_topic(TOPIC_VIO, on_vio)
+    arena.add_topic(TOPIC_UWB, on_uwb)
     arena.handle_events()
 
 

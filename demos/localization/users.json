@@ -1,0 +1,32 @@
+[
+    {
+        "arenaname": "nuno",
+        "uwbname": "1",
+        "client_id": "camera_nuno_nuno",
+        "static": false
+    },
+    {
+        "arenaname": "static2",
+        "uwbname": "2",
+        "client_id": "static2",
+        "static": true,
+        "pose": [
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1]
+        ]
+    },
+    {
+        "arenaname": "static3",
+        "uwbname": "3",
+        "client_id": "static3",
+        "static": true,
+        "pose": [
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1]
+        ]
+    }
+]

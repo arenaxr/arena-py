@@ -13,3 +13,9 @@ __pycache__/
 
 # Windows
 Thumbs.db
+
+# pip package
+build/
+*.egg
+*.egg-info/
+dist/

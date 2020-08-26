@@ -6,27 +6,143 @@
         "static": false
     },
     {
-        "arenaname": "static2",
+        "arenaname": "agr",
         "uwbname": "2",
-        "client_id": "static2",
+        "client_id": "camera_agr_agr",
+        "static": false
+    },
+    {
+        "arenaname": "jeff",
+        "uwbname": "3",
+        "client_id": "camera_jeff_jeff",
+        "static": false
+    },
+    {
+        "arenaname": "static7",
+        "uwbname": "7",
+        "client_id": "static7",
         "static": true,
         "pose": [
-            [1, 0, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1]
+            [
+                -0.9924,
+                0.0067,
+                -0.1231,
+                -3.9603
+            ],
+            [
+                0.0062,
+                1,
+                0.0046,
+                9.908
+            ],
+            [
+                0.1231,
+                0.0038,
+                -0.9924,
+                1.6745
+            ],
+            [
+                0,
+                0,
+                0,
+                1
+            ]
         ]
     },
     {
-        "arenaname": "static3",
-        "uwbname": "3",
-        "client_id": "static3",
+        "arenaname": "static8",
+        "uwbname": "8",
+        "client_id": "static8",
         "static": true,
         "pose": [
-            [1, 0, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1]
+            [
+                -0.1332,
+                0.0002,
+                0.9911,
+                -5.225
+            ],
+            [
+                -0.0003,
+                1,
+                -0.0003,
+                4.3457
+            ],
+            [
+                -0.9911,
+                -0.0003,
+                -0.1332,
+                -6.0388
+            ],
+            [
+                0,
+                0,
+                0,
+                1
+            ]
+        ]
+    },
+    {
+        "arenaname": "static9",
+        "uwbname": "9",
+        "client_id": "static9",
+        "static": true,
+        "pose": [
+            [
+                -0.9689,
+                0.0076,
+                0.2473,
+                1.382
+            ],
+            [
+                0.0079,
+                1,
+                0,
+                5.1482
+            ],
+            [
+                -0.2473,
+                0.0019,
+                -0.9689,
+                13.7963
+            ],
+            [
+                0,
+                0,
+                0,
+                1
+            ]
+        ]
+    },
+    {
+        "arenaname": "static10",
+        "uwbname": "10",
+        "client_id": "static10",
+        "static": true,
+        "pose": [
+            [
+                0.9997,
+                -0.0046,
+                0.0253,
+                4.1242
+            ],
+            [
+                0.0046,
+                1,
+                0.0001,
+                1.3572
+            ],
+            [
+                -0.0253,
+                0,
+                0.9997,
+                -5.5535
+            ],
+            [
+                0,
+                0,
+                0,
+                1
+            ]
         ]
     }
 ]

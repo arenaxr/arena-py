@@ -3,6 +3,7 @@
 from datetime import datetime
 import getopt
 import json
+import numpy as np
 import pose
 import sys
 from types import SimpleNamespace
@@ -36,15 +37,15 @@ last_detection = datetime.min
 
 
 class SyncUser:
-    def __init__(self, arenaname):
-        self.hud = arena.Object(objName='circle_' + arenaname,
-                                parent='camera_' + arenaname + '_' + arenaname,
+    def __init__(self, config):
+        self.hud = arena.Object(objName='circle_' + config.arenaname,
+                                parent=config.client_id,
                                 objType=arena.Shape.circle,
                                 location=(0, 0, -0.5),
                                 rotation=(0, 0, 0, 1),
                                 scale=(0.02, 0.02, 0.02),
                                 persist=True)
-        self.arenaname = arenaname
+        self.arenaname = config.arenaname
         self.reset()
 
     def reset(self):
@@ -62,7 +63,7 @@ class SyncUser:
             self.hud.update(color=COLOR_WAIT)
 
     def on_vio(self, vio, time):
-        if self.state == 2:
+        if self.state == STATE_WAIT:
             pos_diff, rot_diff = pose.pose_diff(vio, self.last_vio)
             time_diff = (time - self.last_time).total_seconds()
             if pos_diff > MOVE_THRESH or rot_diff > ROT_THRESH or time_diff > TIME_THRESH:
@@ -75,9 +76,28 @@ class SyncUser:
             self.hud.update(color=COLOR_FINDTAG)
 
 
+class StaticUser(SyncUser):
+    def __init__(self, config):
+        self.arenaname = config.arenaname
+        self.pose = np.array(config.pose)
+        self.state = STATE_WAIT
+
+    def reset(self):
+        pass
+
+    def on_tag_detect(self, cam_pose, vio, time):
+        pass
+
+    def on_vio(self, vio, time):
+        pass
+
+    def on_timer(self):
+        pass
+
+
 def printhelp():
-    print('gt-sync.py -s <scene> <arenaname1> <uwbname1> [arenaname2 uwbname2 ...]')
-    print('   ex: python3 gt-sync.py -s myScene nuno 1 john 2')
+    print('gt-sync.py -s <scene> -u <userfile>')
+    print('   ex: python3 gt-sync.py -s myScene -u users.json')
 
 
 def dict_to_sns(d):
@@ -154,36 +174,39 @@ def on_uwb(msg):
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hs:b:', ['scene=', 'beaconfile='])
+        opts, args = getopt.getopt(sys.argv[1:], 'hs:u:', ['scene=', 'userfile='])
     except getopt.GetoptError:
         printhelp()
         sys.exit(1)
 
     scene = None
-    beaconfile = None
+    userfile = None
     for opt, arg in opts:
         if opt == '-h':
             printhelp()
             sys.exit(1)
         elif opt in ('-s', '--scene'):
             scene = arg
-        elif opt in ('-b', '--beaconfile'):
-            beaconfile = arg
+        elif opt in ('-u', '--userfile'):
+            userfile = arg
         else:
             printhelp()
             sys.exit(1)
-    if scene is None or len(args) < 1 or len(args) % 2 > 0:
+    if scene is None or userfile is None:
         printhelp()
         sys.exit(1)
 
-    if beaconfile is not None:
-        print('beaconfile:', beaconfile)
+    with open(userfile, 'r') as f:
+        config = json.load(f, object_hook=dict_to_sns)
 
     arena.init(BROKER, REALM, scene)
-    for arenaname, uwbname in zip(args[::2], args[1::2]):
-        users['camera_' + arenaname + '_' + arenaname] = SyncUser(arenaname)
-        arenanames[uwbname] = arenaname
-        print("Go to URL: https://xr.andrew.cmu.edu/?networkedTagSolver=true&scene=" + scene + "&fixedCamera=" + arenaname)
+    for user in config:
+        arenanames[user.uwbname] = user.arenaname
+        if user.static:
+            users[user.client_id] = StaticUser(user)
+        else:
+            users[user.client_id] = SyncUser(user)
+            print("Go to URL: https://xr.andrew.cmu.edu/?networkedTagSolver=true&scene=" + scene + "&fixedCamera=" + user.arenaname)
 
     arena.add_topic(TOPIC_DETECT, on_tag_detect)
     arena.add_topic(TOPIC_VIO, on_vio)

@@ -5,14 +5,20 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="ARENA-py",
-    version="0.0.1",
+    version="0.1.0",
     author="Conix Research Center",
     author_email="info@conix.io",
-    description="Draw objects in the ARENA using python.",
+    description="Draw objects in the ARENA using Python!",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/conix-center/ARENA-py",
     packages=setuptools.find_packages(),
+    install_requires=[ "aiohttp",
+                       "paho-mqtt~=1.5.0",
+                       "numpy~=1.18.1",
+                       "requests~=2.23.0",
+                       "scipy~=1.4.1",
+                       "webcolors~=1.3" ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: BSD 3-Clause \"New\" or \"Revised\" License (BSD-3-Clause)",

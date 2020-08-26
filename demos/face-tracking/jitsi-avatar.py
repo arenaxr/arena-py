@@ -1,7 +1,6 @@
-# head_rig.py
+# jitsi-avatar.py
 #
-# makes the head found in the 'Facegltf/sampledata.gltf' GLTF model
-# into the camera head
+# rigs 3d avatar to replace camera head on ARENA videoconf
 
 import arena
 import random
@@ -13,7 +12,7 @@ from scipy.spatial import distance
 from scipy.spatial.transform import Rotation as R
 
 HOST = "oz.andrew.cmu.edu"
-SCENE = "head-rig"
+SCENE = "summer20-v2"
 
 EYE_THRES = 0.16
 MOUTH_THRES = 0.05
@@ -223,10 +222,20 @@ class Face(object):
         return self.landmarks[60:68]
 
 class Head(object):
-    def __init__(self, msg_json):
-        self.id = msg_json["object_id"]
+    def __init__(self, user_id):
+        self.user_id = user_id
         self.counter = 0
         self.has_face = False
+        self.rig = True
+        self.obj = None
+
+    def rigOn(self):
+        self.rig = True
+
+    def rigOff(self):
+        self.rig = False
+        if self.obj is not None:
+            self.obj.delete()
 
     def add_face(self, face_json):
         self.last_face_state = { 'jawOpen': 0.0, 'eyeBlink_L':0.0, 'eyeBlink_R':0.0, 'browOuterUp_L':0.0, 'browOuterUp_R':0.0,'rotation':[1.0,1.0,1.0,1.0] }
@@ -235,6 +244,7 @@ class Head(object):
         self.update_face(face_json)
 
     def update_face(self, face_json):
+        if not self.rig: return
         self.counter += 1
 
         self.face.update(face_json)
@@ -281,8 +291,7 @@ class Head(object):
         mouthPucker = (mouthPucker/self.face.faceWidth)
         # print( "RawPucker: ", mouthPucker )
         mouthPucker -= 0.35 # remove DC offset
-        if mouthPucker < 0.0:
-            mouthPucker = 0.0
+        if mouthPucker < 0: mouthPucker = 0.0
         mouthPucker *= 2
         mouthPucker = 1.0 - mouthPucker # Invert it
         mouthPucker = 0.0
@@ -318,31 +327,38 @@ class Head(object):
         # corrected_rot[3] *= -1
 
         if self.counter % 2 == 0:
-            arena.Object(
-                objName=f"head_{self.id}",
+            self.obj = arena.Object(
+                objName=f"head_{self.user_id}",
                 objType=arena.Shape.gltf_model,
-                scale=(1.75,1.75,1.75),
+                scale=(10,10,10), # 1.75
                 rotation=corrected_rot,
                 location=(0.0, -0.07, 0.035),
                 #location=(self.face.trans[0]/100, self.face.trans[1]/100, (self.face.trans[2]+50)/100+.25),
                 url="/models/FaceCapHeadGeneric/FaceCapHeadGeneric.gltf",
-                parent=self.id,
+                parent="camera_"+self.user_id,
                 data=morphStr
             )
 
 def extract_user_id(obj_id):
-    return "".join(obj_id.split("_")[1:])
+    return "_".join(obj_id.split("_")[1:])
 
 def callback(msg):
     global users
 
     msg_json = json.loads(msg)
-    if "data" in msg_json and "object_type" in msg_json["data"] and "camera" == msg_json["data"]["object_type"]:
-        user = extract_user_id(msg_json["object_id"])
-        if user not in users:
-            users[user] = Head(msg_json)
+    # print(msg_json)
 
-    if "hasFace" in msg_json and msg_json["hasFace"]:
+    if "avatar" in msg_json:
+        user = extract_user_id(msg_json["object_id"])
+        if msg_json["avatar"]:
+            if user not in users:
+                users[user] = Head(user)
+            users[user].rigOn()
+        else:
+            if user in users:
+                users[user].rigOff()
+
+    elif "hasFace" in msg_json and msg_json["hasFace"]:
         user = extract_user_id(msg_json["object_id"])
         if user in users:
             if not users[user].has_face:

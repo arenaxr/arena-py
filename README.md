@@ -1,18 +1,17 @@
 # ARENA Py - Python Examples
-Draw objects in the ARENA using python.
+Draw objects in the ARENA using Python.
 
-Install required packages:
+Install package using pip:
 ```
-pip3 install -r requirements.txt
+pip3 install arena-py
 ```
-(on my linux box only had to run `sudo apt-get install python3-paho-mqtt`)
 
 ## Hello ARENA
 ```
 cd examples
 python hello.py
 ```
-(view results at https://xr.andrew.cmu.edu?scene=hello) 
+(view results at https://xr.andrew.cmu.edu?scene=hello)
 
 hello.py
 ```
@@ -33,11 +32,11 @@ The **init** function takes 3 string positional arguments, and 2 optional argume
  * scene name, a string
  * **callback** - a callback function to be called when ARENA network events are received. The function is passed a string argument, the network message, a JSON encoded string. (See below for more callback information)
  * **port** - a numerical port to connect if MQTT is running on a nonstandard port e.g. 3003
-These are composed together to form an MQTT topic, in the example, "realm/s/hello".  
+These are composed together to form an MQTT topic, in the example, "realm/s/hello".
 A successful *init* results in a connection with the MQTT server, ready to send and receive messages.
 ### Object (create method)
 `Object` takes multiple optional arguments and on success creates in the scene and returns a Python ARENA object.
-Accepted arguments are:  
+Accepted arguments are:
   * **objName** - Object name, a string. Object names should be unique within a scene
   * **objType** - an arena.objType enum from the set
     - *cube*
@@ -106,7 +105,7 @@ takes 3 positional arguments
   * **location** - a triple (x, y, z) coordinate in meters
   * **rotation** - a quad (x, y, z, w) rotation in quaternions
 ### handle_events
-After synchronously drawing objects to the scene, it is necessary to start a loop to listen to and handle network events and call the callback function (specified at `init()` time) 
+After synchronously drawing objects to the scene, it is necessary to start a loop to listen to and handle network events and call the callback function (specified at `init()` time)
 ### flush_events
 Empty out the buffer of sent/received network events; call this from main thread rather than sleep() or during loops.
 ### callback
@@ -121,6 +120,6 @@ def callback(msg)
     # look for only mousedown messages
     if jsonMsg["type"] != "mousedown":
         return
-        
+
     # handle mousedown message, breaking out message data from the dict, e.g
     # jsonMsg["object_id"], jsonMsg[

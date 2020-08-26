@@ -154,25 +154,30 @@ def on_uwb(msg):
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hs:', ['scene='])
+        opts, args = getopt.getopt(sys.argv[1:], 'hs:b:', ['scene=', 'beaconfile='])
     except getopt.GetoptError:
         printhelp()
         sys.exit(1)
 
     scene = None
+    beaconfile = None
     for opt, arg in opts:
         if opt == '-h':
             printhelp()
             sys.exit(1)
         elif opt in ('-s', '--scene'):
             scene = arg
+        elif opt in ('-b', '--beaconfile'):
+            beaconfile = arg
         else:
             printhelp()
             sys.exit(1)
-
     if scene is None or len(args) < 1 or len(args) % 2 > 0:
         printhelp()
         sys.exit(1)
+
+    if beaconfile is not None:
+        print('beaconfile:', beaconfile)
 
     arena.init(BROKER, REALM, scene)
     for arenaname, uwbname in zip(args[::2], args[1::2]):

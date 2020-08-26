@@ -61,7 +61,7 @@ def on_tag_detect(msg):
         return
     rig_pose, dtag_error = pose.get_rig_pose(json_msg)
     if dtag_error > 5e-6:
-        log('too much detection error')
+        log('too much detection error:', dtag_error)
         return
     rig_pos, rig_rotq = pose.matrix4_to_pose(rig_pose)
     log('Localizing', client_id, 'on', str(dtag.id))

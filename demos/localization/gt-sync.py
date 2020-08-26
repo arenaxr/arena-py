@@ -31,11 +31,12 @@ DTAG_ERROR_THRESH = 5e-6    # tag detection error units?
 TIME_INTERVAL = 10          # 10sec
 
 users = {}
+arenanames = {}
 last_detection = datetime.min
 
 
 class SyncUser:
-    def __init__(self, arenaname, uwbname):
+    def __init__(self, arenaname):
         self.hud = arena.Object(objName='circle_' + arenaname,
                                 parent='camera_' + arenaname + '_' + arenaname,
                                 objType=arena.Shape.circle,
@@ -44,7 +45,6 @@ class SyncUser:
                                 scale=(0.02, 0.02, 0.02),
                                 persist=True)
         self.arenaname = arenaname
-        self.uwbname = uwbname
         self.reset()
 
     def reset(self):
@@ -134,13 +134,23 @@ def on_vio(msg):
 
 
 def on_uwb(msg):
-    pass
-    # json_msg = json.loads(msg.payload.decode('utf-8'), object_hook=dict_to_sns)
-    # time = datetime.strptime(json_msg.timestamp, TIME_FMT_UWB)
-    # data = {'timestamp': time.strftime(TIME_FMT_UWB), 'type': 'uwb', 'src': , 'dst': , 'range': , 'ble_rssi', }
-    # with open(OUTFILE, 'a') as outfile:
-    #     outfile.write(json.dumps(data))
-    #     outfile.write(',\n')
+    json_msg = json.loads(msg.payload.decode('utf-8'), object_hook=dict_to_sns)
+    time = datetime.strptime(json_msg.timestamp, TIME_FMT_UWB)
+    if not json_msg.src in arenanames:
+        print('User not tracked: ' + json_msg.src)
+        return
+    if not json_msg.dst in arenanames:
+        print('User not tracked: ' + json_msg.dst)
+        return
+    src = arenanames[json_msg.src]
+    dst = arenanames[json_msg.dst]
+    rng = float(json_msg.distance)
+    rssi = int(json_msg.ble_rssi)
+    data = {'timestamp': time.strftime(TIME_FMT_UWB), 'type': 'uwb', 'src': src, 'dst': dst, 'range': rng, 'ble_rssi': rssi}
+    print(data)
+    with open(OUTFILE, 'a') as outfile:
+        outfile.write(json.dumps(data))
+        outfile.write(',\n')
 
 
 def main():
@@ -167,7 +177,8 @@ def main():
 
     arena.init(BROKER, REALM, scene)
     for arenaname, uwbname in zip(args[::2], args[1::2]):
-        users['camera_' + arenaname + '_' + arenaname] = SyncUser(arenaname, uwbname)
+        users['camera_' + arenaname + '_' + arenaname] = SyncUser(arenaname)
+        arenanames[uwbname] = arenaname
         print("Go to URL: https://xr.andrew.cmu.edu/?networkedTagSolver=true&scene=" + scene + "&fixedCamera=" + arenaname)
 
     arena.add_topic(TOPIC_DETECT, on_tag_detect)

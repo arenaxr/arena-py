@@ -83,7 +83,7 @@ def on_tag_detect(msg):
             }
         }
     }
-    arena.arena_publish('realm/s/' + json_msg.scene, json.dumps(mqtt_response))
+    arena.arena_publish('realm/s/' + json_msg.scene, mqtt_response)
 
 
 def main():

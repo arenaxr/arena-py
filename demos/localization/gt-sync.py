@@ -94,7 +94,7 @@ def on_tag_detect(msg):
     if hasattr(json_msg, 'detections'):
         dtag = json_msg.detections[0]
         if not hasattr(dtag, 'refTag'):
-            print('tag not in atlas: ' + dtag.id)
+            print('tag not in atlas:', dtag.id)
             return
         cam_pose, dtag_error = pose.get_cam_pose(json_msg)
         if dtag_error > DTAG_ERROR_THRESH:
@@ -137,17 +137,16 @@ def on_uwb(msg):
     json_msg = json.loads(msg.payload.decode('utf-8'), object_hook=dict_to_sns)
     time = datetime.strptime(json_msg.timestamp, TIME_FMT_UWB)
     if not json_msg.src in arenanames:
-        print('User not tracked: ' + json_msg.src)
+        print('User not tracked:', json_msg.src)
         return
     if not json_msg.dst in arenanames:
-        print('User not tracked: ' + json_msg.dst)
+        print('User not tracked:', json_msg.dst)
         return
     src = arenanames[json_msg.src]
     dst = arenanames[json_msg.dst]
     rng = float(json_msg.distance)
     rssi = int(json_msg.ble_rssi)
     data = {'timestamp': time.strftime(TIME_FMT_UWB), 'type': 'uwb', 'src': src, 'dst': dst, 'range': rng, 'ble_rssi': rssi}
-    print(data)
     with open(OUTFILE, 'a') as outfile:
         outfile.write(json.dumps(data))
         outfile.write(',\n')

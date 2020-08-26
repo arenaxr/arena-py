@@ -1,3 +1,7 @@
+# faceimator.py
+#
+# draws landmarks from ARENA face-tracker
+
 import random
 import time
 import signal
@@ -75,8 +79,8 @@ def callback(msg):
         for i in range(0, len(landmarksRaw), 2):
             landmarks += [[landmarksRaw[i], landmarksRaw[i+1]]]
 
-#        width = msg_json["imWidth"]
-#        height = msg_json["imHeight"]
+        width = msg_json["imWidth"]
+        height = msg_json["imHeight"]
 
         bboxx = msg_json["bbox"][0]
         bboxy = msg_json["bbox"][1]
@@ -103,79 +107,71 @@ def callback(msg):
         # print("outer mouth box size:", xmin, ymin, xmax, ymax);
         # print("scale:", xmax-xmin, ymax-ymin)
         openness = ((xmax-xmin) / (ymax-ymin)) / 10
-        # print (openness)
+        print (openness)
         # animate the face of existing model 'izzy'
-        #        obj = arena.updateBone(
-        #            object_id="izzy",
-        #            rotation=(0,0,0.6-openness,1), # quaternion value roughly between -.05 and .05
-        #            bone_id = "CC_Base_JawRoot_092"
-        #        )  
-
-        quat = msg_json["pose"]["quaterions"]
         obj = arena.updateBone(
-            object_id="ruth",
-            rotation=quat,
-            bone_id = "mNeck"
-        )  
+            object_id="izzy",
+            rotation=(0,0,0.6-openness,1), # quaternion value roughly between -.05 and .05
+            bone_id = "CC_Base_JawRoot_092"
+        )
 
-        
-        
+
         if id not in users:
             users[ID] = {}
             users[ID]["color"] = "#"+str(hex(random.randint(0,0xffffff)))[2:]
 
         # print(id, users)
 
-        # if "box" not in users[ID]:
-        #     users[ID]["box"] = FacePart(ID, "box", width, height, boxPts, True) # closed
-        # else:
-        #     users[ID]["box"].update(boxPts, False)
+        if "box" not in users[ID]:
+            users[ID]["box"] = FacePart(ID, "box", width, height, boxPts, True) # closed
+        else:
+            users[ID]["box"].update(boxPts, False)
 
-        # if "jaw" not in users[ID]:
-        #     users[ID]["jaw"] = FacePart(ID, "jaw", width, height, jawPts, False)
-        # else:
-        #     users[ID]["jaw"].update(jawPts, False)
+        if "jaw" not in users[ID]:
+            users[ID]["jaw"] = FacePart(ID, "jaw", width, height, jawPts, False)
+        else:
+            users[ID]["jaw"].update(jawPts, False)
 
-        # if "eyebrowL" not in users[ID]:
-        #     users[ID]["eyebrowL"] = FacePart(ID, "eyebrowL", width, height, eyebrowLPts, False)
-        # else:
-        #     users[ID]["eyebrowL"].update(eyebrowLPts, False)
+        if "eyebrowL" not in users[ID]:
+            users[ID]["eyebrowL"] = FacePart(ID, "eyebrowL", width, height, eyebrowLPts, False)
+        else:
+            users[ID]["eyebrowL"].update(eyebrowLPts, False)
 
-        # if "eyebrowR" not in users[ID]:
-        #     users[ID]["eyebrowR"] = FacePart(ID, "eyebrowR", width, height, eyebrowRPts, False)
-        # else:
-        #     users[ID]["eyebrowR"].update(eyebrowRPts, False)
+        if "eyebrowR" not in users[ID]:
+            users[ID]["eyebrowR"] = FacePart(ID, "eyebrowR", width, height, eyebrowRPts, False)
+        else:
+            users[ID]["eyebrowR"].update(eyebrowRPts, False)
 
-        # if "noseBridge" not in users[ID]:
-        #     users[ID]["noseBridge"] = FacePart(ID, "noseBridge", width, height, noseBridgePts, False)
-        # else:
-        #     users[ID]["noseBridge"].update(noseBridgePts, False)
+        if "noseBridge" not in users[ID]:
+            users[ID]["noseBridge"] = FacePart(ID, "noseBridge", width, height, noseBridgePts, False)
+        else:
+            users[ID]["noseBridge"].update(noseBridgePts, False)
 
-        # if "noseLower" not in users[ID]:
-        #     users[ID]["noseLower"] = FacePart(ID, "noseLower", width, height, noseLowerPts)
-        # else:
-        #     users[ID]["noseLower"].update(noseLowerPts)
+        if "noseLower" not in users[ID]:
+            users[ID]["noseLower"] = FacePart(ID, "noseLower", width, height, noseLowerPts)
+        else:
+            users[ID]["noseLower"].update(noseLowerPts)
 
-        # if "eyeL" not in users[ID]:
-        #     users[ID]["eyeL"] = FacePart(ID, "eyeL", width, height, eyeLPts)
-        # else:
-        #     users[ID]["eyeL"].update(eyeLPts)
+        if "eyeL" not in users[ID]:
+            users[ID]["eyeL"] = FacePart(ID, "eyeL", width, height, eyeLPts)
+        else:
+            users[ID]["eyeL"].update(eyeLPts)
 
-        # if "eyeR" not in users[ID]:
-        #     users[ID]["eyeR"] = FacePart(ID, "eyeR", width, height, eyeRPts)
-        # else:
-        #     users[ID]["eyeR"].update(eyeRPts)
+        if "eyeR" not in users[ID]:
+            users[ID]["eyeR"] = FacePart(ID, "eyeR", width, height, eyeRPts)
+        else:
+            users[ID]["eyeR"].update(eyeRPts)
 
-        # if "lipOuter" not in users[ID]:
-        #     users[ID]["lipOuter"] = FacePart(ID, "lipOuter", width, height, lipOuterPts)
-        # else:
-        #     users[ID]["lipOuter"].update(lipOuterPts)
+        if "lipOuter" not in users[ID]:
+            users[ID]["lipOuter"] = FacePart(ID, "lipOuter", width, height, lipOuterPts)
+        else:
+            users[ID]["lipOuter"].update(lipOuterPts)
 
-        # if "lipInner" not in users[ID]:
-        #     users[ID]["lipInner"] = FacePart(ID, "lipInner", width, height, lipInnerPts)
-        # else:
-        #     users[ID]["lipInner"].update(lipInnerPts)
-            
+        if "lipInner" not in users[ID]:
+            users[ID]["lipInner"] = FacePart(ID, "lipInner", width, height, lipInnerPts)
+        else:
+            users[ID]["lipInner"].update(lipInnerPts)
+
 
 arena.init(HOST, REALM, SCENE, callback=callback)
 arena.handle_events()

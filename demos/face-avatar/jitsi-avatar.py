@@ -7,12 +7,17 @@ import random
 import time
 import signal
 import json
+import sys
 import numpy as np
 from scipy.spatial import distance
 from scipy.spatial.transform import Rotation as R
 
+if len(sys.argv) != 2:
+    print("Usage: jitsi-avatar.py <scene-name>")
+    exit(0)
+
 HOST = "oz.andrew.cmu.edu"
-SCENE = "summer20-v2"
+SCENE = sys.argv[1]
 
 EYE_THRES = 0.16
 MOUTH_THRES = 0.05
@@ -330,7 +335,7 @@ class Head(object):
             self.obj = arena.Object(
                 objName=f"head_{self.user_id}",
                 objType=arena.Shape.gltf_model,
-                scale=(10,10,10), # 1.75
+                scale=(1.75,1.75,1.75),
                 rotation=corrected_rot,
                 location=(0.0, -0.07, 0.035),
                 #location=(self.face.trans[0]/100, self.face.trans[1]/100, (self.face.trans[2]+50)/100+.25),

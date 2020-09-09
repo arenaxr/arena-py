@@ -45,7 +45,7 @@ def process_message(msg):
     global pseudoclick
     #print("process_message: "+str(msg.payload))
 
-    # manage secondary subcriptions to the same bus, not always JSON
+    # manage secondary subscriptions to the same bus, not always JSON
     for sub in secondary_callbacks:
         if mqtt.topic_matches_sub(sub, msg.topic):
             secondary_callbacks[sub](msg)

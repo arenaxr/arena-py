@@ -898,6 +898,9 @@ def make_wall(camname):
 def scene_callback(msg):
     # This is the MQTT message callback function for the scene
     json_msg = json.loads(msg)
+    if "action" not in json_msg or "data" not in json_msg or "object_id" not in json_msg:
+        return
+
     if json_msg["action"] == "create" and json_msg["data"]["object_type"] == "camera":
         # camera updates define users present
         camname = json_msg["object_id"]

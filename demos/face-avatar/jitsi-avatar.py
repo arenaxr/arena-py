@@ -22,62 +22,7 @@ SCENE = sys.argv[1]
 EYE_THRES = 0.16
 MOUTH_THRES = 0.05
 
-users = {}
-
-anims = [
-    "shapes.browInnerUp",
-    "shapes.browDown_L",
-    "shapes.browDown_R",
-    "shapes.browOuterUp_L",
-    "shapes.browOuterUp_R",
-    "shapes.eyeLookUp_L",
-    "shapes.eyeLookUp_R",
-    "shapes.eyeLookDown_L",
-    "shapes.eyeLookDown_R",
-    "shapes.eyeLookIn_L",
-    "shapes.eyeLookIn_R",
-    "shapes.eyeLookOut_L",
-    "shapes.eyeLookOut_R",
-    "shapes.eyeBlink_L",
-    "shapes.eyeBlink_R",
-    "shapes.eyeSquint_L",
-    "shapes.eyeSquint_R",
-    "shapes.eyeWide_L",
-    "shapes.eyeWide_R",
-    "shapes.cheekPuff",
-    "shapes.cheekSquint_L",
-    "shapes.cheekSquint_R",
-    "shapes.noseSneer_L",
-    "shapes.noseSneer_R",
-    "shapes.jawOpen",
-    "shapes.jawForward",
-    "shapes.jawLeft",
-    "shapes.jawRight",
-    "shapes.mouthFunnel",
-    "shapes.mouthPucker",
-    "shapes.mouthLeft",
-    "shapes.mouthRight",
-    "shapes.mouthRollUpper",
-    "shapes.mouthRollLower",
-    "shapes.mouthShrugUpper",
-    "shapes.mouthShrugLower",
-    "shapes.mouthClose",
-    "shapes.mouthSmile_L",
-    "shapes.mouthSmile_R",
-    "shapes.mouthFrown_L",
-    "shapes.mouthFrown_R",
-    "shapes.mouthDimple_L",
-    "shapes.mouthDimple_R",
-    "shapes.mouthUpperUp_L",
-    "shapes.mouthUpperUp_R",
-    "shapes.mouthLowerDown_L",
-    "shapes.mouthLowerDown_R",
-    "shapes.mouthPress_L",
-    "shapes.mouthPress_R",
-    "shapes.mouthStretch_L",
-    "shapes.mouthStretch_R",
-    "tongue_out"
-]
+users = {} # dictionary of users mapped to heads
 
 def q_mult(q1, q2):
     x1, y1, z1, w1 = q1
@@ -355,7 +300,6 @@ def callback(msg):
 
     if "hasAvatar" in msg_json:
         user = extract_user_id(msg_json["object_id"])
-        print(msg_json)
         if msg_json["hasAvatar"]:
             if user not in users:
                 users[user] = Head(user)

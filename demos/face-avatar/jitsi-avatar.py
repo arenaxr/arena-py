@@ -16,7 +16,7 @@ if len(sys.argv) != 2:
     print("Usage: jitsi-avatar.py <scene-name>")
     exit(0)
 
-HOST = "oz.andrew.cmu.edu"
+HOST = "arena.andrew.cmu.edu"
 SCENE = sys.argv[1]
 
 EYE_THRES = 0.16
@@ -103,7 +103,7 @@ class Face(object):
 
         self.landmarksRaw = np.array(msg_json["landmarks"]) # [x1, y1, x2, y2...]
         self.landmarks = self.landmarksRaw.reshape((-1,2)) # [[x1,y1],[x2,y2]...]
-        self.landmarks = self.unrotateLandmarks(self.landmarks, self.rot)
+        # self.landmarks = self.unrotateLandmarks(self.landmarks, self.rot)
         self.com = np.mean(self.landmarks, axis=0) # "center of mass" of face
         self.landmarks = self.normalizeToCOM(self.landmarks, self.com)
 
@@ -339,7 +339,7 @@ class Head(object):
                 rotation=corrected_rot,
                 location=(0.0, -0.07, 0.035),
                 #location=(self.face.trans[0]/100, self.face.trans[1]/100, (self.face.trans[2]+50)/100+.25),
-                url="/models/FaceCapHeadGeneric/FaceCapHeadGeneric.gltf",
+                url="/store/users/wiselab/models/FaceCapHeadGeneric/FaceCapHeadGeneric.gltf",
                 parent="camera_"+self.user_id,
                 data=morphStr
             )
@@ -353,9 +353,10 @@ def callback(msg):
     msg_json = json.loads(msg)
     # print(msg_json)
 
-    if "avatar" in msg_json:
+    if "hasAvatar" in msg_json:
         user = extract_user_id(msg_json["object_id"])
-        if msg_json["avatar"]:
+        print(msg_json)
+        if msg_json["hasAvatar"]:
             if user not in users:
                 users[user] = Head(user)
             users[user].rigOn()

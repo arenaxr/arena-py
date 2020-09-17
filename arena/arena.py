@@ -56,8 +56,18 @@ def process_message(msg):
     # otherwise, all arena object data is required to be JSON
     # first call specific objects' callbacks
     payload = msg.payload.decode("utf-8", "ignore")
-    MESSAGE = json.loads(payload)
-    object_id = MESSAGE["object_id"]
+    try:
+        MESSAGE = json.loads(payload)
+    except:
+        if debug_toggle:
+            print("JSON parsing failed!")
+        return
+
+    if "object_id" in MESSAGE:
+        object_id = MESSAGE["object_id"]
+    else:
+        if debug_toggle:
+            print("Message has no object_id!")
 
     if pseudoclick:  # display random clicks in right corner for demos
         if MESSAGE["action"] == "clientEvent" and MESSAGE["type"] == "mousedown":
@@ -112,8 +122,8 @@ def draw_psuedoclick(xpix, ypix):
 
 
 def on_message(client, userdata, msg):
-    msgs_ready.set()
     messages.append(msg)
+    msgs_ready.set()
 
 
 def on_connect(client, userdata, flags, rc):

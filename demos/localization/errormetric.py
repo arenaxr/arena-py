@@ -39,7 +39,7 @@ def main():
         sys.exit(1)
 
     arena.init(BROKER, REALM, scene)
-    print("Go to URL: https://xr.andrew.cmu.edu/?networkedTagSolver=true&scene=" + scene + "&fixedCamera=" + user.arenaname)
+    print("Go to URL: https://xr.andrew.cmu.edu/?scene=" + scene)
     arena.handle_events()
 
 

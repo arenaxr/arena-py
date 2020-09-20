@@ -5,6 +5,7 @@ import sys
 import time
 import enum
 from datetime import datetime
+from threading import Event
 
 import paho.mqtt.client as mqtt
 
@@ -22,6 +23,7 @@ arena_callback = None
 messages = []
 debug_toggle = False
 pseudoclick = None  # (x,y) tuple of pixel coordinates to display clicks
+msgs_ready = Event()
 
 
 def signal_handler(sig, frame):
@@ -42,7 +44,7 @@ def arena_publish(scene_path, MESSAGE):
 
 def process_message(msg):
     global arena_callback
-    global pseudoclick
+    global pseudoclickl
     #print("process_message: "+str(msg.payload))
 
     # manage secondary subscriptions to the same bus, not always JSON
@@ -54,13 +56,23 @@ def process_message(msg):
     # otherwise, all arena object data is required to be JSON
     # first call specific objects' callbacks
     payload = msg.payload.decode("utf-8", "ignore")
-    MESSAGE = json.loads(payload)
-    object_id = MESSAGE["object_id"]
+    try:
+        MESSAGE = json.loads(payload)
+    except:
+        if debug_toggle:
+            print("JSON parsing failed!")
+        return
+
+    if "object_id" in MESSAGE:
+        object_id = MESSAGE["object_id"]
+    else:
+        if debug_toggle:
+            print("Message has no object_id!")
 
     if pseudoclick:  # display random clicks in right corner for demos
         if MESSAGE["action"] == "clientEvent" and MESSAGE["type"] == "mousedown":
             draw_psuedoclick(xpix=pseudoclick[0], ypix=pseudoclick[1])
- 
+
     if object_id in callbacks:
         evtType = 'object' # event type is required
         clickPos=(0,0,0)
@@ -111,6 +123,7 @@ def draw_psuedoclick(xpix, ypix):
 
 def on_message(client, userdata, msg):
     messages.append(msg)
+    msgs_ready.set()
 
 
 def on_connect(client, userdata, flags, rc):
@@ -162,14 +175,14 @@ def init(broker, realm, scene, callback=None, port=None, democlick=None):
 
 
 def handle_events():
-    # if we don't sleep, this python thread
-    # pulls a load of 1 completely tying up CPU
-    # so we sleep here
+    # process messages are available
+    # if not, block until messages arrive
     while running:
         if len(messages) > 0:
             process_message(messages.pop(0))
         else:
-            time.sleep(0.01)
+            msgs_ready.clear()
+            msgs_ready.wait()
 
 def flush_events():
     if running:
@@ -214,13 +227,6 @@ def stop():
     client.disconnect()
     print("disconnected")
     sys.exit()
-
-# def add(obj):
-#     print("Add called with: " + obj.name)
-#     if isinstance(obj, Cube):
-#         print("its a cube")
-#     if isinstance(obj, Sphere):
-#         print("its a sphere")
 
 
 def agran(float_num):
@@ -386,8 +392,8 @@ class updateRig:
             "type": "rig",
             "data": {
                 "position": {
-                    "x": agran(position[0]), 
-                    "y": agran(position[1]), 
+                    "x": agran(position[0]),
+                    "y": agran(position[1]),
                     "z": agran(position[2])
                     },
                 "rotation": {
@@ -687,8 +693,8 @@ class Object:
                     "w": agran(self.rotation[3])
                 },
                 "scale": {
-                    "x": agran(self.scale[0]), 
-                    "y": agran(self.scale[1]), 
+                    "x": agran(self.scale[0]),
+                    "y": agran(self.scale[1]),
                     "z": agran(self.scale[2])
                     },
                 "color": color_str,

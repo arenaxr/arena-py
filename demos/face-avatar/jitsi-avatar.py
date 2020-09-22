@@ -8,16 +8,21 @@ import time
 import signal
 import json
 import sys
+import os 
 import numpy as np
 from scipy.spatial import distance
 from scipy.spatial.transform import Rotation as R
 
-if len(sys.argv) != 2:
-    print("Usage: jitsi-avatar.py <scene-name>")
-    exit(0)
+#if len(sys.argv) != 2:
+#    print("Usage: jitsi-avatar.py <scene-name>")
+#    exit(0)
 
-HOST = "arena.andrew.cmu.edu"
-SCENE = sys.argv[1]
+# export HOST=arena.andrew.cmu.edu
+# export REALM=realm
+# export MQTTH=arena.andrew.cmu.edu
+
+#HOST = "arena.andrew.cmu.edu"
+#SCENE = sys.argv[1]
 
 EYE_THRES = 0.16
 MOUTH_THRES = 0.05
@@ -316,5 +321,16 @@ def callback(msg):
             else:
                 users[user].update_face(msg_json)
 
-arena.init(HOST, "realm", SCENE, callback=callback)
+if (os.environ.get('SCENE') is not None) and (os.environ.get('REALM') is not None) and (os.environ.get('MQTTH') is not None):
+    SCENE = os.environ["SCENE"]
+    HOST = os.environ["MQTTH"]
+    REALM = os.environ["REALM"]
+    print("Loading:" + SCENE + "," + REALM + "," + HOST)
+else:
+    print( "You need to set SCENE, MQTTH and REALM as environmental variables to specify the program target")
+    exit(-1)
+
+
+arena.init(HOST, REALM, SCENE, callback=callback)
+# arena.init(HOST, "realm", SCENE, callback=callback)
 arena.handle_events()

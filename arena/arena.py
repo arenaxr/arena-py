@@ -173,6 +173,13 @@ def init(broker, realm, scene, callback=None, port=None, democlick=None):
     signal.signal(signal.SIGINT, signal_handler)
     start()
 
+def poll_events():
+    # Instead of while loop, just manually cycle through any pending events in mqtt queue 
+    # This can be used if you don't want handle_events() to loop forever at the end of your program.
+    # Instead you need to periodically call poll_events() from your main thread 
+    if running:
+        for i in messages:
+            process_message(messages.pop(0))
 
 def handle_events():
     # process messages are available

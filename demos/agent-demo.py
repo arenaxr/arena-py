@@ -43,7 +43,7 @@ def agent_handler(event=None):
         # On click, draw a ray
         draw_ray(event.click_pos, event.position)
         agent1.update(transparency=arena.Transparency(True, 1.0) )
-        agentParent.update(location=(random.randrange(-10,10) , 0 , random.randrange(-10,10)) )
+        agentParent.update(location=(random.randrange(-10,10) , 0 , random.randrange(-10,1)) )
         # Need to add Tweening...
         # agent1.update(data='{"animation": {"property": "position","to": "0 15 20","easing": "linear","dur": 1000}}')
 
@@ -78,7 +78,7 @@ agent1 = arena.Object(
                 url="store/users/wiselab/models/fortnite_llama/scene.gltf",
                 objType=arena.Shape.gltf_model,
                 scale=(0.01,0.01,0.01),
-                location=(0,0,-5),
+                location=(0,0,0),
                 clickable=True,
 		        persist=True,
                 parent="agentParent",
@@ -89,7 +89,7 @@ text1 = arena.Object(
                 objName="text1",
                 objType=arena.Shape.text,
                 scale=(5.0,5.0,5.0),
-                location=( 0,5,0),
+                location=( 0,7,0),
                 rotation=( 0,0,0,1),
                 clickable=False,
                 data='{"text":"Some Text!"}',

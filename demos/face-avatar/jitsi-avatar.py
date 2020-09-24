@@ -8,21 +8,10 @@ import time
 import signal
 import json
 import sys
-import os 
+import os
 import numpy as np
 from scipy.spatial import distance
 from scipy.spatial.transform import Rotation as R
-
-#if len(sys.argv) != 2:
-#    print("Usage: jitsi-avatar.py <scene-name>")
-#    exit(0)
-
-# export HOST=arena.andrew.cmu.edu
-# export REALM=realm
-# export MQTTH=arena.andrew.cmu.edu
-
-#HOST = "arena.andrew.cmu.edu"
-#SCENE = sys.argv[1]
 
 EYE_THRES = 0.16
 MOUTH_THRES = 0.05
@@ -188,9 +177,9 @@ class Head(object):
         self.rig = True
 
     def rigOff(self):
-        self.rig = False
-        if self.obj is not None:
+        if self.rig and self.obj is not None:
             self.obj.delete()
+        self.rig = False
 
     def add_face(self, face_json):
         self.last_face_state = { 'jawOpen': 0.0, 'eyeBlink_L':0.0, 'eyeBlink_R':0.0, 'browOuterUp_L':0.0, 'browOuterUp_R':0.0,'rotation':[1.0,1.0,1.0,1.0] }
@@ -277,9 +266,9 @@ class Head(object):
 
         # head faces backward at first, rotate head 180 to correct
         corrected_rot = q_mult(self.face.rot, [0,1,0,0])
-        # flip left right rotations
-        # corrected_rot[2] *= -1
-        # corrected_rot[3] *= -1
+        # flip up and down
+        corrected_rot[2] *= -1
+        corrected_rot[3] *= -1
 
         if self.counter % 2 == 0:
             self.obj = arena.Object(
@@ -301,7 +290,6 @@ def callback(msg):
     global users
 
     msg_json = json.loads(msg)
-    # print(msg_json)
 
     if "hasAvatar" in msg_json:
         user = extract_user_id(msg_json["object_id"])
@@ -332,5 +320,4 @@ else:
 
 
 arena.init(HOST, REALM, SCENE, callback=callback)
-# arena.init(HOST, "realm", SCENE, callback=callback)
 arena.handle_events()

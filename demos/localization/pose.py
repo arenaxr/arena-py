@@ -79,7 +79,11 @@ def _test_resolve_pose_ambiguity():
          [.00, .00, .00, 1.00]])
     test_error2 = 181e-6
     test_vio = np.identity(4)
-    test_tagpose = np.identity(4)
+    test_tagpose = np.array(
+        [[-0.9689, 0.0076, 0.2473, 1.382],
+         [0.0079, 1, 0, 5.2782],
+         [-0.2473, 0.0019, -0.9689, 13.7963],
+         [0, 0, 0, 1]])
     test_pose, test_error = resolve_pose_ambiguity(
         test_pose1, test_error1, test_pose2, test_error2, test_vio, test_tagpose)
     print(test_pose)

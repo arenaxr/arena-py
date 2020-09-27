@@ -5,16 +5,27 @@ import time
 import arena
 import random
 import os
-import json 
+import json
+import base64
 
 # export HOST=arena.andrew.cmu.edu
 # export REALM=realm
 # export MQTTH=arena.andrew.cmu.edu
+# export MID=MID_1234
 
+# export LINKS = "Link1,https://www.duckduckgo.com,Link 2,https:www.f1.com,Link 3,https://www.eet.com"
+# Needs to be base64 encoded for arts:
+# export LINKS = "TGluazEsaHR0cHM6Ly93d3cuZHVja2R1Y2tnby5jb20sTGluayAyLGh0dHBzOnd3dy5mMS5jb20sTGluayAzLGh0dHBzOi8vd3d3LmVldC5jb20="
+
+# LINKS env will overwrite this default:
+sign_links =  ['Link 1','https://www.duckduckgo.com','Link 2','https://www.f1.com','Link 3','https://www.eet.com']
+
+
+# export LOCATION = "MywwLC0xMA=="
+sign_location = [3,0,-10]
 
 def draw_ray(click_pos, position):
     line = arena.Object(
-        #objName="line1",
         ttl=1,
         objType=arena.Shape.thickline,
         thickline=arena.Thickline( # slightly below camera so you can see line vs head-on
@@ -30,7 +41,7 @@ animateState = False
 def target1_handler(event=None):
     global target1 
     if event.event_type == arena.EventType.mouseenter:
-        target1.update(color=(170,200,255),transparency=arena.Transparency(True, 0.5)  )
+        target1.update(color=(0,255,0), transparency=arena.Transparency(True, 0.5)  )
     if event.event_type == arena.EventType.mouseleave:
         target1.update(transparency=arena.Transparency(True, 0.0) )
     if event.event_type == arena.EventType.mousedown:
@@ -41,7 +52,7 @@ def target1_handler(event=None):
 def target2_handler(event=None):
     global target2 
     if event.event_type == arena.EventType.mouseenter:
-        target2.update(color=(170,200,255),transparency=arena.Transparency(True, 0.5)  )
+        target2.update(color=(0,255,0),transparency=arena.Transparency(True, 0.5)  )
     if event.event_type == arena.EventType.mouseleave:
         target2.update( transparency=arena.Transparency(True, 0.0) )
     if event.event_type == arena.EventType.mousedown:
@@ -52,7 +63,7 @@ def target2_handler(event=None):
 def target3_handler(event=None):
     global target3 
     if event.event_type == arena.EventType.mouseenter:
-        target3.update(color=(170,200,255),transparency=arena.Transparency(True, 0.5)  )
+        target3.update(color=(0,255,0),transparency=arena.Transparency(True, 0.5)  )
     if event.event_type == arena.EventType.mouseleave:
         target3.update( transparency=arena.Transparency(True, 0.0) )
     if event.event_type == arena.EventType.mousedown:
@@ -73,6 +84,31 @@ else:
     print( "You need to set SCENE, MQTTH and REALM as environmental variables to specify the program target")
     exit(-1)
 
+if os.environ.get('MID') is not None:
+    MID = os.environ["MID"]+'-'
+    #SCENE = SCENE + "/" + MID  
+
+print( "MID:" + MID)
+
+if os.environ.get('LINKS') is not None:
+    # Links is base64 encoded
+    LINKS = os.environ["LINKS"]
+    LINKS = str(base64.b64decode(LINKS))
+    # Drop the b' at the start of the string and ' at the end
+    LINKS = LINKS[2:-1]
+    # take the string and parse out CSV parameters
+    sign_links= LINKS.split(",")
+
+if os.environ.get('LOCATION') is not None:
+    # Links is base64 encoded
+    LOC = os.environ["LOCATION"]
+    LOC = str(base64.b64decode(LOC))
+    # Drop the b' at the start of the string and ' at the end
+    LOC = LOC[2:-1]
+    # take the string and parse out CSV parameters
+    sign_location = LOC.split(",")
+
+print( "Scene:" + SCENE)
 
 arena.init(HOST, REALM, SCENE)
 
@@ -80,26 +116,28 @@ print("starting sign main loop")
 
 signParent = arena.Object(
     persist=True,
-    objName="signParent",
+    objName=MID+"signParent",
     objType=arena.Shape.cube,
     location=(0, 0, 0),
     transparency=arena.Transparency(True, 0),
 )
 
-
 sign1 = arena.Object(
-                objName="sign1-model",
+                objName=MID+"sign1-model",
                 url="store/users/wiselab/models/blank-sign/scene.gltf",
                 objType=arena.Shape.gltf_model,
                 scale=(0.02,0.02,0.02),
                 location=(0,0,0),
                 clickable=False,
 		        persist=True,
-                parent="signParent"
+                parent=MID+"signParent"
 )
 
+
+dataStr='{"goto-url": { "on": "mousedown", "url": "' + sign_links[1] + '"} } '
+
 target1 = arena.Object(
-                objName="target1",
+                objName=MID+"target1",
                 objType=arena.Shape.cube,
                 scale=(0.6,0.15,0.01),
                 location=( -0.292,1.522, 0.027),
@@ -107,27 +145,29 @@ target1 = arena.Object(
                 color=(170,200,255),
                 clickable=True,
                 callback=target1_handler,
-                data='{"goto-url": { "on": "mousedown", "url": "https://arena.andrew.cmu.edu/?scene=room6" } } ',
+                data=dataStr,
                 transparency=arena.Transparency(True, 0),
 		        persist=True,
-                parent="signParent"
+                parent=MID+"signParent"
 )
 
+dataStr='{"text":"' + sign_links[0] + '"}'
 text1 = arena.Object(
-                objName="text1",
+                objName=MID+"text1",
                 objType=arena.Shape.text,
                 scale=(0.5,0.5,0.5),
                 location=( -0.292,1.522, 0.037),
                 rotation=( 0.017,-0.182, 0.003, 0.983 ),
                 clickable=False,
-                data='{"text":"Room6"}',
-                color=(255,0,0),
+                data=dataStr,
+                color=(100,100,255),
 		        persist=True,
-                parent="signParent"
+                parent=MID+"signParent"
 )
 
+dataStr='{"goto-url": { "on": "mousedown", "url": "' + sign_links[3] + '"} } '
 target2 = arena.Object(
-                objName="target2",
+                objName=MID+"target2",
                 objType=arena.Shape.cube,
                 scale=(0.6,0.15,0.01),
                 location=( -.12,1.22,-.013),
@@ -135,28 +175,30 @@ target2 = arena.Object(
                 color=(170,200,255),
                 clickable=True,
                 callback=target2_handler,
-                data='{"goto-url": { "on": "mousedown", "url": "https://arena.andrew.cmu.edu/?scene=wine-store" } } ',
+                data=dataStr,
                 transparency=arena.Transparency(True, 0),
 		        persist=True,
-                parent="signParent"
+                parent=MID+"signParent"
 )
 
+dataStr='{"text":"' + sign_links[2] + '"}'
 text2 = arena.Object(
-                objName="text2",
+                objName=MID+"text2",
                 objType=arena.Shape.text,
                 scale=(0.5,0.5,0.5),
                 location=( -.12,1.22,-.003),
                 rotation=( 0.017,0, 0, 1 ),
                 clickable=False,
-                data='{"text":"Wine Store"}',
-                color=(255,0,0),
+                data=dataStr,
+                color=(100,100,255),
 		        persist=True,
-                parent="signParent"
+                parent=MID+"signParent"
 )
 
 
+dataStr='{"goto-url": { "on": "mousedown", "url": "' + sign_links[5] + '"} } '
 target3 = arena.Object(
-                objName="target3",
+                objName=MID+"target3",
                 objType=arena.Shape.cube,
                 scale=(0.6,0.15,0.01),
                 location=( -.3,0.91,0.023),
@@ -164,29 +206,29 @@ target3 = arena.Object(
                 color=(170,200,255),
                 clickable=True,
                 callback=target3_handler,
-                data='{"goto-url": { "on": "mousedown", "url": "https://arena.andrew.cmu.edu/?scene=school" } } ',
+                data=dataStr,
                 transparency=arena.Transparency(True, 0),
 		        persist=True,
-                parent="signParent"
+                parent=MID+"signParent"
 )
 
 
+dataStr='{"text":"' + sign_links[4] + '"}'
 text3 = arena.Object(
-                objName="text3",
+                objName=MID+"text3",
                 objType=arena.Shape.text,
                 scale=(0.5,0.5,0.5),
                 location=( -.3,0.91,0.033),
                 rotation=( 0.017,0.225, 0, 1 ),
-                clickable=False,
-                data='{"text":"School"}',
-                color=(255,0,0),
+                data=dataStr,
+                color=(100,100,255),
 		        persist=True,
-                parent="signParent"
+                parent=MID+"signParent"
 )
 
 
 
-signParent.update(location=(3,0,-10))
+signParent.update(location=(float(sign_location[0]),float(sign_location[1]),float(sign_location[2])))
 
 
 

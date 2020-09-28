@@ -64,7 +64,7 @@ def pinata_handler(event=None):
                 rotation=( 0,0,0,1),
                 #clickable=False,
                 data='{"text":"Hit Counter ' + str(hit_counter) + '"}',
-                color=(100,100,255),
+                color=(random.uniform(0,255),random.uniform(0,255),random.uniform(0,255)),
 		        persist=True,
                 parent="pinataParent"
             )

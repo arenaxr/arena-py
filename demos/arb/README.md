@@ -13,4 +13,6 @@ python arb.py hello
 ![AR Builder Panel](arb-panel.png)
 
 ## Full Documentation
-The ARB tool user guide and documentioan have moed to the ARENA Documentation site: https://conix-center.github.io/ARENA/content/tools/authoring.html
+The ARB tool user guide and documentation has moved to [ARENA Documentation: ARB](https://conix-center.github.io/ARENA/content/tools/authoring.html)
+- [ARENA Documentation](https://conix-center.github.io/ARENA)
+- [ARENA Documentation Source](https://github.com/conix-center/ARENA)

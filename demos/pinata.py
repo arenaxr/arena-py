@@ -17,6 +17,9 @@ hit_counter = 0
 
 # This function draws a line when a user clicks
 def draw_ray(click_pos, position):
+    random_number = random.randint(0,16777215)
+    rand_color = str(hex(random_number))
+    rand_color ='#'+ rand_color[2:]
     line = arena.Object(
         #objName="line1",
         ttl=1,
@@ -25,7 +28,7 @@ def draw_ray(click_pos, position):
             {
                 (click_pos[0],click_pos[1]-0.2,click_pos[2]),
                 (position[0],position[1],position[2])
-            },5,"#FF00FF")
+            },5,rand_color)
     )
 
 animateState = False

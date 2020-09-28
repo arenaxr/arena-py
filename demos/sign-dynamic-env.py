@@ -7,18 +7,23 @@ import random
 import os
 import json
 import sys 
+#import base64
+from urllib.parse import unquote
 
 # export HOST=arena.andrew.cmu.edu
 # export REALM=realm
 # export MQTTH=arena.andrew.cmu.edu
 # export MID=MID_1234
-# Optional:
+
 # export LINKS = "Link1,https://www.duckduckgo.com,Link 2,https:www.f1.com,Link 3,https://www.eet.com"
-# export LOC = "3,0,-10"
+# Needs to be URL encoded for arts:
+# export LINKS = "Link1%2Chttps%3A%2F%2Fwww.duckduckgo.com%2CLink%202%2Chttps%3Awww.f1.com%2CLink%203%2Chttps%3A%2F%2Fwww.eet.com"
 
 # LINKS env will overwrite this default:
 sign_links =  ['Link 1','https://www.duckduckgo.com','Link 2','https://www.f1.com','Link 3','https://www.eet.com']
-# Loc env will overwrite this default:
+
+
+# export LOC = "3%2C0%2C-10"
 sign_location = [3,0,-10]
 
 def draw_ray(click_pos, position):
@@ -89,7 +94,7 @@ if os.environ.get('MID') is not None:
 if os.environ.get('LINKS') is not None:
     # Links is base64 encoded
     LINKS = os.environ["LINKS"]
-#    LINKS = unquote(LINKS)
+    LINKS = unquote(LINKS)
     # take the string and parse out CSV parameters
     print( "LINKS:" + LINKS)
     sign_links= LINKS.split(",")
@@ -97,7 +102,7 @@ if os.environ.get('LINKS') is not None:
 if os.environ.get('LOC') is not None:
     # Links is base64 encoded
     LOC = os.environ["LOC"]
-#    LOC = unquote(LOC)
+    LOC = unquote(LOC)
     print( "LOC:" + LOC)
     # take the string and parse out CSV parameters
     sign_location = LOC.split(",")

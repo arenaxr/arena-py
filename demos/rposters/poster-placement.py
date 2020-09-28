@@ -140,23 +140,23 @@ for poster in posterData:
                     persist=persist)
             
             # 2="modern" whiteboard frame
-            if postermodel==2:
+        if postermodel==2:
                 wb = arena.Object(
                     objName=wbName,
                     url="store/users/wiselab/posters/whiteboard_modern/scene.gltf",
                     objType=arena.Shape.gltf_model,
                     scale=(0.03, 0.03, 0.02), 
-                    location=(0, 1.19, -1.2),
+                    location=(originx + (l * dist), 1.19, -1.2 + originz + (c * dist)),
                     rotation=(0.0, 1, 0.0, 0.0),
                     clickable=True,
                     persist=persist)
-                
+
                 pimg = arena.Object(
                     objName=imgName,
                     url="store/users/wiselab/posters/CONIX-mr.png",
                     objType=arena.Shape.image,
-                    scale=(1.5, 1.22, 1),
-                    location=(-0.456, 1.783, -0.4),
+                    scale=(1.5, 1.22, 0.8),
+                    location=(-0.456+   originx + (l * dist), 1.783, -0.4 +  originz + (c * dist)),
                     rotation=(-0.086, -0.702, -0.086 , 0.702),
                     clickable=True,
                     persist=persist)       
@@ -164,13 +164,11 @@ for poster in posterData:
                 lht = arena.Object(
                     objName=lhtName,
                     objType=arena.Shape.light,
-                    location=(-1, 1.5, -0.50),
+                    location=(-1 + originx + (l * dist), 1.5, -0.50 +  originz + (c * dist)),
                     rotation=(0, 0, 0, 1),                
                     color=(50, 50, 50),
-                    persist=persist)             
-            
-            break
-
+                    persist=persist)       
+                                      
 
 # move the group of objects
 #agentParent.update(location=(3, 0, -10))

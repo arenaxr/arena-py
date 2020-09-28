@@ -37,6 +37,7 @@ animateState = False
 def pinata_handler(event=None):
     global pinata1 
     global text1 
+    global hud 
     global pinataParent
     global hit_counter 
     print("pinata hit handler callback!")
@@ -52,6 +53,7 @@ def pinata_handler(event=None):
         pinata1.update(transparency=arena.Transparency(True, 1.0) )
         #pinataParent.update(location=(random.randrange(-10,10) , 0 , random.randrange(-10,1)) )
         # Need to add Tweening...
+        #pinataParent.update(physics=arena.Physics.dynamic)
         pinataParent.update(location=(pinata_loc[0],pinata_loc[1],pinata_loc[2]))
         pinata_loc[0]=random.uniform(0,10)
         pinata_loc[1]=random.uniform(0,10)
@@ -70,6 +72,16 @@ def pinata_handler(event=None):
                 color=(random.uniform(0,255),random.uniform(0,255),random.uniform(0,255)),
 		        persist=True,
                 parent="pinataParent"
+            )
+
+        hud = arena.Object(
+                persist=True,
+                objName="hudText",
+                objType=arena.Shape.text,
+                text="HUD text: " + str(hit_counter),
+                location=(0, 0.4, -0.5),
+                parent="myCamera",
+                scale=(0.2, 0.2, 0.2),
             )
 
 
@@ -124,6 +136,15 @@ text1 = arena.Object(
                 parent="pinataParent"
 )
 
+hud = arena.Object(
+        persist=True,
+        objName="hudText",
+        objType=arena.Shape.text,
+        text="This is example HUD text",
+        location=(0, 0.4, -0.5),
+        parent="myCamera",
+        scale=(0.2, 0.2, 0.2),
+    )
 
 # move the group of objects
 pinataParent.update(location=(pinata_loc[0],pinata_loc[1],pinata_loc[2]))

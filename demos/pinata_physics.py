@@ -23,6 +23,7 @@ NUM_BOXES = 50
 
 kill_flag = 0
 
+click_objects = [""]
 # To run in ARTS, these parameters are passed in as environmental variables.
 # export HOST=arena.andrew.cmu.edu
 # export REALM=realm
@@ -77,6 +78,7 @@ def game_thread():
     global gravity_enabled 
     global kill_flag 
 
+    #cnt = 0
     while True:
         if kill_flag==1:
             print("Kill Flat!")
@@ -84,13 +86,15 @@ def game_thread():
         if gravity_enabled is True:
             pinataParent.update(location=(pinata_loc[0],pinata_loc[1],pinata_loc[2]))
         if(fire_impulse>0):
-            print("Impulse")
+            print("Hit!")
             t=0.1
             vi=20.0
             H = pinata_loc[1]
             fire_impulse=0
         if gravity_enabled is True:
+	    #cnt+=1
             pinata_loc[1] = H + vi * t + 0.5*GRAVITY*(t*t)
+            #if cnt%4==0 and pinata_loc[1]>6.0:
             if pinata_loc[1]>6.0:
                 pinata_loc[0] += random.uniform(-1,1)
                 pinata_loc[2] += random.uniform(-1,1)
@@ -113,14 +117,25 @@ def game_thread():
         time.sleep(0.1)
 
 
+# Manually delete clicks
+def ray_harvester_thread():
+    global click_objects
+    while True:
+        while click_objects:
+            line=click_objects.pop()
+            if type(line) is not str: 
+                line.delete()
+        time.sleep(2)
+
 # This function draws a line when a user clicks
 def draw_ray(click_pos, position):
+    global clock_objects
     random_number = random.randint(0,16777215)
     rand_color = str(hex(random_number))
     rand_color ='#'+ rand_color[2:]
     line = arena.Object(
-        #objName="line1",
-        ttl=1,
+        #ttl=1,   DON'T USE THIS FOR high traffic objects since it uses the DB!
+        # Have a harvester thread above instead
         objType=arena.Shape.thickline,
         thickline=arena.Thickline( # slightly below camera so you can see line vs head-on
             {
@@ -128,7 +143,7 @@ def draw_ray(click_pos, position):
                 (position[0],position[1],position[2])
             },5,rand_color)
     )
-
+    click_objects.append(line)
 animateState = False
 
 
@@ -142,7 +157,7 @@ def pinata_handler(event=None):
     global fire_impulse
     global gravity_enabled 
 
-    print("pinata hit handler callback!")
+#    print("pinata hit handler callback!")
 #    if event.event_type == arena.EventType.mouseenter:
         # Make it transparent on hover over
 #        pinata1.update(transparency=arena.Transparency(True, 0.1)  )
@@ -300,6 +315,8 @@ pinataParent.update(location=(pinata_loc[0],pinata_loc[1],pinata_loc[2]))
 
 x = threading.Thread(target=game_thread)
 x.start()
+y = threading.Thread(target=ray_harvester_thread)
+y.start()
 # This is the main ARENA event handler
 # Everything after this should be in callbacks
 arena.handle_events()

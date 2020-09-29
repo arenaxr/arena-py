@@ -47,6 +47,8 @@ def random_color():
 
 def magestic_ending():
     boxes = [""]
+    explode = arena.Object( location=(pinata_loc[0],pinata_loc[1],pinata_loc[2]),data='{"sound":{"positional":true,"poolSize":8,"src":"store/users/wiselab/audio/explode.wav","autoplay":"true"}}')
+    explode.delete()
     for i in range(NUM_BOXES):
         x=arena.Object(
         objType=arena.Shape.cube,
@@ -65,7 +67,13 @@ def magestic_ending():
         callback=box_callback,
         )
         boxes.append(x)
-    time.sleep(10)
+    time.sleep(0.5)
+    clap = arena.Object( location=(pinata_loc[0],pinata_loc[1],pinata_loc[2]),data='{"sound":{"positional":true,"poolSize":8,"src":"store/users/wiselab/audio/applause.wav","autoplay":"true"}}')
+    clap.delete()
+    time.sleep(2.0)
+    clap = arena.Object( location=(pinata_loc[0],pinata_loc[1],pinata_loc[2]),data='{"sound":{"positional":true,"poolSize":8,"src":"store/users/wiselab/audio/applause.wav","autoplay":"true"}}')
+    clap.delete()
+    time.sleep(7)
     for i in range(NUM_BOXES):
         x=boxes.pop()
         x.delete()
@@ -92,7 +100,6 @@ def game_thread():
             H = pinata_loc[1]
             fire_impulse=0
         if gravity_enabled is True:
-	    #cnt+=1
             pinata_loc[1] = H + vi * t + 0.5*GRAVITY*(t*t)
             #if cnt%4==0 and pinata_loc[1]>6.0:
             if pinata_loc[1]>6.0:
@@ -105,6 +112,10 @@ def game_thread():
             vi= (-1*GRAVITY*t) / 5
             if(vi<2.0):
                 vi=0.0
+            else:
+                boing = arena.Object( location=(pinata_loc[0],pinata_loc[1],pinata_loc[2]),data='{"sound":{"positional":true,"poolSize":8,"src":"store/users/wiselab/audio/boing.wav","autoplay":"true"}}')
+                boing.delete()
+                
             t=0.1
             H = 0.0
             
@@ -113,7 +124,8 @@ def game_thread():
 #        pinata_loc[1]=random.uniform(0,10)
 #        pinata_loc[2]=random.uniform(0,10)
         # Tweening Move...
-        pinataParent.update(data='{"animation": {"property": "position","to": "' + str(pinata_loc[0]) + ' ' + str(pinata_loc[1]) + ' ' + str(pinata_loc[2]) + '","easing": "linear","dur": 100}}')
+        if gravity_enabled is True and vi>0:
+            pinataParent.update(data='{"animation": {"property": "position","to": "' + str(pinata_loc[0]) + ' ' + str(pinata_loc[1]) + ' ' + str(pinata_loc[2]) + '","easing": "linear","dur": 100}}')
         time.sleep(0.1)
 
 
@@ -130,6 +142,8 @@ def ray_harvester_thread():
 # This function draws a line when a user clicks
 def draw_ray(click_pos, position):
     global clock_objects
+    boing = arena.Object( location=(pinata_loc[0],pinata_loc[1],pinata_loc[2]),data='{"sound":{"positional":true,"poolSize":8,"src":"store/users/wiselab/audio/glass.oga","autoplay":"true"}}')
+    boing.delete()
     random_number = random.randint(0,16777215)
     rand_color = str(hex(random_number))
     rand_color ='#'+ rand_color[2:]
@@ -203,17 +217,21 @@ def pinata_handler(event=None):
                 scale=(0.2, 0.2, 0.2),
             )
             gravity_enabled=False
-            # clickable false doesn't seem to work...
-            pinata1.update( clickable=False )
-            # For now, just hide it
+
+            pinataParent.update(data='{"animation": {"property": "position","to": "0 -5000 0","easing": "linear","dur": 100}}')
             pinataParent.update( location=(0,-5000,0) )
+            # clickable false doesn't seem to work...
+            #pinata1.update( clickable=False )
+            # For now, just hide it
             magestic_ending()
             # respawn in random location
+            restart = arena.Object( location=(pinata_loc[0],pinata_loc[1],pinata_loc[2]),data='{"sound":{"positional":true,"poolSize":8,"src":"store/users/wiselab/audio/witch.wav","autoplay":"true"}}')
+            restart.delete()
             pinata_loc[0]=random.uniform(AREA_X_START,AREA_X_STOP)
             pinata_loc[1]=random.uniform(3,15)
             pinata_loc[2]=random.uniform(AREA_Y_START,AREA_Y_STOP)
             pinataParent.update( location=(pinata_loc[0],pinata_loc[1],pinata_loc[2]) )
-            pinata1.update( clickable=True)
+            #pinata1.update( clickable=True)
             hit_counter=NUM_HITS
 
             hud = arena.Object(
@@ -271,7 +289,7 @@ print("starting sign main loop")
 pinataParent = arena.Object(
     persist=True,
     objName="pinataParent",
-    objType=arena.Shape.cube,
+    #objType=arena.Shape.cube,
     location=(0, 0, 0),
     transparency=arena.Transparency(True, 0),
 )
@@ -286,7 +304,9 @@ pinata1 = arena.Object(
                 clickable=True,
 		        persist=True,
                 parent="pinataParent",
-                callback=pinata_handler)
+                callback=pinata_handler,
+                #data='{"sound":{"positional":true,"poolSize":8,"src":"https://xr.andrew.cmu.edu/audio/boing.wav","on":"mousedown"}}'                
+                )
 
 text1 = arena.Object(
                 objName="text1",
@@ -316,6 +336,9 @@ pinata_loc[1]=random.uniform(3,15)
 pinata_loc[2]=random.uniform(AREA_Y_START,AREA_Y_STOP)
 # move the group of objects
 pinataParent.update(location=(pinata_loc[0],pinata_loc[1],pinata_loc[2]))
+
+restart = arena.Object( location=(pinata_loc[0],pinata_loc[1],pinata_loc[2]),data='{"sound":{"positional":true,"poolSize":8,"src":"store/users/wiselab/audio/witch.wav","autoplay":"true"}}')
+restart.delete()
 
 x = threading.Thread(target=game_thread)
 x.start()

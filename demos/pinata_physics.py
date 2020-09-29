@@ -203,13 +203,17 @@ def pinata_handler(event=None):
                 scale=(0.2, 0.2, 0.2),
             )
             gravity_enabled=False
-            pinataParent.update( location=(0,-50,0) )
+            # clickable false doesn't seem to work...
+            pinata1.update( clickable=False )
+            # For now, just hide it
+            pinataParent.update( location=(0,-5000,0) )
             magestic_ending()
             # respawn in random location
             pinata_loc[0]=random.uniform(AREA_X_START,AREA_X_STOP)
             pinata_loc[1]=random.uniform(3,15)
             pinata_loc[2]=random.uniform(AREA_Y_START,AREA_Y_STOP)
             pinataParent.update( location=(pinata_loc[0],pinata_loc[1],pinata_loc[2]) )
+            pinata1.update( clickable=True)
             hit_counter=NUM_HITS
 
             hud = arena.Object(

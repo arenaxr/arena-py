@@ -16,7 +16,7 @@ import atexit
 theme = 6  # we are generating for this theme
 dist = 40  # distance between posters
 persist = True  # persist flag for generate objects
-originx = -40  # start coordinate in x
+originx = -30  # start coordinate in x
 originz = 2  # start coordinate in z
 wallcolor = (100, 100, 130)  # color of the poster wall
 dirx = 1  # 1 or -1 to define direction of the grid
@@ -45,7 +45,7 @@ def agent_handler(event=None):
 #    print( "You need to set SCENE, MQTTH and REALM as environmental variables to specify the program target")
 #    exit(-1)
 
-SCENE = 'theme' + str(theme)
+SCENE = "theme" + str(theme)
 REALM = 'realm'
 MQTTH = 'arena.andrew.cmu.edu'
 
@@ -107,13 +107,12 @@ for poster in posterData:
 
         print(l, c)
 
-        prootName = 't' + str(theme) + '_poster' + str(pindex) + '_root'
-        pwallName = 't' + str(theme) + '_poster' + str(pindex) + '_wall'
-        pimgName = 't' + str(theme) + '_poster' + str(pindex) + '_img'
-        plightName = 't' + str(theme) + '_poster' + str(pindex) \
-            + '_light'
-        psclnkName = 't' + str(theme) + '_poster' + str(pindex) \
-            + '_sclink'
+        prootName  = 't' + str(theme) + '_poster' + str(pindex) + '_root'
+        pwallName  = 't' + str(theme) + '_poster' + str(pindex) + '_wall'
+        pimgName   = 't' + str(theme) + '_poster' + str(pindex) + '_img'
+        plightName = 't' + str(theme) + '_poster' + str(pindex) + '_light'
+        plblName   = 't' + str(theme) + '_poster' + str(pindex) + '_lbl'
+        psclnkName = 't' + str(theme) + '_poster' + str(pindex) + '_sclink'
 
         # parent of the poster
 
@@ -141,7 +140,7 @@ for poster in posterData:
 
         pimg = arena.Object(
             objName=pimgName,
-            url='store/users/wiselab/posters/poster_imgs/'
+            url='store/users/conixadmin/posters/poster_imgs/'
                 + poster['posterfile'],
             objType=arena.Shape.image,
             scale=(4, 4, 4),
@@ -160,12 +159,23 @@ for poster in posterData:
             data='{"light":{"type":"point","intensity":"0.5"}}',
             clickable=False,
             parent=prootName,
-            persist=persist,
-            )
+            persist=persist)
 
+        plbl = arena.Object(
+            objName=plblName,
+            objType=arena.Shape.text,
+            scale=(0.5,0.5,0.5),
+            location=(-0.35, 4.3, 0),
+            rotation=(0, 0.7071, 0, -0.7071),
+            clickable=False,
+            data='{"text":"' + poster['authors'] + '"}',
+            color=(252, 132, 3),
+            parent=prootName,
+		    persist=persist)   
+        
         psclink = arena.Object(
             objName=psclnkName,
-            url='store/users/wiselab/posters/scatalog-'+str(theme)+'.png',
+            url='store/users/conixadmin/posters/scatalog-'+str(theme)+'.png',
             objType=arena.Shape.image,
             scale=(.5, .5, .5),
             location=(-0.3, 2.2, 2.5),

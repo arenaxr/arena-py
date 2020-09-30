@@ -12,7 +12,6 @@ import json
 
 import atexit
 
-
 # To run in ARTS, these parameters are passed in as environmental variables.
 # export SCENE=thescene
 # export REALM=realm
@@ -34,6 +33,7 @@ def agent_handler(event=None):
 #    print( "You need to set SCENE, MQTTH and REALM as environmental variables to specify the program target")
 #    exit(-1)
 
+
 SCENE = 'newtest'
 REALM = 'realm'
 MQTTH = 'arena.andrew.cmu.edu'
@@ -43,7 +43,7 @@ MQTTH = 'arena.andrew.cmu.edu'
 arena.init(MQTTH, REALM, SCENE)
 theme = 1
 pindex = 1
-persist=True
+persist = True
 wallcolor = (100, 100, 130)
 
 # parent of the poster
@@ -52,6 +52,7 @@ prootName = 't' + str(theme) + '_poster' + str(pindex) + '_root'
 pwallName = 't' + str(theme) + '_poster' + str(pindex) + '_wall'
 pimgName = 't' + str(theme) + '_poster' + str(pindex) + '_img'
 plightName = 't' + str(theme) + '_poster' + str(pindex) + '_light'
+plblName = 't' + str(theme) + '_poster' + str(pindex) + '_lbl'
 
 pRoot = arena.Object(
     objName=prootName,
@@ -60,7 +61,7 @@ pRoot = arena.Object(
     transparency=arena.Transparency(True, 0),
     clickable=False,
     persist=persist,
-    )
+)
 
 pwall = arena.Object(
     objName=pwallName,
@@ -72,11 +73,11 @@ pwall = arena.Object(
     parent=prootName,
     clickable=False,
     persist=persist,
-    )
+)
 
 pimg = arena.Object(
     objName=pimgName,
-    url='store/users/wiselab/posters/poster_imgs/CONIX-dft.jpg',
+    url='store/users/conixadmin/posters/poster_imgs/CONIX-dft.jpg',
     objType=arena.Shape.image,
     scale=(4, 4, 4),
     location=(-0.3, 2.2, 0),
@@ -84,7 +85,19 @@ pimg = arena.Object(
     clickable=False,
     parent=prootName,
     persist=persist,
-    )
+)
+
+plbl = arena.Object(
+    objName=plblName,
+    objType=arena.Shape.text,
+    scale=(0.5, 0.5, 0.5),
+    location=(-0.3, 0.13, 0),
+    rotation=(0, 0.7071, 0, -0.7071),
+    clickable=False,
+    data='{"text":"'+'Theme' + str(theme) + '"}',
+    color=(252, 132, 3),
+    parent=prootName,
+    persist=persist)
 
 plight = arena.Object(
     objName=plightName,
@@ -95,12 +108,13 @@ plight = arena.Object(
     clickable=False,
     parent=prootName,
     persist=persist,
-    )
+)
 
-dataStr='{"goto-url": { "on": "mousedown", "url": "' + "https://conix.io/conix-2020-review-demos-posters" + '"} } '
+dataStr = '{"goto-url": { "on": "mousedown", "url": "' + \
+    "https://conix.io/conix-2020-review-demos-posters" + '"} } '
 plink = arena.Object(
     objName="scatalog",
-    url='store/users/wiselab/posters/scatalog-'+str(theme)+'.png',
+    url='store/users/conixadmin/posters/scatalog-'+str(theme)+'.png',
     objType=arena.Shape.image,
     scale=(.5, .5, .5),
     location=(-0.3, 2.2, 2.5),
@@ -108,9 +122,10 @@ plink = arena.Object(
     clickable=True,
     parent=prootName,
     persist=persist,
-    data='{"goto-url": { "on": "mousedown", "url": "https://conix.io/conix-2020-review-demos-posters?theme=' + str(theme) + '"} } '
+    data='{"goto-url": { "on": "mousedown", "url": "https://conix.io/conix-2020-review-demos-posters?theme=' +
+        str(theme) + '"} } '
 )
-    
+
 # move the group of objects
 # agentParent.update(location=(3, 0, -10))
 

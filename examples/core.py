@@ -7,10 +7,7 @@ import random
 import time
 import signal
 
-HOST = "arena.andrew.cmu.edu"
-SCENE = "core"
-
-arena.init(HOST, "realm", SCENE)
+arena.init("arena.andrew.cmu.edu", "realm", "examples")
 arena.debug()
 
 
@@ -86,7 +83,7 @@ cow = arena.Object(
 input("")
 
 # (dangerous) technique to update everyone's camera rig without knowing name
-rig=arena.Object(objName="cameraRig")
+rig = arena.Object(objName="cameraRig")
 rig.update(location=(1, 1, 1))
 input("")
 
@@ -136,9 +133,11 @@ input("")
 
 # trick: obtain an arena.py Object for an already-existing global scene object named "cameraRig"
 # in order to update it's data attributes
-rig=arena.Object(objName="cameraRig")
-rig.update(data='{"animation": {"property": "position","to": "0 10 20","easing": "linear","dur": 1000}}')
+rig = arena.Object(objName="cameraRig")
+rig.update(
+    data='{"animation": {"property": "position","to": "0 10 20","easing": "linear","dur": 1000}}')
 input("")
-rig.update(data='{"animation": {"property": "position","to": "0 10 -200","easing": "linear","dur": 1000}}')
+rig.update(
+    data='{"animation": {"property": "position","to": "0 10 -200","easing": "linear","dur": 1000}}')
 
 arena.handle_events()

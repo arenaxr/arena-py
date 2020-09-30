@@ -7,10 +7,7 @@ import random
 import time
 import signal
 
-HOST = "arena.andrew.cmu.edu"
-SCENE = "core"
-
-arena.init(HOST, "realm", SCENE)
+arena.init("arena.andrew.cmu.edu", "realm", "examples")
 
 
 def signal_handler(sig, frame):
@@ -111,8 +108,10 @@ torus.update(ttl=2)
 
 # trick: obtain an arena.py Object for an already-existing global scene object named "cameraRig"
 # in order to update it's data attributes
-rig=arena.Object(objName="cameraRig")
-rig.update(data='{"animation": {"property": "position","to": "0 10 20","easing": "linear","dur": 1000}}')
-rig.update(data='{"animation": {"property": "position","to": "0 10 -200","easing": "linear","dur": 1000}}')
+rig = arena.Object(objName="cameraRig")
+rig.update(
+    data='{"animation": {"property": "position","to": "0 10 20","easing": "linear","dur": 1000}}')
+rig.update(
+    data='{"animation": {"property": "position","to": "0 10 -200","easing": "linear","dur": 1000}}')
 
 arena.handle_events()

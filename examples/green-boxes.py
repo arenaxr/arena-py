@@ -1,11 +1,11 @@
+import arena
+import random
+import time
 import sys
 
 sys.path.append("../")
-import time
-import random
-import arena
 
-arena.init("arena.andrew.cmu.edu", "realm", "demo")
+arena.init("arena.andrew.cmu.edu", "realm", "examples")
 
 arena.start()
 
@@ -17,7 +17,8 @@ x = 1
 
 while True:
     # Create a bunch of green boxes drawn directly to screen
-    location = (random.randrange(10)-5, random.randrange(10), -random.randrange(10))
+    location = (random.randrange(10)-5,
+                random.randrange(10), -random.randrange(10))
     arena.Object(
         location=location,
         color=color,

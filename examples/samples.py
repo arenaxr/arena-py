@@ -1,4 +1,4 @@
-# Temp placeholder for messages to rebuild scene "render" as "samples"
+# Temp placeholder for messages to rebuild scene "render" as "examples"
 
 #{"object_id":"gltf-model_helios","action":"create","persist":true,"data":{"object_type":"gltf-model","position":{"x":1.7,"y":0.4,"z":-9},"url":"models/helios/scene.gltf","scale":{"x":0.13,"y":0.13,"z":0.13}}}
 #{"object_id":"hat_er1k","action":"create","persist":true,"data":{"parent":"camera_er_er","object_type":"gltf-model","url":"models/hat2.glb","position":{"x":0,"y":0.8,"z":0.35},"scale":{"x":0.1,"y":0.1,"z":0.1}}}

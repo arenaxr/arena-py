@@ -7,10 +7,8 @@ import random
 import time
 import signal
 
-HOST = "arena.andrew.cmu.edu"
-SCENE = "airport"
+arena.init("arena.andrew.cmu.edu", "realm", "system-tests")
 
-arena.init(HOST, "realm", SCENE)
 
 def randmove():
     rando = random.random() * 10 - 5
@@ -71,14 +69,17 @@ def randobj():
 def do(name, randx, randy, randz, scalex, scaley, scalez, color):
     obj = arena.Object(
         objName=name,
-        location=(randx,randy,randz),
-        scale=(scalex,scaley,scalez),
+        location=(randx, randy, randz),
+        scale=(scalex, scaley, scalez),
         color=color,
         data='{"material": {"transparent": true, "opacity": 0.5}}')
     messages.append(obj)
 
+
 def signal_handler(sig, frame):
     exit(0)
+
+
 signal.signal(signal.SIGINT, signal_handler)
 
 

@@ -45,7 +45,7 @@ arena.Object(objName=obj_str,
              rotation=(0, 0, 0, 1),
              scale=(0.05, 0.05, 0.05),
              color=color,
-             #persist=True
+             # persist=True
              )
 
 print("Go to URL: https://arena.andrew.cmu.edu/?scene=" +

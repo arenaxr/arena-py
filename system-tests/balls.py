@@ -7,7 +7,7 @@ import random
 import time
 import signal
 
-HOST = "oz.andrew.cmu.edu"
+HOST = "arena.andrew.cmu.edu"
 SCENE = "balls"
 
 arena.init(HOST, "realm", SCENE)

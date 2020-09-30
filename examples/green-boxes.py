@@ -5,7 +5,7 @@ import time
 import random
 import arena
 
-arena.init("oz.andrew.cmu.edu", "realm", "demo")
+arena.init("arena.andrew.cmu.edu", "realm", "demo")
 
 arena.start()
 

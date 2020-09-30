@@ -17,7 +17,7 @@ python hello.py
 hello.py
 ```python
 import arena
-arena.init("oz.andrew.cmu.edu", "realm", "hello")
+arena.init("arena.andrew.cmu.edu", "realm", "hello")
 arena.Object(arena.Shape.cube)
 arena.handle_events()
 ```

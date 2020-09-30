@@ -7,7 +7,7 @@ import random
 import time
 import signal
 
-HOST = "oz.andrew.cmu.edu"
+HOST = "arena.andrew.cmu.edu"
 SCENE = "core"
 
 arena.init(HOST, "realm", SCENE)
@@ -47,7 +47,7 @@ floor = arena.Object(
 )
 
 floor.update(
-    data='{"material": {"src": "https://xr.andrew.cmu.edu/abstract/downtown.png"}}'
+    data='{"material": {"src": "https://arena.andrew.cmu.edu/abstract/downtown.png"}}'
 )
 
 torus = arena.Object(
@@ -60,7 +60,7 @@ arena.Object(
     objName="model1",
     objType=arena.Shape.gltf_model,
     location=(0, 0, -4),
-    url="https://xr.andrew.cmu.edu/models/Duck.glb",
+    url="https://arena.andrew.cmu.edu/models/Duck.glb",
 )
 
 cow = arena.Object(
@@ -68,7 +68,7 @@ cow = arena.Object(
     objType=arena.Shape.gltf_model,
     location=(-21, 1.8, -8),
     scale=(0.02, 0.02, 0.02),
-    url="https://xr.andrew.cmu.edu/models/cow2/scene.gltf",
+    url="https://arena.andrew.cmu.edu/models/cow2/scene.gltf",
 )
 
 arena.updateRig("camera_er1k_er1k", (1, 1, 1), (0, 0, 0, 1))

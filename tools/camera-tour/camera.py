@@ -9,7 +9,7 @@ import time
 import signal
 import sys
 
-HOST = "oz.andrew.cmu.edu"
+HOST = "arena.andrew.cmu.edu"
 SCENE = "render"
 
 if len(sys.argv) > 1:

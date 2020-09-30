@@ -20,7 +20,7 @@ import arblib
 from arblib import ButtonType, Mode
 import arena
 
-BROKER = "oz.andrew.cmu.edu"
+BROKER = "arena.andrew.cmu.edu"
 PORT = None
 REALM = "realm"
 SCENE = ""  # no default scene, arb works on any scene

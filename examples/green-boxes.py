@@ -5,7 +5,7 @@ import sys
 
 sys.path.append("../")
 
-arena.init("arena.andrew.cmu.edu", "realm", "examples")
+arena.init("arena.andrew.cmu.edu", "realm", "example")
 
 arena.start()
 

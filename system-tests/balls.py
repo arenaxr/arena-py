@@ -7,7 +7,7 @@ import random
 import time
 import signal
 
-arena.init("arena.andrew.cmu.edu", "realm", "system-tests")
+arena.init("arena.andrew.cmu.edu", "realm", "systest-balls")
 
 
 def rando():

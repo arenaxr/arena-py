@@ -3,7 +3,7 @@
 # - animates rotating duck
 import arena
 
-arena.init("arena.andrew.cmu.edu", "realm", "examples")
+arena.init("arena.andrew.cmu.edu", "realm", "example")
 arena.Object(objType=arena.Shape.cube)
 arena.Object(objType=arena.Shape.sphere,
              location=(1, 1, -1), color=(255, 0, 0))

@@ -17,7 +17,7 @@ def tag_callback(event=None):
         print("Tag rotation: " + str(event.rotation))
 
 
-arena.init("arena.andrew.cmu.edu", "realm", "examples")
+arena.init("arena.andrew.cmu.edu", "realm", "example")
 # apriltag_450 will receive position/rotation updates so don't set them
 TAG = arena.Object(objName="apriltag_450",
                    transparency=arena.Transparency(True, 0),

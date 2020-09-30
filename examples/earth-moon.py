@@ -4,7 +4,7 @@
 '''
 import arena
 
-arena.init("arena.andrew.cmu.edu", "realm", "examples")
+arena.init("arena.andrew.cmu.edu", "realm", "example")
 # Create models
 earth = arena.Object(
     objName="gltf-model_Earth", objType=arena.Shape.gltf_model,

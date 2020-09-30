@@ -7,7 +7,7 @@ import random
 import time
 import signal
 
-arena.init("arena.andrew.cmu.edu", "realm", "examples")
+arena.init("arena.andrew.cmu.edu", "realm", "example")
 
 
 def signal_handler(sig, frame):

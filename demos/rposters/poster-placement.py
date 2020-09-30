@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 # poster placement
 #
 
@@ -9,6 +11,18 @@ import json
 
 import atexit
 
+# poster placement settings
+
+theme = 6  # we are generating for this theme
+dist = 40  # distance between posters
+persist = True  # persist flag for generate objects
+originx = -40  # start coordinate in x
+originz = 2  # start coordinate in z
+wallcolor = (100, 100, 130)  # color of the poster wall
+dirx = 1  # 1 or -1 to define direction of the grid
+dirz = -1  # 1 or -1 to define direction of the grid
+
+
 # To run in ARTS, these parameters are passed in as environmental variables.
 # export SCENE=thescene
 # export REALM=realm
@@ -17,7 +31,7 @@ import atexit
 def agent_handler(event=None):
     global agent1
     global agentParent
-    print("agent handler callback!")
+    print('agent handler callback!')
 
 
 # Pull in the SCENE, MQTT and REALM parameters from environmental variables
@@ -30,153 +44,146 @@ def agent_handler(event=None):
 # else:
 #    print( "You need to set SCENE, MQTTH and REALM as environmental variables to specify the program target")
 #    exit(-1)
-SCENE = "newtest"
-REALM = "realm"
-MQTTH = "arena.andrew.cmu.edu"
+
+SCENE = 'theme' + str(theme)
+REALM = 'realm'
+MQTTH = 'arena.andrew.cmu.edu'
 
 # init the ARENA library
+
 arena.init(MQTTH, REALM, SCENE)
 
-posterData=None
+posterData = None
 with open('poster-data.json') as dataFile:
     posterData = json.load(dataFile)
 
-theme=1
-pindex=0
-dist=15
-persist=True
-originx=0
-originz=0
-postermodel=2 # 1= whiteboard model; 2="modern" whiteboard frame
-
-pcount=0
+pcount = 0
 for poster in posterData:
     print(poster['name'], poster['theme'])
-    if (poster['theme']==theme):
-        pcount+=1
+    if poster['theme'] == theme:
+        pcount += 1
 
 if pcount <= 4:
-    gridSize=3
+    gridSize = 3
 elif pcount <= 9:
-    gridSize=3  
+    gridSize = 3
 elif pcount <= 16:
-    gridSize=4  
+    gridSize = 4
 elif pcount <= 25:
-    gridSize=5
+    gridSize = 5
 elif pcount <= 36:
-    gridSize=6
-        
-print("theme=", theme, "pcount=", pcount, "gridSize=", gridSize)
+    gridSize = 6
 
+print (
+    'theme=',
+    theme,
+    'pcount=',
+    pcount,
+    'gridSize=',
+    gridSize,
+    )
+
+# parent of the entire area
+
+paparentName = 't' + str(theme) + '_poster_area_parent'
+postersParent = arena.Object(
+    objName=paparentName,
+    objType=arena.Shape.cube,
+    location=(originx, 0, originz),
+    transparency=arena.Transparency(True, 0),
+    clickable=False,
+    persist=persist,
+    )
+
+pindex = 0
 for poster in posterData:
-    if (poster['theme']==theme):
+    if poster['theme'] == theme:
         print(poster['name'], poster['theme'])
 
         l = pindex % gridSize
         c = pindex // gridSize
 
-        pindex+=1
-        
+        pindex += 1
+
         print(l, c)
 
-        wbaName="theme_" + str(theme) + "_wbassembly_" + str(pindex)
-        wbName="theme_" + str(theme) + "_whiteboard_" + str(pindex)
-        imgName="theme_" + str(theme) + "_wbimg_" + str(pindex)
-        lblName="theme_" + str(theme) + "_label_" + str(pindex)
-        lhtName="theme_" + str(theme) + "_light_" + str(pindex)
+        prootName = 't' + str(theme) + '_poster' + str(pindex) + '_root'
+        pwallName = 't' + str(theme) + '_poster' + str(pindex) + '_wall'
+        pimgName = 't' + str(theme) + '_poster' + str(pindex) + '_img'
+        plightName = 't' + str(theme) + '_poster' + str(pindex) \
+            + '_light'
+        psclnkName = 't' + str(theme) + '_poster' + str(pindex) \
+            + '_sclink'
 
-        # 1= whiteboard model
-        if postermodel==1:
-            wba = arena.Object(
-                objName=wbaName,
-                objType=arena.Shape.plane,
-                scale=(1.1, 1.1, 1.1),
-                location=(originx + (l * dist) , 0, originz + (c * dist)),
-                rotation=(0.707, 0.0, 0.0 , 0.707),
-                clickable=True,
-                persist=persist)
-                    
-            wb = arena.Object(
-                objName=wbName,
-                url="store/users/wiselab/posters/whiteboard/scene.gltf",
-                objType=arena.Shape.gltf_model,
-                scale=(1, 0.94, 0.54), 
-                location=(0, 0, 0),
-                rotation=(-0.707, 0.0, 0.0 , 0.707),
-                clickable=True,
-                parent=wbaName,
-                persist=persist)
+        # parent of the poster
 
-            pimg = arena.Object(
-                objName=imgName,
-                url="store/users/wiselab/posters/CONIX-mr.png",
-                objType=arena.Shape.image,
-                scale=(1.6, 1.12, 1.12),
-                location=(-0.021, 1.55, 0.002),
-                rotation=(0.0, 0.707, 0.0 , -0.707),
-                clickable=True,
-                parent=wbName,
-                persist=persist)        
-            
-            txt = arena.Object(
-                    objName=lblName,
-                    objType=arena.Shape.text,
-                    scale=(0.5,0.5,0.5),
-                    location=(-0.030, .93, 0.0),
-                    rotation=(0.0, 0.707, 0.0 , -0.707),
-                    clickable=False,
-                    data='{"text":"'+'Theme' + str(theme) + '"}',
-                    color=(252, 132, 3),
-                    parent=wbName,
-                    persist=persist)   
+        pRoot = arena.Object(
+            objName=prootName,
+            objType=arena.Shape.cube,
+            location=(l * dist * dirx, 0, c * dist * dirz),
+            transparency=arena.Transparency(True, 0),
+            parent=paparentName,
+            clickable=False,
+            persist=persist,
+            )
 
-            lht = arena.Object(
-                    objName=lhtName,
-                    objType=arena.Shape.light,
-                    location=(-1, 1.5, 0.0),
-                    rotation=(0, 0, 0, 1),                
-                    color=(50, 50, 50),
-                    parent=wbName,
-                    persist=persist)
-            
-            # 2="modern" whiteboard frame
-        if postermodel==2:
-                wb = arena.Object(
-                    objName=wbName,
-                    url="store/users/wiselab/posters/whiteboard_modern/scene.gltf",
-                    objType=arena.Shape.gltf_model,
-                    scale=(0.03, 0.03, 0.02), 
-                    location=(originx + (l * dist), 1.19, -1.2 + originz + (c * dist)),
-                    rotation=(0.0, 1, 0.0, 0.0),
-                    clickable=True,
-                    persist=persist)
+        pwall = arena.Object(
+            objName=pwallName,
+            objType=arena.Shape.cube,
+            location=(0, 0, 0),
+            scale=(6, 9, .5),
+            rotation=(0, 0.7071, 0, 0.7071),
+            color=wallcolor,
+            parent=prootName,
+            clickable=False,
+            persist=persist,
+            )
 
-                pimg = arena.Object(
-                    objName=imgName,
-                    url="store/users/wiselab/posters/CONIX-mr.png",
-                    objType=arena.Shape.image,
-                    scale=(1.5, 1.22, 0.8),
-                    location=(-0.456+   originx + (l * dist), 1.783, -0.4 +  originz + (c * dist)),
-                    rotation=(-0.086, -0.702, -0.086 , 0.702),
-                    clickable=True,
-                    persist=persist)       
+        pimg = arena.Object(
+            objName=pimgName,
+            url='store/users/wiselab/posters/poster_imgs/'
+                + poster['posterfile'],
+            objType=arena.Shape.image,
+            scale=(4, 4, 4),
+            location=(-0.3, 2.2, 0),
+            rotation=(0, 0.7071, 0, -0.7071),
+            clickable=False,
+            parent=prootName,
+            persist=persist,
+            )
 
-                lht = arena.Object(
-                    objName=lhtName,
-                    objType=arena.Shape.light,
-                    location=(-1 + originx + (l * dist), 1.5, -0.50 +  originz + (c * dist)),
-                    rotation=(0, 0, 0, 1),                
-                    color=(50, 50, 50),
-                    persist=persist)       
-                                      
+        plight = arena.Object(
+            objName=plightName,
+            objType=arena.Shape.light,
+            location=(0, 2, 1.50),
+            rotation=(0, 0, 1, 0),
+            data='{"light":{"type":"point","intensity":"0.5"}}',
+            clickable=False,
+            parent=prootName,
+            persist=persist,
+            )
+
+        psclink = arena.Object(
+            objName=psclnkName,
+            url='store/users/wiselab/posters/scatalog-'+str(theme)+'.png',
+            objType=arena.Shape.image,
+            scale=(.5, .5, .5),
+            location=(-0.3, 2.2, 2.5),
+            rotation=(0, 0.7071, 0, -0.7071),
+            clickable=True,
+            parent=prootName,
+            persist=persist,
+            data='{"goto-url": { "on": "mousedown", "url": "https://conix.io/conix-2020-review-demos-posters?theme=' + str(theme) + '"} } '
+            )
+        
 
 # move the group of objects
-#agentParent.update(location=(3, 0, -10))
+# agentParent.update(location=(3, 0, -10))
 
 # This is the main ARENA event handler
 # Everything after this should be in callbacks
-print("starting main loop")
+
+print('starting main loop')
 arena.handle_events()
 
-#agentParent.delete()
-
+# agentParent.delete()

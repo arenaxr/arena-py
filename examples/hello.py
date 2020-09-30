@@ -1,4 +1,4 @@
 import arena
-arena.init("andrew.andrew.cmu.edu", "realm", "hello")
-arena.Object(arena.Shape.cube)
+arena.init("arena.andrew.cmu.edu", "realm", "hello")
+arena.Object(objType=arena.Shape.cube)
 arena.handle_events()

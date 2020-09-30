@@ -32,4 +32,4 @@ arena.Object(objName="box3", color=(255, 0, 0), scale=(0.2, 0.2, 0.2),
 arena.Object(objName="box4", color=(255, 0, 0), scale=(0.2, 0.2, 0.2),
              location=(3.31, 2.00, -0.97))
 
-# arena.handle_events()
+arena.handle_events()

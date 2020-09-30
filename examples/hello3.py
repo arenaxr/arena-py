@@ -9,7 +9,6 @@ arena.Object(objType=arena.Shape.sphere,
              location=(1, 1, -1), color=(255, 0, 0))
 arena.Object(objType=arena.Shape.gltf_model,
              location=(-1, 1, -3),
-             persist=False,
              physics=arena.Physics.none,
              clickable=True,
              data='{"animation": { "property": "rotation", "to": "0 360 0", "loop": true, "dur": 10000}}',

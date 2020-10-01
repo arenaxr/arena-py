@@ -2,6 +2,7 @@
 #
 import arena
 arena.init("arena.andrew.cmu.edu", "realm", "example")
+
 print("Three clickable URL cubes targetted to different windows" )
 
 popup = arena.Object(

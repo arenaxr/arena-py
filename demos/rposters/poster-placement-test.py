@@ -110,8 +110,6 @@ plight = arena.Object(
     persist=persist,
 )
 
-dataStr = '{"goto-url": { "on": "mousedown", "url": "' + \
-    "https://conix.io/conix-2020-review-demos-posters" + '"} } '
 plink = arena.Object(
     objName="scatalog",
     url='store/users/conixadmin/posters/scatalog-'+str(theme)+'.png',
@@ -125,6 +123,32 @@ plink = arena.Object(
     data='{"goto-url": { "on": "mousedown", "url": "https://conix.io/conix-2020-review-demos-posters?theme=' +
         str(theme) + '"} } '
 )
+
+demob = arena.Object(
+    objName="demo_sign",
+    url='store/users/wiselab/models/maria_sign_board/scene-demo.gltf',
+    objType=arena.Shape.gltf_model,
+    scale=(.3, .3, .3),
+    location=(-2, 0.8, 6),
+    rotation=(0, 0.5, 0, 0.7071),
+    clickable=True,
+    parent=prootName,
+    persist=persist,
+    data='{"goto-url": { "on": "mousedown", "url": "https://arena.andrew.cmu.edu/?scene=gabe"} } '
+)
+
+demolbl = arena.Object(
+    objName="demo_lbl",
+    objType=arena.Shape.text,
+    scale=(1.5, 1.5, 1.5),
+    location=(0, -2, -.6),
+    rotation=(0, 1, 0, 0),
+    clickable=False,
+    data='{"text":"Smart Cities Demo"}',
+    color=(250, 20, 20),
+    parent="demo_sign",
+    persist=persist)
+
 
 # move the group of objects
 # agentParent.update(location=(3, 0, -10))

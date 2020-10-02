@@ -13,7 +13,7 @@ import atexit
 
 # poster placement settings
 
-theme = 6  # we are generating for this theme
+theme = 6 # we are generating for this theme
 dist = 40  # distance between posters
 persist = True  # persist flag for generate objects
 originx = -30  # start coordinate in x
@@ -112,9 +112,17 @@ for poster in posterData:
         pimgName   = 't' + str(theme) + '_poster' + str(pindex) + '_img'
         plightName = 't' + str(theme) + '_poster' + str(pindex) + '_light'
         plblName   = 't' + str(theme) + '_poster' + str(pindex) + '_lbl'
-        psclnkName = 't' + str(theme) + '_poster' + str(pindex) + '_sclink'
+        ppdflnkName = 't' + str(theme) + '_poster' + str(pindex) + '_pdflink'
+        pvideolnkName = 't' + str(theme) + '_poster' + str(pindex) + '_videolink'
+        pavideolnkName = 't' + str(theme) + '_poster' + str(pindex) + '_supvideolink'
+        dboardName = 't' + str(theme) + '_poster' + str(pindex) + '_demo_board'
+        dboardlblName = 't' + str(theme) + '_poster' + str(pindex) + '_demo_board_lbl'
 
         # parent of the poster
+        
+        pCoord = {}
+        pCoord["x"] = originx + l * dist * dirx
+        pCoord["z"] = originz + l * dist * dirz
 
         pRoot = arena.Object(
             objName=prootName,
@@ -123,8 +131,7 @@ for poster in posterData:
             transparency=arena.Transparency(True, 0),
             parent=paparentName,
             clickable=False,
-            persist=persist,
-            )
+            persist=persist)
 
         pwall = arena.Object(
             objName=pwallName,
@@ -135,21 +142,31 @@ for poster in posterData:
             color=wallcolor,
             parent=prootName,
             clickable=False,
-            persist=persist,
-            )
+            persist=persist)
 
         pimg = arena.Object(
             objName=pimgName,
-            url='store/users/conixadmin/posters/poster_imgs/'
-                + poster['posterfile'],
+            url='https://arena.andrew.cmu.edu/store/users/conixadmin/posters/poster_imgs/'
+                + poster['posterfile'] + ".jpg",
             objType=arena.Shape.image,
             scale=(4, 4, 4),
             location=(-0.3, 2.2, 0),
             rotation=(0, 0.7071, 0, -0.7071),
             clickable=False,
             parent=prootName,
+            persist=persist)
+
+        psclink = arena.Object(
+            objName=ppdflnkName,
+            url='https://arena.andrew.cmu.edu/store/users/conixadmin/posters/ppdf.png',
+            objType=arena.Shape.image,
+            scale=(.5, .5, .5),
+            location=(-0.3, 3.0, 2.5),
+            rotation=(0, 0.7071, 0, -0.7071),
+            clickable=True,
+            parent=prootName,
             persist=persist,
-            )
+            data='{"goto-url": { "dest":"popup", "on": "mousedown", "url": "https://arena.andrew.cmu.edu/store/users/conixadmin/posters/poster_pdfs/'+ poster['posterfile'] + '.pdf"} } ')
 
         plight = arena.Object(
             objName=plightName,
@@ -172,20 +189,60 @@ for poster in posterData:
             color=(252, 132, 3),
             parent=prootName,
 		    persist=persist)   
+
+        if len(poster['video']) > 1:
+            psclink = arena.Object(
+                objName=pvideolnkName,
+                url='https://arena.andrew.cmu.edu/store/users/conixadmin/posters/ltvideo.png',
+                objType=arena.Shape.image,
+                scale=(.5, .5, .5),
+                location=(-0.3, 2.4, 2.5),
+                rotation=(0, 0.7071, 0, -0.7071),
+                clickable=True,
+                parent=prootName,
+                persist=persist,
+                data='{"goto-url": { "dest":"popup", "on": "mousedown", "url": "' + poster['video']  + '"} } '
+                )
+            
+        if len(poster['avideo']) > 1:
+            psclink = arena.Object(
+                objName=pavideolnkName,
+                url='https://arena.andrew.cmu.edu/store/users/conixadmin/posters/lvideo.png',
+                objType=arena.Shape.image,
+                scale=(.5, .5, .5),
+                location=(-0.3, 1.8, 2.5),
+                rotation=(0, 0.7071, 0, -0.7071),
+                clickable=True,
+                parent=prootName,
+                persist=persist,
+                data='{"goto-url": { "dest":"popup", "on": "mousedown", "url": "' + poster['avideo']  + '"} } '
+                )
         
-        psclink = arena.Object(
-            objName=psclnkName,
-            url='store/users/conixadmin/posters/scatalog-'+str(theme)+'.png',
-            objType=arena.Shape.image,
-            scale=(.5, .5, .5),
-            location=(-0.3, 2.2, 2.5),
-            rotation=(0, 0.7071, 0, -0.7071),
-            clickable=True,
-            parent=prootName,
-            persist=persist,
-            data='{"goto-url": { "on": "mousedown", "url": "https://conix.io/conix-2020-review-demos-posters?theme=' + str(theme) + '"} } '
+        if len(poster['arenadlink']) > 1:
+            demob = arena.Object(
+                objName=dboardName,
+                url='https://arena.andrew.cmu.edu/store/users/wiselab/models/maria_sign_board/scene-demo.gltf',
+                objType=arena.Shape.gltf_model,
+                scale=(.3, .3, .3),
+                location=(-2, 0.8, 6),
+                rotation=(0, 0.5, 0, 0.7071),
+                clickable=True,
+                parent=prootName,
+                persist=persist,
+                data='{"goto-url": { "on": "mousedown", "url": "'+poster['arenadlink']+'"} } '
             )
-        
+
+            demoblbl = arena.Object(
+                objName=dboardlblName,
+                objType=arena.Shape.text,
+                scale=(1.5, 1.5, 1.5),
+                location=(0, -2, -.6),
+                rotation=(0, 1, 0, 0),
+                clickable=False,
+                data='{"text":"'+poster['arenadname']+'"}',
+                color=(250, 20, 20),
+                parent=dboardName,
+                persist=persist)        
 
 # move the group of objects
 # agentParent.update(location=(3, 0, -10))

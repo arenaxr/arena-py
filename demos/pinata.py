@@ -46,6 +46,7 @@ def random_color():
     return tuple(rgbl)
 
 def magestic_ending():
+    print("Boom!")
     boxes = [""]
     explode = arena.Object( location=(pinata_loc[0],pinata_loc[1],pinata_loc[2]),data='{"sound":{"positional":true,"poolSize":8,"src":"store/users/wiselab/audio/explode.wav","autoplay":"true"}}')
     explode.delete()
@@ -278,6 +279,10 @@ if (os.environ.get('SCENE') is not None) and (os.environ.get('REALM') is not Non
     print("Loading:" + SCENE + "," + REALM + "," + HOST)
 else:
     print( "You need to set SCENE, MQTTH and REALM as environmental variables to specify the program target")
+    print( "\nFor bash you can copy paste the following before running:")
+    print( "export MQTTH=arena.andrew.cmu.edu")
+    print( "export REALM=realm")
+    print( "export SCENE=example")
     exit(-1)
 
 # init the ARENA library

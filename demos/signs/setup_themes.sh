@@ -1,0 +1,10 @@
+export REALM=realm
+export HOST=arena.andrew.cmu.edu
+export MID=1234
+export JSONCFG=theme.json
+export SCENE=theme1; python3 sign.py
+export SCENE=theme2; python3 sign.py
+export SCENE=theme3; python3 sign.py
+export SCENE=theme4; python3 sign.py
+export SCENE=theme5; python3 sign.py
+export SCENE=theme6; python3 sign.py

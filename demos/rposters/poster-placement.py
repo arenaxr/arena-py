@@ -16,12 +16,16 @@ import atexit
 theme = 6 # we are generating for this theme
 dist = 40  # distance between posters
 persist = True  # persist flag for generate objects
-originx = -30  # start coordinate in x
-originz = 2  # start coordinate in z
+if theme==1 or theme==2:
+    originx = -20  # start coordinate in x
+    originz = 2  # start coordinate in z
+else: 
+    originx = -40  # start coordinate in x
+    originz = 10  # start coordinate in z
+    
 wallcolor = (100, 100, 130)  # color of the poster wall
 dirx = 1  # 1 or -1 to define direction of the grid
 dirz = -1  # 1 or -1 to define direction of the grid
-
 
 # To run in ARTS, these parameters are passed in as environmental variables.
 # export SCENE=thescene
@@ -64,7 +68,7 @@ for poster in posterData:
         pcount += 1
 
 if pcount <= 4:
-    gridSize = 3
+    gridSize = 2
 elif pcount <= 9:
     gridSize = 3
 elif pcount <= 16:
@@ -84,16 +88,6 @@ print (
     )
 
 # parent of the entire area
-
-paparentName = 't' + str(theme) + '_poster_area_parent'
-postersParent = arena.Object(
-    objName=paparentName,
-    objType=arena.Shape.cube,
-    location=(originx, 0, originz),
-    transparency=arena.Transparency(True, 0),
-    clickable=False,
-    persist=persist,
-    )
 
 pindex = 0
 for poster in posterData:
@@ -122,14 +116,18 @@ for poster in posterData:
         
         pCoord = {}
         pCoord["x"] = originx + l * dist * dirx
-        pCoord["z"] = originz + l * dist * dirz
+        pCoord["z"] = originz + c * dist * dirz
 
+        pRotation = (0, 0, 0, 1)
+        if l==0:
+            pRotation = (0, 1, 0, 0)
+                
         pRoot = arena.Object(
             objName=prootName,
             objType=arena.Shape.cube,
-            location=(l * dist * dirx, 0, c * dist * dirz),
+            location=(pCoord["x"], 0, pCoord["z"]),
             transparency=arena.Transparency(True, 0),
-            parent=paparentName,
+            rotation=pRotation,
             clickable=False,
             persist=persist)
 
@@ -251,6 +249,7 @@ for poster in posterData:
 # Everything after this should be in callbacks
 
 print('starting main loop')
-arena.handle_events()
+time.sleep(5)
+#arena.handle_events()
 
 # agentParent.delete()

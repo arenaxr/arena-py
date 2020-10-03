@@ -15,7 +15,7 @@ theme=1
 for theme in range(1,7):
     paparentName = 't' + str(theme) + '_poster_area_parent'
     delete_obj(paparentName, scene_path + str(theme))
-    for pindex in range(1,10):
+    for pindex in range(1,11):
         
         prootName  = 't' + str(theme) + '_poster' + str(pindex) + '_root'
         pwallName  = 't' + str(theme) + '_poster' + str(pindex) + '_wall'

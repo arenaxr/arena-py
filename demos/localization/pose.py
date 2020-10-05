@@ -21,6 +21,18 @@ def matrix4_to_pose(mat):
     return pos, rotq
 
 
+'''
+Get pose of object with error artificially added
+    cam_pose:   4x4 matrix, pose of camera in global frame
+    obj_pose:   4x4 matrix, true pose of obj in global frame
+    error:      positive float, amount of error to add as a fraction of distance between cam and obj
+
+    return:     4x4 matrix, pose of obj in global frame with error added
+'''
+def pose_with_error(cam_pose, obj_pose, error):
+    return obj_pose
+
+
 def dtag_pose_to_matrix4(dtag_pose):
     FLIP = np.diag([1, -1, -1, 1])
     mat = np.identity(4)

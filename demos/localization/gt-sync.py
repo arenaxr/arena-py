@@ -123,7 +123,7 @@ def on_tag_detect(msg):
             return
         vio_pose = pose.get_vio_pose(json_msg)
         time = datetime.strptime(json_msg.timestamp, TIME_FMT)
-        users[client_id].on_tag_detect(cam_pose, vio_pose, time, msg.payload)
+        users[client_id].on_tag_detect(cam_pose, vio_pose, time, msg.payload.decode('utf-8'))
         if all(users[u].state == STATE_WAIT for u in users):
             poselist = [
                 {

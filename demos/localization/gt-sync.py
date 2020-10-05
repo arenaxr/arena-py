@@ -4,6 +4,7 @@ from datetime import datetime
 import getopt
 import json
 import numpy as np
+import os
 import pose
 import sys
 from types import SimpleNamespace
@@ -17,7 +18,7 @@ TOPIC_VIO = '/topic/vio/#'
 TOPIC_UWB = REALM + '/g/uwb/#'
 TIME_FMT = '%Y-%m-%dT%H:%M:%S.%fZ'
 TIME_FMT_UWB = '%Y-%m-%dT%H:%M:%S.%f'
-OUTFILE = datetime.now().strftime('%Y-%m-%d_%H_%M_%S') + '.json'
+OUTFILE = os.path.join('localization', 'gt', datetime.now().strftime('%Y-%m-%d_%H_%M_%S') + '.json')
 
 STATE_WALK = 0
 STATE_FINDTAG = 1

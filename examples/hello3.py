@@ -3,12 +3,12 @@
 # - animates rotating duck
 import arena
 
-arena.init("oz.andrew.cmu.edu", "realm", "hello")
+arena.init("arena.andrew.cmu.edu", "realm", "example")
 arena.Object(objType=arena.Shape.cube)
-arena.Object(objType=arena.Shape.sphere,location=(1,1,-1),color=(255,0,0))
+arena.Object(objType=arena.Shape.sphere,
+             location=(1, 1, -1), color=(255, 0, 0))
 arena.Object(objType=arena.Shape.gltf_model,
-             location=(-1,1,-3),
-             persist=False,
+             location=(-1, 1, -3),
              physics=arena.Physics.none,
              clickable=True,
              data='{"animation": { "property": "rotation", "to": "0 360 0", "loop": true, "dur": 10000}}',

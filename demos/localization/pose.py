@@ -50,7 +50,7 @@ def resolve_pose_ambiguity(pose1, err1, pose2, err2, vio, tagpose):
     vertical_vector = tagpose[0:3, 0:3].T @ np.array([[0, 1, 0]]).T
     pose1_vertical = pose1[0:3, 0:3] @ vertical_vector
     pose2_vertical = pose2[0:3, 0:3] @ vertical_vector
-    vio_vertical = vio[0:3, 0:3].T @ vertical_vector
+    vio_vertical = vio[0:3, 0:3].T @ np.array([[0, 1, 0]]).T
     pose1_vertical = pose1_vertical / np.linalg.norm(pose1_vertical)
     pose2_vertical = pose2_vertical / np.linalg.norm(pose2_vertical)
     vio_vertical = vio_vertical / np.linalg.norm(vio_vertical)
@@ -79,7 +79,11 @@ def _test_resolve_pose_ambiguity():
          [.00, .00, .00, 1.00]])
     test_error2 = 181e-6
     test_vio = np.identity(4)
-    test_tagpose = np.identity(4)
+    test_tagpose = np.array(
+        [[-0.9689, 0.0076, 0.2473, 1.382],
+         [0.0079, 1, 0, 5.2782],
+         [-0.2473, 0.0019, -0.9689, 13.7963],
+         [0, 0, 0, 1]])
     test_pose, test_error = resolve_pose_ambiguity(
         test_pose1, test_error1, test_pose2, test_error2, test_vio, test_tagpose)
     print(test_pose)

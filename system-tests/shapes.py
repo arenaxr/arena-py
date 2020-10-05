@@ -7,27 +7,29 @@ import random
 import time
 import signal
 
-HOST = "oz.andrew.cmu.edu"
-SCENE = "shapes"
+arena.init("arena.andrew.cmu.edu", "realm", "systest-shapes")
 
-arena.init(HOST, "realm", SCENE)
 
 def randmove():
     rando = random.random() * 10 - 5
     return rando
 
+
 def rando(val):
     rando = random.random() * val
     return round(rando, 3)
 
+
 def randrot():
     return round((random.random() * 2 - 1), 3)
 
+
 def randcolor():
-    x = random.randint(0,255)
-    y = random.randint(0,255)
-    z = random.randint(0,255)
-    return(x,y,z)
+    x = random.randint(0, 255)
+    y = random.randint(0, 255)
+    z = random.randint(0, 255)
+    return(x, y, z)
+
 
 def randobj():
     rando = random.random()
@@ -41,8 +43,10 @@ def randobj():
         return arena.Shape.torus
     return arena.Shape.cube
 
+
 def signal_handler(sig, frame):
     exit()
+
 
 signal.signal(signal.SIGINT, signal_handler)
 messages = []
@@ -59,9 +63,9 @@ while True:
     obj = arena.Object(
         objName=name,
         objType=obj_type,
-        location=(x,y,z),
-        rotation=(randrot(),randrot(),randrot(),randrot()),
-        scale=(rando(2),rando(2),rando(2)),
+        location=(x, y, z),
+        rotation=(randrot(), randrot(), randrot(), randrot()),
+        scale=(rando(2), rando(2), rando(2)),
         color=randcolor())
     messages.append(obj)
 

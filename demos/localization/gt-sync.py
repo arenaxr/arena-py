@@ -55,10 +55,11 @@ class SyncUser:
         self.state = STATE_WALK
         self.hud.update(color=COLOR_WALK)
 
-    def on_tag_detect(self, cam_pose, vio, time):
+    def on_tag_detect(self, cam_pose, vio, time, debug):
         self.pose = cam_pose
         self.last_vio = vio
         self.last_time = time
+        self.debug = debug
         if self.state == STATE_FINDTAG:
             self.state = STATE_WAIT
             self.hud.update(color=COLOR_WAIT)
@@ -122,9 +123,21 @@ def on_tag_detect(msg):
             return
         vio_pose = pose.get_vio_pose(json_msg)
         time = datetime.strptime(json_msg.timestamp, TIME_FMT)
-        users[client_id].on_tag_detect(cam_pose, vio_pose, time)
+        users[client_id].on_tag_detect(cam_pose, vio_pose, time, msg.payload)
         if all(users[u].state == STATE_WAIT for u in users):
-            data = {'timestamp': time.strftime(TIME_FMT_UWB), 'type': 'gt', 'poses': [{'user': users[u].arenaname, 'pose': users[u].pose.tolist()} for u in users]}
+            poselist = [
+                {
+                    'user': users[u].arenaname,
+                    'pose': users[u].pose.tolist(),
+                    'dbg':  users[u].debug
+                }
+                for u in users
+            ]
+            data = {
+                'timestamp': time.strftime(TIME_FMT_UWB),
+                'type':      'gt',
+                'poses':     poselist
+            }
             print(data)
             with open(OUTFILE, 'a') as outfile:
                 outfile.write(json.dumps(data))

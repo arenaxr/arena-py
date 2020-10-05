@@ -15,7 +15,7 @@ def secondary_callback(msg):
 
 
 # subscribe to objects
-arena.init("oz.andrew.cmu.edu", "realm", "hello", objects_callback)
+arena.init("arena.andrew.cmu.edu", "realm", "example", objects_callback)
 # publish object message
 arena.Object(objType=arena.Shape.sphere,
              location=(1, 1, -1), color=(255, 0, 0))

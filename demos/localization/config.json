@@ -1,0 +1,5 @@
+{
+  "host": "oz.andrew.cmu.edu",
+  "port": 1883,
+  "default_realm": "realm"
+}

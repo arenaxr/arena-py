@@ -30,7 +30,7 @@ MOVE_THRESH = .05   # 5cm
 ROT_THRESH = .087   # 5deg
 TIME_THRESH = 3     # 3sec
 DTAG_ERROR_THRESH = 5e-6    # tag detection error units?
-TIME_INTERVAL = 10          # 10sec
+TIME_INTERVAL = 5           # 5sec
 
 users = {}
 arenanames = {}
@@ -83,6 +83,7 @@ class StaticUser(SyncUser):
         self.arenaname = config.arenaname
         self.pose = np.array(config.pose)
         self.state = STATE_WAIT
+        self.debug = 'static'
 
     def reset(self):
         pass

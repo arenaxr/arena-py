@@ -1,26 +1,32 @@
 [
     {
-        "arenaname": "nuno",
+        "arenaname": "john",
         "uwbname": "1",
-        "client_id": "camera_nuno_nuno",
-        "static": false
-    },
-    {
-        "arenaname": "agr",
-        "uwbname": "2",
-        "client_id": "camera_agr_agr",
-        "static": false
-    },
-    {
-        "arenaname": "jeff",
-        "uwbname": "3",
-        "client_id": "camera_jeff_jeff",
+        "client_id": "camera_john_john",
         "static": false
     },
     {
         "arenaname": "elahe",
-        "uwbname": "4",
+        "uwbname": "2",
         "client_id": "camera_elahe_elahe",
+        "static": false
+    },
+    {
+        "arenaname": "nuno",
+        "uwbname": "3",
+        "client_id": "camera_nuno_nuno",
+        "static": false
+    },
+    {
+        "arenaname": "jeff",
+        "uwbname": "4",
+        "client_id": "camera_jeff_jeff",
+        "static": false
+    },
+    {
+        "arenaname": "agr",
+        "uwbname": "5",
+        "client_id": "camera_agr_agr",
         "static": false
     },
     {

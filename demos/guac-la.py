@@ -65,7 +65,7 @@ def initCube(x, y, color):
                               persist=True,
                               objName=name,
                               physics=arena.Physics.static,
-                              data='{"collision-listner":"", "material": {"transparent":true,"opacity": 0.5},"impulse":{"on":"mouseup","force":"0 40 0","position": "10 1 1"}}',
+                              data='{"collision-listener":"", "material": {"transparent":true,"opacity": 0.5},"impulse":{"on":"mouseup","force":"0 40 0","position": "10 1 1"}}',
                               location=(x,y,-3),
                               color=color,
                               scale=(0.6,0.6,0.6),

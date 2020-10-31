@@ -57,14 +57,14 @@ def magestic_ending():
         objName="cube"+str(i),
         # messes up child-follow-parent pose
         physics=arena.Physics.dynamic,
-        collision_listener=True,
+        collision_listener=False,
         #transparency=arena.Transparency(True,0.5),
         impulse=arena.Impulse("mouseup",( 5,30,0),(30,1,1)),
 #        location=(random.randrange(AREA_X_START,AREA_X_STOP), 10, random.randrange(AREA_Y_START,AREA_Y_STOP)),
         location=(pinata_loc[0], pinata_loc[1]+1.5, pinata_loc[2] ),
         color=random_color(),
         scale=(0.6, 0.6, 0.6),
-        clickable=True,
+        clickable=False,
         callback=box_callback,
         )
         boxes.append(x)
@@ -92,8 +92,8 @@ def game_thread():
         if kill_flag==1:
             print("Kill Flat!")
             return 
-        if gravity_enabled is True:
-            pinataParent.update(location=(pinata_loc[0],pinata_loc[1],pinata_loc[2]))
+        #if gravity_enabled is True:
+        #    pinataParent.update(location=(pinata_loc[0],pinata_loc[1],pinata_loc[2]))
         if(fire_impulse>0):
             print("Hit!")
             t=0.1
@@ -126,6 +126,7 @@ def game_thread():
 #        pinata_loc[2]=random.uniform(0,10)
         # Tweening Move...
         if gravity_enabled is True and vi>0:
+            pinataParent.update(location=(pinata_loc[0],pinata_loc[1],pinata_loc[2]))
             pinataParent.update(data='{"animation": {"property": "position","to": "' + str(pinata_loc[0]) + ' ' + str(pinata_loc[1]) + ' ' + str(pinata_loc[2]) + '","easing": "linear","dur": 100}}')
         time.sleep(0.1)
 

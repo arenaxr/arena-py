@@ -167,12 +167,14 @@ def init(broker, realm, scene, callback=None, port=None, democlick=None):
 
     # TODO: load saved mqtt_token, check expiration, attempt reuse
 
-    # begin authorization flow
+    # begin authentication flow
     flow = InstalledAppFlow.from_client_secrets_file(
         'client_secrets.json',
         scopes=["openid",
                 "https://www.googleapis.com/auth/userinfo.profile",
                 "https://www.googleapis.com/auth/userinfo.email"])
+
+    # TODO: alter text "The authentication flow has completed. You may close this window."
 
     flow.run_local_server()
     id_token = flow.oauth2session.token['id_token']
@@ -192,7 +194,7 @@ def init(broker, realm, scene, callback=None, port=None, democlick=None):
         if 'token' in tokeninfo:
             token = tokeninfo['token']
             client.username_pw_set(username=user, password=token)
-    # end authorization flow
+    # end authentication flow
 
     #print("arena callback:", callback)
     #print("connecting to broker ", mqtt_broker)

@@ -1,0 +1,172 @@
+{
+  "sign1": {
+    "link1": [
+      "Theme 1",
+      "https://arena.andrew.cmu.edu/?scene=theme1",
+      "sametab" 
+    ],
+    "link2": [
+      "Theme 2",
+      "https://arena.andrew.cmu.edu/?scene=theme2",
+      "sametab" 
+    ],
+    "link3": [
+      "Theme 3",
+      "https://arena.andrew.cmu.edu/?scene=theme3",
+      "sametab" 
+    ],
+    "position": [
+      -4,
+      0,
+      -5 
+    ],
+    "rotation": [
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  "sign2": {
+    "link1": [
+      "Theme 4",
+      "https://arena.andrew.cmu.edu/?scene=theme4",
+      "sametab" 
+    ],
+    "link2": [
+      "Theme 5",
+      "https://arena.andrew.cmu.edu/?scene=theme5",
+      "sametab" 
+    ],
+    "link3": [
+      "Theme 6",
+      "https://arena.andrew.cmu.edu/?scene=theme6",
+      "sametab" 
+    ],
+    "position": [
+      4,
+      0,
+      -5 
+    ],
+    "rotation": [
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  "sign3": {
+    "link1": [
+      "Theme 1",
+      "https://arena.andrew.cmu.edu/?scene=theme4",
+      "sametab" 
+    ],
+    "link2": [
+      "Theme 2",
+      "https://arena.andrew.cmu.edu/?scene=theme5",
+      "sametab" 
+    ],
+    "link3": [
+      "Theme 3",
+      "https://arena.andrew.cmu.edu/?scene=theme6",
+      "sametab" 
+    ],
+    "position": [
+      -2,
+      0,
+      -40 
+    ],
+    "rotation": [
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  "sign4": {
+    "link1": [
+      "Theme 4",
+      "https://arena.andrew.cmu.edu/?scene=theme4",
+      "sametab" 
+    ],
+    "link2": [
+      "Theme 5",
+      "https://arena.andrew.cmu.edu/?scene=theme5",
+      "sametab" 
+    ],
+    "link3": [
+      "Theme 6",
+      "https://arena.andrew.cmu.edu/?scene=theme6",
+      "sametab" 
+    ],
+    "position": [
+      2,
+      0,
+      -40 
+    ],
+    "rotation": [
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+
+  "sign5": {
+    "link1": [
+      "Theme 1",
+      "https://arena.andrew.cmu.edu/?scene=theme1",
+      "sametab" 
+    ],
+    "link2": [
+      "Theme 2",
+      "https://arena.andrew.cmu.edu/?scene=theme2",
+      "sametab" 
+    ],
+    "link3": [
+      "Theme 3",
+      "https://arena.andrew.cmu.edu/?scene=theme3",
+      "sametab" 
+    ],
+    "position": [
+      30,
+      0,
+      -40 
+    ],
+    "rotation": [
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  "sign6": {
+    "link1": [
+      "Theme 4",
+      "https://arena.andrew.cmu.edu/?scene=theme4",
+      "sametab" 
+    ],
+    "link2": [
+      "Theme 5",
+      "https://arena.andrew.cmu.edu/?scene=theme5",
+      "sametab" 
+    ],
+    "link3": [
+      "Theme 6",
+      "https://arena.andrew.cmu.edu/?scene=theme6",
+      "sametab" 
+    ],
+    "position": [
+      35,
+      0,
+      -40 
+    ],
+    "rotation": [
+      0,
+      0,
+      0,
+      1
+    ]
+  }
+
+}

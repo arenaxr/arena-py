@@ -2,8 +2,8 @@
 ''' Demonstrate setting apriltags which can receive external updates.
     The apriltag #450 must be visible from a webxr browser camera.
     Position, Rotation, and Model should remain in sync across subscribers.
-    Camera: https://xr.andrew.cmu.edu/?scene=volatile&localTagSolver=true&cvRate=10
-    All: https://xr.andrew.cmu.edu/?scene=volatile
+    Camera: https://arena.andrew.cmu.edu/?scene=volatile&localTagSolver=true&cvRate=10
+    All: https://arena.andrew.cmu.edu/?scene=volatile
 '''
 import arena
 
@@ -17,7 +17,7 @@ def tag_callback(event=None):
         print("Tag rotation: " + str(event.rotation))
 
 
-arena.init("oz.andrew.cmu.edu", "realm", "volatile")
+arena.init("arena.andrew.cmu.edu", "realm", "example")
 # apriltag_450 will receive position/rotation updates so don't set them
 TAG = arena.Object(objName="apriltag_450",
                    transparency=arena.Transparency(True, 0),

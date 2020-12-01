@@ -47,7 +47,7 @@ print("Scene: " + SCENE)
 print("fixedCamera: " + fixedCamera)
 print("color: " + str(cam_color))
 
-arena.init("oz.andrew.cmu.edu", "realm", SCENE )
+arena.init("arena.andrew.cmu.edu", "realm", SCENE )
 cameraStr = "camera_" + fixedCamera + "_" + fixedCamera
 
 my_camera = arena.Object(objName=cameraStr,
@@ -55,7 +55,7 @@ my_camera = arena.Object(objName=cameraStr,
                    callback=camera_callback,
                    persist=False)
 
-print( "Go to URL: https://xr.andrew.cmu.edu/?scene=" + SCENE +  "&fixedCamera=" + fixedCamera)
+print( "Go to URL: https://arena.andrew.cmu.edu/?scene=" + SCENE +  "&fixedCamera=" + fixedCamera)
 
 # our main event loop
 arena.handle_events()

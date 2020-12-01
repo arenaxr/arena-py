@@ -1,0 +1,362 @@
+[
+    {
+        "arenaname": "john",
+        "uwbname": "1",
+        "client_id": "camera_john_john",
+        "static": false
+    },
+    {
+        "arenaname": "elahe",
+        "uwbname": "2",
+        "client_id": "camera_elahe_elahe",
+        "static": false
+    },
+    {
+        "arenaname": "nuno",
+        "uwbname": "3",
+        "client_id": "camera_nuno_nuno",
+        "static": false
+    },
+    {
+        "arenaname": "jeff",
+        "uwbname": "4",
+        "client_id": "camera_jeff_jeff",
+        "static": false
+    },
+    {
+        "arenaname": "agr",
+        "uwbname": "5",
+        "client_id": "camera_agr_agr",
+        "static": false
+    },
+    {
+        "arenaname": "static7",
+        "uwbname": "7",
+        "client_id": "static7",
+        "apriltag_id": "apriltag_13",
+        "static": true,
+        "pose": [
+            [
+                -0.9924,
+                0.0067,
+                -0.1231,
+                -3.9603
+            ],
+            [
+                0.0062,
+                1,
+                0.0046,
+                9.9008
+            ],
+            [
+                0.1231,
+                0.0038,
+                -0.9924,
+                1.6745
+            ],
+            [
+                0,
+                0,
+                0,
+                1
+            ]
+        ]
+    },
+    {
+        "arenaname": "static8",
+        "uwbname": "8",
+        "client_id": "static8",
+        "apriltag_id": "apriltag_4",
+        "static": true,
+        "pose": [
+            [
+                -0.1332,
+                0.0002,
+                0.9911,
+                -5.225
+            ],
+            [
+                -0.0003,
+                1,
+                -0.0003,
+                4.3457
+            ],
+            [
+                -0.9911,
+                -0.0003,
+                -0.1332,
+                -6.0388
+            ],
+            [
+                0,
+                0,
+                0,
+                1
+            ]
+        ]
+    },
+    {
+        "arenaname": "static9",
+        "uwbname": "9",
+        "client_id": "static9",
+        "apriltag_id": "apriltag_10",
+        "static": true,
+        "pose": [
+            [
+                -0.9689,
+                0.0076,
+                0.2473,
+                1.382
+            ],
+            [
+                0.0079,
+                1,
+                0,
+                5.1482
+            ],
+            [
+                -0.2473,
+                0.0019,
+                -0.9689,
+                13.7963
+            ],
+            [
+                0,
+                0,
+                0,
+                1
+            ]
+        ]
+    },
+    {
+        "arenaname": "static10",
+        "uwbname": "10",
+        "client_id": "static10",
+        "apriltag_id": "apriltag_3",
+        "static": true,
+        "pose": [
+            [
+                0.9997,
+                -0.0046,
+                0.0253,
+                4.1242
+            ],
+            [
+                0.0046,
+                1,
+                0.0001,
+                1.3572
+            ],
+            [
+                -0.0253,
+                0,
+                0.9997,
+                -5.5535
+            ],
+            [
+                0,
+                0,
+                0,
+                1
+            ]
+        ]
+    },
+    {
+        "arenaname": "static15",
+        "uwbname": "15",
+        "client_id": "static15",
+        "apriltag_id": "apriltag_15",
+        "static": true,
+        "pose": [
+            [
+                -0.9889,
+                -0.0165,
+                -0.1475,
+                -6.5697
+            ],
+            [
+                -0.0169,
+                0.9999,
+                0.0013,
+                9.4545
+            ],
+            [
+                0.1474,
+                0.0037,
+                -0.9891,
+                5.383
+            ],
+            [
+                0,
+                0,
+                0,
+                1
+            ]
+        ]
+    },
+    {
+        "arenaname": "static12",
+        "uwbname": "12",
+        "client_id": "static12",
+        "apriltag_id": "apriltag_14",
+        "static": true,
+        "pose": [
+            [
+                -0.1303,
+                -0.0132,
+                0.9914,
+                -20.1713
+            ],
+            [
+                -0.0035,
+                0.9999,
+                0.0129,
+                9.8725
+            ],
+            [
+                -0.9915,
+                -0.0018,
+                -0.1303,
+                4.2255
+            ],
+            [
+                0,
+                0,
+                0,
+                1
+            ]
+        ]
+    },
+    {
+        "arenaname": "static13",
+        "uwbname": "13",
+        "client_id": "static13",
+        "apriltag_id": "apriltag_11",
+        "static": true,
+        "pose": [
+            [
+                1,
+                0.0012,
+                -0.0026,
+                4.8338
+            ],
+            [
+                -0.0012,
+                1,
+                -0.0019,
+                9.7055
+            ],
+            [
+                0.0026,
+                0.0019,
+                1,
+                -5.5513
+            ],
+            [
+                0,
+                0,
+                0,
+                1
+            ]
+        ]
+    },
+    {
+        "arenaname": "static14",
+        "uwbname": "14",
+        "client_id": "static14",
+        "apriltag_id": "apriltag_8",
+        "static": true,
+        "pose": [
+            [
+                -0.0051,
+                0.0039,
+                1,
+                -2.371
+            ],
+            [
+                -0.0087,
+                1,
+                -0.0039,
+                5.3645
+            ],
+            [
+                -0.9999,
+                -0.0087,
+                -0.0051,
+                -13.3885
+            ],
+            [
+                0,
+                0,
+                0,
+                1
+            ]
+        ]
+    },
+    {
+        "arenaname": "static16",
+        "uwbname": "16",
+        "client_id": "static16",
+        "apriltag_id": "apriltag_5",
+        "static": true,
+        "pose": [
+            [
+                -0.1403,
+                -0.0058,
+                0.9901,
+                -20.1863
+            ],
+            [
+                0.0071,
+                1,
+                0.0068,
+                5.6168
+            ],
+            [
+                -0.9901,
+                0.008,
+                -0.1403,
+                4.056
+            ],
+            [
+                0,
+                0,
+                0,
+                1
+            ]
+        ]
+    },
+    {
+        "arenaname": "static11",
+        "uwbname": "11",
+        "client_id": "static11",
+        "apriltag_id": "apriltag_1",
+        "static": true,
+        "pose": [
+            [
+                -0.1515,
+                -0.0015,
+                0.9885,
+                -20.1917
+            ],
+            [
+                -0.0148,
+                0.9999,
+                -0.0007,
+                1.2735
+            ],
+            [
+                -0.9884,
+                -0.0148,
+                -0.1515,
+                3.9388
+            ],
+            [
+                0,
+                0,
+                0,
+                1
+            ]
+        ]
+    }
+]

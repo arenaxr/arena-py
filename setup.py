@@ -18,7 +18,7 @@ setuptools.setup(
                        "paho-mqtt~=1.5.0",
                        "numpy~=1.18.1",
                        "requests~=2.23.0",
-                       "scipy~=1.4.1",
+                       "scipy~=1.5.4",
                        "webcolors~=1.3" ],
     classifiers=[
         "Programming Language :: Python :: 3",

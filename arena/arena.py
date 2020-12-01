@@ -7,8 +7,10 @@ import time
 from datetime import datetime
 from threading import Event
 from urllib import parse, request
+from urllib.error import URLError, HTTPError
 
 import paho.mqtt.client as mqtt
+from google_auth_oauthlib.flow import InstalledAppFlow
 
 # globals
 running = False
@@ -137,12 +139,17 @@ def on_connect(client, userdata, flags, rc):
 # def on_log(client, userdata, level, buf):
 #    print("log:" + buf)
 
-def get_token(broker, scene, user):
+def get_token(broker, scene, user, atype, id_token=None):
     url = f'https://{broker}:8888'
     data = parse.urlencode(
-        {"id_auth": "anonymous", "username": user, "id_token": None, "scene": scene}).encode()
+        {"id_auth": atype, "username": user, "id_token": id_token, "scene": scene}).encode()
     req = request.Request(url, data=data)  # POST
-    return request.urlopen(req).read()
+    try:
+        res = request.urlopen(req)
+        return res.read()
+    except (URLError, HTTPError) as err:
+        print("Error: {0}".format(err))
+        return None
 
 def init(broker, realm, scene, callback=None, port=None, user=None, democlick=None):
     global client
@@ -157,9 +164,25 @@ def init(broker, realm, scene, callback=None, port=None, user=None, democlick=No
     arena_callback = callback
     pseudoclick = democlick
 
+    flow = InstalledAppFlow.from_client_secrets_file(
+        'client_secrets.json',
+        scopes=["openid",
+                "https://www.googleapis.com/auth/userinfo.profile",
+                "https://www.googleapis.com/auth/userinfo.email"])
+
+    flow.run_local_server()
+    id_token = flow.oauth2session.token['id_token']
+    session = flow.authorized_session()
+
+    profile_info = session.get(
+        'https://www.googleapis.com/userinfo/v2/me').json()
+    print(profile_info)
+
     # use JWT for authentication
-    if user != None:
-        tokeninfo = json.loads(get_token(broker, scene, user).decode('utf-8'))
+    if profile_info != None:
+        user = profile_info['email']
+        tokeninfo = json.loads(
+            get_token(broker, scene, user, atype="google", id_token=id_token).decode('utf-8'))
         print('tokeninfo: '+json.dumps(tokeninfo))
         if 'token' in tokeninfo:
             token = tokeninfo['token']

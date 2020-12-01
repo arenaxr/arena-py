@@ -1,12 +1,12 @@
+import enum
 import json
 import random
 import signal
 import sys
 import time
-import enum
-import urllib.request
 from datetime import datetime
 from threading import Event
+from urllib import parse, request
 
 import paho.mqtt.client as mqtt
 
@@ -137,9 +137,12 @@ def on_connect(client, userdata, flags, rc):
 # def on_log(client, userdata, level, buf):
 #    print("log:" + buf)
 
-def get_token(scene, user):
-    url = 'https://xr.andrew.cmu.edu:8888/?scene='+scene+'&username='+user
-    return urllib.request.urlopen(url).read()
+def get_token(broker, scene, user):
+    url = f'https://{broker}:8888'
+    data = parse.urlencode(
+        {"id_auth": "anonymous", "username": user, "id_token": None, "scene": scene}).encode()
+    req = request.Request(url, data=data)  # POST
+    return request.urlopen(req).read()
 
 def init(broker, realm, scene, callback=None, port=None, user=None, democlick=None):
     global client
@@ -156,10 +159,11 @@ def init(broker, realm, scene, callback=None, port=None, user=None, democlick=No
 
     # use JWT for authentication
     if user != None:
-        tokeninfo = json.loads(get_token(scene, user).decode('utf-8'))
-        token = tokeninfo['token']
-        print('user: '+user+', token: '+token)
-        client.username_pw_set(username=user, password=token)
+        tokeninfo = json.loads(get_token(broker, scene, user).decode('utf-8'))
+        print('tokeninfo: '+json.dumps(tokeninfo))
+        if 'token' in tokeninfo:
+            token = tokeninfo['token']
+            client.username_pw_set(username=user, password=token)
 
     #print("arena callback:", callback)
     #print("connecting to broker ", mqtt_broker)

@@ -141,6 +141,7 @@ def on_connect(client, userdata, flags, rc):
 
 def get_token(broker, scene, user, atype, id_token=None):
     url = f'https://{broker}:8888'
+    #url = f'https://{broker}/auth' # TODO: use new auth path, or config
     data = parse.urlencode(
         {"id_auth": atype, "username": user, "id_token": id_token, "scene": scene}).encode()
     req = request.Request(url, data=data)  # POST
@@ -151,7 +152,7 @@ def get_token(broker, scene, user, atype, id_token=None):
         print("Error: {0}".format(err))
         return None
 
-def init(broker, realm, scene, callback=None, port=None, user=None, democlick=None):
+def init(broker, realm, scene, callback=None, port=None, democlick=None):
     global client
     global scene_path
     global mqtt_broker
@@ -164,6 +165,9 @@ def init(broker, realm, scene, callback=None, port=None, user=None, democlick=No
     arena_callback = callback
     pseudoclick = democlick
 
+    # TODO: load saved mqtt_token, check expiration, attempt reuse
+
+    # begin authorization flow
     flow = InstalledAppFlow.from_client_secrets_file(
         'client_secrets.json',
         scopes=["openid",
@@ -184,9 +188,11 @@ def init(broker, realm, scene, callback=None, port=None, user=None, democlick=No
         tokeninfo = json.loads(
             get_token(broker, scene, user, atype="google", id_token=id_token).decode('utf-8'))
         print('tokeninfo: '+json.dumps(tokeninfo))
+        # TODO: save mqtt_token somewhere safe like ~/.arena/mqtt_token.json
         if 'token' in tokeninfo:
             token = tokeninfo['token']
             client.username_pw_set(username=user, password=token)
+    # end authorization flow
 
     #print("arena callback:", callback)
     #print("connecting to broker ", mqtt_broker)

@@ -2,12 +2,13 @@ import enum
 import json
 import random
 import signal
+import ssl
 import sys
 import time
 from datetime import datetime
 from threading import Event
 from urllib import parse, request
-from urllib.error import URLError, HTTPError
+from urllib.error import HTTPError, URLError
 
 import paho.mqtt.client as mqtt
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -47,7 +48,7 @@ def arena_publish(scene_path, MESSAGE):
 
 def process_message(msg):
     global arena_callback
-    global pseudoclickl
+    global pseudoclick
     #print("process_message: "+str(msg.payload))
 
     # manage secondary subscriptions to the same bus, not always JSON
@@ -139,18 +140,40 @@ def on_connect(client, userdata, flags, rc):
 # def on_log(client, userdata, level, buf):
 #    print("log:" + buf)
 
-def get_token(broker, scene, user, atype, id_token=None):
-    url = f'https://{broker}:8888'
-    #url = f'https://{broker}/auth' # TODO: use new auth path, or config
-    data = parse.urlencode(
-        {"id_auth": atype, "username": user, "id_token": id_token, "scene": scene}).encode()
-    req = request.Request(url, data=data)  # POST
+def _urlopen(url, data=None):
     try:
-        res = request.urlopen(req)
-        return res.read()
+        if debug_toggle:
+            context = ssl.create_default_context()
+            context.check_hostname = False
+            context.verify_mode = ssl.CERT_NONE
+            res = request.urlopen(url, data=data, context=context)
+        else:
+            res = request.urlopen(url, data=data)
+        return res.read().decode('utf-8')
     except (URLError, HTTPError) as err:
         print("Error: {0}".format(err))
-        return None
+        return {}
+
+
+# TODO: will be deprecated after using arena-account
+def get_gauthid(host):
+    url = f'https://{host}/signin/google/gauth.json'
+    return _urlopen(url)
+
+
+def get_mqtt_token(broker, scene, user, id_token):
+    #url = f'https://{broker}:8888'
+    url = f'https://{broker}/auth/'
+    params = {
+        "id_auth": "google",
+        "username": user,
+        "id_token": id_token,
+        "scene": scene
+    }
+    query_string = parse.urlencode(params)
+    data = query_string.encode("ascii")
+    return _urlopen(url, data)
+
 
 def init(broker, realm, scene, callback=None, port=None, democlick=None):
     global client
@@ -165,18 +188,30 @@ def init(broker, realm, scene, callback=None, port=None, democlick=None):
     arena_callback = callback
     pseudoclick = democlick
 
+    # TODO: detect if the user needs a headless login
     # TODO: load saved mqtt_token, check expiration, attempt reuse
 
     # begin authentication flow
-    flow = InstalledAppFlow.from_client_secrets_file(
-        'client_secrets.json',
+    gauth_json = get_gauthid(broker)
+    flow = InstalledAppFlow.from_client_config(
+        json.loads(gauth_json),
         scopes=["openid",
                 "https://www.googleapis.com/auth/userinfo.profile",
                 "https://www.googleapis.com/auth/userinfo.email"])
 
-    # TODO: alter text "The authentication flow has completed. You may close this window."
-
-    flow.run_local_server()
+    auth_prompt_msg = (
+        "If your web browser does not open, please visit this URL to authenticate ARENA python access: {url}"
+    )
+    auth_web_ok_msg = (
+        "The ARENA authentication flow has completed. You may close this window."
+    )
+    flow.run_local_server(
+        host="localhost",
+        port=8989,  # TODO: select best client port to avoid likely conflicts
+        authorization_prompt_message=auth_prompt_msg,
+        success_message=auth_web_ok_msg,
+        open_browser=True
+    )
     id_token = flow.oauth2session.token['id_token']
     session = flow.authorized_session()
 
@@ -187,8 +222,8 @@ def init(broker, realm, scene, callback=None, port=None, democlick=None):
     # use JWT for authentication
     if profile_info != None:
         user = profile_info['email']
-        tokeninfo = json.loads(
-            get_token(broker, scene, user, atype="google", id_token=id_token).decode('utf-8'))
+        mqtt_json = get_mqtt_token(broker, scene, user, id_token)
+        tokeninfo = json.loads(mqtt_json)
         print('tokeninfo: '+json.dumps(tokeninfo))
         # TODO: save mqtt_token somewhere safe like ~/.arena/mqtt_token.json
         if 'token' in tokeninfo:

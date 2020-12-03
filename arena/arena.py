@@ -161,13 +161,14 @@ def get_gauthid(host):
     return _urlopen(url)
 
 
-def get_mqtt_token(broker, scene, user, id_token):
+def get_mqtt_token(broker, realm, scene, user, id_token):
     #url = f'https://{broker}:8888'
     url = f'https://{broker}/auth/'
     params = {
         "id_auth": "google",
         "username": user,
         "id_token": id_token,
+        "realm": realm,
         "scene": scene
     }
     query_string = parse.urlencode(params)
@@ -182,7 +183,7 @@ def init(broker, realm, scene, callback=None, port=None, democlick=None):
     global arena_callback
     global debug_toggle
     global pseudoclick
-    debug_toggle = False
+    debug_toggle = True
     mqtt_broker = broker
     scene_path = realm + "/s/" + scene
     arena_callback = callback
@@ -222,7 +223,7 @@ def init(broker, realm, scene, callback=None, port=None, democlick=None):
     # use JWT for authentication
     if profile_info != None:
         user = profile_info['email']
-        mqtt_json = get_mqtt_token(broker, scene, user, id_token)
+        mqtt_json = get_mqtt_token(broker, realm, scene, user, id_token)
         tokeninfo = json.loads(mqtt_json)
         print('tokeninfo: '+json.dumps(tokeninfo))
         # TODO: save mqtt_token somewhere safe like ~/.arena/mqtt_token.json
@@ -737,7 +738,6 @@ class Object:
 
     def position(self, location=(0, 0, 0)):
         global debug_toggle
-        # mosquitto_pub -h oz.andrew.cmu.edu -t /topic/render/cube_1/position -m "x:1; y:2; z:3;"
         self.location = location
         MESSAGE = {
             "object_id": self.objName,

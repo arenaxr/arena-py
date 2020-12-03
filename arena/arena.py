@@ -174,9 +174,9 @@ def init(broker, realm, scene, callback=None, port=None, democlick=None):
     start()
 
 def poll_events():
-    # Instead of while loop, just manually cycle through any pending events in mqtt queue 
+    # Instead of while loop, just manually cycle through any pending events in mqtt queue
     # This can be used if you don't want handle_events() to loop forever at the end of your program.
-    # Instead you need to periodically call poll_events() from your main thread 
+    # Instead you need to periodically call poll_events() from your main thread
     if running:
         for i in messages:
             process_message(messages.pop(0))
@@ -715,7 +715,7 @@ class Object:
             MESSAGE["data"]["material"] = {
                 "colorWrite": false,
                 "render-order": 0
-                }
+            }
         if self.line != None:
             MESSAGE["data"]["start"] = {
                 "x": agran(self.line.start[0]),
@@ -740,7 +740,7 @@ class Object:
             MESSAGE["data"]["lineWidth"] = self.thickline.line_width
             MESSAGE["data"]["color"] = self.thickline.color
         if self.collision_listener != False:
-            MESSAGE["data"]["collision-listener"]=""
+            MESSAGE["data"]["collision-listener"] = ""
         if self.data != "":
             MESSAGE["data"].update(json.loads(self.data))
         if self.physics != Physics.none:
@@ -755,7 +755,7 @@ class Object:
                 "loop": self.animation.loop,
                 "repetitions": self.animation.repetitions,
                 "timeScale": self.animation.timeScale
-                }
+            }
         if self.transparency != None:
             MESSAGE["data"]["material"] = {
                 "transparent": self.transparency.transparent,
@@ -766,7 +766,7 @@ class Object:
                 "on": self.impulse.on,
                 "force": tuple_to_string(self.impulse.force),
                 "position": tuple_to_string(self.impulse.position)
-                }
+            }
         if self.parent != "":
             MESSAGE["data"]["parent"] = self.parent
 

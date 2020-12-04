@@ -198,10 +198,15 @@ def init(broker, realm, scene, callback=None, port=None, democlick=None):
     scopes = ["openid",
               "https://www.googleapis.com/auth/userinfo.profile",
               "https://www.googleapis.com/auth/userinfo.email"]
-    cpath = f'{str(Path.home())}/.arena_gauth.bin'
+    cpath = f'{str(Path.home())}/.arena_google_auth'
+    mtpath = f'{str(Path.home())}/.arena_mqtt_auth'
     creds = None
-    browser = webbrowser.get()
-    print("browser: "+browser)
+    browser = None
+    try:
+        browser = webbrowser.get()
+        print("browser: "+str(browser))
+    except (webbrowser.Error) as err:
+        print("Console-only login.")
 
     # store the user's access and refresh tokens
     if os.path.exists(cpath):
@@ -235,10 +240,21 @@ def init(broker, realm, scene, callback=None, port=None, democlick=None):
     # use JWT for authentication
     if profile_info != None:
         user = profile_info['email']
-        mqtt_json = get_mqtt_token(broker, realm, scene, user, id_token)
+        if os.path.exists(mtpath):
+            f = open(mtpath, "r")
+            mqtt_json=f.read()
+            f.close()
+            # TODO: check old token for exp.
+        # if no credentials available, get them.
+        if not mqtt_json:
+            mqtt_json = get_mqtt_token(broker, realm, scene, user, id_token)
+            # save mqtt_token
+            with open(mtpath, mode="wb") as d:
+                d.write(mqtt_json)
+            os.chmod(mtpath, 0o600)  # set user-only perms.
+
         tokeninfo = json.loads(mqtt_json)
         print('tokeninfo: '+json.dumps(tokeninfo))
-        # TODO: save mqtt_token somewhere safe like ~/.arena/mqtt_token.json
         if 'token' in tokeninfo:
             token = tokeninfo['token']
             client.username_pw_set(username=user, password=token)

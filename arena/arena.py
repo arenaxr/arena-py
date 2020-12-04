@@ -1,22 +1,15 @@
 import enum
 import json
-import os.path
-import pickle
 import random
 import signal
-import ssl
 import sys
 import time
-import webbrowser
 from datetime import datetime
-from pathlib import Path
 from threading import Event
-from urllib import parse, request
-from urllib.error import HTTPError, URLError
 
 import paho.mqtt.client as mqtt
-from google.auth.transport.requests import Request
-from google_auth_oauthlib.flow import InstalledAppFlow
+
+import auth
 
 # globals
 running = False
@@ -145,41 +138,6 @@ def on_connect(client, userdata, flags, rc):
 # def on_log(client, userdata, level, buf):
 #    print("log:" + buf)
 
-def _urlopen(url, data=None):
-    try:
-        if debug_toggle:
-            context = ssl.create_default_context()
-            context.check_hostname = False
-            context.verify_mode = ssl.CERT_NONE
-            res = request.urlopen(url, data=data, context=context)
-        else:
-            res = request.urlopen(url, data=data)
-        return res.read().decode('utf-8')
-    except (URLError, HTTPError) as err:
-        print("Error: {0}".format(err))
-        return {}
-
-
-# TODO: will be deprecated after using arena-account
-def get_gauthid(host):
-    url = f'https://{host}/conf/gauth.json'
-    return _urlopen(url)
-
-
-def get_mqtt_token(broker, realm, scene, user, id_token):
-    #url = f'https://{broker}:8888'
-    url = f'https://{broker}/auth/'
-    params = {
-        "id_auth": "google",
-        "username": user,
-        "id_token": id_token,
-        "realm": realm,
-        "scene": scene
-    }
-    query_string = parse.urlencode(params)
-    data = query_string.encode("ascii")
-    return _urlopen(url, data)
-
 
 def init(broker, realm, scene, callback=None, port=None, democlick=None):
     global client
@@ -194,71 +152,10 @@ def init(broker, realm, scene, callback=None, port=None, democlick=None):
     arena_callback = callback
     pseudoclick = democlick
 
-    # begin authentication flow
-    scopes = ["openid",
-              "https://www.googleapis.com/auth/userinfo.profile",
-              "https://www.googleapis.com/auth/userinfo.email"]
-    cpath = f'{str(Path.home())}/.arena_google_auth'
-    mtpath = f'{str(Path.home())}/.arena_mqtt_auth'
-    creds = None
-    browser = None
-    try:
-        browser = webbrowser.get()
-        print("browser: "+str(browser))
-    except (webbrowser.Error) as err:
-        print("Console-only login.")
-
-    # store the user's access and refresh tokens
-    if os.path.exists(cpath):
-        with open(cpath, 'rb') as token:
-            creds = pickle.load(token)
-    # if no credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            gauth_json = get_gauthid(broker)
-            flow = InstalledAppFlow.from_client_config(
-                json.loads(gauth_json), scopes)
-            if browser:
-                # TODO: select best client port to avoid likely conflicts
-                creds = flow.run_local_server(port=8989)
-            else:
-                creds = flow.run_console()
-        with open(cpath, 'wb') as token:
-            # save the credentials for the next run
-            pickle.dump(creds, token)
-        os.chmod(cpath, 0o600)  # set user-only perms.
-
-    id_token = creds.id_token
-    session = flow.authorized_session()
-
-    profile_info = session.get(
-        'https://www.googleapis.com/userinfo/v2/me').json()
-    print(profile_info)
-
-    # use JWT for authentication
-    if profile_info != None:
-        user = profile_info['email']
-        if os.path.exists(mtpath):
-            f = open(mtpath, "r")
-            mqtt_json=f.read()
-            f.close()
-            # TODO: check old token for exp.
-        # if no credentials available, get them.
-        if not mqtt_json:
-            mqtt_json = get_mqtt_token(broker, realm, scene, user, id_token)
-            # save mqtt_token
-            with open(mtpath, mode="wb") as d:
-                d.write(mqtt_json)
-            os.chmod(mtpath, 0o600)  # set user-only perms.
-
-        tokeninfo = json.loads(mqtt_json)
-        print('tokeninfo: '+json.dumps(tokeninfo))
-        if 'token' in tokeninfo:
-            token = tokeninfo['token']
-            client.username_pw_set(username=user, password=token)
-    # end authentication flow
+    user, token = auth.authenticate(realm, scene, broker, webhost=broker,
+                                    debug=debug_toggle)
+    if user and token:
+        client.username_pw_set(username=user, password=token)
 
     #print("arena callback:", callback)
     #print("connecting to broker ", mqtt_broker)

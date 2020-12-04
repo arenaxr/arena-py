@@ -68,11 +68,14 @@ def authenticate(realm, scene, broker, webhost, debug=False):
     if profile_info != None:
         mqtt_json = None
         user = profile_info['email']
-        if os.path.exists(mtpath):
-            f = open(mtpath, "r")
-            mqtt_json = f.read()
-            f.close()
-            # TODO: check old token for exp.
+
+        # TODO: permissions may change by owner or admin,
+        # for now, get a fresh mqtt_token each time
+        # if os.path.exists(mtpath):
+        #     f = open(mtpath, "r")
+        #     mqtt_json = f.read()
+        #     f.close()
+
         # if no credentials available, get them.
         if not mqtt_json:
             mqtt_json = get_mqtt_token(broker, realm, scene, user, id_token)

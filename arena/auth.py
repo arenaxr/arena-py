@@ -3,30 +3,30 @@ arena/auth.py - Authentication methods for accessing the ARENA.
 """
 
 import json
-import os.path
+import os
 import pickle
 import ssl
+import sys
 import webbrowser
 from pathlib import Path
 from urllib import parse, request
 from urllib.error import HTTPError, URLError
 
-from google.auth.transport.requests import Request
+from google.auth.transport.requests import AuthorizedSession, Request
 from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import AuthorizedSession
 
 debug_toggle = False
+scopes = ["openid",
+          "https://www.googleapis.com/auth/userinfo.profile",
+          "https://www.googleapis.com/auth/userinfo.email"]
+cpath = f'{str(Path.home())}/.arena_google_auth'
+mtpath = f'{str(Path.home())}/.arena_mqtt_auth'
 
 
 def authenticate(realm, scene, broker, webhost, debug=False):
     global debug_toggle
     debug_toggle = debug
     # begin authentication flow
-    scopes = ["openid",
-              "https://www.googleapis.com/auth/userinfo.profile",
-              "https://www.googleapis.com/auth/userinfo.email"]
-    cpath = f'{str(Path.home())}/.arena_google_auth'
-    mtpath = f'{str(Path.home())}/.arena_mqtt_auth'
     creds = None
     browser = None
     try:
@@ -34,15 +34,19 @@ def authenticate(realm, scene, broker, webhost, debug=False):
     except (webbrowser.Error) as err:
         print("Console-only login. {0}".format(err))
 
+    print("Signing in to the ARENA...")
     # store the user's access and refresh tokens
     if os.path.exists(cpath):
+        print("Using cached authentication.")
         with open(cpath, 'rb') as token:
             creds = pickle.load(token)
         session = AuthorizedSession(creds)
     # if no credentials available, let the user log in.
     if not creds or not creds.valid:
+        print("Requesting new authentication.")
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
+            session = AuthorizedSession(creds)
         else:
             gauth_json = get_gauthid(webhost)
             flow = InstalledAppFlow.from_client_config(
@@ -52,17 +56,15 @@ def authenticate(realm, scene, broker, webhost, debug=False):
                 creds = flow.run_local_server(port=8989)
             else:
                 creds = flow.run_console()
-        session = flow.authorized_session()
+            session = flow.authorized_session()
         with open(cpath, 'wb') as token:
             # save the credentials for the next run
             pickle.dump(creds, token)
         os.chmod(cpath, 0o600)  # set user-only perms.
 
     id_token = creds.id_token
-
     profile_info = session.get(
         'https://www.googleapis.com/userinfo/v2/me').json()
-    print(profile_info)
 
     # use JWT for authentication
     if profile_info != None:
@@ -85,7 +87,6 @@ def authenticate(realm, scene, broker, webhost, debug=False):
             os.chmod(mtpath, 0o600)  # set user-only perms.
 
         tokeninfo = json.loads(mqtt_json)
-        print('tokeninfo: '+json.dumps(tokeninfo))
         if 'token' in tokeninfo:
             token = tokeninfo['token']
     # end authentication flow
@@ -126,3 +127,15 @@ def _urlopen(url, data=None):
     except (URLError, HTTPError) as err:
         print("Error: {0}".format(err))
         return {}
+
+
+def signout():
+    if os.path.exists(cpath):
+        os.remove(cpath)
+    if os.path.exists(mtpath):
+        os.remove(mtpath)
+    print("Signed out of the ARENA.")
+
+
+if __name__ == '__main__':
+    globals()[sys.argv[1]]()

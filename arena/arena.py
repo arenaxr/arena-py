@@ -1,16 +1,21 @@
 import enum
 import json
+import os.path
+import pickle
 import random
 import signal
 import ssl
 import sys
 import time
+import webbrowser
 from datetime import datetime
+from pathlib import Path
 from threading import Event
 from urllib import parse, request
 from urllib.error import HTTPError, URLError
 
 import paho.mqtt.client as mqtt
+from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 # globals
@@ -189,31 +194,38 @@ def init(broker, realm, scene, callback=None, port=None, democlick=None):
     arena_callback = callback
     pseudoclick = democlick
 
-    # TODO: detect if the user needs a headless login
-    # TODO: load saved mqtt_token, check expiration, attempt reuse
-
     # begin authentication flow
-    gauth_json = get_gauthid(broker)
-    flow = InstalledAppFlow.from_client_config(
-        json.loads(gauth_json),
-        scopes=["openid",
-                "https://www.googleapis.com/auth/userinfo.profile",
-                "https://www.googleapis.com/auth/userinfo.email"])
+    scopes = ["openid",
+              "https://www.googleapis.com/auth/userinfo.profile",
+              "https://www.googleapis.com/auth/userinfo.email"]
+    cpath = f'{str(Path.home())}/.arena_gauth.bin'
+    creds = None
+    browser = webbrowser.get()
+    print("browser: "+browser)
 
-    auth_prompt_msg = (
-        "If your web browser does not open, please visit this URL to authenticate ARENA python access: {url}"
-    )
-    auth_web_ok_msg = (
-        "The ARENA authentication flow has completed. You may close this window."
-    )
-    flow.run_local_server(
-        host="localhost",
-        port=8989,  # TODO: select best client port to avoid likely conflicts
-        authorization_prompt_message=auth_prompt_msg,
-        success_message=auth_web_ok_msg,
-        open_browser=True
-    )
-    id_token = flow.oauth2session.token['id_token']
+    # store the user's access and refresh tokens
+    if os.path.exists(cpath):
+        with open(cpath, 'rb') as token:
+            creds = pickle.load(token)
+    # if no credentials available, let the user log in.
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            gauth_json = get_gauthid(broker)
+            flow = InstalledAppFlow.from_client_config(
+                json.loads(gauth_json), scopes)
+            if browser:
+                # TODO: select best client port to avoid likely conflicts
+                creds = flow.run_local_server(port=8989)
+            else:
+                creds = flow.run_console()
+        with open(cpath, 'wb') as token:
+            # save the credentials for the next run
+            pickle.dump(creds, token)
+        os.chmod(cpath, 0o600)  # set user-only perms.
+
+    id_token = creds.id_token
     session = flow.authorized_session()
 
     profile_info = session.get(

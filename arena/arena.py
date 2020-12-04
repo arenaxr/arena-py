@@ -157,7 +157,7 @@ def _urlopen(url, data=None):
 
 # TODO: will be deprecated after using arena-account
 def get_gauthid(host):
-    url = f'https://{host}/conf/arena-gauth.json'
+    url = f'https://{host}/conf/gauth.json'
     return _urlopen(url)
 
 

@@ -721,7 +721,7 @@ class Object:
             MESSAGE["data"]["material"] = {
                 "colorWrite": false,
                 "render-order": 0
-                }
+            }
         if self.line != None:
             MESSAGE["data"]["start"] = {
                 "x": agran(self.line.start[0]),
@@ -746,7 +746,7 @@ class Object:
             MESSAGE["data"]["lineWidth"] = self.thickline.line_width
             MESSAGE["data"]["color"] = self.thickline.color
         if self.collision_listener != False:
-            MESSAGE["data"]["collision-listener"]=""
+            MESSAGE["data"]["collision-listener"] = ""
         if self.data != "":
             MESSAGE["data"].update(json.loads(self.data))
         if self.physics != Physics.none:
@@ -761,7 +761,7 @@ class Object:
                 "loop": self.animation.loop,
                 "repetitions": self.animation.repetitions,
                 "timeScale": self.animation.timeScale
-                }
+            }
         if self.transparency != None:
             MESSAGE["data"]["material"] = {
                 "transparent": self.transparency.transparent,
@@ -772,7 +772,7 @@ class Object:
                 "on": self.impulse.on,
                 "force": tuple_to_string(self.impulse.force),
                 "position": tuple_to_string(self.impulse.position)
-                }
+            }
         if self.parent != "":
             MESSAGE["data"]["parent"] = self.parent
 

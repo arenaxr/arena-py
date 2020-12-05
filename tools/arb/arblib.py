@@ -555,6 +555,7 @@ def probable_quat(num):
     return num
 
 
+# TODO: pass in mqtt_token to persist
 def get_network_persisted_obj(object_id, broker, scene):
     data = urllib.request.urlopen(
         'https://' + broker + '/persist/' + scene + '/' + object_id).read()
@@ -562,6 +563,7 @@ def get_network_persisted_obj(object_id, broker, scene):
     return output
 
 
+# TODO: pass in mqtt_token to persist
 def get_network_persisted_scene(broker, scene):
     data = urllib.request.urlopen(
         'https://' + broker + '/persist/' + scene).read()

@@ -1,13 +1,15 @@
+import enum
 import json
 import random
 import signal
 import sys
 import time
-import enum
 from datetime import datetime
 from threading import Event
 
 import paho.mqtt.client as mqtt
+
+import auth
 
 # globals
 running = False
@@ -44,7 +46,7 @@ def arena_publish(scene_path, MESSAGE):
 
 def process_message(msg):
     global arena_callback
-    global pseudoclickl
+    global pseudoclick
     #print("process_message: "+str(msg.payload))
 
     # manage secondary subscriptions to the same bus, not always JSON
@@ -137,7 +139,7 @@ def on_connect(client, userdata, flags, rc):
 #    print("log:" + buf)
 
 
-def init(broker, realm, scene, callback=None, port=None, democlick=None):
+def init(broker, realm, scene, callback=None, port=None, democlick=None, webhost='xr.andrew.cmu.edu'):
     global client
     global scene_path
     global mqtt_broker
@@ -149,6 +151,11 @@ def init(broker, realm, scene, callback=None, port=None, democlick=None):
     scene_path = realm + "/s/" + scene
     arena_callback = callback
     pseudoclick = democlick
+
+    user, token = auth.authenticate(realm, scene, broker, webhost=webhost,
+                                    debug=debug_toggle)
+    if user and token:
+        client.username_pw_set(username=user, password=token)
 
     #print("arena callback:", callback)
     #print("connecting to broker ", mqtt_broker)
@@ -656,7 +663,6 @@ class Object:
 
     def position(self, location=(0, 0, 0)):
         global debug_toggle
-        # mosquitto_pub -h oz.andrew.cmu.edu -t /topic/render/cube_1/position -m "x:1; y:2; z:3;"
         self.location = location
         MESSAGE = {
             "object_id": self.objName,

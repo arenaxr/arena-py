@@ -102,7 +102,7 @@ def get_gauthid(webhost):
 def get_mqtt_token(broker, realm, scene, user, id_token):
     url = f'https://{broker}/auth/'
     params = {
-        "id_auth": "google",
+        "id_auth": "google-installed",
         "username": user,
         "id_token": id_token,
         "realm": realm,

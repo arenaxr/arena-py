@@ -125,8 +125,8 @@ def _urlopen(url, data=None):
             res = request.urlopen(url, data=data)
         return res.read().decode('utf-8')
     except (URLError, HTTPError) as err:
-        print("Error: {0}".format(err))
-        return {}
+        print("{0}: ".format(err)+url)
+        sys.exit("Terminating...")
 
 
 def signout():

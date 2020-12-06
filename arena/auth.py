@@ -70,6 +70,7 @@ def authenticate(realm, scene, broker, webhost, debug=False):
     if profile_info != None:
         mqtt_json = None
         user = profile_info['email']
+        print(f'Authenticated account: {user}')
 
         # TODO: permissions may change by owner or admin,
         # for now, get a fresh mqtt_token each time
@@ -101,6 +102,9 @@ def get_gauthid(webhost):
 
 def get_mqtt_token(broker, realm, scene, user, id_token):
     url = f'https://{broker}/auth/'
+    if broker == 'oz.andrew.cmu.edu':
+        # TODO: remove this workaround for non-auth broker
+        url = f'http://{broker}:8888/'
     params = {
         "id_auth": "google-installed",
         "username": user,

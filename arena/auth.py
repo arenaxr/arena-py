@@ -104,7 +104,7 @@ def get_mqtt_token(broker, realm, scene, user, id_token):
     url = f'https://{broker}/auth/'
     if broker == 'oz.andrew.cmu.edu':
         # TODO: remove this workaround for non-auth broker
-        url = f'http://{broker}:8888/'
+        url = f'https://{broker}:8888/'
     params = {
         "id_auth": "google-installed",
         "username": user,

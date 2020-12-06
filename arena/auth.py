@@ -19,13 +19,26 @@ debug_toggle = False
 scopes = ["openid",
           "https://www.googleapis.com/auth/userinfo.profile",
           "https://www.googleapis.com/auth/userinfo.email"]
-cpath = f'{str(Path.home())}/.arena_google_auth'
-mtpath = f'{str(Path.home())}/.arena_mqtt_auth'
+user_gauth_path = f'{str(Path.home())}/.arena_google_auth'
+user_mqtt_path = f'{str(Path.home())}/.arena_mqtt_auth'
+local_mqtt_path = f'.arena_mqtt_auth'
 
 
 def authenticate(realm, scene, broker, webhost, debug=False):
     global debug_toggle
     debug_toggle = debug
+    print("Signing in to the ARENA...")
+
+    # TODO: remove local check after ARTS supports mqtt_token passing
+    # check for local mqtt_token first
+    if os.path.exists(local_mqtt_path):
+        print("Using local MQTT token.")
+        f = open(local_mqtt_path, "r")
+        mqtt_json = f.read()
+        f.close()
+        # TODO: check token expiration
+        return json.loads(mqtt_json)
+
     # begin authentication flow
     creds = None
     browser = None
@@ -34,20 +47,20 @@ def authenticate(realm, scene, broker, webhost, debug=False):
     except (webbrowser.Error) as err:
         print("Console-only login. {0}".format(err))
 
-    print("Signing in to the ARENA...")
     # store the user's access and refresh tokens
-    if os.path.exists(cpath):
-        print("Using cached authentication.")
-        with open(cpath, 'rb') as token:
+    if os.path.exists(user_gauth_path):
+        print("Using cached Google authentication.")
+        with open(user_gauth_path, 'rb') as token:
             creds = pickle.load(token)
         session = AuthorizedSession(creds)
     # if no credentials available, let the user log in.
     if not creds or not creds.valid:
-        print("Requesting new authentication.")
         if creds and creds.expired and creds.refresh_token:
+            print("Requesting refreshed Google authentication.")
             creds.refresh(Request())
             session = AuthorizedSession(creds)
         else:
+            print("Requesting new Google authentication.")
             gauth_json = get_gauthid(webhost)
             flow = InstalledAppFlow.from_client_config(
                 json.loads(gauth_json), scopes)
@@ -57,10 +70,10 @@ def authenticate(realm, scene, broker, webhost, debug=False):
             else:
                 creds = flow.run_console()
             session = flow.authorized_session()
-        with open(cpath, 'wb') as token:
+        with open(user_gauth_path, 'wb') as token:
             # save the credentials for the next run
             pickle.dump(creds, token)
-        os.chmod(cpath, 0o600)  # set user-only perms.
+        os.chmod(user_gauth_path, 0o600)  # set user-only perms.
 
     id_token = creds.id_token
     profile_info = session.get(
@@ -70,28 +83,27 @@ def authenticate(realm, scene, broker, webhost, debug=False):
     if profile_info != None:
         mqtt_json = None
         user = profile_info['email']
-        print(f'Authenticated account: {user}')
+        print(f'Authenticated Google account: {user}')
 
         # TODO: permissions may change by owner or admin,
         # for now, get a fresh mqtt_token each time
-        # if os.path.exists(mtpath):
-        #     f = open(mtpath, "r")
+        # if os.path.exists(user_mqtt_path):
+        #     f = open(user_mqtt_path, "r")
         #     mqtt_json = f.read()
         #     f.close()
+        # # TODO: check token expiration
 
         # if no credentials available, get them.
         if not mqtt_json:
+            print("Using remote-authenticated MQTT token.")
             mqtt_json = get_mqtt_token(broker, realm, scene, user, id_token)
             # save mqtt_token
-            with open(mtpath, mode="w") as d:
+            with open(user_mqtt_path, mode="w") as d:
                 d.write(mqtt_json)
-            os.chmod(mtpath, 0o600)  # set user-only perms.
+            os.chmod(user_mqtt_path, 0o600)  # set user-only perms.
 
-        tokeninfo = json.loads(mqtt_json)
-        if 'token' in tokeninfo:
-            token = tokeninfo['token']
     # end authentication flow
-    return user, token
+    return json.loads(mqtt_json)
 
 
 # TODO: will be deprecated after using arena-account
@@ -134,10 +146,10 @@ def _urlopen(url, data=None):
 
 
 def signout():
-    if os.path.exists(cpath):
-        os.remove(cpath)
-    if os.path.exists(mtpath):
-        os.remove(mtpath)
+    if os.path.exists(user_gauth_path):
+        os.remove(user_gauth_path)
+    if os.path.exists(user_mqtt_path):
+        os.remove(user_mqtt_path)
     print("Signed out of the ARENA.")
 
 

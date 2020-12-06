@@ -152,10 +152,10 @@ def init(broker, realm, scene, callback=None, port=None, democlick=None, webhost
     arena_callback = callback
     pseudoclick = democlick
 
-    user, token = auth.authenticate(realm, scene, broker, webhost=webhost,
+    data = auth.authenticate(realm, scene, broker, webhost=webhost,
                                     debug=debug_toggle)
-    if user and token:
-        client.username_pw_set(username=user, password=token)
+    if 'username' in data and 'token' in data:
+        client.username_pw_set(username=data['username'], password=data['token'])
 
     #print("arena callback:", callback)
     #print("connecting to broker ", mqtt_broker)

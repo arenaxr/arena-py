@@ -13,7 +13,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/conix-center/ARENA-py",
-    packages=setuptools.find_packages(),
+    packages=["arena"],
     install_requires=[ "aiohttp",
                        "paho-mqtt~=1.5.0",
                        "numpy~=1.18.1",

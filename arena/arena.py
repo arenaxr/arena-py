@@ -9,7 +9,7 @@ from threading import Event
 
 import paho.mqtt.client as mqtt
 
-import auth
+from arena import auth
 
 # globals
 running = False

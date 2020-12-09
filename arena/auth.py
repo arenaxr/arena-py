@@ -17,8 +17,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 
 debug_toggle = False
 _scopes = ["openid",
-          "https://www.googleapis.com/auth/userinfo.profile",
-          "https://www.googleapis.com/auth/userinfo.email"]
+           "https://www.googleapis.com/auth/userinfo.profile",
+           "https://www.googleapis.com/auth/userinfo.email"]
 _user_gauth_path = f'{str(Path.home())}/.arena_google_auth'
 _user_mqtt_path = f'{str(Path.home())}/.arena_mqtt_auth'
 _local_mqtt_path = f'.arena_mqtt_auth'
@@ -27,6 +27,7 @@ _mqtt_token = {}
 
 def authenticate(realm, scene, broker, webhost, debug=False):
     global debug_toggle
+    global _mqtt_token
     debug_toggle = debug
     print("Signing in to the ARENA...")
 
@@ -131,14 +132,15 @@ def _get_mqtt_token(broker, realm, scene, user, id_token):
     data = query_string.encode("ascii")
     return urlopen(url, data)
 
-"""
-urlopen is for ARENA URL connections.
-url: the url to POST/GET.
-data: None for GET, add params for POST.
-creds: True to pass the MQTT token as a cookie.
-"""
+
 def urlopen(url, data=None, creds=False):
+    """ urlopen is for ARENA URL connections.
+    url: the url to POST/GET.
+    data: None for GET, add params for POST.
+    creds: True to pass the MQTT token as a cookie.
+    """
     global debug_toggle
+    global _mqtt_token
     try:
         req = request.Request(url)
         if creds:

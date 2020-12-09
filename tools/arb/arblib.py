@@ -8,12 +8,10 @@
 import enum
 import json
 import re
-import urllib.request
-
-import webcolors
-from scipy.spatial.transform import Rotation
 
 import arena
+import webcolors
+from scipy.spatial.transform import Rotation
 
 CLICKLINE_LEN = 1  # meters
 CLICKLINE_SCL = (1, 1, 1)  # meters
@@ -553,19 +551,3 @@ def probable_quat(num):
     if abs(num - closest) < QUAT_DEV_RGT:
         return closest
     return num
-
-
-# TODO: pass in mqtt_token to persist
-def get_network_persisted_obj(object_id, broker, scene):
-    data = urllib.request.urlopen(
-        'https://' + broker + '/persist/' + scene + '/' + object_id).read()
-    output = json.loads(data)
-    return output
-
-
-# TODO: pass in mqtt_token to persist
-def get_network_persisted_scene(broker, scene):
-    data = urllib.request.urlopen(
-        'https://' + broker + '/persist/' + scene).read()
-    output = json.loads(data)
-    return output

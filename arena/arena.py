@@ -250,7 +250,7 @@ def agran(float_num):
 
 def get_network_persisted_obj(object_id, broker, scene):
     # pass token to persist
-    data = auth._urlopen(
+    data = auth.urlopen(
         url=f'https://{broker}/persist/{scene}/{object_id}', creds=True)
     output = json.loads(data)
     return output
@@ -258,7 +258,7 @@ def get_network_persisted_obj(object_id, broker, scene):
 
 def get_network_persisted_scene(broker, scene):
     # pass token to persist
-    data = auth._urlopen(
+    data = auth.urlopen(
         url=f'https://{broker}/persist/{scene}', creds=True)
     output = json.loads(data)
     return output

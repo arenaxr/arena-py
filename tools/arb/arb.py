@@ -125,7 +125,7 @@ def handle_clickline_event(event, mode):
         return None, None, None
     if USERS[event.source].mode != mode:
         return None, None, None
-    pobjs = arblib.get_network_persisted_obj(object_id, BROKER, SCENE)
+    pobjs = arena.get_network_persisted_obj(object_id, BROKER, SCENE)
     if not pobjs:
         return None, None, None
     obj = arblib.ObjectPersistence(pobjs[0])
@@ -339,10 +339,10 @@ def show_redpill_scene(enabled):
                          line=arena.Line((x, y, -glen), (x, y, glen), 1, hcolor))
         else:
             arblib.delete_obj(REALM, SCENE, name)
-    pobjs = arblib.get_network_persisted_scene(BROKER, SCENE)
+    pobjs = arena.get_network_persisted_scene(BROKER, SCENE)
     for pobj in pobjs:
         obj = arblib.ObjectPersistence(pobj)
-        # show occulded objects
+        # show occluded objects
         if obj.transparent_occlude:
             name = "redpill_" + obj.object_id
             if enabled:
@@ -365,7 +365,7 @@ def show_redpill_scene(enabled):
 def do_rename(camname, old_id, new_id):
     if new_id == old_id:
         return
-    pobjs = arblib.get_network_persisted_obj(old_id, BROKER, SCENE)
+    pobjs = arena.get_network_persisted_obj(old_id, BROKER, SCENE)
     if not pobjs:
         return
     data = json.dumps(pobjs[0]["attributes"])
@@ -377,7 +377,7 @@ def do_rename(camname, old_id, new_id):
 
 def show_redpill_obj(camname, object_id):
     # any scene changes must not persist
-    pobjs = arblib.get_network_persisted_obj(object_id, BROKER, SCENE)
+    pobjs = arena.get_network_persisted_obj(object_id, BROKER, SCENE)
     if not pobjs:
         return
     obj = arblib.ObjectPersistence(pobjs[0])
@@ -387,7 +387,7 @@ def show_redpill_obj(camname, object_id):
 
 
 def do_move_select(camname, object_id):
-    pobjs = arblib.get_network_persisted_obj(object_id, BROKER, SCENE)
+    pobjs = arena.get_network_persisted_obj(object_id, BROKER, SCENE)
     if not pobjs:
         return
     obj = arblib.ObjectPersistence(pobjs[0])
@@ -414,7 +414,7 @@ def do_nudge_select(camname, objid, position=None):
     delim = "_"+Mode.NUDGE.value+"_"
     callback = nudgeline_callback
     if not position:
-        pobjs = arblib.get_network_persisted_obj(objid, BROKER, SCENE)
+        pobjs = arena.get_network_persisted_obj(objid, BROKER, SCENE)
         if not pobjs:
             return
         obj = arblib.ObjectPersistence(pobjs[0])
@@ -433,7 +433,7 @@ def do_scale_select(camname, objid, scale=None):
     delim = "_"+Mode.SCALE.value+"_"
     callback = scaleline_callback
     if not scale:
-        pobjs = arblib.get_network_persisted_obj(objid, BROKER, SCENE)
+        pobjs = arena.get_network_persisted_obj(objid, BROKER, SCENE)
         if not pobjs:
             return
         obj = arblib.ObjectPersistence(pobjs[0])
@@ -451,7 +451,7 @@ def do_stretch_select(camname, objid, scale=None):
     delim = "_"+Mode.STRETCH.value+"_"
     callback = stretchline_callback
     if not scale:
-        pobjs = arblib.get_network_persisted_obj(objid, BROKER, SCENE)
+        pobjs = arena.get_network_persisted_obj(objid, BROKER, SCENE)
         if not pobjs:
             return
         obj = arblib.ObjectPersistence(pobjs[0])
@@ -478,13 +478,13 @@ def do_rotate_select(camname, objid, rotation=None):
     delim = "_"+Mode.ROTATE.value+"_"
     callback = rotateline_callback
     if not rotation:
-        pobjs = arblib.get_network_persisted_obj(objid, BROKER, SCENE)
+        pobjs = arena.get_network_persisted_obj(objid, BROKER, SCENE)
         if not pobjs:
             return
         obj = arblib.ObjectPersistence(pobjs[0])
         position = obj.position
         rotation = obj.rotation
-        # rotate object + or - on 3 axis, plus show orginal axis as after
+        # rotate object + or - on 3 axis, plus show original axis as after
         # effect
         make_clickline("x", 1, objid, position, delim, color, callback, True)
         make_clickline("y", 1, objid, position, delim, color, callback, True)

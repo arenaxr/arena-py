@@ -22,6 +22,7 @@ scopes = ["openid",
 user_gauth_path = f'{str(Path.home())}/.arena_google_auth'
 user_mqtt_path = f'{str(Path.home())}/.arena_mqtt_auth'
 local_mqtt_path = f'.arena_mqtt_auth'
+mqtt_token = {}
 
 
 def authenticate(realm, scene, broker, webhost, debug=False):
@@ -37,7 +38,8 @@ def authenticate(realm, scene, broker, webhost, debug=False):
         mqtt_json = f.read()
         f.close()
         # TODO: check token expiration
-        return json.loads(mqtt_json)
+        mqtt_token = json.loads(mqtt_json)
+        return mqtt_token
 
     # begin authentication flow
     creds = None
@@ -103,7 +105,8 @@ def authenticate(realm, scene, broker, webhost, debug=False):
             os.chmod(user_mqtt_path, 0o600)  # set user-only perms.
 
     # end authentication flow
-    return json.loads(mqtt_json)
+    mqtt_token = json.loads(mqtt_json)
+    return mqtt_token
 
 
 # TODO: will be deprecated after using arena-account
@@ -129,16 +132,19 @@ def get_mqtt_token(broker, realm, scene, user, id_token):
     return _urlopen(url, data)
 
 
-def _urlopen(url, data=None):
+def _urlopen(url, data=None, creds=False):
     global debug_toggle
     try:
+        req = request.Request(url)
+        if creds:
+            req.add_header("Cookie", f"mqtt_token={mqtt_token['token']}")
         if debug_toggle:
             context = ssl.create_default_context()
             context.check_hostname = False
             context.verify_mode = ssl.CERT_NONE
-            res = request.urlopen(url, data=data, context=context)
+            res = request.urlopen(req, data=data, context=context)
         else:
-            res = request.urlopen(url, data=data)
+            res = request.urlopen(req, data=data)
         return res.read().decode('utf-8')
     except (URLError, HTTPError) as err:
         print("{0}: ".format(err)+url)

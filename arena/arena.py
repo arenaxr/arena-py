@@ -248,6 +248,22 @@ def agran(float_num):
     return round(float_num, 3)
 
 
+def get_network_persisted_obj(object_id, broker, scene):
+    # pass token to persist
+    data = auth._urlopen(
+        url=f'https://{broker}/persist/{scene}/{object_id}', creds=True)
+    output = json.loads(data)
+    return output
+
+
+def get_network_persisted_scene(broker, scene):
+    # pass token to persist
+    data = auth._urlopen(
+        url=f'https://{broker}/persist/{scene}', creds=True)
+    output = json.loads(data)
+    return output
+
+
 class Physics(enum.Enum):
     none = "none"
     static = "static"

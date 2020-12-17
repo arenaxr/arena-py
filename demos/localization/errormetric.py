@@ -4,7 +4,6 @@ import getopt
 import numpy as np
 import pose
 import sys
-sys.path.append('..')
 import arena
 
 

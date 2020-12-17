@@ -8,7 +8,6 @@ import os
 import pose
 import sys
 from types import SimpleNamespace
-sys.path.append('..')
 import arena
 
 BROKER = 'oz.andrew.cmu.edu'

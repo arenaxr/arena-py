@@ -5,7 +5,6 @@ import json
 import pose
 import sys
 from types import SimpleNamespace
-sys.path.append('..')
 import arena
 
 

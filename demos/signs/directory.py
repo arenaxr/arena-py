@@ -50,17 +50,17 @@ def dir_add_element(MID,title,link,mode,entry,signCnt):
                 parent=MID+"signParent"+str(signCnt)
     )
 
-
-    #dataStr='{"text":{ "anchor":left, "wrapCount":100, "value":"Definitely not working..." } } '
+    dataStr='{"text": { "align":"left", "wrapCount":50, "value":"' + title + '"} } '
     text1 = arena.Object(
                 objName=MID+"text_"+str(signCnt) + "_" + str(entry),
                 objType=arena.Shape.text,
                 scale=(1.0,0.5,0.3),
-                location=( 0,3-entry*0.4, 0),
+                location=( 0.1,3-entry*0.4, 0),
                 clickable=False,
-                text=title,
+                #text=title,
                 data=dataStr,
-                color=(100,100,255),
+               # color=(100,100,255),
+                color=(0,0,0),
 		        persist=True,
                 parent=MID+"signParent"+str(signCnt)
     )
@@ -88,6 +88,7 @@ else:
     print( "export MID=dir")
     print( "export HOST=arena.andrew.cmu.edu")
     print( "export REALM=realm")
+    print( "export JSONCFG=directory_cfg.json")
     print( "export SCENE=example")
     exit(-1)
 
@@ -122,6 +123,7 @@ if os.environ.get('JSONCFG') is not None:
         for key in signData:
             value = signData[key]
             print("Sign Title: " + key)
+            print( "Directory Title: " + value["title"])
             signParent = arena.Object(
                 persist=True,
                 objName=MID+"signParent"+str(cnt),
@@ -129,6 +131,19 @@ if os.environ.get('JSONCFG') is not None:
                 location=(0, 0, 0),
                 transparency=arena.Transparency(True, 0),
             )
+            dataStr='{"text": { "align":"center", "wrapCount":50, "value":"' + value["title"] + '"} } '
+            text_title = arena.Object(
+                objName=MID+"text_title_"+str(cnt),
+                objType=arena.Shape.text,
+                scale=(1.0,0.75,0.3),
+                location=( 0.1,3.30, 0),
+                clickable=False,
+                data=dataStr,
+                color=(225,75,40),
+		        persist=True,
+                parent=MID+"signParent"+str(cnt)
+            )
+
             entry=0
             for key2 in value:
                 if "link" in key2:
@@ -137,6 +152,19 @@ if os.environ.get('JSONCFG') is not None:
                     print("\tMode " + value[key2][2])
                     dir_add_element(MID,value[key2][0], value[key2][1], value[key2][2],entry,cnt)
                     entry+=1
+
+            backing = arena.Object(
+                objName=MID+"backing_"+str(cnt),
+                objType=arena.Shape.cube,
+                scale=(4.5,0.5*entry,0.1),
+                location=( 0,3.55-entry*0.25, -0.2),
+                color=(150,150,150),
+                clickable=True,
+		persist=True,
+                parent=MID+"signParent"+str(cnt)
+            )
+
+ 
             sign_location=value["position"]
             sign_rotation=value["rotation"]
             sign_scale=value["scale"]

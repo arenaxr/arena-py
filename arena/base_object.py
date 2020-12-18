@@ -31,6 +31,6 @@ class BaseObject(object):
         self.__dict__[id] = attr
 
     def json(self, **kwargs): # kwargs are for additional param to add to json, like "action":"create"
-        res = {k:v for k,v in vars(self).items() if k != "callback"}
+        res = {k:v for k,v in vars(self).items() if k != "evt_handler"}
         res.update(kwargs)
         return json.dumps(res, cls=CustomEncoder)

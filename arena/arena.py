@@ -9,12 +9,22 @@ from datetime import datetime
 
 from attributes import *
 from objects import *
+from events import *
 from utils import *
 
 import auth
 
 class Arena(object):
-    def __init__(self, host=None, scene=None, realm=None, port=None, callback=None, debug=False, webhost='xr.andrew.cmu.edu'):
+    def __init__(self,
+                host = None,
+                scene = None,
+                realm = None,
+                port = None,
+                on_msg_callback = None,
+                new_obj_callback = None,
+                debug = False,
+                webhost = 'xr.andrew.cmu.edu'
+            ):
         if os.environ.get('MQTTH') and os.environ.get('SCENE') and os.environ.get('REALM'):
             HOST  = os.environ["MQTTH"]
             SCENE = os.environ["SCENE"]
@@ -46,8 +56,11 @@ class Arena(object):
         self.msg_queue = []
         self.msg_ready = threading.Event()
         self.running = False
-        self.callback = callback
+        self.on_msg_callback = on_msg_callback
+        self.new_obj_callback = new_obj_callback
+        self.secondary_callbacks = {}
         self.debug = debug
+        self.unspecified_objs_ids = set() # objects that exist in scene, but user does not have reference to
 
         if port is not None:
             self.client.connect(HOST, port)
@@ -95,20 +108,33 @@ class Arena(object):
         self.msg_ready.set()
 
     def process_message(self, msg):
+        for sub in self.secondary_callbacks:
+            if mqtt.topic_matches_sub(sub, msg.topic):
+                print(sub, msg.topic)
+                self.secondary_callbacks[sub](msg)
+                return
+
         payload_str = msg.payload.decode("utf-8", "ignore")
         payload = json.loads(payload_str)
 
         # update object attributes, if possible
         if "object_id" in payload:
-            object_id = payload["object_id"]
-            if object_id in Object.all_objects:
-                obj = Object.all_objects[object_id]
-                obj.update_attributes(data=payload["data"])
-                if obj.callback:
-                    obj.callback(payload_str)
+            event = None
+            if "action" in payload and payload["action"] == "clientEvent":
+                event = Event(**payload)
 
-        if self.callback:
-            self.callback(payload)
+            object_id = payload["object_id"]
+            if object_id in self.all_objects:
+                obj = self.all_objects[object_id]
+                if not event: # update object if not an event
+                    obj.update_attributes(**payload)
+                elif obj.evt_handler:
+                    obj.evt_handler(event)
+            elif object_id not in self.unspecified_objs_ids and self.new_obj_callback:
+                self.new_obj_callback(payload)
+                self.unspecified_objs_ids.add(object_id)
+            elif not event and self.on_msg_callback:
+                self.on_msg_callback(payload)
 
     @property
     def all_objects(self):
@@ -117,7 +143,8 @@ class Arena(object):
     def add_object(self, obj):
         self.publish(obj, "create")
 
-    def update_object(self, obj):
+    def update_object(self, obj, **kwargs):
+        obj.update_attributes(**kwargs)
         self.publish(obj, "update")
 
     def delete_object(self, obj):
@@ -129,7 +156,7 @@ class Arena(object):
         Object.remove(obj)
 
     def publish(self, obj, action):
-        topic = self.root_topic
+        topic = self.root_topic + "/" + obj["object_id"]
         d = datetime.now().isoformat()[:-3]+"Z"
         if action != "delete":
             payload = obj.json(action=action, timestamp=d)
@@ -138,3 +165,26 @@ class Arena(object):
             payload["timestamp"] = d
             payload = json.dumps(payload)
         self.client.publish(topic, payload, qos=0)
+
+    def get_network_persisted_obj(self, object_id, broker, scene):
+        # pass token to persist
+        data = auth.urlopen(
+            url=f'https://{broker}/persist/{scene}/{object_id}', creds=True)
+        output = json.loads(data)
+        return output
+
+    def get_network_persisted_scene(self, broker, scene):
+        # pass token to persist
+        data = auth.urlopen(
+            url=f'https://{broker}/persist/{scene}', creds=True)
+        output = json.loads(data)
+        return output
+
+    def add_topic(sub, callback):
+        """Subscribes to new topic and adds filter for callback to on_message()"""
+        secondary_callbacks[sub] = callback
+        self.client.subscribe(sub, callback)
+
+    def remove_topic(sub):
+        """Unsubscribes to topic and removes filter for callback"""
+        self.client.unsubscribe(sub)

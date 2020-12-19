@@ -1,9 +1,7 @@
 import uuid
-import signal
 import random
 import sys, os
 import time
-import threading
 import paho.mqtt.client as mqtt
 from datetime import datetime
 
@@ -11,6 +9,7 @@ from attributes import *
 from objects import *
 from events import *
 from utils import *
+from event_loop import *
 
 import auth
 
@@ -30,7 +29,7 @@ class Arena(object):
             SCENE = os.environ["SCENE"]
             REALM = os.environ["REALM"]
         else:
-            print("Cannot find SCENE, MQTTH, and REALM environment variables, using input parameters instead.")
+            print("Cannot find SCENE, MQTTH, and REALM environmental variables, using input parameters instead.")
             if host and scene and realm:
                 HOST  = host
                 SCENE = scene
@@ -42,25 +41,27 @@ class Arena(object):
         print("=====")
 
         self.root_topic = f"{REALM}/s/{SCENE}"
+        self.debug = debug
 
         self.client = mqtt.Client(
             "pyClient-" + str(random.randrange(0, 1000000)), clean_session=True
         )
 
         data = auth.authenticate(REALM, SCENE, HOST, webhost=webhost,
-                                                     debug=debug)
+                                                     debug=self.debug)
         if 'username' in data and 'token' in data:
             self.client.username_pw_set(username=data["username"], password=data["token"])
         print("=====")
 
-        self.msg_queue = []
-        self.msg_ready = threading.Event()
-        self.running = False
         self.on_msg_callback = on_msg_callback
         self.new_obj_callback = new_obj_callback
-        self.secondary_callbacks = {}
-        self.debug = debug
+
         self.unspecified_objs_ids = set() # objects that exist in scene, but user does not have reference to
+        self.task_manager = EventLoop(self.stop)
+
+        # add mqtt client loop to list of tasks
+        self.network_loop = Timer(self.run_network_loop, 0.01)
+        self.task_manager.add_task(self.network_loop)
 
         if port is not None:
             self.client.connect(HOST, port)
@@ -72,48 +73,39 @@ class Arena(object):
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
 
-        signal.signal(signal.SIGINT, self.signal_handler)
+    def run_network_loop(self):
+        self.client.loop()
 
-        self.client.loop_start()
+    def run_once(self, func, *args, **kwargs):
+        w = Worker(func, *args, **kwargs)
+        self.task_manager.add_task(w)
 
-        self.thread = threading.Thread(target=self.run, args=())
-        self.thread.daemon = True
-        self.thread.start()
+    def run_forever(self, func, interval_ms, **kwargs):
+        if interval_ms < 0:
+            print("Invalid interval! Defaulting to 1000ms")
+            interval_ms = 1000
+        t = Timer(func, float(interval_ms) / 1000, **kwargs)
+        self.task_manager.add_task(t)
 
-    def run(self):
-        print("Started network loop!")
-        self.running = True
-        while self.running:
-            if len(self.msg_queue) > 0:
-                self.process_message(self.msg_queue.pop(0))
-            else:
-                self.msg_ready.clear()
-                self.msg_ready.wait()
+    def start_tasks(self):
+        print("Starting arena-py client...")
+        self.task_manager.run()
 
-    def signal_handler(self, sig, frame):
-        self.running = False
-        self.client.loop_stop()  # stop loop
-        print("Disconnecting...")
+    def stop(self):
         self.client.disconnect()
-        sys.exit("Disconnected!")
+        print("Disconnected!")
 
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
             print("Connected!")
+            print("=====")
         else:
             print("Connection error! Result code: " + rc)
 
     def on_message(self, client, userdata, msg):
-        self.msg_queue.append(msg)
-        self.msg_ready.set()
+        self.process_message(msg)
 
     def process_message(self, msg):
-        for sub in self.secondary_callbacks:
-            if mqtt.topic_matches_sub(sub, msg.topic):
-                print(sub, msg.topic)
-                self.secondary_callbacks[sub](msg)
-                return
-
         payload_str = msg.payload.decode("utf-8", "ignore")
         payload = json.loads(payload_str)
 
@@ -179,12 +171,3 @@ class Arena(object):
             url=f'https://{broker}/persist/{scene}', creds=True)
         output = json.loads(data)
         return output
-
-    def add_topic(sub, callback):
-        """Subscribes to new topic and adds filter for callback to on_message()"""
-        secondary_callbacks[sub] = callback
-        self.client.subscribe(sub, callback)
-
-    def remove_topic(sub):
-        """Unsubscribes to topic and removes filter for callback"""
-        self.client.unsubscribe(sub)

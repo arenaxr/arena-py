@@ -1,28 +1,44 @@
 from arena import *
-import time
+import random
 
-def msg_callback(arg):
-    print("callback1")
+# start ARENA client
+arena = Arena("arena.andrew.cmu.edu", "render", "realm")
 
-arena = Arena("arena.andrew.cmu.edu", "head", "realm", callback=msg_callback)
+def evt_handler(msg):
+    print("clicked")
 
-def f(arg):
-    print("callback")
-cube = Cube(object_id="cube1", scale=Scale(2,2,2), position=Position(0,1,1), callback=f)
-torusKnot = TorusKnot(object_id="torus1", scale=Scale(1,2,1), position=Position(2,3,1), color="#ff0ff6")
-line = Line(object_id="line1", scale=Scale(1,2,3), start=Position(0,0,0), end=Position(5,1,-4), position=Position(2,3,1), color="#ff0f0f")
-
-cam = Camera(object_id="camera_6146_EdwardLu", scale=Scale(1,2,3))
-
+cube = Cube(object_id="cube", position=Position(0,3,0), scale=Scale(2,2,2), click_listener=True, evt_handler=evt_handler)
 arena.add_object(cube)
-arena.add_object(line)
-time.sleep(1)
-arena.add_object(torusKnot)
-time.sleep(1)
-arena.delete_object(cube)
-arena.delete_object(torusKnot)
 
-while 1:
-    # print(arena.all_objects)
-    print(cam.data.position, cam.data.rotation)
-    time.sleep(1)
+sphere = Sphere(object_id="sphere", position=Position(0,3,0), scale=Scale(0.5,0.5,0.5))
+arena.add_object(sphere)
+
+def make_text(text, parent):
+    text_obj = Text(text=text, position=Position(0,2,0), parent=parent)
+    arena.add_object(text_obj)
+    print(sphere.object_id, text, parent)
+
+i = 0
+def move_cube():
+    global i # non allocated variables need to be global
+    cube.update_attributes(position=Position(i,3,0))
+    arena.update_object(cube)
+    i += 0.2
+
+j = 0
+def move_sphere():
+    global j # non allocated variables need to be global
+    sphere.update_attributes(position=Position(j,3,0))
+    arena.update_object(sphere)
+    j -= 0.5
+
+def make_dodecahedrons():
+    arena.add_object(Dodecahedron(position=Position(random.randint(-10, 10),random.randint(0, 5),random.randint(-10, 10))))
+
+arena.run_once(make_text, "arena-py 2.0, babyyyyy", parent="sphere")
+arena.run_once(make_text, "arena-py 2.0000000000", parent="cube")
+arena.run_forever(move_cube, 500)
+arena.run_forever(move_sphere, 1000)
+arena.run_forever(make_dodecahedrons, 2000)
+
+arena.start_tasks() # will block

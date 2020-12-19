@@ -21,7 +21,7 @@ class Object(BaseObject):
         if "action" in kwargs: del kwargs["action"]
 
         # special case for "parent"
-        if "parent"in kwargs and isinstance(kwargs["parent"], Object):
+        if "parent" in kwargs and isinstance(kwargs["parent"], Object):
             kwargs["parent"] = kwargs["parent"].object_id
 
         # print warning if object is being created with the same id as an existing object

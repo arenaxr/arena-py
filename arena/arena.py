@@ -2,6 +2,7 @@ import uuid
 import random
 import sys, os
 import time
+import asyncio
 import paho.mqtt.client as mqtt
 from datetime import datetime
 
@@ -55,12 +56,13 @@ class Arena(object):
 
         self.on_msg_callback = on_msg_callback
         self.new_obj_callback = new_obj_callback
+        self.secondary_callbacks = {}
 
         self.unspecified_objs_ids = set() # objects that exist in scene, but user does not have reference to
         self.task_manager = EventLoop(self.stop)
 
         # add mqtt client loop to list of tasks
-        self.network_loop = Timer(self.run_network_loop, 0.01)
+        self.network_loop = PersistantWorker(self.run_network_loop, 0.01)
         self.task_manager.add_task(self.network_loop)
 
         if port is not None:
@@ -76,16 +78,50 @@ class Arena(object):
     def run_network_loop(self):
         self.client.loop()
 
-    def run_once(self, func, *args, **kwargs):
-        w = Worker(func, *args, **kwargs)
-        self.task_manager.add_task(w)
+    def run_once(self, func=None, *args, **kwargs):
+        if func is not None:
+            w = SingleWorker(func, *args, **kwargs)
+            self.task_manager.add_task(w)
+        else:
+            def _run_once(func):
+                self.run_once(func, *args, **kwargs)
+            return _run_once
 
-    def run_forever(self, func, interval_ms, **kwargs):
-        if interval_ms < 0:
-            print("Invalid interval! Defaulting to 1000ms")
-            interval_ms = 1000
-        t = Timer(func, float(interval_ms) / 1000, **kwargs)
-        self.task_manager.add_task(t)
+    def run_after_interval(self, func=None, interval_ms=1000, *args, **kwargs):
+        if func is not None:
+            if interval_ms < 0:
+                print("Invalid interval! Defaulting to 1000ms")
+                interval_ms = 1000
+            w = LazyWorker(func, float(interval_ms) / 1000, *args, **kwargs)
+            self.task_manager.add_task(w)
+        else:
+            def _run_after_interval(func):
+                self.run_after_interval(func, interval_ms, *args, **kwargs)
+            return _run_after_interval
+
+    def run_async(self, func=None, *args, **kwargs):
+        if func is not None:
+            w = AsyncWorker(func, *args, **kwargs)
+            self.task_manager.add_task(w)
+        else:
+            def _run_async(func):
+                self.run_async(func, *args, **kwargs)
+            return _run_async
+
+    def run_forever(self, func=None, interval_ms=1000, *args, **kwargs):
+        if func is not None:
+            if interval_ms < 0:
+                print("Invalid interval! Defaulting to 1000ms")
+                interval_ms = 1000
+            t = PersistantWorker(func, float(interval_ms) / 1000, *args, **kwargs)
+            self.task_manager.add_task(t)
+        else:
+            def _run_forever(func):
+                self.run_forever(func, interval_ms, *args, **kwargs)
+            return _run_forever
+
+    async def sleep(self, interval_ms):
+        await self.task_manager.sleep(float(interval_ms) / 1000)
 
     def start_tasks(self):
         print("Starting arena-py client...")
@@ -106,6 +142,11 @@ class Arena(object):
         self.process_message(msg)
 
     def process_message(self, msg):
+        for sub in secondary_callbacks:
+            if mqtt.topic_matches_sub(sub, msg.topic):
+                secondary_callbacks[sub](msg)
+                return
+
         payload_str = msg.payload.decode("utf-8", "ignore")
         payload = json.loads(payload_str)
 
@@ -171,3 +212,13 @@ class Arena(object):
             url=f'https://{broker}/persist/{scene}', creds=True)
         output = json.loads(data)
         return output
+
+    def add_topic(sub, callback):
+        """Subscribes to new topic and adds filter for callback to on_message()"""
+        self.secondary_callbacks[sub] = callback
+        self.client.subscribe(sub)
+
+
+    def remove_topic(sub):
+        """Unsubscribes to topic and removes filter for callback"""
+        self.client.unsubscribe(sub)

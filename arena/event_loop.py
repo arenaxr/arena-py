@@ -11,20 +11,35 @@ class Worker(object):
     async def run(self):
         self.func(*self.args, **self.kwargs)
 
-class Timer(object):
+    async def sleep(self, interval):
+        await asyncio.sleep(interval)
+
+class SingleWorker(Worker):
+    async def run(self):
+        self.func(*self.args, **self.kwargs)
+
+class LazyWorker(Worker):
     def __init__(self, func, interval, *args, **kwargs):
-        self.func = func
-        self.args = args
-        self.kwargs = kwargs
+        super().__init__(func, *args, **kwargs)
+        self.interval = interval
+
+    async def run(self):
+        await self.sleep(self.interval)
+        self.func(*self.args, **self.kwargs)
+
+class AsyncWorker(Worker):
+    async def run(self):
+        await self.func(*self.args, **self.kwargs)
+
+class PersistantWorker(Worker):
+    def __init__(self, func, interval, *args, **kwargs):
+        super().__init__(func, *args, **kwargs)
         self.interval = interval
 
     async def run(self):
         while True:
             self.func(*self.args, **self.kwargs)
             await self.sleep(self.interval)
-
-    async def sleep(self, interval):
-        await asyncio.sleep(interval)
 
 class EventLoop(object):
     def __init__(self, shutdown_func=None):

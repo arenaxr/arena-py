@@ -1,0 +1,82 @@
+# Intermediate Example - Exploreing more functionality!
+
+## Updating object attributes
+```python
+cube = Cube(object_id="my_cube", position=Position(0,4,-2), scale=Scale(2,2,2))
+arena.add_object(cube)
+
+cube.update_attributes(position=Position(2,4,-2))
+arena.update_object(cube)
+```
+
+## Parent-Child
+We can define child objects whose position will be relative to its parent object:
+```python
+text = Text(object_id="my_text", text="Welcome to arena-py!" position=Position(0,2,0), parent=cube)
+arena.add_object(text)
+```
+
+## Decorators for tasks and periodic tasks
+Instead of doing
+```python
+def main():
+    # your code here
+
+arena.run_once(main)
+```
+You in instead do
+```python
+@arena.run_once
+def main():
+    # your code here
+```
+
+Lets define a periodic task that runs every 500 milliseconds:
+```python
+x = 0
+@arena.run_forever(interval_ms=500)
+def periodic():
+    global x    # non allocated variables need to be global
+    cube.update_attributes(position=Position(x,3,0))
+    arena.update_object(cube)
+    x += 0.1
+```
+
+## Run tasks
+```python
+# note that we do not have to do arena.run_once or arena.run_forever
+arena.start_tasks()
+```
+
+Now, go into the scene to see your cube move with text!
+
+# Appendix
+```python
+from arena import *
+
+# setup library
+arena = Arena("arena.andrew.cmu.edu", "example", "realm")
+
+# make a cube
+cube = Cube(object_id="my_cube", position=Position(0,4,-2), scale=Scale(2,2,2))
+
+@arena.run_once
+def main():
+    # add the cube
+    arena.add_object(cube)
+
+    # add text
+    text = Text(object_id="my_text", text="Welcome to arena-py!", position=Position(0,2,0), parent=cube)
+    arena.add_object(text)
+
+x = 0
+@arena.run_forever(interval_ms=500)
+def periodic():
+    global x    # non allocated variables need to be global
+    cube.update_attributes(position=Position(x,3,0))
+    arena.update_object(cube)
+    x += 0.1
+
+# start tasks
+arena.start_tasks()
+```

@@ -1,6 +1,6 @@
-from base_object import *
-from attributes import *
-from utils import *
+from .base_object import *
+from .attributes import *
+from .utils import *
 import uuid
 
 class Object(BaseObject):
@@ -8,7 +8,7 @@ class Object(BaseObject):
     Object class. Defines a generic object in the ARENA.
     """
     all_objects = {} # dict of all objects created so far
-    def __init__(self, evt_handler = None, **kwargs):
+    def __init__(self, evt_handler=None, **kwargs):
         # "object_id" is required in kwargs, defaulted to random uuid4
         object_id = kwargs.get("object_id", str(uuid.uuid4()))
         if "object_id" in kwargs: del kwargs["object_id"]

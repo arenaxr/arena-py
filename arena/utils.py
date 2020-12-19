@@ -1,4 +1,9 @@
 # simple general purpose functions
+import random
+
+def random_client_id():
+    """Returns a random 6 digit id"""
+    return str(random.randrange(100000, 999999))
 
 def tuple_to_string(tup, sep=" "):
     """Turns a tuple into a string"""

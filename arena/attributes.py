@@ -1,5 +1,5 @@
-from base_object import *
-from utils import *
+from .base_object import *
+from .utils import *
 import math
 
 class Attribute(BaseObject):
@@ -20,7 +20,7 @@ class Position(Attribute):
     def to_str(self):
         return tuple_to_string((self.x, self.y, self.z))
 
-    def dist(self, pos):
+    def distance_to(self, pos):
         return math.sqrt((self.x-pos.x)**2 + (self.y-pos.y)**2 + (self.z-pos.z)**2)
 
 class Rotation(Attribute):

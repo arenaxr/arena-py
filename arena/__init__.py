@@ -9,4 +9,3 @@ __author__ = "Conix Research Center"
 __credits__ = "WiSE Lab, Carnegie Mellon University"
 
 from .arena import *
-from .auth import *

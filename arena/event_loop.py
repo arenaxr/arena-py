@@ -3,6 +3,9 @@ import signal
 import asyncio
 
 class Worker(object):
+    """
+    Wrapper for async function for single ARENA tasks.
+    """
     def __init__(self, func, *args, **kwargs):
         self.func = func
         self.args = args
@@ -15,10 +18,16 @@ class Worker(object):
         await asyncio.sleep(interval)
 
 class SingleWorker(Worker):
+    """
+    Wrapper for an ARENA task that runs once at startup.
+    """
     async def run(self):
         self.func(*self.args, **self.kwargs)
 
 class LazyWorker(Worker):
+    """
+    Wrapper for an ARENA task that after an interval (ms).
+    """
     def __init__(self, func, interval, *args, **kwargs):
         super().__init__(func, *args, **kwargs)
         self.interval = interval
@@ -28,10 +37,16 @@ class LazyWorker(Worker):
         self.func(*self.args, **self.kwargs)
 
 class AsyncWorker(Worker):
+    """
+    Wrapper for an ARENA task that is user-defined asyncio function.
+    """
     async def run(self):
         await self.func(*self.args, **self.kwargs)
 
 class PersistantWorker(Worker):
+    """
+    Wrapper for an ARENA task that runs oat a fixed interval.
+    """
     def __init__(self, func, interval, *args, **kwargs):
         super().__init__(func, *args, **kwargs)
         self.interval = interval
@@ -42,6 +57,9 @@ class PersistantWorker(Worker):
             await self.sleep(self.interval)
 
 class EventLoop(object):
+    """
+    Wrapper for an asyncio event loop.
+    """
     def __init__(self, shutdown_func=None):
         self.tasks = []
         self.loop = asyncio.get_event_loop()
@@ -52,9 +70,7 @@ class EventLoop(object):
                 )
 
     async def _shutdown(self, loop, signal, shutdown_func):
-        if shutdown_func:
-            shutdown_func()
-
+        if shutdown_func: shutdown_func()
         tasks = [t for t in asyncio.all_tasks() if t is not
                 asyncio.current_task()]
         for task in tasks: task.cancel()

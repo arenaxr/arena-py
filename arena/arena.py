@@ -79,12 +79,14 @@ class Arena(object):
         self.client.loop()
 
     def run_once(self, func=None, *args, **kwargs):
+        print(func, kwargs)
         if func is not None:
             w = SingleWorker(func, *args, **kwargs)
             self.task_manager.add_task(w)
         else:
             def _run_once(func):
                 self.run_once(func, *args, **kwargs)
+                return func
             return _run_once
 
     def run_after_interval(self, func=None, interval_ms=1000, *args, **kwargs):
@@ -97,6 +99,7 @@ class Arena(object):
         else:
             def _run_after_interval(func):
                 self.run_after_interval(func, interval_ms, *args, **kwargs)
+                return func
             return _run_after_interval
 
     def run_async(self, func=None, *args, **kwargs):
@@ -106,6 +109,7 @@ class Arena(object):
         else:
             def _run_async(func):
                 self.run_async(func, *args, **kwargs)
+                return func
             return _run_async
 
     def run_forever(self, func=None, interval_ms=1000, *args, **kwargs):
@@ -118,6 +122,7 @@ class Arena(object):
         else:
             def _run_forever(func):
                 self.run_forever(func, interval_ms, *args, **kwargs)
+                return func
             return _run_forever
 
     async def sleep(self, interval_ms):

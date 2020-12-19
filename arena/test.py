@@ -20,6 +20,8 @@ def make_text(text, parent):
     print(sphere.object_id, text, parent)
 
 i = 0
+# could also do this (no decorators):
+# arena.run_forever(move_cube, 500)
 @arena.run_forever(interval_ms=500)
 def move_cube():
     global i # non allocated variables need to be global
@@ -35,11 +37,9 @@ def move_sphere():
     j -= 0.5
 
 def make_dodecahedrons():
-    arena.add_object(Dodecahedron(position=Position(random.randint(-10, 10),random.randint(0, 5),random.randint(-10, 10))))
+    arena.add_object(Dodecahedron(position=Position(random.randint(-10,10),random.randint(0,5),random.randint(-10,10))))
 
-# could also do this (no decorators):
-# arena.run_once(make_text, "arena-py 2.0!", parent="sphere")
-# arena.run_forever(move_cube, 500)
+arena.run_once(make_text, text="arena-py 2.0?", parent="cube")
 arena.run_forever(move_sphere, 1000)
 arena.run_forever(make_dodecahedrons, 2000)
 

@@ -142,7 +142,6 @@ arena.update_object(cube)
         },
         # more attributes here
     },
-    "action": "create",
     "timestamp" : "[time goes here]"
 }
 ```

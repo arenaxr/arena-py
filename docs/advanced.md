@@ -6,7 +6,7 @@ arena.generate_event(cube, "mouseenter")
 ```
 
 ## Attributes can be dictionaries too. Even ones that don't exist...
-Say, there is data that doesn't exist in the arena library. For instance, the 3d avatar takes on a "morph" json.
+Say, there is data that doesn't exist in the arena library. For instance, the 3d avatar takes in a "morph" json.
 ```python
 morph = {
     "gltf-morph__0": {
@@ -85,7 +85,7 @@ def create_rand_morph():
 
 @arena.run_forever # default is 1000ms
 def update_face():
-    # attributes can be updated with any abitrary dictionary!
+    # attributes can be updated with any arbitrary dictionary!
     msg = arena.update_object(avatar, **create_rand_morph())
     # you can print the outputs for debugging
     print(msg)

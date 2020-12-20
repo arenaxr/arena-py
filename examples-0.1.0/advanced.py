@@ -40,7 +40,7 @@ def create_rand_morph():
 
 @arena.run_forever # default is 1000ms
 def update_face():
-    # attributes can be updated with any abitrary dictionary!
+    # attributes can be updated with any arbitrary dictionary!
     msg = arena.update_object(avatar, **create_rand_morph())
     # you can print the outputs for debugging
     print(msg)

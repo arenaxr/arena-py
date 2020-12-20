@@ -9,7 +9,7 @@
 
 [Part 4](advanced.md)
 
-## General Documantation
+## General Documentation
 [Attributes](attributes.md)
 
 [Objects](objects.md)

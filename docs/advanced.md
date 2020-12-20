@@ -1,4 +1,4 @@
-# Advanced Example - More functionality!
+# Advanced Example - EVEN more functionality!
 
 ## Generating "fake" events
 ```python

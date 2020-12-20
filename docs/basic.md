@@ -30,7 +30,7 @@ arena = Arena([host], [scene], [realm])
 ```
 
 ## Define a task
-ARENA-py works by running tasks in an event loop, so we need a main task for out simple program.
+ARENA-py works by running tasks in an event loop, so we need a main task for our sample program.
 ```python
 def main():
 ```

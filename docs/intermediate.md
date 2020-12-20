@@ -1,4 +1,4 @@
-# Intermediate Example - Exploreing more functionality!
+# Intermediate Example - Exploring more functionality!
 
 ## Updating object attributes
 ```python
@@ -24,7 +24,7 @@ def main():
 
 arena.run_once(main)
 ```
-You in instead do
+You can instead do
 ```python
 @arena.run_once
 def main():

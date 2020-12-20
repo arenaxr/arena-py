@@ -2,16 +2,6 @@
 
 Attributes are used to specify parameters for ARENA Objects.
 
-## Get attribute
-Usually attributes are under data
-```python
-obj.data.position
-obj.data.rotation
-# ...
-obj.data.material
-# etc etc
-```
-
 ## Position
 The position of an object can be specified by:
 ```python
@@ -68,4 +58,14 @@ dynamic_body=Physics(type)
 For attributes that are not specified by the library, you can use this (put anything you want in the "...")!:
 ```python
 Attribute(...)
+```
+
+## Getting attributes
+Usually, attributes are under data
+```python
+obj.data.position
+obj.data.rotation
+# ...
+obj.data.material
+# etc etc
 ```

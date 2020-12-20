@@ -69,12 +69,12 @@ Triangle(...)
 
 ## GLTF
 ```python
-GLTF(...)
+GLTF(url, ...)
 ```
 
 ## Image
 ```python
-Image(...)
+Image(url, ...)
 ```
 
 ## Particle

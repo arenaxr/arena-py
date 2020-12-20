@@ -16,11 +16,11 @@ def agran(float_num):
     """Reduces floating point numbers to ARENA granularity."""
     return round(float_num, 3)
 
-def replace_underscores(d):
+def santize_data(d):
     """replace underscores in data with dashes for aframe attributes"""
     underscore_words = []
     for k,v in d.items():
-        if "_" in k and k != "object_type":
+        if k == "dynamic_body" and k == "click_listener":
             underscore_words += [k]
     for w in underscore_words:
         v = d[w]

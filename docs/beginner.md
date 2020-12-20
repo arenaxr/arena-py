@@ -1,4 +1,4 @@
-# Basic Example - The bare minimum you need to start using ARENA-py
+# Beginner Example - The bare minimum you need to start using ARENA-py
 
 ## Let's start by installing and importing the library
 ```shell

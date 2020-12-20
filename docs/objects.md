@@ -121,3 +121,28 @@ arena.add_object(cube)
 cube.update_attributes(position=Position(2,4,-2))
 arena.update_object(cube)
 ```
+
+# ARENA Object JSON example
+```json
+{
+    "object_id": "my_cube",
+    "type": "object",
+    "persist": false,
+    "data": {
+        "object_type": "cube",
+        "position": {
+            "x": 0,
+            "y": 4,
+            "z": -2
+        },
+        "scale": {
+            "x": 2,
+            "y": 2,
+            "z": 2
+        },
+        # more attributes here
+    },
+    "action": "create",
+    "timestamp" : "[time goes here]"
+}
+```

@@ -50,7 +50,7 @@ class Data(Attribute):
     Data Attribute. Wraps all attributes in JSON.
     """
     def __init__(self, **kwargs):
-        replace_underscores(kwargs)
+        santize_data(kwargs)
 
         # handle special case where "physics" should be "dynamic-body"
         if "physics" in kwargs:

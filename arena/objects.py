@@ -57,7 +57,7 @@ class Object(BaseObject):
             self.__dict__["data"] = None
             return
 
-        replace_underscores(kwargs)
+        santize_data(kwargs)
 
         data = self.__dict__["data"]
         for k,v in kwargs.items():

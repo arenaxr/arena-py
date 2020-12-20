@@ -24,7 +24,7 @@ class Arena(object):
                 port = None,
                 on_msg_callback = None,
                 new_obj_callback = None,
-                debug_auth = False,
+                debug = False,
                 webhost = 'xr.andrew.cmu.edu'
             ):
         if os.environ.get('MQTTH') and os.environ.get('SCENE') and os.environ.get('REALM'):
@@ -44,15 +44,16 @@ class Arena(object):
         print("=====")
 
         self.root_topic = f"{REALM}/s/{SCENE}"
-        self.debug_auth = debug_auth
+        self.client_id = random_client_id()
+        self.debug = debug
 
         self.client = mqtt.Client(
-            "pyClient-" + random_client_id(), clean_session=True
+            "pyClient-" + self.client_id, clean_session=True
         )
 
         # do auth
         data = auth.authenticate(REALM, SCENE, HOST, webhost=webhost,
-                                                     debug=self.debug_auth)
+                                                     debug=self.debug)
         if 'username' in data and 'token' in data:
             self.client.username_pw_set(username=data["username"], password=data["token"])
         print("=====")
@@ -165,10 +166,11 @@ class Arena(object):
 
     def process_message(self, msg):
         """Main message processing function"""
+
         # check for custom topic
-        for sub in secondary_callbacks:
+        for sub in self.secondary_callbacks:
             if mqtt.topic_matches_sub(sub, msg.topic):
-                secondary_callbacks[sub](msg)
+                self.secondary_callbacks[sub](msg)
                 return
 
         # extract payload
@@ -181,7 +183,6 @@ class Arena(object):
             event = None
             if "action" in payload and payload["action"] == "clientEvent":
                 event = Event(**payload)
-
             object_id = payload["object_id"]
             if object_id in self.all_objects:
                 obj = self.all_objects[object_id]
@@ -199,6 +200,14 @@ class Arena(object):
             if not event and self.on_msg_callback:
                 self.on_msg_callback(payload)
 
+    def generate_event(self, obj, type):
+        evt = Event(object_id=obj.object_id, type=type,
+                    position=obj.data.position,
+                    source="arena_lib_"+self.client_id)
+        res = self._publish(evt, "clientEvent")
+        if self.debug: print(res)
+        return res
+
     @property
     def all_objects(self):
         """Returns all objects created by the user"""
@@ -206,33 +215,40 @@ class Arena(object):
 
     def add_object(self, obj):
         """Public function to create an object"""
-        self._publish(obj, "create")
+        res = self._publish(obj, "create")
+        if self.debug: print(res)
+        return res
 
     def update_object(self, obj, **kwargs):
         """Public function to update an object"""
         obj.update_attributes(**kwargs)
-        self._publish(obj, "update")
+        res = self._publish(obj, "update")
+        if self.debug: print(res)
+        return res
 
     def delete_object(self, obj):
         """Public function to delete an object"""
         payload = {
-            "object_id": obj.object_id,
-            "action": "delete"
+            "object_id": obj.object_id
         }
-        self._publish(payload, "delete")
+        res = self._publish(payload, "delete")
         Object.remove(obj)
+        if self.debug: print(res)
+        return res
 
     def _publish(self, obj, action):
         """Publishes to mqtt broker with "action":action"""
         topic = self.root_topic + "/" + obj["object_id"]
         d = datetime.now().isoformat()[:-3]+"Z"
-        if action != "delete":
-            payload = obj.json(action=action, timestamp=d)
-        else:
+        if action == "delete":
             payload = obj
+            payload["action"] = "delete"
             payload["timestamp"] = d
             payload = json.dumps(payload)
+        else:
+            payload = obj.json(action=action, timestamp=d)
         self.client.publish(topic, payload, qos=0)
+        return payload
 
     def get_persisted_obj(self, object_id, broker, scene):
         """Returns a dictionary for a persisted object. [TODO] wrap the output as an Object"""

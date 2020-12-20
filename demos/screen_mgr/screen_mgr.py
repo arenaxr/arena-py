@@ -13,7 +13,7 @@ import json
 import sys 
 import threading
 
-# export HOST=arena.andrew.cmu.edu
+# export MQTTH=arena.andrew.cmu.edu
 # export REALM=realm
 # export SCENE=scene
 # export MID=MID_1234
@@ -77,19 +77,19 @@ def object_harvester_thread():
         time.sleep(5)
 # start the fun shall we?
 
-if (os.environ.get('SCENE') is not None) and (os.environ.get('REALM') is not None) and (os.environ.get('HOST') is not None) and (os.environ.get('MID') is not None):
+if (os.environ.get('SCENE') is not None) and (os.environ.get('REALM') is not None) and (os.environ.get('MQTTH') is not None) and (os.environ.get('MID') is not None):
     SCENE = os.environ["SCENE"]
-    HOST = os.environ["HOST"]
+    MQTTH = os.environ["MQTTH"]
     REALM = os.environ["REALM"]
     MID = os.environ["MID"]
-    print("Loading (prgm,scene,real,host,MID): " + sys.argv[0]  + "," + SCENE + "," + REALM + "," + HOST + "," + MID)
+    print("Loading (prgm,scene,real,host,MID): " + sys.argv[0]  + "," + SCENE + "," + REALM + "," + MQTTH + "," + MID)
     MID = MID + '-'
 else:
-    print( "You need to set SCENE, HOST, MID and REALM as environmental variables to specify the program target")
+    print( "You need to set SCENE, MQTTH, MID and REALM as environmental variables to specify the program target")
     print( "JSONCFG is optional for setting multiple screens and loications.")
     print( "\nFor bash you can copy paste the following before running:")
     print( "export MID=dir")
-    print( "export HOST=arena.andrew.cmu.edu")
+    print( "export MQTTH=arena.andrew.cmu.edu")
     print( "export REALM=realm")
     print( "export SCENE=example")
     print( "export JSONCFG=directory_cfg.json")

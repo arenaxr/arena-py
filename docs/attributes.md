@@ -38,6 +38,12 @@ The transparency of an object can be set by:
 material=Material(transparent, opacity)
 ```
 
+## GotoUrl
+Goes to a url on click. Note: click-listener must be True for this to work:
+```python
+goto_url=GotoUrl(dest, on, url)
+```
+
 ## Impulse (note: does not work!)
 An impulse can be added by:
 ```python

@@ -20,7 +20,7 @@ def santize_data(d):
     """replace underscores in data with dashes for aframe attributes"""
     underscore_words = []
     for k,v in d.items():
-        if k == "dynamic_body" and k == "click_listener":
+        if k == "dynamic_body" or k == "click_listener" or k == "goto_url":
             underscore_words += [k]
     for w in underscore_words:
         v = d[w]

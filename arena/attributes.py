@@ -86,6 +86,16 @@ class Material(Attribute):
         opacity = min(opacity, 1.0)
         super().__init__(transparent=transparent, opacity=opacity)
 
+class GotoUrl(Attribute):
+    """
+    GotoUrl Attribute.
+    Usage: goto_url=GotoUrl(...)
+    """
+    def __init__(self, dest="static", on="mousedown", url=""):
+        if dest != "popup" and dest != "newtab" and dest != "sametab":
+            dest = "popup"
+        super().__init__(dest=dest, on=on, url=url)
+
 class Impulse(Attribute):
     """
     Impulse Attribute.

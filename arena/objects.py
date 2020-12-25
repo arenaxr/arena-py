@@ -17,10 +17,10 @@ class Object(BaseObject):
         persist = kwargs.get("persist", False)
         if "persist" in kwargs: del kwargs["persist"]
 
-        # remove "action"
+        # remove "action" from kwargs
         if "action" in kwargs: del kwargs["action"]
 
-        # special case for "parent"
+        # special case for "parent" (can be an Object)
         if "parent" in kwargs and isinstance(kwargs["parent"], Object):
             kwargs["parent"] = kwargs["parent"].object_id
 
@@ -51,28 +51,21 @@ class Object(BaseObject):
         if "data" not in self.__dict__:
             return
 
-        kwargs = kwargs.get("data", kwargs)
-
-        if kwargs is None:
-            self.__dict__["data"] = None
-            return
-
-        santize_data(kwargs)
-
         data = self.__dict__["data"]
-        for k,v in kwargs.items():
-            if (isinstance(v, bool) and v == False) or v is None:
-                data[k] = None
-                continue
+        Data.update_data(data, kwargs)
 
-            if k == "position" and not isinstance(v, Position):
-                data[k] = Position(**v)
-            elif k == "rotation" and not isinstance(v, Rotation):
-                data[k] = Rotation(**v)
-            elif k == "scale" and not isinstance(v, Scale):
-                data[k] = Scale(**v)
-            else:
-                data[k] = v
+    def json(self, **kwargs):
+        # kwargs are for additional param to add to json, like "action":"create"
+        res = { k:v for k,v in vars(self).items() if k != "evt_handler" }
+
+        # handle special case where "physics" should be "dynamic-body"
+        if "physics" in res:
+            ref = res["physics"]
+            del res["physics"]
+            res["dynamic-body"] = ref
+
+        res.update(kwargs)
+        return self.json_encode(res)
 
     # methods for global object dictionary
     @classmethod

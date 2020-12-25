@@ -50,15 +50,31 @@ class Data(Attribute):
     Data Attribute. Wraps all attributes in JSON.
     """
     def __init__(self, **kwargs):
-        santize_data(kwargs)
+        data = Data.update_data({}, kwargs)
+        super().__init__(**data)
 
-        # handle special case where "physics" should be "dynamic-body"
-        if "physics" in kwargs:
-            ref = kwargs["physics"]
-            del kwargs["physics"]
-            kwargs["dynamic-body"] = ref
+    @classmethod
+    def update_data(cls, data, new_data):
+        new_data = new_data.get("data", new_data)
+        santize_data(new_data)
+        for k,v in new_data.items():
+            # make False into None
+            if (isinstance(v, bool) and v == False) or v is None:
+                data[k] = None
+                continue
 
-        super().__init__(**kwargs)
+            if k == "position" and not isinstance(v, Position):
+                data[k] = Position(**v)
+            elif k == "rotation" and not isinstance(v, Rotation):
+                data[k] = Rotation(**v)
+            elif k == "scale" and not isinstance(v, Scale):
+                data[k] = Scale(**v)
+            else:
+                try:
+                    data[k] = Attribute(**v)
+                except:
+                    data[k] = v
+        return data
 
 class AnimationMixer(Attribute):
     """

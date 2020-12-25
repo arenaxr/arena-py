@@ -21,16 +21,19 @@ class BaseObject(object):
     def __repr__(self):
         return str(vars(self))
 
-    def __getitem__(self, id):
-        return self.__dict__[id]
+    def __getitem__(self, name):
+        return self.__dict__[name]
 
-    def __setitem__(self, id, attr):
-        self.add(id, attr)
+    def __setitem__(self, name, attr):
+        self.add(name, attr)
 
-    def add(self, id, attr):
-        self.__dict__[id] = attr
+    def add(self, name, attr):
+        self.__dict__[name] = attr
+
+    def json_encode(self, d):
+        return json.dumps(d, cls=CustomEncoder)
 
     def json(self, **kwargs): # kwargs are for additional param to add to json, like "action":"create"
-        res = {k:v for k,v in vars(self).items() if k != "evt_handler"}
+        res = vars(self).copy()
         res.update(kwargs)
-        return json.dumps(res, cls=CustomEncoder)
+        return self.json_encode(res)

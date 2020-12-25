@@ -5,7 +5,7 @@ Events are ways to interact with user input in the ARENA.
 ## Events
 
 ### Get Event type
-Can be one of either :  "mousedown", "mouseup", "mouseenter", "mouseleave"
+Can be one of either :  "mousedown", "mouseup", "mouseenter", "mouseleave", "camera-override", "look-at"
 ```python
 # evt = Event(...)
 evt.type

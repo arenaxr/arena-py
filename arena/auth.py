@@ -56,6 +56,7 @@ def authenticate(realm, scene, broker, webhost, debug=False):
         with open(_user_gauth_path, 'rb') as token:
             creds = pickle.load(token)
         session = AuthorizedSession(creds)
+
     # if no credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:

@@ -1,5 +1,6 @@
 import os
 import sys
+import asyncio
 import paho.mqtt.client as mqtt
 from datetime import datetime
 
@@ -24,21 +25,23 @@ class Arena(object):
                 port = None,
                 on_msg_callback = None,
                 new_obj_callback = None,
+                delete_obj_callback = None,
                 debug = False,
-                webhost = 'xr.andrew.cmu.edu'
+                webhost = "xr.andrew.cmu.edu",
+                network_loop_interval = 10  # run mqtt client network loop every 10ms
             ):
         if os.environ.get('MQTTH') and os.environ.get('SCENE') and os.environ.get('REALM'):
             HOST  = os.environ["MQTTH"]
             SCENE = os.environ["SCENE"]
             REALM = os.environ["REALM"]
         else:
-            print("Cannot find SCENE, MQTTH, and REALM environmental variables, using input parameters instead.")
+            print("Cannot find MQTTH, SCENE, and REALM environmental variables, using input parameters instead.")
             if host and scene and realm:
                 HOST  = host
                 SCENE = scene
                 REALM = realm
             else:
-                sys.exit("scene, host, and realm are unspecified, aborting...")
+                sys.exit("host, scene, and realm are unspecified, aborting...")
 
         print(f"Loading: {HOST}/{SCENE}, realm={REALM}")
         print("=====")
@@ -60,13 +63,24 @@ class Arena(object):
 
         self.on_msg_callback = on_msg_callback
         self.new_obj_callback = new_obj_callback
+        self.delete_obj_callback = delete_obj_callback
         self.secondary_callbacks = {}
 
         self.unspecified_objs_ids = set() # objects that exist in scene, but user does not have reference to
+
         self.task_manager = EventLoop(self.disconnect)
 
+        # have all tasks wait until mqtt client is connected before starting
+        self.mqtt_connect_evt = asyncio.Event()
+        self.mqtt_connect_evt.clear()
+
         # add mqtt client loop to list of tasks
-        self.network_loop = PersistantWorker(self.run_network_loop, 0.01)
+        self.network_loop_interval = network_loop_interval
+        self.network_loop = PersistantWorker(
+                                func=self.run_network_loop,
+                                event=None,
+                                interval=self.network_loop_interval
+                            )
         self.task_manager.add_task(self.network_loop)
 
         if port is not None:
@@ -87,7 +101,7 @@ class Arena(object):
     def run_once(self, func=None, *args, **kwargs):
         """Runs a user defined function on startup"""
         if func is not None:
-            w = SingleWorker(func, *args, **kwargs)
+            w = SingleWorker(func, self.mqtt_connect_evt, *args, **kwargs)
             self.task_manager.add_task(w)
         else:
             # if there is no func, we are in a decorator
@@ -102,7 +116,7 @@ class Arena(object):
             if interval_ms < 0:
                 print("Invalid interval! Defaulting to 1000ms")
                 interval_ms = 1000
-            w = LazyWorker(func, float(interval_ms) / 1000, *args, **kwargs)
+            w = LazyWorker(func, self.mqtt_connect_evt, interval_ms, *args, **kwargs)
             self.task_manager.add_task(w)
         else:
             # if there is no func, we are in a decorator
@@ -114,7 +128,7 @@ class Arena(object):
     def run_async(self, func=None, *args, **kwargs):
         """Runs a user defined aynscio function"""
         if func is not None:
-            w = AsyncWorker(func, *args, **kwargs)
+            w = AsyncWorker(func, self.mqtt_connect_evt, *args, **kwargs)
             self.task_manager.add_task(w)
         else:
             # if there is no func, we are in a decorator
@@ -129,7 +143,7 @@ class Arena(object):
             if interval_ms < 0:
                 print("Invalid interval! Defaulting to 1000ms")
                 interval_ms = 1000
-            t = PersistantWorker(func, float(interval_ms) / 1000, *args, **kwargs)
+            t = PersistantWorker(func, self.mqtt_connect_evt, interval_ms, *args, **kwargs)
             self.task_manager.add_task(t)
         else:
             # if there is no func, we are in a decorator
@@ -140,21 +154,23 @@ class Arena(object):
 
     def start_tasks(self):
         """Begins running event loop"""
-        print("Starting arena-py client...")
+        print("Connecting to ARENA...")
         self.task_manager.run()
 
     async def sleep(self, interval_ms):
         """Public function for sleeping in aysnc functions"""
-        await self.task_manager.sleep(float(interval_ms) / 1000)
+        await self.task_manager.sleep(interval_ms)
 
     def disconnect(self):
         """Disconnects Paho MQTT client"""
         self.client.disconnect()
-        print("Disconnected!")
+        print("=====")
+        print("Disconnected from ARENA!")
 
     def on_connect(self, client, userdata, flags, rc):
         """Paho MQTT client on_connect callback"""
         if rc == 0:
+            self.mqtt_connect_evt.set()
             print("Connected!")
             print("=====")
         else:
@@ -181,8 +197,14 @@ class Arena(object):
         if "object_id" in payload:
             # check for events/object updates
             event = None
-            if "action" in payload and payload["action"] == "clientEvent":
-                event = Event(**payload)
+            if "action" in payload:
+                if payload["action"] == "clientEvent":
+                    event = Event(**payload)
+                elif payload["action"] == "delete":
+                    if self.delete_obj_callback:
+                        self.delete_obj_callback(payload)
+                        return
+
             object_id = payload["object_id"]
             if object_id in self.all_objects:
                 obj = self.all_objects[object_id]
@@ -204,9 +226,7 @@ class Arena(object):
         evt = Event(object_id=obj.object_id, type=type,
                     position=obj.data.position,
                     source="arena_lib_"+self.client_id)
-        res = self._publish(evt, "clientEvent")
-        if self.debug: print(res)
-        return res
+        return self._publish(evt, "clientEvent")
 
     @property
     def all_objects(self):
@@ -215,26 +235,20 @@ class Arena(object):
 
     def add_object(self, obj):
         """Public function to create an object"""
-        res = self._publish(obj, "create")
-        if self.debug: print(res)
-        return res
+        return self._publish(obj, "create")
 
     def update_object(self, obj, **kwargs):
         """Public function to update an object"""
         obj.update_attributes(**kwargs)
-        res = self._publish(obj, "update")
-        if self.debug: print(res)
-        return res
+        return self._publish(obj, "update")
 
     def delete_object(self, obj):
         """Public function to delete an object"""
         payload = {
             "object_id": obj.object_id
         }
-        res = self._publish(payload, "delete")
         Object.remove(obj)
-        if self.debug: print(res)
-        return res
+        return self._publish(payload, "delete")
 
     def _publish(self, obj, action):
         """Publishes to mqtt broker with "action":action"""
@@ -248,6 +262,7 @@ class Arena(object):
         else:
             payload = obj.json(action=action, timestamp=d)
         self.client.publish(topic, payload, qos=0)
+        if self.debug: print("[_publish]", payload)
         return payload
 
     def get_persisted_obj(self, object_id, broker, scene):
@@ -256,6 +271,7 @@ class Arena(object):
         data = auth.urlopen(
             url=f'https://{broker}/persist/{scene}/{object_id}', creds=True)
         output = json.loads(data)
+        if self.debug: print("[get_persisted_obj]", output)
         return output
 
     def get_persisted_scene_option(self, broker, scene):
@@ -264,14 +280,14 @@ class Arena(object):
         data = auth.urlopen(
             url=f'https://{broker}/persist/{scene}', creds=True)
         output = json.loads(data)
+        if self.debug: print("[get_persisted_scene_option]", output)
         return output
 
-    def add_topic(sub, callback):
+    def add_topic(self, sub, callback):
         """Subscribes to new topic and adds filter for callback to on_message()"""
         self.secondary_callbacks[sub] = callback
         self.client.subscribe(sub)
 
-
-    def remove_topic(sub):
+    def remove_topic(self, sub):
         """Unsubscribes to topic and removes filter for callback"""
         self.client.unsubscribe(sub)

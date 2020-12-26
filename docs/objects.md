@@ -2,6 +2,8 @@
 
 Objects are the main interface for placing content into the ARENA.
 
+See https://arena.conix.io/content/messaging/examples.html.
+
 ## Cube
 ```python
 Cube(...)

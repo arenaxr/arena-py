@@ -5,6 +5,9 @@ def random_client_id():
     """Returns a random 6 digit id"""
     return str(random.randrange(100000, 999999))
 
+def rgb_to_hex(rgb):
+    return "#{:02x}{:02x}{:02x}".format(rgb[0], rgb[1], rgb[2])
+
 def tuple_to_string(tup, sep=" "):
     """Turns a tuple into a string"""
     s = ""

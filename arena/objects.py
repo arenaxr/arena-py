@@ -24,6 +24,10 @@ class Object(BaseObject):
         if "parent" in kwargs and isinstance(kwargs["parent"], Object):
             kwargs["parent"] = kwargs["parent"].object_id
 
+        # "ttl" is optional
+        ttl = kwargs.get("ttl", None)
+        if "ttl" in kwargs: del kwargs["ttl"]
+
         # print warning if object is being created with the same id as an existing object
         if Object.exists(object_id):
             print(f"WARNING: an object with object_id of {object_id} was already created. The previous object will be overwritten.")
@@ -32,12 +36,21 @@ class Object(BaseObject):
         # setup attributes in the "data" field
         kwargs = kwargs.get("data", kwargs)
         data = Data(**kwargs)
-        super().__init__(
-                object_id=object_id,
-                type="object",
-                persist=persist,
-                data=data
-            )
+        if ttl:
+            super().__init__(
+                    object_id=object_id,
+                    type="object",
+                    persist=persist,
+                    ttl=ttl,
+                    data=data
+                )
+        else:
+            super().__init__(
+                    object_id=object_id,
+                    type="object",
+                    persist=persist,
+                    data=data
+                )
 
         self.evt_handler = evt_handler
 

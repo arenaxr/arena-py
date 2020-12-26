@@ -6,7 +6,7 @@ from datetime import datetime
 
 from .attributes import *
 from .objects import *
-from .events import *
+from .event import *
 from .utils import *
 from .event_loop import *
 
@@ -19,9 +19,9 @@ class Arena(object):
     Can create and execute various user defined functions.
     """
     def __init__(self,
-                host = None,
-                scene = None,
-                realm = None,
+                host = "arena.andrew.cmu.edu",
+                scene = "render",
+                realm = "realm",
                 port = None,
                 on_msg_callback = None,
                 new_obj_callback = None,
@@ -164,7 +164,6 @@ class Arena(object):
     def disconnect(self):
         """Disconnects Paho MQTT client"""
         self.client.disconnect()
-        print("=====")
         print("Disconnected from ARENA!")
 
     def on_connect(self, client, userdata, flags, rc):
@@ -190,8 +189,11 @@ class Arena(object):
                 return
 
         # extract payload
-        payload_str = msg.payload.decode("utf-8", "ignore")
-        payload = json.loads(payload_str)
+        try:
+            payload_str = msg.payload.decode("utf-8", "ignore")
+            payload = json.loads(payload_str)
+        except:
+            return
 
         # update object attributes, if possible
         if "object_id" in payload:
@@ -200,10 +202,9 @@ class Arena(object):
             if "action" in payload:
                 if payload["action"] == "clientEvent":
                     event = Event(**payload)
-                elif payload["action"] == "delete":
-                    if self.delete_obj_callback:
-                        self.delete_obj_callback(payload)
-                        return
+                elif self.delete_obj_callback and payload["action"] == "delete":
+                    self.delete_obj_callback(payload)
+                    return
 
             object_id = payload["object_id"]
             if object_id in self.all_objects:
@@ -222,11 +223,28 @@ class Arena(object):
             if not event and self.on_msg_callback:
                 self.on_msg_callback(payload)
 
-    def generate_event(self, obj, type):
-        evt = Event(object_id=obj.object_id, type=type,
+    def generate_custom_event(self, evt, action="clientEvent"):
+        """Publishes an custom event. Could be user or library defined"""
+        return self._publish(evt, action)
+
+    def generate_click_event(self, obj, type="mousedown", **kwargs):
+        """Publishes an click event"""
+        _type = type
+        evt = Event(object_id=obj.object_id,
+                    type=_type,
                     position=obj.data.position,
-                    source="arena_lib_"+self.client_id)
-        return self._publish(evt, "clientEvent")
+                    source="arena_lib_"+self.client_id,
+                    **kwargs)
+        return self.generate_custom_event(evt, "clientEvent")
+
+    def manuipulate_camera(self, obj, type="camera-override", **kwargs):
+        """Publishes a camera manipulation event"""
+        _type = type
+        evt = Event(object_id=obj.object_id,
+                    type=_type,
+                    object_type="camera",
+                    **kwargs)
+        return self.generate_custom_event(evt, "create")
 
     @property
     def all_objects(self):

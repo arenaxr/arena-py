@@ -2,7 +2,7 @@
 Draw objects in the ARENA using Python.
 
 ## Documentation
-The ARENA Python library user guide and tutorials: [ARENA Documentation: Python](https://conix-center.github.io/ARENA/content/python/).
+The ARENA Python library user guide and tutorials: [ARENA Documentation: Python](https://conix-center.github.io/ARENA/content/python/). For version 0.1.0, see [docs](./docs).
 
 ## Setup
 Install package using pip:

@@ -9,12 +9,16 @@
 
 [Part 4](advanced.md)
 
+Code for these can be found [here](../examples/tutorial)
+
 ## General Documentation
 [Attributes](attributes.md)
 
 [Objects](objects.md)
 
 [Events](events.md)
+
+[Callbacks](callbacks.md)
 
 [Tasks](tasks.md)
 

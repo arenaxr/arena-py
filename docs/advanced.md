@@ -1,10 +1,5 @@
 # Advanced Example - EVEN more functionality!
 
-## Generating "fake" events
-```python
-arena.generate_event(cube, "mouseenter")
-```
-
 ## Attributes can be dictionaries too. Even ones that don't exist...
 Say, there is data that doesn't exist in the arena library. For instance, the 3d avatar takes in a "morph" json.
 ```python

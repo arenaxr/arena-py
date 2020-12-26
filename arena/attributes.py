@@ -50,7 +50,8 @@ class Data(Attribute):
     Data Attribute. Wraps all attributes in JSON.
     """
     def __init__(self, **kwargs):
-        data = Data.update_data({}, kwargs)
+        data = {}
+        data = Data.update_data(data, kwargs)
         super().__init__(**data)
 
     @classmethod
@@ -64,11 +65,25 @@ class Data(Attribute):
                 continue
 
             if k == "position" and not isinstance(v, Position):
-                data[k] = Position(**v)
+                if isinstance(v, tuple) or isinstance(v, list):
+                    data[k] = Position(*v)
+                elif isinstance(v, dict):
+                    data[k] = Position(**v)
             elif k == "rotation" and not isinstance(v, Rotation):
-                data[k] = Rotation(**v)
+                if isinstance(v, tuple) or isinstance(v, list):
+                    data[k] = Rotation(*v)
+                elif isinstance(v, dict):
+                    data[k] = Rotation(**v)
             elif k == "scale" and not isinstance(v, Scale):
-                data[k] = Scale(**v)
+                if isinstance(v, tuple) or isinstance(v, list):
+                    data[k] = Scale(*v)
+                elif isinstance(v, dict):
+                    data[k] = Scale(**v)
+            elif k == "color":
+                if isinstance(v, tuple) or isinstance(v, list):
+                    data[k] = rgb_to_hex(v)
+                elif isinstance(v, str):
+                    data[k] = v
             else:
                 try:
                     data[k] = Attribute(**v)
@@ -76,21 +91,21 @@ class Data(Attribute):
                     data[k] = v
         return data
 
-class AnimationMixer(Attribute):
+class Animation(Attribute):
     """
-    AnimationMixer Attribute.
-    Usage: animation_mixer=AnimationMixer(...)
+    Animation Attribute.
+    Usage: animation_mixer=Animation(...)
     """
-    def __init__(self, clip=False, loop=0, repetitions=0, timeScale=0):
-        super().__init__(clip=clip, loop=loop, repetitions=repetitions, timeScale=timeScale)
+    def __init__(self, property="rotation", loop=1, dur=1000, **kwargs):
+        super().__init__(property=property, loop=loop, dur=dur, **kwargs)
 
 class Sound(Attribute):
     """
     Sound Attribute.
     Usage: sound=Sound(...)
     """
-    def __init__(self, positional=False, poolSize=8, autoplay=True, src=""):
-        super().__init__(positional=positional, poolSize=poolSize, autoplay=autoplay, src=src)
+    def __init__(self, positional=False, poolSize=8, autoplay=True, src="", **kwargs):
+        super().__init__(positional=positional, poolSize=poolSize, autoplay=autoplay, src=src, **kwargs)
 
 class Material(Attribute):
     """
@@ -137,7 +152,8 @@ class Physics(Attribute):
     [TODO] this does not work in the browser!
     Usage: physics=Physics(...) OR dynamic_body=Physics(...)
     """
-    def __init__(self, _type="static"):
+    def __init__(self, type="static"):
+        _type = type
         if _type != "static" and _type != "dynamic":
             _type = "none"
         super().__init__(type=_type)

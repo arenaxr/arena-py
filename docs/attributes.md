@@ -2,6 +2,8 @@
 
 Attributes are used to specify parameters for ARENA Objects.
 
+See https://arena.conix.io/content/messaging/examples.html.
+
 ## Position
 The position of an object can be specified by:
 ```python
@@ -20,16 +22,16 @@ The scale of an object can be specified by:
 scale=Scale(x, z, y)
 ```
 
-## AnimationMixer
-An animation can be added by :
+## Animation
+An animation can be added by:
 ```python
-animation=AnimationMixer(clip, loop, repetitions, timeScale)
+animation=Animation(property, loop, dur, ...)
 ```
 
 ## Sound
 A sound can be added to an object using:
 ```python
-sound=Sound(positional, poolSize, autoplay, src)
+sound=Sound(positional, poolSize, autoplay, src, ...)
 ```
 
 ## Material

@@ -96,5 +96,5 @@ class EventLoop(object):
         finally:
             self.loop.close()
 
-    async def sleep(self, interval):
-        await asyncio.sleep(interval)
+    async def sleep(self, interval_ms):
+        await asyncio.sleep(interval_ms / 1000)

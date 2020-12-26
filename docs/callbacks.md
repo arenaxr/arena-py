@@ -37,6 +37,12 @@ def delete_obj_callback(msg):
     # msg will be a python dictionary not an ARENA-py object (for now)
     # do stuff with msg here
     # msg["object_id"], etc
+    #
+    # usually, msg will be:
+    # {
+    #   "object_id": "[deleted object id here]",
+    #   "action": "delete"
+    # }
 
 arena.delete_obj_callback = delete_obj_callback
 ```

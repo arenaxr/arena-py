@@ -21,13 +21,15 @@ arena.add_object(cube)
 
 # Adding Attributes
 ```python
+# use update_attributes with kwargs to add attributes
 cube.update_attributes(physics=Physics(type="dynamic"))
 
+# don't forget to call arena.update_object to see your chnages in the ARENA!
 arena.update_object(cube)
 ```
 
 # Updating Attributes
-Most attributes, except object_id, persist, ttl, and parent do in the "data" section. Access these by using ```obj.data```.
+Most attributes (except object_id, persist, ttl, and parent) are under the "data" field. Access these by using ```obj.data```.
 ```python
 cube.data.position.x = 2
 # cube.update_attributes(position=Position(2,4,-2)) works too

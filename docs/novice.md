@@ -28,7 +28,7 @@ arena.delete_object(cube)
 from arena import *
 
 # setup library
-arena = Arena("arena.andrew.cmu.edu", "example", "realm")
+arena = Arena("arena.andrew.cmu.edu", "realm", "example")
 
 @arena.run_async
 async def func():

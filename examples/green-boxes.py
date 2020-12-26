@@ -3,7 +3,7 @@ import random
 import time
 import sys
 
-arena = Arena("arena.andrew.cmu.edu", "example", "realm")
+arena = Arena("arena.andrew.cmu.edu", "realm", "example")
 
 color = (0, 255, 0)
 

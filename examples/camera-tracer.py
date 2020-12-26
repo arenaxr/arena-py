@@ -34,7 +34,7 @@ def new_obj_callback(msg):
         cam = Camera(**msg)
         cam_state.add_cam(cam)
 
-arena = Arena("arena.andrew.cmu.edu", "example", "realm")
+arena = Arena("arena.andrew.cmu.edu", "realm", "example")
 arena.new_obj_callback = new_obj_callback
 
 def line_follow():

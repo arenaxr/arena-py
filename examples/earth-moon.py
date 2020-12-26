@@ -4,7 +4,7 @@
 '''
 from arena import *
 
-arena = Arena("arena.andrew.cmu.edu", "example", "realm")
+arena = Arena("arena.andrew.cmu.edu", "realm", "example")
 
 @arena.run_once
 def main():

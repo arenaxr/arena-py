@@ -11,8 +11,8 @@ Ok, now let's get started!
 Replace [host], [realm], and [scene] with your desired mqtt broker, realm, and scene name, respectively.
 ```shell
 export MQTTH=[host]
-export SCENE=[scene]
 export REALM=[realm]
+export SCENE=[scene]
 ```
 
 ## Import the library
@@ -24,9 +24,9 @@ from arena import *
 ```python
 arena = Arena()
 ```
-You can also pass host, scene, and realm as arguments, if you don't want to use enviornment variables:
+You can also pass host, realm, and scene as arguments, if you don't want to use enviornment variables:
 ```python
-arena = Arena([host], [scene], [realm])
+arena = Arena([host], [realm], [scene])
 ```
 
 ## Define a task
@@ -65,7 +65,7 @@ Now, go into the scene to see your cube!
 from arena import *
 
 # setup library
-arena = Arena("arena.andrew.cmu.edu", "example", "realm")
+arena = Arena("arena.andrew.cmu.edu", "realm", "example")
 
 def main():
     # make a cube

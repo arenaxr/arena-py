@@ -55,7 +55,7 @@ Now, go into the scene to see your cube move with text!
 from arena import *
 
 # setup library
-arena = Arena("arena.andrew.cmu.edu", "example", "realm")
+arena = Arena("arena.andrew.cmu.edu", "realm", "example")
 
 # make a cube
 cube = Cube(object_id="my_cube", position=Position(0,4,-2), scale=Scale(2,2,2))

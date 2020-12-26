@@ -28,7 +28,7 @@ Code for these can be found [here](../examples/tutorial)
 from arena import *
 
 # setup library
-arena = Arena("arena.andrew.cmu.edu", "example", "realm")
+arena = Arena("arena.andrew.cmu.edu", "realm", "example")
 
 def main():
     # make a cube

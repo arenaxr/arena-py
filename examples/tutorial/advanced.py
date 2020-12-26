@@ -2,7 +2,7 @@ from arena import *
 import random
 
 # setup library
-arena = Arena("arena.andrew.cmu.edu", "example", "realm")
+arena = Arena("arena.andrew.cmu.edu", "realm", "example")
 
 # create avatar/3d head
 model_url = "/store/users/wiselab/models/FaceCapHeadGeneric/FaceCapHeadGeneric.gltf"
@@ -44,6 +44,7 @@ def update_face():
     msg = arena.update_object(avatar, **create_rand_morph())
     # you can print the outputs for debugging
     print(msg)
+    print()
 
 # start tasks
 arena.start_tasks()

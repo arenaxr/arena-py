@@ -21,8 +21,8 @@ class Arena(object):
     """
     def __init__(self,
                 host = "arena.andrew.cmu.edu",
-                scene = "render",
                 realm = "realm",
+                scene = "render",
                 port = None,
                 on_msg_callback = None,
                 new_obj_callback = None,
@@ -31,18 +31,18 @@ class Arena(object):
                 webhost = "xr.andrew.cmu.edu",
                 network_loop_interval = 10  # run mqtt client network loop every 10ms
             ):
-        if os.environ.get('MQTTH') and os.environ.get('SCENE') and os.environ.get('REALM'):
+        if os.environ.get('MQTTH') and os.environ.get('REALM') and os.environ.get('SCENE'):
             HOST  = os.environ["MQTTH"]
-            SCENE = os.environ["SCENE"]
             REALM = os.environ["REALM"]
+            SCENE = os.environ["SCENE"]
         else:
-            print("Cannot find MQTTH, SCENE, and REALM environmental variables, using input parameters instead.")
-            if host and scene and realm:
+            print("Cannot find MQTTH, REALM, and SCENE environmental variables, using input parameters instead.")
+            if host and realm and scene:
                 HOST  = host
-                SCENE = scene
                 REALM = realm
+                SCENE = scene
             else:
-                sys.exit("host, scene, and realm are unspecified, aborting...")
+                sys.exit("host, realm, and scene are unspecified, aborting...")
 
         print(f"Loading: {HOST}/{SCENE}, realm={REALM}")
         print("=====")
@@ -56,8 +56,8 @@ class Arena(object):
         )
 
         # do auth
-        data = auth.authenticate(REALM, SCENE, HOST, webhost=webhost,
-                                                     debug=self.debug)
+        data = auth.authenticate(REALM, SCENE, HOST,
+                                    webhost=webhost, debug=self.debug)
         if 'username' in data and 'token' in data:
             self.client.username_pw_set(username=data["username"], password=data["token"])
         print("=====")

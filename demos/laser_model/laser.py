@@ -1,9 +1,7 @@
-# screen_mgr.py
+# laser.py
 #
-# This program presents control knobs that draw a screenshare object
-# at a particular location in the screen. It also dims the ambient 
-# lighting level to 1 which provides ideal contrast.  Upon clicks
-# a laser annotation appears. 
+# This program loads a set of models that can be clicked on with
+# a laser pointer ray
 
 import time
 import arena
@@ -19,31 +17,8 @@ import threading
 # export MID=MID_1234
 # export JSONCFG=screens.json
 
-screens= []
+objects = []
 delete_object_queue = []
-
-
-def projector_start(event=None):
-    global screens
-    
-    if event.event_type == arena.EventType.mouseup:
-        local_screens = screens.copy()
-        print("Start")
-        for i in range(len(local_screens)):
-            screen=local_screens.pop()
-            print(screen)
-            screen.update(transparency=arena.Transparency(True,1.0))
-
-
-def projector_stop(event=None):
-    global screens
-    if event.event_type == arena.EventType.mouseup:
-        local_screens = screens.copy()
-        print("Start")
-        for i in range(len(local_screens)):
-            screen=local_screens.pop()
-            print(screen)
-            screen.update(transparency=arena.Transparency(True,0.0))
 
 
 
@@ -92,7 +67,7 @@ else:
     print( "export MQTTH=arena.andrew.cmu.edu")
     print( "export REALM=realm")
     print( "export SCENE=example")
-    print( "export JSONCFG=directory_cfg.json")
+    print( "export JSONCFG=objects.json")
     exit(-1)
 
 
@@ -107,50 +82,21 @@ if os.environ.get('JSONCFG') is not None:
         screensData = json.load(dataFile)
         cnt=0
         for key in screensData:
-            print("Key:" + key)
+            print("Loading Object:" + key)
             value = screensData[key]
-            if key == "projector":
-                print("Projector")
-                projector_start = arena.Object(                    
-                    persist=True,
-                    objName="projector_start",
-                    objType=arena.Shape.cube,
-                    clickable=True,
-                    color=(0,255,0),
-                    location=value["location"],
-                    scale=value["scale"],
-                    rotation=value["rotation"],
-                    callback=projector_start
-                    ) 
-                stop_location = value["location"]
-                stop_location[1]=stop_location[1]- value["button_distance"]
-                projector_stop = arena.Object(                    
-                    persist=True,
-                    objName="projector_stop",
-                    objType=arena.Shape.cube,
-                    clickable=True,
-                    location=stop_location,
-                    color=(255,0,0),
-                    scale=value["scale"],
-                    rotation=value["rotation"],
-                    callback=projector_stop
-                    ) 
-
-            else:
-                print("Screen: " + str(cnt))
-                value = screensData[key]
-                screens.append( arena.Object(
+            print(value)
+            projector_start = arena.Object(                    
                     persist=True,
                     objName=key,
-                    objType=arena.Shape.cube,
-                    #transparency=arena.Transparency(True, 0),
+                    objType=arena.Shape.gltf_model,
                     clickable=True,
                     location=value["location"],
                     scale=value["scale"],
                     rotation=value["rotation"],
-                    callback=draw_ray
-                    ))
-                cnt+=1
+                    callback=draw_ray,
+                    url=value["url"]
+            ) 
+
     
 
 y = threading.Thread(target=object_harvester_thread)

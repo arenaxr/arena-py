@@ -1,61 +1,54 @@
-# volatile.py
-''' Demonstrate setting a callback for a particular camera. 
+# camera-tracer.py
+''' Camera tracing program. Draws a path that follows the user.
 '''
-import arena
-import sys, getopt
-from scipy.spatial import distance
 
-SCENE = "tracer"
-fixedCamera = "test"
-
-last_position = [0.0,0.0,0.0]
-cam_color = (255,0,0)
-
-def camera_callback(event=None):
-    global last_position
-    global cam_color
-
-    cam_moved = distance.euclidean(event.position,last_position)
-    if cam_moved > 0.25:
-        last_position = event.position
-        arena.Object(objType=arena.Shape.sphere,location=event.position,scale = (0.1, 0.1, 0.1),color=cam_color)
-        print( "Draw Marker")
+from arena import *
 
 
+class CameraState(Object):
+    def __init__(self):
+        self.camera = None
+        self.prev_pos = None
 
-try:
-    opts, args = getopt.getopt(sys.argv[1:],"hs:u:c:",["scene=","user=","color="])
-except getopt.GetoptError:
-    print( "tracer.py -s <scene> -u <fixedCamera> -c <r,g,b> " )
-    print( "   ex: python3 tracer.py -s myScene -u myCamera -c 255,0,0" )
-    sys.exit(2)
+    def add_cam(self, camera):
+        if not self.camera: # add camera if it doesnt exist already
+            self.camera = camera
 
-for opt, arg in opts:
-    if opt == '-h':
-        print( "tracer.py -s <scene> -u <fixedCamera> -c <r,g,b> " )
-        print( "   ex: python3 tracer.py -s myScene -u myCamera -c 255,0,0" )
-        sys.exit()
-    elif opt in ("-s", "--scene"):
-        SCENE = arg
-    elif opt in ("-u", "--user"):
-        fixedCamera = arg
-    elif opt in ("-c", "--color"):
-        cam_color = arg.split(',')
+    @property
+    def curr_pos(self):
+        if self.camera:
+            return self.camera.data.position
 
+    @property
+    def displacement(self):
+        if self.prev_pos:
+            return self.prev_pos.distance_to(self.curr_pos)
+        else:
+            return 0
 
-print("Scene: " + SCENE)
-print("fixedCamera: " + fixedCamera)
-print("color: " + str(cam_color))
+lines = []
+cam_state = CameraState()
 
-arena.init("arena.andrew.cmu.edu", "realm", SCENE )
-cameraStr = "camera_" + fixedCamera + "_" + fixedCamera
+def new_obj_callback(msg):
+    if "camera" in msg["object_id"]:
+        cam = Camera(**msg)
+        cam_state.add_cam(cam)
 
-my_camera = arena.Object(objName=cameraStr,
-                   transparency=arena.Transparency(True, 0),
-                   callback=camera_callback,
-                   persist=False)
+arena = Arena("arena.andrew.cmu.edu", "example", "realm")
+arena.new_obj_callback = new_obj_callback
 
-print( "Go to URL: https://arena.andrew.cmu.edu/?scene=" + SCENE +  "&fixedCamera=" + fixedCamera)
+def line_follow():
+    if cam_state.displacement >= 0.5:
+        line = Line(start=cam_state.prev_pos, end=cam_state.curr_pos, color="#abcdef")
+        arena.add_object(line)
 
-# our main event loop
-arena.handle_events()
+        lines.append(line)
+        if len(lines) > 30:
+            arena.delete_object(lines.pop(0))
+
+    # the camera's position gets automatically updated by arena-py!
+    cam_state.prev_pos = cam_state.curr_pos
+
+arena.run_forever(line_follow, 500)
+
+arena.start_tasks() # will block

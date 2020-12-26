@@ -1,55 +1,29 @@
-# volatile.py
-''' Demonstrate setting an object to be a child of a camera 
+# camera-child.py
+''' Demonstrate setting an object to be a child of a camera
 '''
-import arena
-import sys
-import getopt
+from arena import Arena, Circle
 
-scene = "cic-tags"
-user = "test"
-color = (0, 255, 0)
+arena = Arena("arena.andrew.cmu.edu", "example", "realm")
 
+def new_obj_callback(msg):
+    if "camera" in msg["object_id"]:
+        circle1 = Circle(
+            parent=msg["object_id"],
+            position=(-.5, 0, -.5),
+            scale=(0.05, 0.05, 0.05)
+        )
+        circle2 = Circle(
+            parent=msg["object_id"],
+            position=(.5, 0, -.5),
+            scale=(0.05, 0.05, 0.05),
+            ttl=5
+        )
+        arena.add_object(circle1)
+        arena.add_object(circle2)
 
-try:
-    opts, args = getopt.getopt(sys.argv[1:], "hs:u:c:", [
-                               "scene=", "user=", "color="])
-except getopt.GetoptError:
-    print("camera-child.py -s <scene> -u <user> -c <r,g,b> ")
-    print("   ex: python3 camera-child.py -s myScene -u myName -c 255,0,0")
-    sys.exit(2)
+arena.new_obj_callback = new_obj_callback
 
-for opt, arg in opts:
-    if opt == '-h':
-        print("camera-child.py -s <scene> -u <user> -c <r,g,b> ")
-        print("   ex: python3 camera-child.py -s myScene -u myCamera -c 255,0,0")
-        sys.exit()
-    elif opt in ("-s", "--scene"):
-        scene = arg
-    elif opt in ("-u", "--user"):
-        user = arg
-    elif opt in ("-c", "--color"):
-        color = arg.split(',')
-
-
-print("Scene: " + scene)
-print("User: " + user)
-print("Color: " + str(color))
-
-arena.init("arena.andrew.cmu.edu", "realm", scene)
-obj_str = "circle_" + user
-camera_str = "camera_" + user + "_" + user
-arena.Object(objName=obj_str,
-             objType=arena.Shape.circle,
-             parent=camera_str,
-             location=(-.5, 0, -.5),
-             rotation=(0, 0, 0, 1),
-             scale=(0.05, 0.05, 0.05),
-             color=color,
-             # persist=True
-             )
-
-print("Go to URL: https://arena.andrew.cmu.edu/?scene=" +
-      scene + "&fixedCamera=" + user)
+print("Go to URL: https://arena.andrew.cmu.edu/example")
 
 # our main event loop
-arena.handle_events()
+arena.start_tasks()

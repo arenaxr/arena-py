@@ -1,13 +1,11 @@
 # balls.py
 #
-# spray a bunch of spheres into the scene, test physics
+# spray a bunch of spheres into the scene, test physics and impulse
 
-import arena
+from arena import *
 import random
-import time
-import signal
 
-arena.init("arena.andrew.cmu.edu", "realm", "systest-balls")
+arena = Arena("arena.andrew.cmu.edu", "systest-balls", "realm")
 
 
 def rando():
@@ -18,27 +16,27 @@ def randcolor():
     x = random.randint(0, 255)
     y = random.randint(0, 255)
     z = random.randint(0, 255)
-    return(x, y, z)
+    return (x, y, z)
 
-
-def signal_handler(sig, frame):
-    exit()
-
-
-signal.signal(signal.SIGINT, signal_handler)
 
 counter = 0
-while True:
+@arena.run_forever(interval_ms=100)
+def make_balls():
+    global counter
+
     obj_id = str(counter)
     name = "sphere" + "_" + obj_id
     counter += 1
 
-    obj = arena.Object(
-        physics=arena.Physics.dynamic,
-        objName=obj_id,
-        objType=arena.Shape.sphere,
-        location=(rando(), 0, rando()),
+    obj = Sphere(
+        object_id=obj_id,
+        click_listener=True,
+        physics=Physics(type="dynamic"),
+        impulse=Impulse(position=(1,1,1), force=(1,50,1)),
+        position=(rando(), rando(), rando()),
         color=randcolor(),
-        ttl=40)
+        ttl=60)
 
-    time.sleep(0.1)
+    arena.add_object(obj)
+
+arena.start_tasks()

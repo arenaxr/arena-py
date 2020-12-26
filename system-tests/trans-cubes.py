@@ -2,12 +2,12 @@
 #
 # draw a symmetric structure of transparent mostly red blue (yellow) rectangles
 
-import arena
+from arena import *
 import random
 import time
-import signal
 
-arena.init("arena.andrew.cmu.edu", "realm", "systest-transCubes")
+
+arena = Arena("arena.andrew.cmu.edu", "systest-transcubes", "realm")
 
 
 def randmove():
@@ -53,39 +53,23 @@ def randcolor():
     return randred()
 
 
-def randobj():
-    rando = random.random()
-    if rando < 0.2:
-        return "arena.Shape.cylinder"
-    if rando < 0.4:
-        return "arena.Shape.sphere"
-    if rando < 0.6:
-        return "arena.Shape.cube"
-    if rando < 0.8:
-        return "arena.Shape.quad"
-    return "arena.Shape.cube"
-
-
 def do(name, randx, randy, randz, scalex, scaley, scalez, color):
-    obj = arena.Object(
-        objName=name,
-        location=(randx, randy, randz),
-        scale=(scalex, scaley, scalez),
-        color=color,
-        data='{"material": {"transparent": true, "opacity": 0.5}}')
-    messages.append(obj)
+    obj = Cube(
+            object_id=name,
+            position=(randx, randy, randz),
+            scale=(scalex, scaley, scalez),
+            color=color,
+            material=Material(transparent=True, opacity=0.5),
+            animation=Animation(property="rotation", to="0 360 0", loop=5, dur=10000, easing="linear")
+        )
+    arena.add_object(obj)
 
 
-def signal_handler(sig, frame):
-    exit(0)
-
-
-signal.signal(signal.SIGINT, signal_handler)
-
-
-messages = []
 counter = 0
-while True:
+@arena.run_forever
+def do_stuff():
+    global counter
+
     name = "cube_" + str(counter)
     counter += 1
     randx = randmove()
@@ -108,10 +92,4 @@ while True:
     do(name + "b", randx, -randy, randz, scalex, scaley, scalez, color)
     do(name + "c", -randx, -randy, randz, scalex, scaley, scalez, color)
 
-    # os.system("mosquitto_pub -h " + HOST + " -t " + TOPIC + "/" + name + " -m " + MESSAGE + " -r");
-    if len(messages) >= 100:
-        for i_ in range(4):
-            pop = messages.pop(0)
-            pop.delete()
-
-    time.sleep(0.1)
+arena.start_tasks()

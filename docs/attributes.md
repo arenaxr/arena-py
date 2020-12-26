@@ -46,13 +46,13 @@ Goes to a url on click. Note: click-listener must be True for this to work:
 goto_url=GotoUrl(dest, on, url)
 ```
 
-## Impulse (note: does not work!)
+## Impulse
 An impulse can be added by:
 ```python
 impulse=Impulse(on, force, position)
 ```
 
-## Physics (note: does not work!)
+## Physics
 Physics ("none", "static", or "dynamic") can be added with:
 ```python
 physics=Physics(type)

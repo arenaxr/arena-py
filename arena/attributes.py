@@ -130,10 +130,9 @@ class GotoUrl(Attribute):
 class Impulse(Attribute):
     """
     Impulse Attribute.
-    [TODO] this does not work in the browser!
     Usage: impulse=Impulse(...)
     """
-    def __init__(self, on=True, force=Position(0,0,0), position=Position(0,0,0)):
+    def __init__(self, on="mousedown", force=Position(0,0,0), position=Position(0,0,0)):
         if isinstance(force, Position):
             force = force.to_str()
         elif type(force) == tuple or type(force) == list:
@@ -149,7 +148,6 @@ class Impulse(Attribute):
 class Physics(Attribute):
     """
     Physics Attribute.
-    [TODO] this does not work in the browser!
     Usage: physics=Physics(...) OR dynamic_body=Physics(...)
     """
     def __init__(self, type="static"):

@@ -71,11 +71,12 @@ class Object(BaseObject):
         # kwargs are for additional param to add to json, like "action":"create"
         res = { k:v for k,v in vars(self).items() if k != "evt_handler" }
 
+        data = res["data"].__dict__
         # handle special case where "physics" should be "dynamic-body"
-        if "physics" in res:
-            ref = res["physics"]
-            del res["physics"]
-            res["dynamic-body"] = ref
+        if "physics" in data:
+            ref = data["physics"]
+            del data["physics"]
+            data["dynamic-body"] = ref
 
         res.update(kwargs)
         return self.json_encode(res)

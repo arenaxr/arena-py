@@ -1,3 +1,8 @@
+# move-cubes.py
+#
+# Make two cubes that move away from each other (and a bunch of dodecahedrons!).
+# For testing tasks and object creation.
+
 from arena import *
 import random
 

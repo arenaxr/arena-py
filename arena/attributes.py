@@ -2,6 +2,7 @@ from .base_object import *
 from .utils import *
 import math
 
+
 class Attribute(BaseObject):
     """
     Attribute class. Defines a generic attribute (ie position, rotation, impulse, etc) in the ARENA.

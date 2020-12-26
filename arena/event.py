@@ -2,6 +2,7 @@ from .base_object import *
 from .attributes import Data
 import uuid
 
+
 class Event(BaseObject):
     """
     Event class. Wrapper around JSON for events.

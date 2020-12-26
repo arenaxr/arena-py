@@ -2,6 +2,7 @@ import time
 import signal
 import asyncio
 
+
 class Worker(object):
     """
     Wrapper for async function for single ARENA tasks.
@@ -61,6 +62,7 @@ class PersistantWorker(Worker):
         while True:
             self.func(*self.args, **self.kwargs)
             await self.sleep(self.interval)
+
 
 class EventLoop(object):
     """

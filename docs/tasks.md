@@ -45,22 +45,23 @@ arena.run_async(f, 1000)
 ```
 
 ## Arguments
-You can add arguments to tasks like so:
+You can add arguments to tasks like so (very helpful to avoid using "global"):
 ```python
 @arena.run_once(text="arena-py 2.0!", parent="sphere")
 def make_text(text, parent):
-    text_obj = Text(text=text, position=Position(0,1.5,0), parent=parent)
+    text_obj = Text(text=text, position=(0,1.5,0), parent=parent)
     arena.add_object(text_obj)
 
-# you can also do this
-arena.run_once(make_text, text="arena-py 2.0!", parent="sphere")
+# arena.run_once(make_text, text="arena-py 2.0!", parent="sphere") # also works
 ```
 
 ```python
-@arena.run_forever(interval_ms=1234, arg="hello world")
-def forever(arg):
-    print(arg)
+objs = []
 
-# you can also do this
-arena.run_forever(forever, 1234, arg="hello world")
+@arena.run_forever(interval_ms=1234, objs=objs)
+def forever(objs):
+    for o in objs:
+        print(o)
+
+# arena.run_forever(forever, 1234, objs=objs) # also works
 ```

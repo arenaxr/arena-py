@@ -12,6 +12,7 @@ from .event_loop import *
 
 from . import auth
 
+
 class Arena(object):
     """
     Main ARENA client for ARENA-py.
@@ -98,57 +99,57 @@ class Arena(object):
         """Main Paho MQTT client network loop"""
         self.client.loop()
 
-    def run_once(self, func=None, *args, **kwargs):
+    def run_once(self, func=None, **kwargs):
         """Runs a user defined function on startup"""
         if func is not None:
-            w = SingleWorker(func, self.mqtt_connect_evt, *args, **kwargs)
+            w = SingleWorker(func, self.mqtt_connect_evt, **kwargs)
             self.task_manager.add_task(w)
         else:
             # if there is no func, we are in a decorator
             def _run_once(func):
-                self.run_once(func, *args, **kwargs)
+                self.run_once(func, **kwargs)
                 return func
             return _run_once
 
-    def run_after_interval(self, func=None, interval_ms=1000, *args, **kwargs):
+    def run_after_interval(self, func=None, interval_ms=1000, **kwargs):
         """Runs a user defined function after a interval_ms milliseconds"""
         if func is not None:
             if interval_ms < 0:
                 print("Invalid interval! Defaulting to 1000ms")
                 interval_ms = 1000
-            w = LazyWorker(func, self.mqtt_connect_evt, interval_ms, *args, **kwargs)
+            w = LazyWorker(func, self.mqtt_connect_evt, interval_ms, **kwargs)
             self.task_manager.add_task(w)
         else:
             # if there is no func, we are in a decorator
             def _run_after_interval(func):
-                self.run_after_interval(func, interval_ms, *args, **kwargs)
+                self.run_after_interval(func, interval_ms, **kwargs)
                 return func
             return _run_after_interval
 
-    def run_async(self, func=None, *args, **kwargs):
+    def run_async(self, func=None, **kwargs):
         """Runs a user defined aynscio function"""
         if func is not None:
-            w = AsyncWorker(func, self.mqtt_connect_evt, *args, **kwargs)
+            w = AsyncWorker(func, self.mqtt_connect_evt, **kwargs)
             self.task_manager.add_task(w)
         else:
             # if there is no func, we are in a decorator
             def _run_async(func):
-                self.run_async(func, *args, **kwargs)
+                self.run_async(func, **kwargs)
                 return func
             return _run_async
 
-    def run_forever(self, func=None, interval_ms=1000, *args, **kwargs):
+    def run_forever(self, func=None, interval_ms=1000, **kwargs):
         """Runs a function every interval_ms milliseconds"""
         if func is not None:
             if interval_ms < 0:
                 print("Invalid interval! Defaulting to 1000ms")
                 interval_ms = 1000
-            t = PersistantWorker(func, self.mqtt_connect_evt, interval_ms, *args, **kwargs)
+            t = PersistantWorker(func, self.mqtt_connect_evt, interval_ms, **kwargs)
             self.task_manager.add_task(t)
         else:
             # if there is no func, we are in a decorator
             def _run_forever(func):
-                self.run_forever(func, interval_ms, *args, **kwargs)
+                self.run_forever(func, interval_ms, **kwargs)
                 return func
             return _run_forever
 
@@ -237,9 +238,17 @@ class Arena(object):
                     **kwargs)
         return self.generate_custom_event(evt, "clientEvent")
 
-    def manuipulate_camera(self, obj, type="camera-override", **kwargs):
+    def manipulate_camera(self, obj, type="camera-override", **kwargs):
         """Publishes a camera manipulation event"""
         _type = type
+        if "target" in kwargs:
+            target = kwargs["target"]
+            if isinstance(target, tuple) or isinstance(target, list):
+                kwargs["target"] = Position(*target)
+            elif isinstance(target, dict):
+                kwargs["target"] = Position(**target)
+            elif isinstance(target, Object):
+                kwargs["target"] = target.object_id
         evt = Event(object_id=obj.object_id,
                     type=_type,
                     object_type="camera",

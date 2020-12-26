@@ -8,13 +8,14 @@ def mouse_handler(evt):
     # do amazing stuff here
 
 # pro tip: you can actually update an object directly in the arena update_object function
-arena.update_object(cube, click_listener=True, evt_handler=mouse_handler)
+arena.update_object(cube, clickable=True, evt_handler=mouse_handler)
+# arena.update_object(cube, click_listener=True, evt_handler=mouse_handler) # also works
 ```
 
 ## Deleting Attributes
 ```python
 cube.update_attributes(click_listener=None)
-# cube.update_attributes(click_listener=False) also works
+# cube.update_attributes(click_listener=False) # also works
 ```
 
 ## Deleting Objects

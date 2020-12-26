@@ -31,7 +31,7 @@ def main():
     arena.update_object(
         moon,
         animation=Animation(property="scale", to="0.1 0.1 0.1", startEvents="click", loop=6, dur=1000, dir="alternate", easing="easeInOutCirc"),
-        click_listener=True
+        clickable=True
     )
 
     ## Create marker objects

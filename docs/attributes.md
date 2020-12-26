@@ -4,6 +4,20 @@ Attributes are used to specify parameters for ARENA Objects.
 
 See https://arena.conix.io/content/messaging/examples.html.
 
+## Accessing Object Attributes
+Usually, attributes (except for object_id, persist, ttl, and parent) are under the data field:
+```python
+obj.object_id
+obj.persist
+...
+obj.data.position
+obj.data.rotation
+...
+obj.data.material
+# etc etc
+```
+
+# Appendix
 ## Position
 The position of an object can be specified by:
 ```python
@@ -63,17 +77,17 @@ dynamic_body=Physics(type)
 ```
 
 ## Generic attribute
-For attributes that are not specified by the library, you can use this (put anything you want in the "...")!:
+For attributes that are not specified by the library, you can use this (put anything you want in the "...")! Inherit from this class to create custom attributes.
 ```python
 Attribute(...)
 ```
 
-## Getting attributes
-Usually, attributes are under data
+## Additional Attributes (which are just specified as numbers or strings) may include:
 ```python
-obj.data.position
-obj.data.rotation
-# ...
-obj.data.material
-# etc etc
+persist=True
+ttl=30  # seconds
+clickable=True
+# click_listener=True works too
+# etc.
+# see https://arena.conix.io/content/messaging/examples.html
 ```

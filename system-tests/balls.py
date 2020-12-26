@@ -19,18 +19,10 @@ def randcolor():
     return (x, y, z)
 
 
-counter = 0
 @arena.run_forever(interval_ms=100)
 def make_balls():
-    global counter
-
-    obj_id = str(counter)
-    name = "sphere" + "_" + obj_id
-    counter += 1
-
     obj = Sphere(
-        object_id=obj_id,
-        click_listener=True,
+        clickable=True,
         physics=Physics(type="dynamic"),
         impulse=Impulse(position=(1,1,1), force=(1,50,1)),
         position=(rando(), rando(), rando()),

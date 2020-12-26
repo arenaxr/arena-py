@@ -4,11 +4,9 @@ Events are ways to interact with user input in the ARENA.
 
 See https://arena.conix.io/content/messaging/examples.html.
 
-## Events
-
-### Get Event type
+## Get Event type
 Can be one of either:
-"mousedown", "mouseup", "mouseenter", "mouseleave", "triggerdown", "triggerup", "camera-override", "look-at"
+"mousedown", "mouseup", "mouseenter", "mouseleave", "triggerdown", "triggerup", "camera-override", and "look-at"
 ```python
 # evt = Event(...)
 evt.type
@@ -21,6 +19,11 @@ evt.data.clickPos
 evt.data.position
 evt.data.source
 ...
+```
+
+# Appendix
+```python
+Event(object_id, action, type, ...)
 ```
 
 <!-- # Generating events with ARENA-py

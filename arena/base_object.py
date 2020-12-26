@@ -1,5 +1,6 @@
 import json
 
+
 class CustomEncoder(json.JSONEncoder):
     """
     Custom JSON encoder for nested BaseObjects
@@ -9,6 +10,7 @@ class CustomEncoder(json.JSONEncoder):
             return obj
         else:
             return vars(obj)
+
 
 class BaseObject(object):
     """

@@ -3,6 +3,7 @@ from .attributes import *
 from .utils import *
 import uuid
 
+
 class Object(BaseObject):
     """
     Object class. Defines a generic object in the ARENA.
@@ -27,6 +28,9 @@ class Object(BaseObject):
         # "ttl" is optional
         ttl = kwargs.get("ttl", None)
         if "ttl" in kwargs: del kwargs["ttl"]
+
+        # remove timestamp, if exist
+        if "timestamp" in kwargs: del kwargs["timestamp"]
 
         # print warning if object is being created with the same id as an existing object
         if Object.exists(object_id):
@@ -77,6 +81,12 @@ class Object(BaseObject):
             ref = data["physics"]
             del data["physics"]
             data["dynamic-body"] = ref
+
+        # handle special case where "clickable" should be "click-listener"
+        if "clickable" in data:
+            ref = data["clickable"]
+            del data["clickable"]
+            data["click-listener"] = ref
 
         res.update(kwargs)
         return self.json_encode(res)

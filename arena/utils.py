@@ -27,5 +27,5 @@ def santize_data(d):
             underscore_words += [k]
     for w in underscore_words:
         v = d[w]
-        d[w.replace("_", "-")] = v
+        d[w.replace("_", "-").replace("--", "__")] = v
         del d[w]

@@ -66,22 +66,22 @@ class Data(Attribute):
 
             if k == "position" and not isinstance(v, Position):
                 if isinstance(v, tuple) or isinstance(v, list):
-                    data[k] = Position(*v)
+                    data[k] = Position(*v[:3])
                 elif isinstance(v, dict):
                     data[k] = Position(**v)
             elif k == "rotation" and not isinstance(v, Rotation):
                 if isinstance(v, tuple) or isinstance(v, list):
-                    data[k] = Rotation(*v)
+                    data[k] = Rotation(*v[:3])
                 elif isinstance(v, dict):
                     data[k] = Rotation(**v)
             elif k == "scale" and not isinstance(v, Scale):
                 if isinstance(v, tuple) or isinstance(v, list):
-                    data[k] = Scale(*v)
+                    data[k] = Scale(*v[:3])
                 elif isinstance(v, dict):
                     data[k] = Scale(**v)
             elif k == "color":
                 if isinstance(v, tuple) or isinstance(v, list):
-                    data[k] = rgb_to_hex(v)
+                    data[k] = rgb_to_hex(v[:3])
                 elif isinstance(v, str):
                     data[k] = v
             else:

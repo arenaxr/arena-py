@@ -50,7 +50,7 @@ arena.generate_custom_event(evt, action="clientEvent")
 ```
 
 # Event Parameters and Data
-When you attach an ```evt_handler``` to an Object, you will receive Event objects in your handler. Below are how you access attributes of the Event object.
+When you attach an `evt_handler` to an Object, you will receive Event objects in your handler. Below are how you access attributes of the Event object.
 
 ```python
 def click_handler(evt): # evt = Event(...)
@@ -73,11 +73,29 @@ cube = Cube(..., evt_handler=click_handler)
 Event(object_id, action, type, ...)
 ```
 
-<!-- # Generating events with ARENA-py
+# Generating events with ARENA-py
 You can generate click and camera events with ARENA-py like so:
 ```python
-arena.generate_event(my_camera, type="camera-override")
-``` -->
+# generate a click event
+arena.generate_click_event(
+    cube,
+    type="mouseup"
+)
+
+# move camera
+arena.manipulate_camera(
+    my_camera,
+    type="camera-override",
+    position=(10,1.6,-7)
+)
+
+# make camera look at a specific object or position
+arena.manipulate_camera(
+    my_camera,
+    type="look-at",
+    target=cube
+)
+```
 
 # ARENA Event JSON example
 ```json

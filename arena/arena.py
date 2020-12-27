@@ -48,11 +48,11 @@ class Arena(object):
         print("=====")
 
         self.root_topic = f"{REALM}/s/{SCENE}"
-        self.client_id = self.generate_client_id()
+        self.client_id = "pyClient-" + self.generate_client_id()
         self.debug = debug
 
         self.client = mqtt.Client(
-            "pyClient-" + self.client_id, clean_session=True
+            self.client_id, clean_session=True
         )
 
         # do auth
@@ -238,7 +238,7 @@ class Arena(object):
         evt = Event(object_id=obj.object_id,
                     type=_type,
                     position=obj.data.position,
-                    source="arena_lib_"+self.client_id,
+                    source=self.client_id,
                     **kwargs)
         return self.generate_custom_event(evt, "clientEvent")
 

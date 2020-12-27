@@ -8,7 +8,9 @@ class Object(BaseObject):
     """
     Object class. Defines a generic object in the ARENA.
     """
+
     all_objects = {} # dict of all objects created so far
+
     def __init__(self, evt_handler=None, **kwargs):
         # "object_id" is required in kwargs, defaulted to random uuid4
         object_id = kwargs.get("object_id", str(uuid.uuid4()))
@@ -18,9 +20,6 @@ class Object(BaseObject):
         persist = kwargs.get("persist", False)
         if "persist" in kwargs: del kwargs["persist"]
 
-        # remove "action" from kwargs
-        if "action" in kwargs: del kwargs["action"]
-
         # special case for "parent" (can be an Object)
         if "parent" in kwargs and isinstance(kwargs["parent"], Object):
             kwargs["parent"] = kwargs["parent"].object_id
@@ -29,8 +28,11 @@ class Object(BaseObject):
         ttl = kwargs.get("ttl", None)
         if "ttl" in kwargs: del kwargs["ttl"]
 
-        # remove timestamp, if exist
+        # remove timestamp, if exists
         if "timestamp" in kwargs: del kwargs["timestamp"]
+
+        # remove "action", if exists
+        if "action" in kwargs: del kwargs["action"]
 
         # print warning if object is being created with the same id as an existing object
         if Object.exists(object_id):
@@ -58,17 +60,22 @@ class Object(BaseObject):
 
         self.evt_handler = evt_handler
 
-        # add current object to all_obejcts dict
+        # add current object to all_objects dict
         Object.add(self)
 
     def update_attributes(self, evt_handler=None, **kwargs):
         if evt_handler:
             self.evt_handler = evt_handler
 
-        if "data" not in self.__dict__:
+        if "data" not in self:
             return
 
-        data = self.__dict__["data"]
+        # update "persist", and "ttl"
+        self.persist = kwargs.get("persist", self.persist)
+        if "ttl" in self:
+            self.ttl = kwargs.get("ttl", self.ttl)
+
+        data = self.data
         Data.update_data(data, kwargs)
 
     def json(self, **kwargs):
@@ -77,6 +84,7 @@ class Object(BaseObject):
         res.update(kwargs)
 
         data = res["data"].__dict__.copy()
+
         # color should be a hex string
         if "color" in data:
             data["color"] = data["color"].hex
@@ -96,6 +104,22 @@ class Object(BaseObject):
             ref = data["clickable"]
             del data["clickable"]
             data["click-listener"] = ref
+
+        # remove underscores from specific keys
+        if "goto_url" in data:
+            ref = data["goto_url"]
+            del data["goto_url"]
+            data["goto-url"] = ref
+
+        if "click_listener" in data:
+            ref = data["click_listener"]
+            del data["click_listener"]
+            data["click-listener"] = ref
+
+        if "dynamic_body" in data:
+            ref = data["dynamic_body"]
+            del data["dynamic_body"]
+            data["dynamic-body"] = ref
 
         res["data"] = data
         return self.json_encode(res)
@@ -271,7 +295,7 @@ class ThickLine(Object):
             if type(p) == Position:
                 p = p.to_str()
             elif type(p) == tuple or type(p) == list:
-                p = tuple_to_string(p)
+                p = Utils.tuple_to_string(p)
             path_str += p + ","
         path_str = path_str.rstrip(",")
         super().__init__(object_type="thickline", path=path_str, lineWidth=lineWidth, **kwargs)

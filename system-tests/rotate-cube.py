@@ -7,7 +7,7 @@ import random
 
 
 # start ARENA client
-arena = Arena("arena.andrew.cmu.edu", "realm", "example")
+arena = Arena("arena.andrew.cmu.edu", "realm", "test")
 
 cube = Cube(object_id="cube", position=(0,4,-2), scale=Scale(2,2,2), rotation=(0,0,0), color=(0,0,0))
 arena.add_object(cube)

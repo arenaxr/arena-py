@@ -29,6 +29,9 @@ class BaseObject(object):
     def __setitem__(self, name, attr):
         self.add(name, attr)
 
+    def __contains__(self, attr):
+        return attr in self.__dict__
+
     def add(self, name, attr):
         self.__dict__[name] = attr
 

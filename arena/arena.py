@@ -17,7 +17,7 @@ class Arena(object):
     """
     Main ARENA client for ARENA-py.
     Wrapper around Paho MQTT client and EventLoop.
-    Can create and execute various user defined functions.
+    Can create and execute various user-defined functions.
     """
     def __init__(self,
                 host = "arena.andrew.cmu.edu",
@@ -48,7 +48,7 @@ class Arena(object):
         print("=====")
 
         self.root_topic = f"{REALM}/s/{SCENE}"
-        self.client_id = random_client_id()
+        self.client_id = self.generate_client_id()
         self.debug = debug
 
         self.client = mqtt.Client(
@@ -95,12 +95,16 @@ class Arena(object):
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
 
+    def generate_client_id(self):
+        """Returns a random 6 digit id"""
+        return str(random.randrange(100000, 999999))
+
     def run_network_loop(self):
         """Main Paho MQTT client network loop"""
         self.client.loop()
 
     def run_once(self, func=None, **kwargs):
-        """Runs a user defined function on startup"""
+        """Runs a user-defined function on startup"""
         if func is not None:
             w = SingleWorker(func, self.mqtt_connect_evt, **kwargs)
             self.task_manager.add_task(w)
@@ -112,7 +116,7 @@ class Arena(object):
             return _run_once
 
     def run_after_interval(self, func=None, interval_ms=1000, **kwargs):
-        """Runs a user defined function after a interval_ms milliseconds"""
+        """Runs a user-defined function after a interval_ms milliseconds"""
         if func is not None:
             if interval_ms < 0:
                 print("Invalid interval! Defaulting to 1000ms")
@@ -159,8 +163,8 @@ class Arena(object):
         self.task_manager.run()
 
     async def sleep(self, interval_ms):
-        """Public function for sleeping in aysnc functions"""
-        await self.task_manager.sleep(interval_ms)
+        """Public function for sleeping in async functions"""
+        await asyncio.sleep(interval_ms / 1000)
 
     def disconnect(self):
         """Disconnects Paho MQTT client"""
@@ -290,7 +294,7 @@ class Arena(object):
         else:
             payload = obj.json(action=action, timestamp=d)
         self.client.publish(topic, payload, qos=0)
-        if self.debug: print("[_publish]", payload)
+        if self.debug: print("[publish]", payload)
         return payload
 
     def get_persisted_obj(self, object_id, broker, scene):

@@ -1,7 +1,7 @@
 from arena import *
 
 # start ARENA client
-arena = Arena("arena.andrew.cmu.edu", "realm", "systest-tasks")
+arena = Arena("arena.andrew.cmu.edu", "realm", "test")
 
 @arena.run_once
 def f1():

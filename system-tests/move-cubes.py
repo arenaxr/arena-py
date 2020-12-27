@@ -8,7 +8,7 @@ import random
 
 
 # start ARENA client
-arena = Arena("arena.andrew.cmu.edu", "realm", "systest-movecubes")
+arena = Arena("arena.andrew.cmu.edu", "realm", "test")
 
 
 def evt_handler(msg):

@@ -17,7 +17,7 @@ def new_obj_callback(msg):
         cams += [Camera(**msg)]
 
 
-arena = Arena("arena.andrew.cmu.edu", "realm", "systest-movecamera")
+arena = Arena("arena.andrew.cmu.edu", "realm", "test")
 arena.new_obj_callback = new_obj_callback
 
 # cube = Cube(object_id="cube")

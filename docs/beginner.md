@@ -42,9 +42,9 @@ cube = Cube(object_id="my_cube", position=Position(0,4,-2), scale=Scale(2,2,2))
 ```
 Note the input arguments. The names must match what they will be in the ARENA JSON specification. We don't have to worry too much about that now, but keep this in mind, as typos will be very bad!
 
-Cube is a type of "object". See [objects.md](objects.md).
+Cube is a type of "Object". See [objects.md](objects.md).
 
-Position and Scale are what we call "attributes". See [attributes.md](attributes.md).
+Position and Scale are what we call "Attributes". See [attributes.md](attributes.md).
 
 ## Adding our object to the ARENA
 ```python

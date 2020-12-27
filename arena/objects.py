@@ -74,8 +74,17 @@ class Object(BaseObject):
     def json(self, **kwargs):
         # kwargs are for additional param to add to json, like "action":"create"
         res = { k:v for k,v in vars(self).items() if k != "evt_handler" }
+        res.update(kwargs)
 
-        data = res["data"].__dict__
+        data = res["data"].__dict__.copy()
+        # color should be a hex string
+        if "color" in data:
+            data["color"] = data["color"].hex
+
+        # rotation should be in quaternions
+        if "rotation" in data:
+            data["rotation"] = data["rotation"].quaternion
+
         # handle special case where "physics" should be "dynamic-body"
         if "physics" in data:
             ref = data["physics"]
@@ -88,7 +97,7 @@ class Object(BaseObject):
             del data["clickable"]
             data["click-listener"] = ref
 
-        res.update(kwargs)
+        res["data"] = data
         return self.json_encode(res)
 
     # methods for global object dictionary

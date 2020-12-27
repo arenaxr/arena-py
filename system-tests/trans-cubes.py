@@ -7,7 +7,7 @@ import random
 import time
 
 
-arena = Arena("arena.andrew.cmu.edu", "systest-transcubes", "realm")
+arena = Arena("arena.andrew.cmu.edu", "realm", "systest-transcubes")
 
 
 def randmove():

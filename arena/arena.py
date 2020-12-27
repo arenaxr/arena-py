@@ -6,7 +6,7 @@ from datetime import datetime
 
 from .attributes import *
 from .objects import *
-from .event import *
+from .events import *
 from .utils import *
 from .event_loop import *
 
@@ -266,7 +266,8 @@ class Arena(object):
 
     def update_object(self, obj, **kwargs):
         """Public function to update an object"""
-        obj.update_attributes(**kwargs)
+        if kwargs:
+            obj.update_attributes(**kwargs)
         return self._publish(obj, "update")
 
     def delete_object(self, obj):

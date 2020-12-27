@@ -22,18 +22,39 @@ obj.data.material
 The position of an object can be specified by:
 ```python
 position=Position(x, y, z)
+# or
+position=(x, y, z)
 ```
 
 ## Rotation
 The rotation (in quaternions) of an object can be specified by:
 ```python
 rotation=Rotation(x, y, z, w)
+# or
+rotation=(x, y, z, w)
 ```
+The rotation (in euler coordinates) of an object can be specified by:
+```python
+rotation=Rotation(x, y, z)
+# or
+rotation=(x, y, z)
+```
+Note: All units for rotation are in **radians**.
 
 ## Scale
 The scale of an object can be specified by:
 ```python
 scale=Scale(x, z, y)
+# or
+scale=(x, y, z)
+```
+
+## Color
+The color of an object can be specified by:
+```python
+color=Color(red, green, blue)
+# or
+color=(red, green, blue)
 ```
 
 ## Animation
@@ -51,7 +72,7 @@ sound=Sound(positional, poolSize, autoplay, src, ...)
 ## Material
 The transparency of an object can be set by:
 ```python
-material=Material(transparent, opacity)
+material=Material(transparent, opacity, ...)
 ```
 
 ## GotoUrl

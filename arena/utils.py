@@ -1,13 +1,11 @@
 # simple general purpose functions
 import random
+from scipy.spatial.transform import Rotation as R
 
 
 def random_client_id():
     """Returns a random 6 digit id"""
     return str(random.randrange(100000, 999999))
-
-def rgb_to_hex(rgb):
-    return "#{:02x}{:02x}{:02x}".format(rgb[0], rgb[1], rgb[2])
 
 def tuple_to_string(tup, sep=" "):
     """Turns a tuple into a string"""
@@ -30,3 +28,13 @@ def santize_data(d):
         v = d[w]
         d[w.replace("_", "-").replace("--", "__")] = v
         del d[w]
+
+def q2e(q):
+    """quaternions to euler"""
+    rot = R.from_quat(q)
+    return rot.as_euler('xyz', degrees=False)
+
+def e2q(e):
+    """euler to quaternions"""
+    rot = R.from_euler('xyz', e, degrees=False)
+    return rot.as_quat()

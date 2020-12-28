@@ -26,4 +26,4 @@ def f5():
 
 arena.run_forever(f5)
 
-arena.start_tasks()
+arena.run_tasks()

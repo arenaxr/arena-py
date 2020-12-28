@@ -38,4 +38,4 @@ def rotate_cube():
 
 arena.run_forever(rotate_cube)
 
-arena.start_tasks()
+arena.run_tasks()

@@ -45,4 +45,4 @@ def main():
     arena.add_object(Cube(object_id="box4", color=(100,200,50), scale=(0.2, 0.2, 0.2),
                             position=(3.31, 2.00, -0.97)))
 
-arena.start_tasks()
+arena.run_tasks()

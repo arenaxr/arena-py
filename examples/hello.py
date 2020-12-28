@@ -6,4 +6,4 @@ arena = Arena("arena.andrew.cmu.edu", "realm", "example")
 def make_cube():
     arena.add_object(Cube())
 
-arena.start_tasks()
+arena.run_tasks()

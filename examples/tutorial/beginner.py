@@ -12,4 +12,4 @@ def main():
 
 # add and start tasks
 arena.run_once(main)
-arena.start_tasks()
+arena.run_tasks()

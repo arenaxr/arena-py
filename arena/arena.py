@@ -157,8 +157,8 @@ class Arena(object):
                 return func
             return _run_forever
 
-    def start_tasks(self):
-        """Begins running event loop"""
+    def run_tasks(self):
+        """Run event loop"""
         print("Connecting to ARENA...")
         self.task_manager.run()
 
@@ -240,7 +240,7 @@ class Arena(object):
                     position=obj.data.position,
                     source=self.client_id,
                     **kwargs)
-        return self.generate_custom_event(evt, "clientEvent")
+        return self.generate_custom_event(evt, action="clientEvent")
 
     def manipulate_camera(self, obj, type="camera-override", **kwargs):
         """Publishes a camera manipulation event"""
@@ -257,7 +257,7 @@ class Arena(object):
                     type=_type,
                     object_type="camera",
                     **kwargs)
-        return self.generate_custom_event(evt, "create")
+        return self.generate_custom_event(evt, action="create")
 
     @property
     def all_objects(self):

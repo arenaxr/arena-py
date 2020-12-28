@@ -38,4 +38,4 @@ async def test():
     print()
 
 # our main event loop
-arena.start_tasks()
+arena.run_tasks()

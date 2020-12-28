@@ -7,7 +7,7 @@ pip3 install arena-py
 
 Ok, now let's get started!
 
-### Setup environment variables (reccomended but not required)
+### Setup environmental variables (reccomended but not required)
 Replace [host], [realm], and [scene] with your desired mqtt broker, realm, and scene name, respectively.
 ```shell
 export MQTTH=[host]
@@ -24,10 +24,11 @@ from arena import *
 ```python
 arena = Arena()
 ```
-You can also pass host, realm, and scene as arguments, if you don't want to use enviornment variables:
+You can also pass host, realm, and scene as arguments, if you don't want to use enviornmental variables:
 ```python
 arena = Arena([host], [realm], [scene])
 ```
+Note: ARENA-py will always favor environmental variables over arguments.
 
 ## Define a task
 ARENA-py works by running tasks in an event loop, so we need a main task for our sample program.
@@ -55,7 +56,7 @@ arena.add_object(cube)
 Now, outside of main, we will write:
 ```python
 arena.run_once(main)
-arena.start_tasks()
+arena.run_tasks()
 ```
 
 Now, go into the scene to see your cube!
@@ -75,5 +76,5 @@ def main():
 
 # add and start tasks
 arena.run_once(main)
-arena.start_tasks()
+arena.run_tasks()
 ```

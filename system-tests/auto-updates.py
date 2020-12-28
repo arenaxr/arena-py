@@ -20,4 +20,4 @@ arena.update_object(cube, click_listener=False)
 def main():
     print(cube.json())
 
-arena.start_tasks()
+arena.run_tasks()

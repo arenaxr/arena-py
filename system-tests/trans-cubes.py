@@ -92,4 +92,4 @@ def do_stuff():
     do(name + "b", randx, -randy, randz, scalex, scaley, scalez, color)
     do(name + "c", -randx, -randy, randz, scalex, scaley, scalez, color)
 
-arena.start_tasks()
+arena.run_tasks()

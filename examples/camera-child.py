@@ -26,4 +26,4 @@ arena.new_obj_callback = new_obj_callback
 print("Go to URL: https://arena.andrew.cmu.edu/example")
 
 # our main event loop
-arena.start_tasks()
+arena.run_tasks()

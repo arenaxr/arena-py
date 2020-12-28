@@ -24,4 +24,4 @@ def main():
 
     ))
 
-arena.start_tasks()
+arena.run_tasks()

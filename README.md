@@ -28,7 +28,7 @@ arena = Arena("arena.andrew.cmu.edu", "realm", "example")
 def make_cube():
     arena.add_object(Cube())
 
-arena.start_tasks()
+arena.run_tasks()
 ```
 
 ## ARENA.py Library
@@ -49,7 +49,6 @@ python3 -c "from arena import auth; auth.signout()"
 ## ARENA-py Repository Files
 - [arena/](arena/): The ARENA Python library
 - [demos/](demos/): Demos of cool ARENA applications
-- [demos/raw-prototypes/](demos/raw-prototypes/): Older ARENA non-library demos
 - [digital-twins/](digital-twins/): Digital twins of physical spaces
 - [examples/](examples/): Canonical examples of ARENA functions from the [documentation](https://conix-center.github.io/ARENA/content/python/))
 - [system-tests/](system-tests/): Workouts for the ARENA

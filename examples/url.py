@@ -35,4 +35,4 @@ def add_objs():
     arena.add_object(sametab)
 
 
-arena.start_tasks()
+arena.run_tasks()

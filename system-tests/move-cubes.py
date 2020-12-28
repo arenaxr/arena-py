@@ -56,4 +56,4 @@ arena.run_forever(move_sphere, 1000)
 arena.run_forever(make_dodecahedrons, 2000)
 
 
-arena.start_tasks() # will block
+arena.run_tasks() # will block

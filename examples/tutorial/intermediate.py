@@ -27,4 +27,4 @@ def periodic():
     x += 0.1
 
 # start tasks
-arena.start_tasks()
+arena.run_tasks()

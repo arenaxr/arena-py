@@ -28,4 +28,4 @@ def make_cubes():
 
     print("object " + str(x-1) + " at " + str(position))
 
-arena.start_tasks()
+arena.run_tasks()

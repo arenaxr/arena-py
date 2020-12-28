@@ -45,7 +45,7 @@ def periodic():
 ## Run tasks
 ```python
 # note that we do not have to do arena.run_once or arena.run_forever
-arena.start_tasks()
+arena.run_tasks()
 ```
 
 Now, go into the scene to see your cube move with text!
@@ -78,5 +78,5 @@ def periodic():
     x += 0.1
 
 # start tasks
-arena.start_tasks()
+arena.run_tasks()
 ```

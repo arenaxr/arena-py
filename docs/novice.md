@@ -51,5 +51,5 @@ async def func():
     arena.delete_object(cube)
 
 # start tasks
-arena.start_tasks()
+arena.run_tasks()
 ```

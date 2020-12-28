@@ -31,4 +31,4 @@ def make_balls():
 
     arena.add_object(obj)
 
-arena.start_tasks()
+arena.run_tasks()

@@ -111,7 +111,7 @@ class Sound(Attribute):
     Sound Attribute.
     Usage: sound=Sound(...)
     """
-    def __init__(self, positional=False, poolSize=8, autoplay=True, src="", **kwargs):
+    def __init__(self, positional=False, poolSize=1, autoplay=True, src="", **kwargs):
         super().__init__(positional=positional, poolSize=poolSize, autoplay=autoplay, src=src, **kwargs)
 
 class Material(Attribute):

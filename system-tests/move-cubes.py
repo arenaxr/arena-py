@@ -11,8 +11,14 @@ import random
 arena = Arena("arena.andrew.cmu.edu", "realm", "test")
 
 
+music_on = False
 def evt_handler(msg):
-    print("clicked")
+    global music_on
+
+    print("clicked", music_on)
+    music_on = not music_on
+    if music_on:
+        arena.update_object(cube, sound=Sound(positional=True, poolSize=8, autoplay=True, src="store/users/wiselab/audio/september.mp3"))
 
 
 cube = Cube(object_id="cube", position=Position(0,3,0), scale=Scale(2,2,2), click_listener=True, evt_handler=evt_handler)

@@ -10,8 +10,6 @@ class Attribute(BaseObject):
     """
     Attribute class. Defines a generic attribute (ie position, rotation, impulse, etc) in the ARENA.
     """
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
 
 class Position(Attribute):
     """

@@ -25,7 +25,7 @@ class Face(object):
         new_euler = Rotation(*new_quat).euler
         filtered_euler = self.rot_filter.add((new_euler.x, new_euler.y, new_euler.z)) # filter
         filtered_euler[0] *= 0.5            # scale down
-        filtered_euler[0] -= math.pi/12     # rotate up a bit
+        filtered_euler[0] -= math.pi/15     # rotate up a bit
         # head faces backward at first, rotate head 180 to correct
         filtered_euler[1] += math.pi
         self.rot = Rotation(*filtered_euler)

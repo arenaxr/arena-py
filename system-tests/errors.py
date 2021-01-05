@@ -1,3 +1,8 @@
+# errors.py
+#
+# test printing tracebacks from exceptions when an error occurs
+# should continue running mqtt loop, but print traceback
+
 from arena import Arena
 
 arena = Arena("arena.andrew.cmu.edu", "realm", "example")

@@ -3,7 +3,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from tensorflow import keras
 
-trained_model_path = "lmk2exp_model"
+trained_model_path = "./lmk2exp_model"
 model = keras.models.load_model(trained_model_path)
 
 def extract_user_id(obj_id):

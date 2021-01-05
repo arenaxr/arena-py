@@ -103,16 +103,22 @@ class Animation(Attribute):
     Animation Attribute.
     Usage: animation_mixer=Animation(...)
     """
-    def __init__(self, property="rotation", loop=1, dur=1000, **kwargs):
-        super().__init__(property=property, loop=loop, dur=dur, **kwargs)
+    def __init__(self, **kwargs):
+        if "start" in kwargs:
+            kwargs["to"] = kwargs["start"]
+            del kwargs["start"]
+        if "end" in kwargs:
+            kwargs["from"] = kwargs["end"]
+            del kwargs["end"]
+        super().__init__(**kwargs)
 
 class Sound(Attribute):
     """
     Sound Attribute.
     Usage: sound=Sound(...)
     """
-    def __init__(self, positional=False, poolSize=1, autoplay=True, src="", **kwargs):
-        super().__init__(positional=positional, poolSize=poolSize, autoplay=autoplay, src=src, **kwargs)
+    def __init__(self, positional=False, poolSize=1, src="", **kwargs):
+        super().__init__(positional=positional, poolSize=poolSize, src=src, **kwargs)
 
 class Material(Attribute):
     """
@@ -224,7 +230,8 @@ class Data(Attribute):
                     else:
                         data[k] = Rotation(*v[:4])
                 elif isinstance(v, dict):
-                    if not data[k].is_quaternion: # rotation originally in euler
+                    # rotation doesnt exist or rotation originally in euler
+                    if k not in data or not data[k].is_quaternion:
                         v = Rotation.q2e((v["x"], v["y"], v["z"], v["w"]))
                         data[k] = Rotation(*v)
                     else:

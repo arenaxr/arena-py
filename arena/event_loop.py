@@ -87,7 +87,7 @@ class EventLoop(object):
         self.future = asyncio.gather(*self.tasks)
         for s in self.signals:
             self.loop.add_signal_handler(
-                s, lambda s=s: asyncio.create_task(self._shutdown())
+                s, lambda s=s: asyncio.ensure_future(self._shutdown())
             )
 
         # run event loop

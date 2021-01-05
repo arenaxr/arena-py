@@ -40,8 +40,8 @@ class Object(BaseObject):
             Object.remove(Object.get(object_id))
 
         # setup attributes in the "data" field
-        kwargs = kwargs.get("data", kwargs)
-        data = Data(**kwargs)
+        data = kwargs.get("data", kwargs)
+        data = Data(**data)
         if ttl:
             super().__init__(
                     object_id=object_id,
@@ -305,15 +305,29 @@ class Camera(Object):
     Class for Camera in the ARENA.
     """
     def __init__(self, object_id, **kwargs):
-        kwargs = kwargs.get("data", kwargs)
+        data = kwargs.get("data", kwargs)
 
-        position = kwargs.get("position", None)
-        rotation = kwargs.get("rotation", None)
+        self.hasAudio = kwargs.get("hasAudio", False)
+        self.hasVideo = kwargs.get("hasVideo", False)
+        self.hasAvatar = kwargs.get("hasAvatar", False)
+        self.displayName = kwargs.get("displayName", "")
+        self.jistsiId = kwargs.get("jistsiId", None)
+
+        position = data.get("position", None)
+        rotation = data.get("rotation", None)
 
         if position is not None and rotation is not None:
-            super().__init__(object_type="camera", object_id=object_id, position=Position(**position), rotation=Rotation(**rotation))
+            super().__init__(object_type="camera", object_id=object_id, position=Position(**position), rotation=Rotation(**rotation), **kwargs)
         elif position is not None:
-            super().__init__(object_type="camera", object_id=object_id, position=Position(**position))
+            super().__init__(object_type="camera", object_id=object_id, position=Position(**position), **kwargs)
         elif rotation is not None:
-            super().__init__(object_type="camera", object_id=object_id, rotation=Position(**rotation))
+            super().__init__(object_type="camera", object_id=object_id, rotation=Position(**rotation), **kwargs)
 
+    def update_attributes(self, evt_handler=None, **kwargs):
+        super().update_attributes(evt_handler=evt_handler, **kwargs)
+
+        self.hasAudio = kwargs.get("hasAudio", False)
+        self.hasVideo = kwargs.get("hasVideo", False)
+        self.hasAvatar = kwargs.get("hasAvatar", False)
+        self.displayName = kwargs.get("displayName", "")
+        self.jistsiId = kwargs.get("jistsiId", None)

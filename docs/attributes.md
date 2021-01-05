@@ -60,7 +60,11 @@ color=(red, green, blue)
 ## Animation
 An animation can be added by:
 ```python
-animation=Animation(property, loop, dur, ...)
+animation=Animation(...)
+```
+Note: "to" and "from" arguments are replaced with "start" and "end":
+```python
+Animation(start="something", end="something else ") == Animation(to="something", from="something else ")
 ```
 
 ## Sound

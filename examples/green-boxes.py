@@ -14,6 +14,7 @@ x = 1
 @arena.run_forever(interval_ms=500)
 def make_cubes():
     global x
+
     # Create a bunch of green boxes drawn directly to screen
     position = (random.randrange(10)-5,
                 random.randrange(10),

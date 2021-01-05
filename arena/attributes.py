@@ -84,6 +84,9 @@ class Scale(Attribute):
     def __init__(self, x=1, y=1, z=1):
         super().__init__(x=Utils.agran(x), y=Utils.agran(y), z=Utils.agran(z))
 
+    def to_str(self):
+        return Utils.tuple_to_string((self.x, self.y, self.z))
+
 class Color(Attribute):
     """
     Color Attribute.
@@ -105,6 +108,8 @@ class Animation(Attribute):
         if "start" in kwargs:
             if isinstance(kwargs["start"], tuple) or isinstance(kwargs["start"], list):
                 kwargs["start"] = Utils.tuple_to_string(kwargs["start"])
+            # can get away with using Position.to_str() even if animation is rotation (euler) or scale
+            # since we just want the 3 values to be a space separated string
             elif isinstance(kwargs["start"], Position):
                 kwargs["start"] = kwargs["start"].to_str()
         if "end" in kwargs:

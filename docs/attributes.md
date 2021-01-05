@@ -62,7 +62,7 @@ An animation can be added by:
 ```python
 animation=Animation(...)
 ```
-Note: please use "start" and "end" as arguments for fields "to" and "from" in json (done to prevent using the python reserved word "from"):
+Note: please use "start" and "end" as arguments for fields "from" and "to" in json (done to prevent using the python reserved word "from"):
 ```python
 Animation(start="something", end="something else ") == Animation(to="something", from="something else ")
 ```

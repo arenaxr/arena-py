@@ -121,14 +121,14 @@ class Object(BaseObject):
             del data["dynamic_body"]
             data["dynamic-body"] = ref
 
-        # for animation, replace "start" and "end" with "to" and "from"
+        # for animation, replace "start" and "end" with "from" and "to"
         if "animation" in data:
             animation = data["animation"].__dict__.copy()
             if "start" in animation:
-                animation["to"] = animation["start"]
+                animation["from"] = animation["start"]
                 del animation["start"]
             if "end" in animation:
-                animation["from"] = animation["end"]
+                animation["to"] = animation["end"]
                 del animation["end"]
             data["animation"] = animation
 

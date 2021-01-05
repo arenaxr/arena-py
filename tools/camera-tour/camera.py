@@ -80,11 +80,7 @@ def main():
             end=(joe[0], joe[1], joe[2]),
             easing="easeInOutQuad",
             dur=str(S)
-        )
-    )
-
-    # add another animation
-    arena.update_object(rig,
+        ),
         animation__2=Animation(
             property="rotation",
             start=f"{str(Rold[0])} {str(Rold[1])} {str(Rold[2])}",

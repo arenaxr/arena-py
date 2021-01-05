@@ -11,13 +11,16 @@ def main():
     # Create models
     earth = GLTF(
             object_id="gltf-model_Earth",
-            position=(0, 0.1, 0), scale=(10, 10, 10),
+            position=(0, 0.1, 0),
+            scale=(10, 10, 10),
             url="models/Earth.glb"
         )
     moon = GLTF(
             object_id="gltf-model_Moon",
-            position=(0, 0.05, 0.6), scale=(0.05, 0.05, 0.05),
-            url="models/Moon.glb", parent="gltf-model_Earth"
+            position=(0, 0.05, 0.6),
+            scale=(0.05, 0.05, 0.05),
+            url="models/Moon.glb",
+            parent="gltf-model_Earth"
         )
 
     arena.add_object(earth)
@@ -26,13 +29,28 @@ def main():
     ## Define animation and movement
     arena.update_object(
         earth,
-        animation=Animation(property="rotation", to="0 360 0", loop=True, dur=20000, easing="linear")
+        animation=Animation(
+            property="rotation",
+            end=(0,360,0),
+            loop=True,
+            dur=20000,
+            easing="linear"
+        )
     )
     arena.update_object(
         moon,
-        animation=Animation(property="scale", to="0.1 0.1 0.1", startEvents="click", loop=6, dur=1000, dir="alternate", easing="easeInOutCirc"),
+        animation=Animation(
+            property="scale",
+            start=(0.05, 0.05, 0.05), end=(0.1,0.1,0.1),
+            startEvents="click",
+            loop=6,
+            dur=1000,
+            dir="alternate",
+            easing="easeInOutCirc"
+        ),
         clickable=True
     )
+    print(earth.json())
 
     ## Create marker objects
     arena.add_object(Cube(object_id="box0", color=(0,255,0), scale=(0.2, 0.2, 0.2)))

@@ -103,11 +103,15 @@ class Animation(Attribute):
     """
     def __init__(self, **kwargs):
         if "start" in kwargs:
-            kwargs["to"] = kwargs["start"]
-            del kwargs["start"]
+            if isinstance(kwargs["start"], tuple) or isinstance(kwargs["start"], list):
+                kwargs["start"] = Utils.tuple_to_string(kwargs["start"])
+            elif isinstance(kwargs["start"], Position):
+                kwargs["start"] = kwargs["start"].to_str()
         if "end" in kwargs:
-            kwargs["from"] = kwargs["end"]
-            del kwargs["end"]
+            if isinstance(kwargs["end"], tuple) or isinstance(kwargs["end"], list):
+                kwargs["end"] = Utils.tuple_to_string(kwargs["end"])
+            elif isinstance(kwargs["end"], Position):
+                kwargs["end"] = kwargs["end"].to_str()
         super().__init__(**kwargs)
 
 class Sound(Attribute):
@@ -146,12 +150,12 @@ class Impulse(Attribute):
     def __init__(self, on="mousedown", force=Position(0,0,0), position=Position(0,0,0)):
         if isinstance(force, Position):
             force = force.to_str()
-        elif type(force) == tuple or type(force) == list:
+        elif isinstance(force, tuple) or isinstance(force, list):
             force = Utils.tuple_to_string(force)
 
         if isinstance(position, Position):
             position = position.to_str()
-        elif type(position) == tuple or type(position) == list:
+        elif isinstance(position, tuple) or isinstance(position, list):
             position = Utils.tuple_to_string(position)
 
         super().__init__(on=on, force=force, position=position)
@@ -271,9 +275,9 @@ class Data(Attribute):
                 except:
                     data[k] = v
 
-        # make False into None
-        if (isinstance(v, bool) and v == False) or v is None:
-            data[k] = None
+            # make False into None
+            if (isinstance(v, bool) and v == False) or v is None:
+                data[k] = None
 
         # delete elements with keys that have dashes
         for w in dash_words:

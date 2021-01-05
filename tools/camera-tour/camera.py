@@ -2,34 +2,21 @@
 #
 # Move (all) users' camera about a scene with cinematic slow movements
 # takes an argument: scene name for which to move the camera(s) in
-# [TODO] update this to 0.1.0!
 
-import arena
+from arena import *
 import random
-import time
-import signal
 import sys
 
 HOST = "arena.andrew.cmu.edu"
-SCENE = "render"
+SCENE = "test"
 
 if len(sys.argv) > 1:
     SCENE=sys.argv[1]
 
 
-arena.init(HOST, "realm", SCENE)
-#arena.debug()
-
-
-def signal_handler(sig, frame):
-    exit()
-
-
-signal.signal(signal.SIGINT, signal_handler)
+arena = Arena(HOST, "realm", SCENE)
 
 limit=12.5
-# SPEED: moves every so often
-S=10
 
 def randmove(old):
     x = random.randint(-S,S)
@@ -70,29 +57,45 @@ old=(0,0,0)
 
 # trick: obtain an arena.py Object for an already-existing global scene object named "cameraRig"
 # in order to update it's data attributes
-rig=arena.Object(objName="myCamera")
-spinner=arena.Object(objName="myCamera")
+rig = Object(object_id="myCamera")
 
 Rold = (1,1,1)
 Rjoe = (0,0,0)
 
-while True:
+# SPEED: moves every so often
+S = 10*1000
+
+@arena.run_forever(interval_ms=S)
+def main():
+    global old, joe, Rold, Rjoe
+
     joe = randmove(old)
     Rjoe = randrot(Rold)
-    print (joe,Rjoe)
-    #print (Rold,"->",Rjoe)
 
-    rig.update    (data='{"animation": {"property": "position","from": "'+
-               str(old[0])+' '+str(old[1])+' '+str(old[2])+'","to": "'+
-               str(joe[0])+' '+str(joe[1])+' '+str(joe[2])+
-                   '","easing": "easeInOutQuad","dur": '+str(S)+'000}}')
-    spinner.update(data='{"animation__2": {"property": "rotation","from": "'+
-               str(Rold[0])+' '+str(Rold[1])+' '+str(Rold[2])+'","to": "'+
-               str(Rjoe[0])+' '+str(Rjoe[1])+' '+str(Rjoe[2])+
-                   '","easing": "easeInOutQuad","dur": '+str(S)+'000}}')
+    # add animation
+    arena.update_object(rig,
+        animation=Animation(
+            property="position",
+            start=(old[0], old[1], old[2]),
+            end=(joe[0], joe[1], joe[2]),
+            easing="easeInOutQuad",
+            dur=str(S)
+        )
+    )
+
+    # add another animation
+    arena.update_object(rig,
+        animation__2=Animation(
+            property="rotation",
+            start=f"{str(Rold[0])} {str(Rold[1])} {str(Rold[2])}",
+            end=f"{str(Rjoe[0])} {str(Rjoe[1])} {str(Rjoe[2])}",
+            easing="easeInOutQuad",
+            dur=str(S)
+        )
+    )
+    print(rig)
 
     old=(joe[0],joe[1],joe[2])
     Rold=(Rjoe[0],Rjoe[1],Rjoe[2])
-    time.sleep(S)
 
-arena.handle_events()
+arena.run_tasks()

@@ -121,6 +121,17 @@ class Object(BaseObject):
             del data["dynamic_body"]
             data["dynamic-body"] = ref
 
+        # for animation, replace "start" and "end" with "to" and "from"
+        if "animation" in data:
+            animation = data["animation"].__dict__.copy()
+            if "start" in animation:
+                animation["to"] = animation["start"]
+                del animation["start"]
+            if "end" in animation:
+                animation["from"] = animation["end"]
+                del animation["end"]
+            data["animation"] = animation
+
         res["data"] = data
         return self.json_encode(res)
 

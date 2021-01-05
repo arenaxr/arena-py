@@ -5,12 +5,21 @@
 
 from arena import Arena
 
+
 arena = Arena("arena.andrew.cmu.edu", "realm", "example")
+
 
 @arena.run_once
 def main():
     print("hello")
-    print(1/0) # should print traceback here!
+    print(1/0)      # should print traceback here!
     print("world")
+
+@arena.run_forever
+def main():
+    print("goodbye")
+    print(iDontExist())     # should print traceback here and stop running this task!
+    print("planet")
+
 
 arena.run_tasks()

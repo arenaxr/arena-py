@@ -19,6 +19,7 @@ class Worker(object):
             self.func(*self.args, **self.kwargs)
         except Exception as e:
             traceback.print_exc()
+            return
 
     async def sleep(self, interval):
         await asyncio.sleep(interval)
@@ -43,6 +44,7 @@ class LazyWorker(Worker):
             self.func(*self.args, **self.kwargs)
         except Exception as e:
             traceback.print_exc()
+            return
 
 class AsyncWorker(Worker):
     """
@@ -54,6 +56,7 @@ class AsyncWorker(Worker):
             await self.func(*self.args, **self.kwargs)
         except Exception as e:
             traceback.print_exc()
+            return
 
 class PersistantWorker(Worker):
     """
@@ -70,6 +73,7 @@ class PersistantWorker(Worker):
                 self.func(*self.args, **self.kwargs)
             except Exception as e:
                 traceback.print_exc()
+                return
             await self.sleep(self.interval)
 
 

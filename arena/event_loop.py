@@ -1,7 +1,7 @@
 import time
 import signal
 import asyncio
-
+import traceback
 
 class Worker(object):
     """
@@ -15,7 +15,10 @@ class Worker(object):
 
     async def run(self):
         if self.event: await self.event.wait()
-        self.func(*self.args, **self.kwargs)
+        try:
+            self.func(*self.args, **self.kwargs)
+        except Exception as e:
+            traceback.print_exc()
 
     async def sleep(self, interval):
         await asyncio.sleep(interval)
@@ -24,9 +27,6 @@ class SingleWorker(Worker):
     """
     Wrapper for an ARENA task that runs once at startup.
     """
-    async def run(self):
-        if self.event: await self.event.wait()
-        self.func(*self.args, **self.kwargs)
 
 class LazyWorker(Worker):
     """
@@ -39,7 +39,10 @@ class LazyWorker(Worker):
     async def run(self):
         if self.event: await self.event.wait()
         await self.sleep(self.interval)
-        self.func(*self.args, **self.kwargs)
+        try:
+            self.func(*self.args, **self.kwargs)
+        except Exception as e:
+            traceback.print_exc()
 
 class AsyncWorker(Worker):
     """
@@ -47,7 +50,10 @@ class AsyncWorker(Worker):
     """
     async def run(self):
         if self.event: await self.event.wait()
-        await self.func(*self.args, **self.kwargs)
+        try:
+            await self.func(*self.args, **self.kwargs)
+        except Exception as e:
+            traceback.print_exc()
 
 class PersistantWorker(Worker):
     """
@@ -60,7 +66,10 @@ class PersistantWorker(Worker):
     async def run(self):
         if self.event: await self.event.wait()
         while True:
-            self.func(*self.args, **self.kwargs)
+            try:
+                self.func(*self.args, **self.kwargs)
+            except Exception as e:
+                traceback.print_exc()
             await self.sleep(self.interval)
 
 

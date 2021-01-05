@@ -2,6 +2,7 @@
 #
 # Move (all) users' camera about a scene with cinematic slow movements
 # takes an argument: scene name for which to move the camera(s) in
+# [TODO] update this to 0.1.0!
 
 import arena
 import random

@@ -1,6 +1,7 @@
 # auto-updates-helper.py
 #
-# helper script for auto-updates.py. Tests programs interactions.
+# Helper script for auto-updates.py. Tests programs interactions.
+# Please run auto-updates.py in another terminal window
 
 from arena import *
 import random
@@ -20,7 +21,7 @@ def main():
         cube,
         click_listener=True,
         # physics=Physics("dynamic"),
-        goto_url=GotoUrl(url="https://wise.ece.cmu.edu/"),
+        # goto_url=GotoUrl(url="https://wise.ece.cmu.edu/"),
 
     ))
 

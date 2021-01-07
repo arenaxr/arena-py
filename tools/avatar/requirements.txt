@@ -1,5 +1,5 @@
 arena-py~=0.1.0
 paho-mqtt~=1.5.0
+numpy~=1.18.1
 tensorflow
 scipy
-numpy

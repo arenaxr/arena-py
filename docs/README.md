@@ -27,16 +27,17 @@ Code for these can be found [here](../examples/tutorial)
 ```python
 from arena import *
 
-# setup library
+# create library
 arena = Arena("arena.andrew.cmu.edu", "realm", "example")
 
+@arena.run_once # make this function a task that runs once at startup
 def main():
     # make a cube
-    cube = Cube(object_id="my_cube", position=Position(0,4,-2), scale=Scale(2,2,2))
-    # add the cube
+    cube = Cube(object_id="myCube", position=(0,3,-3), scale=(2,2,2))
+
+    # add the cube to ARENA
     arena.add_object(cube)
 
-# add and start tasks
-arena.run_once(main)
+# start tasks
 arena.run_tasks()
 ```

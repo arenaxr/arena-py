@@ -1,6 +1,6 @@
 # Advanced Example - EVEN more functionality!
 
-## Attributes can be dictionaries too. Even ones that don't exist...
+## Attributes can be dictionaries too. Even for Attributes that don't exist...
 Say, there is data that doesn't exist in the arena library. For instance, the 3d avatar takes in a "morph" json.
 ```python
 morph = {

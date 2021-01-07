@@ -19,7 +19,8 @@ class Arena(object):
     Wrapper around Paho MQTT client and EventLoop.
     Can create and execute various user-defined functions.
     """
-    def __init__(self,
+    def __init__(
+                self,
                 host = "arena.andrew.cmu.edu",
                 realm = "realm",
                 scene = "render",

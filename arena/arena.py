@@ -29,7 +29,6 @@ class Arena(object):
                 new_obj_callback = None,
                 delete_obj_callback = None,
                 debug = False,
-                webhost = "xr.andrew.cmu.edu",
                 network_loop_interval = 10  # run mqtt client network loop every 10ms
             ):
         if os.environ.get('MQTTH') and os.environ.get('REALM') and os.environ.get('SCENE'):
@@ -57,8 +56,7 @@ class Arena(object):
         )
 
         # do auth
-        data = auth.authenticate(REALM, SCENE, HOST,
-                                    webhost=webhost, debug=self.debug)
+        data = auth.authenticate(REALM, SCENE, HOST, debug=self.debug)
         if 'username' in data and 'token' in data:
             self.client.username_pw_set(username=data["username"], password=data["token"])
         print("=====")

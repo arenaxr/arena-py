@@ -25,11 +25,16 @@ _local_mqtt_path = f'.arena_mqtt_auth'
 _mqtt_token = {}
 
 
-def authenticate(realm, scene, broker, webhost, debug=False):
+def authenticate(realm, scene, broker, debug=False):
     global debug_toggle
     global _mqtt_token
     debug_toggle = debug
+    webhost = broker # broker expected on web-client host
     print("Signing in to the ARENA...")
+
+    # TODO: remove this workaround for dev broker/webhost separation
+    if broker == 'oz.andrew.cmu.edu':
+        webhost = 'xr.andrew.cmu.edu'
 
     # TODO: remove local check after ARTS supports mqtt_token passing
     # check for local mqtt_token first

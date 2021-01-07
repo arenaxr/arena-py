@@ -139,7 +139,7 @@ def on_connect(client, userdata, flags, rc):
 #    print("log:" + buf)
 
 
-def init(broker, realm, scene, callback=None, port=None, democlick=None, webhost='xr.andrew.cmu.edu'):
+def init(broker, realm, scene, callback=None, port=None, democlick=None):
     global client
     global scene_path
     global mqtt_broker
@@ -152,8 +152,7 @@ def init(broker, realm, scene, callback=None, port=None, democlick=None, webhost
     arena_callback = callback
     pseudoclick = democlick
 
-    data = auth.authenticate(realm, scene, broker, webhost=webhost,
-                                    debug=debug_toggle)
+    data = auth.authenticate(realm, scene, broker, debug=debug_toggle)
     if 'username' in data and 'token' in data:
         client.username_pw_set(username=data['username'], password=data['token'])
 

@@ -1,9 +1,10 @@
 from arena import *
 
-arena = Arena("arena-dev1.conix.io", "realm", "render")
+arena = Arena("arena.andrew.cmu.edu", "realm", "example")
 
 @arena.run_once
 def main():
+    print(1/0)
     def click(evt):
         if evt.type == "mousedown":
             start = evt.data.clickPos

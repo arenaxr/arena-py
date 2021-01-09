@@ -18,11 +18,22 @@ class Worker(object):
         try:
             self.func(*self.args, **self.kwargs)
         except Exception as e:
-            traceback.print_exc()
+            func_name = self.func.__name__
+            Worker.print_traceback(func_name)
             return
 
     async def sleep(self, interval):
         await asyncio.sleep(interval)
+
+    @classmethod
+    def print_traceback(cls, func_name):
+        print()
+        print(f"Exception thrown in {func_name}()! Terminating {func_name}...")
+        # ignore traceback from event_loop.py
+        traceback_data = traceback.format_exc().splitlines()
+        traceback_str = "\n".join(traceback_data[:1]+traceback_data[3:])
+        print(traceback_str)
+        print()
 
 class SingleWorker(Worker):
     """
@@ -43,7 +54,8 @@ class LazyWorker(Worker):
         try:
             self.func(*self.args, **self.kwargs)
         except Exception as e:
-            traceback.print_exc()
+            func_name = self.func.__name__
+            Worker.print_traceback(func_name)
             return
 
 class AsyncWorker(Worker):
@@ -55,7 +67,8 @@ class AsyncWorker(Worker):
         try:
             await self.func(*self.args, **self.kwargs)
         except Exception as e:
-            traceback.print_exc()
+            func_name = self.func.__name__
+            Worker.print_traceback(func_name)
             return
 
 class PersistantWorker(Worker):
@@ -72,7 +85,8 @@ class PersistantWorker(Worker):
             try:
                 self.func(*self.args, **self.kwargs)
             except Exception as e:
-                traceback.print_exc()
+                func_name = self.func.__name__
+                Worker.print_traceback(func_name)
                 return
             await self.sleep(self.interval)
 

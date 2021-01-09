@@ -29,7 +29,8 @@ class Arena(object):
                 new_obj_callback = None,
                 delete_obj_callback = None,
                 debug = False,
-                network_loop_interval = 10  # run mqtt client network loop every 10ms
+                network_loop_interval = 10,  # run mqtt client network loop every 10ms
+                network_latency_interval = 10000  # run network latency update every 10s
             ):
         if os.environ.get('MQTTH') and os.environ.get('REALM') and os.environ.get('SCENE'):
             HOST  = os.environ["MQTTH"]
@@ -47,9 +48,11 @@ class Arena(object):
         print(f"Loading: {HOST}/{SCENE}, realm={REALM}")
         print("=====")
 
+        self.debug = debug
+
         self.root_topic = f"{REALM}/s/{SCENE}"
         self.client_id = "pyClient-" + self.generate_client_id()
-        self.debug = debug
+        self.latency_topic = "$NETWORK/latency"
 
         self.client = mqtt.Client(
             self.client_id, clean_session=True
@@ -83,6 +86,9 @@ class Arena(object):
                             )
         self.task_manager.add_task(self.network_loop)
 
+        # run network latency update task every 10 secs
+        self.run_forever(self.network_latency_update, interval_ms=network_latency_interval)
+
         if port is not None:
             self.client.connect(HOST, port)
         else:
@@ -101,6 +107,10 @@ class Arena(object):
     def run_network_loop(self):
         """Main Paho MQTT client network loop"""
         self.client.loop()
+
+    def network_latency_update(self):
+        """Update client latency in $NETWORK/latency"""
+        self.client.publish(self.latency_topic, "", qos=2)
 
     def run_once(self, func=None, **kwargs):
         """Runs a user-defined function on startup"""

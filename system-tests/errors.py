@@ -16,7 +16,7 @@ def main():
     print("world")
 
 @arena.run_forever
-def main():
+def forever():
     print("goodbye")
     print(iDontExist())     # should print traceback here and stop running this task!
     print("planet")

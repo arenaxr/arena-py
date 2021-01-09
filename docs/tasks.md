@@ -49,28 +49,6 @@ def f():
 arena.run_async(f, 1000)
 ```
 
-## Arguments
-You can add arguments to tasks like so (very helpful to avoid using "global"):
-```python
-@arena.run_once(text="arena-py 2.0!", parent="sphere")
-def make_text(text, parent):
-    text_obj = Text(text=text, position=(0,1.5,0), parent=parent)
-    arena.add_object(text_obj)
-
-# arena.run_once(make_text, text="arena-py 2.0!", parent="sphere") # also works
-```
-
-```python
-objs = []
-
-@arena.run_forever(interval_ms=1234, objs=objs)
-def forever(objs):
-    for o in objs:
-        print(o)
-
-# arena.run_forever(forever, 1234, objs=objs) # also works
-```
-
 ## Sharing global variables
 Like with threads, global variables in ARENA-py must be used with the "global" keyword.
 Note: If global variables are pointing to something allocated in memory (like a class or list), "global" may not be needed, but its always best to use "global" just to be safe.
@@ -95,4 +73,26 @@ def hello():
 def hello1():
     # note the lack of "global"
     print(x)
+```
+
+## Arguments
+You can add arguments to tasks like so:
+```python
+@arena.run_once(text="arena-py 2.0!", parent="sphere")
+def make_text(text, parent):
+    text_obj = Text(text=text, position=(0,1.5,0), parent=parent)
+    arena.add_object(text_obj)
+
+# arena.run_once(make_text, text="arena-py 2.0!", parent="sphere") # also works
+```
+
+```python
+objs = []
+
+@arena.run_forever(interval_ms=1234, objs=objs)
+def forever(objs):
+    for o in objs:
+        print(o)
+
+# arena.run_forever(forever, 1234, objs=objs) # also works
 ```

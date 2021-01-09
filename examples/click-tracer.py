@@ -1,4 +1,5 @@
 from arena import *
+import random
 
 arena = Arena("arena.andrew.cmu.edu", "realm", "example")
 
@@ -8,10 +9,10 @@ def main():
         if evt.type == "mousedown":
             start = evt.data.clickPos
             end = evt.data.position
-            line = ThickLine(path=(start, end), lineWidth=5)
-            print(arena.add_object(line))
+            line = ThickLine(path=(start, end), color=(random.randint(0,255), random.randint(0,255), random.randint(0,255)), lineWidth=5)
+            arena.add_object(line)
 
-    cube = Cube(object_id="my_cube", persist=True, color=(255,0,0), position=Position(0,0,0), scale=Scale(0.05,0.05,0.05), click_listener=True, evt_handler=click)
+    cube = Cube(object_id="my_cube", color=(255,0,0), position=Position(0,2,0), click_listener=True, evt_handler=click)
     arena.add_object(cube)
 
 arena.run_tasks()

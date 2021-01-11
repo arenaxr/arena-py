@@ -12,6 +12,7 @@ from pathlib import Path
 from urllib import parse, request
 from urllib.error import HTTPError, URLError
 
+import requests
 from google.auth.transport.requests import AuthorizedSession, Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 
@@ -29,7 +30,7 @@ def authenticate(realm, scene, broker, debug=False):
     global debug_toggle
     global _mqtt_token
     debug_toggle = debug
-    webhost = broker # broker expected on web-client host
+    webhost = broker  # broker expected on web-client host
     print("Signing in to the ARENA...")
 
     # TODO: remove this workaround for dev broker/webhost separation
@@ -84,8 +85,12 @@ def authenticate(realm, scene, broker, debug=False):
         os.chmod(_user_gauth_path, 0o600)  # set user-only perms.
 
     id_token = creds.id_token
+    #access_token = creds.token
     profile_info = session.get(
         'https://www.googleapis.com/userinfo/v2/me').json()
+
+    #login_url = f'https://{webhost}/user/google_token'
+    #login_djangosite(login_url, id_token)
 
     # use JWT for authentication
     if profile_info != None:
@@ -115,6 +120,44 @@ def authenticate(realm, scene, broker, debug=False):
     return _mqtt_token
 
 
+def login_djangosite(login_url, id_token):
+    global debug_toggle
+    # next_url = "/"
+    # login_url = "http://localhost:8888/accounts/login?next=/"
+    session = requests.Session()
+
+    if debug_toggle:
+        r = session.get(login_url, verify=ssl.CERT_NONE)
+    else:
+        r = session.get(login_url)
+
+    form_data = dict(
+       # csrfmiddlewaretoken=session.cookies['csrftoken'],
+        # access_token=access_token
+    )
+    headers = dict(
+        Referer=login_url,
+        Authorization=f"Bearer {id_token}"
+    )
+    if debug_toggle:
+        r = session.post(login_url, data=form_data, cookies=dict(
+        ), headers=headers, verify=ssl.CERT_NONE)
+    else:
+        r = session.post(login_url, data=form_data,
+                         cookies=dict(), headers=headers)
+
+    # check if request executed successfully?
+    print(r.status_code)
+    cookies = session.cookies
+    headers = session.headers
+    r = session.get('http://localhost:8888/metastore/databases/default/metadata',
+                    cookies=session.cookies, headers=session.headers)
+    print(r.status_code)
+
+    # check metadata output
+    print(r.text)
+
+
 # TODO: will be deprecated after using arena-account
 def _get_gauthid(webhost):
     url = f'https://{webhost}/conf/gauth.json'
@@ -122,10 +165,20 @@ def _get_gauthid(webhost):
 
 
 def _get_mqtt_token(broker, realm, scene, user, id_token):
-    url = f'https://{broker}/auth/'
+    url = f'https://{broker}/user/mqtt_auth/'
     if broker == 'oz.andrew.cmu.edu':
         # TODO: remove this workaround for non-auth broker
         url = f'https://{broker}:8888/'
+
+
+
+    client = requests.session()
+    client.get(url)
+    # Django would like the csrf token passed with the data, so we do need to save it off seperately.
+    csrftoken = client.cookies['csrftoken']
+
+
+
     params = {
         "id_auth": "google-installed",
         "username": user,

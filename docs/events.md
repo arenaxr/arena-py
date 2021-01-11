@@ -4,10 +4,10 @@ Events are ways to interact with user input in the ARENA.
 
 See https://arena.conix.io/content/messaging/examples.html.
 
-## Event Parameters and Data
+## Event handlers
 To handle events in ARENA-py, you must set a function to the `evt_handler` parameter.
 When you attach an `evt_handler` to an Object, you will receive `Event` objects in your handler.
-Below are how you access attributes of the Event object.
+Below is how you access attributes of the Event object.
 
 ```python
 def click_handler(evt): # evt = Event(...)

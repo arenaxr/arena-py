@@ -269,6 +269,8 @@ class Data(Attribute):
                     else:
                         v = tuple(int(color[c:c+2], 16) for c in (0, 2, 4))
                     data[k] = Color(*v)
+                else:
+                    data[k] = v
 
             elif isinstance(v, Attribute):
                 data[k] = v

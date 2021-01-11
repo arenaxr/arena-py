@@ -286,6 +286,7 @@ class Data(Attribute):
 
         # delete elements with keys that have dashes
         for w in dash_words:
-            del data[w]
+            if w in data:
+                del data[w]
 
         return data

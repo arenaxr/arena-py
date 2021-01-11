@@ -13,4 +13,9 @@ class Utils(object):
     @classmethod
     def agran(cls, float_num):
         """Reduces floating point numbers to ARENA granularity"""
+        if isinstance(float_num, str):
+            try:
+                float_num = float(float_num)
+            except:
+                pass
         return round(float_num, 3)

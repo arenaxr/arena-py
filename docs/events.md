@@ -4,6 +4,28 @@ Events are ways to interact with user input in the ARENA.
 
 See https://arena.conix.io/content/messaging/examples.html.
 
+# Event Parameters and Data
+To handle events in ARENA-py, you must set a function to the `evt_handler` parameter.
+When you attach an `evt_handler` to an Object, you will receive `Event` objects in your handler.
+Below are how you access attributes of the Event object.
+
+```python
+def click_handler(evt): # evt = Event(...)
+    print(evt)
+
+    ## Get Event type
+    evt.type # == "mousedown", "mouseup", "mouseenter", "mouseleave", etc
+
+    ## Get Event data
+    evt.data.clickPos
+    evt.data.position
+    evt.data.source
+    # etc etc
+
+cube = Cube(..., evt_handler=click_handler) # note the use of "evt_handler=click_handler"
+```
+
+# Generating events with ARENA-py
 ## Click Events
 There are several types of click events that you can generate ("mousedown", "mouseup", "mouseenter", "mouseleave", "triggerdown", "triggerup"):
 ```python
@@ -20,7 +42,7 @@ arena.generate_click_event(
 ```
 
 ## Camera Manipulation Events
-You can also move a user's camera and/or make it look at a specific location of object:
+You can also move a user's camera and/or make it look at a specific location or object:
 ```python
 arena.manipulate_camera(obj, type, ...)
 
@@ -41,7 +63,7 @@ arena.manipulate_camera(
 ```
 
 ## Generic Events
-If there is an event that does not exist yet, you can use this to have more freedom in the event type.
+If there is an event that does not exist yet, you can use this to have more freedom in the event type:
 ```python
 # define custom event
 evt = Event(type="my_custom_event", position=(3,4,5), target=sphere)
@@ -49,52 +71,9 @@ evt = Event(type="my_custom_event", position=(3,4,5), target=sphere)
 arena.generate_custom_event(evt, action="clientEvent")
 ```
 
-# Event Parameters and Data
-When you attach an `evt_handler` to an Object, you will receive Event objects in your handler. Below are how you access attributes of the Event object.
-
-```python
-def click_handler(evt): # evt = Event(...)
-    print(evt)
-
-    ## Get Event type
-    evt.type # == "mousedown", "mouseup", "mouseenter", "mouseleave", "triggerdown", or "triggerup"
-
-    ## Get Event data
-    evt.data.clickPos
-    evt.data.position
-    evt.data.source
-    # etc etc
-
-cube = Cube(..., evt_handler=click_handler)
-```
-
 # Appendix
 ```python
 Event(object_id, action, type, ...)
-```
-
-# Generating events with ARENA-py
-You can generate click and camera events with ARENA-py like so:
-```python
-# generate a click event
-arena.generate_click_event(
-    cube,
-    type="mouseup"
-)
-
-# move camera
-arena.manipulate_camera(
-    my_camera,
-    type="camera-override",
-    position=(10,1.6,-7)
-)
-
-# make camera look at a specific object or position
-arena.manipulate_camera(
-    my_camera,
-    type="look-at",
-    target=cube
-)
 ```
 
 # ARENA Event JSON example

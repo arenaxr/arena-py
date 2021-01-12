@@ -136,7 +136,7 @@ def login_djangosite(login_url, id_token):
         r = session.get(login_url)
 
     form_data = dict(
-       # csrfmiddlewaretoken=session.cookies['csrftoken'],
+        # csrfmiddlewaretoken=session.cookies['csrftoken'],
         # access_token=access_token
     )
     headers = dict(
@@ -169,33 +169,32 @@ def _get_gauthid(webhost):
 
 
 def _get_mqtt_token(broker, realm, scene, user, id_token):
-    url = f'https://{broker}/user/mqtt_auth/'
+    login_url = f'https://{broker}/user/login'
+    url = f'https://{broker}/user/mqtt_auth'
     if broker == 'oz.andrew.cmu.edu':
         # TODO: remove this workaround for non-auth broker
         url = f'https://{broker}:8888/'
 
-
-
+    # get the csrftoken for django
     client = requests.session()
-    client.get(url)
-    # Django would like the csrf token passed with the data, so we do need to save it off seperately.
-    csrftoken = client.cookies['csrftoken']
-
-
-
+    if debug_toggle:
+        csrftoken = client.get(login_url, verify=False).cookies['csrftoken']
+    else:
+        csrftoken = client.get(login_url).cookies['csrftoken']
     params = {
         "id_auth": "google-installed",
         "username": user,
         "id_token": id_token,
         "realm": realm,
-        "scene": scene
+        "scene": scene,
+        "csrftoken": csrftoken,
     }
     query_string = parse.urlencode(params)
     data = query_string.encode("ascii")
-    return urlopen(url, data)
+    return urlopen(url, data=data, csrf=csrftoken)
 
 
-def urlopen(url, data=None, creds=False):
+def urlopen(url, data=None, creds=False, csrf=None):
     """ urlopen is for ARENA URL connections.
     url: the url to POST/GET.
     data: None for GET, add params for POST.
@@ -207,6 +206,11 @@ def urlopen(url, data=None, creds=False):
         req = request.Request(url)
         if creds:
             req.add_header("Cookie", f"mqtt_token={_mqtt_token['token']}")
+        if csrf:
+            req.add_header("Cookie", f"csrftoken={csrf}")
+            req.add_header("X-CSRFToken", csrf)
+            req.add_header('User-Agent', 'Mozilla/5.0')
+            req.add_header('Content-Type', 'application/x-www-form-urlencoded')
         if debug_toggle:
             context = ssl.create_default_context()
             context.check_hostname = False

@@ -29,7 +29,7 @@ def authenticate(realm, scene, broker, debug=False):
     global debug_toggle
     global _mqtt_token
     debug_toggle = debug
-    webhost = broker # broker expected on web-client host
+    webhost = broker  # broker expected on web-client host
     print("Signing in to the ARENA...")
 
     # TODO: remove this workaround for dev broker/webhost separation
@@ -112,6 +112,10 @@ def authenticate(realm, scene, broker, debug=False):
 
     # end authentication flow
     _mqtt_token = json.loads(mqtt_json)
+    username = None
+    if 'username' in _mqtt_token:
+        username = _mqtt_token['username']
+    print(f'ARENA Username: {username}')
     return _mqtt_token
 
 

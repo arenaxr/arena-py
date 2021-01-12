@@ -20,7 +20,8 @@ setuptools.setup(
                        "requests~=2.23.0",
                        "scipy~=1.5.4",
                        "webcolors~=1.3",
-                       "google_auth_oauthlib~=0.4.2" ],
+                       "google_auth_oauthlib~=0.4.2",
+                       "PyJWT~=2.0.0" ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: BSD License",

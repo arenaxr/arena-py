@@ -7,11 +7,13 @@ import os
 import pickle
 import ssl
 import sys
+import time
 import webbrowser
 from pathlib import Path
 from urllib import parse, request
 from urllib.error import HTTPError, URLError
 
+import jwt
 import requests
 from google.auth.transport.requests import AuthorizedSession, Request
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -187,6 +189,40 @@ def signout():
     if os.path.exists(_user_mqtt_path):
         os.remove(_user_mqtt_path)
     print("Signed out of the ARENA.")
+
+
+def _print_mqtt_token(jwt):
+    print('ARENA MQTT Permissions')
+    print('----------------------')
+    print(f'User: {jwt["sub"]}')
+    exp_str = time.strftime("%c", time.localtime(jwt["exp"]))
+    print(f'Expires: {exp_str}')
+    print('Publish topics:')
+    for pub in jwt["publ"]:
+        print(f'- {pub}')
+    print('Subscribe topics:')
+    for sub in jwt["subs"]:
+        print(f'- {sub}')
+
+
+def permissions():
+    # TODO: remove local check after ARTS supports mqtt_token passing
+    # check for local mqtt_token first
+    mqtt_path = None
+    if os.path.exists(_local_mqtt_path):
+        print("Using local MQTT token.")
+        mqtt_path = _local_mqtt_path
+    elif os.path.exists(_user_mqtt_path):
+        print("Using user MQTT token.")
+        mqtt_path = _user_mqtt_path
+    if mqtt_path:
+        f = open(mqtt_path, "r")
+        mqtt_json = f.read()
+        f.close()
+        mqtt_token = json.loads(mqtt_json)
+        decoded = jwt.decode(mqtt_token["token"], options={
+            "verify_signature": False})
+        _print_mqtt_token(decoded)
 
 
 if __name__ == '__main__':

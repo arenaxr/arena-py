@@ -144,7 +144,7 @@ def _get_mqtt_token(broker, realm, scene, user, id_token):
         "username": user,
         "id_token": id_token,
         "realm": realm,
-        "scene": scene,
+        "scene": scene
     }
     query_string = parse.urlencode(params)
     data = query_string.encode("ascii")
@@ -166,8 +166,6 @@ def urlopen(url, data=None, creds=False, csrf=None):
         if csrf:
             req.add_header("Cookie", f"csrftoken={csrf}")
             req.add_header("X-CSRFToken", csrf)
-            req.add_header('User-Agent', 'Mozilla/5.0')
-            req.add_header('Content-Type', 'application/x-www-form-urlencoded')
         if debug_toggle:
             context = ssl.create_default_context()
             context.check_hostname = False

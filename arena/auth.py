@@ -85,12 +85,8 @@ def authenticate(realm, scene, broker, debug=False):
         os.chmod(_user_gauth_path, 0o600)  # set user-only perms.
 
     id_token = creds.id_token
-    #access_token = creds.token
     profile_info = session.get(
         'https://www.googleapis.com/userinfo/v2/me').json()
-
-    #login_url = f'https://{webhost}/user/google_token'
-    #login_djangosite(login_url, id_token)
 
     # use JWT for authentication
     if profile_info != None:
@@ -124,44 +120,6 @@ def authenticate(realm, scene, broker, debug=False):
     return _mqtt_token
 
 
-def login_djangosite(login_url, id_token):
-    global debug_toggle
-    # next_url = "/"
-    # login_url = "http://localhost:8888/accounts/login?next=/"
-    session = requests.Session()
-
-    if debug_toggle:
-        r = session.get(login_url, verify=ssl.CERT_NONE)
-    else:
-        r = session.get(login_url)
-
-    form_data = dict(
-        # csrfmiddlewaretoken=session.cookies['csrftoken'],
-        # access_token=access_token
-    )
-    headers = dict(
-        Referer=login_url,
-        Authorization=f"Bearer {id_token}"
-    )
-    if debug_toggle:
-        r = session.post(login_url, data=form_data, cookies=dict(
-        ), headers=headers, verify=ssl.CERT_NONE)
-    else:
-        r = session.post(login_url, data=form_data,
-                         cookies=dict(), headers=headers)
-
-    # check if request executed successfully?
-    print(r.status_code)
-    cookies = session.cookies
-    headers = session.headers
-    r = session.get('http://localhost:8888/metastore/databases/default/metadata',
-                    cookies=session.cookies, headers=session.headers)
-    print(r.status_code)
-
-    # check metadata output
-    print(r.text)
-
-
 # TODO: will be deprecated after using arena-account
 def _get_gauthid(webhost):
     url = f'https://{webhost}/conf/gauth.json'
@@ -169,25 +127,24 @@ def _get_gauthid(webhost):
 
 
 def _get_mqtt_token(broker, realm, scene, user, id_token):
-    login_url = f'https://{broker}/user/login'
     url = f'https://{broker}/user/mqtt_auth'
     if broker == 'oz.andrew.cmu.edu':
         # TODO: remove this workaround for non-auth broker
         url = f'https://{broker}:8888/'
 
     # get the csrftoken for django
+    csrf_url = f'https://{broker}/user/login'
     client = requests.session()
     if debug_toggle:
-        csrftoken = client.get(login_url, verify=False).cookies['csrftoken']
+        csrftoken = client.get(csrf_url, verify=False).cookies['csrftoken']
     else:
-        csrftoken = client.get(login_url).cookies['csrftoken']
+        csrftoken = client.get(csrf_url).cookies['csrftoken']
     params = {
         "id_auth": "google-installed",
         "username": user,
         "id_token": id_token,
         "realm": realm,
         "scene": scene,
-        "csrftoken": csrftoken,
     }
     query_string = parse.urlencode(params)
     data = query_string.encode("ascii")

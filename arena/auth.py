@@ -131,14 +131,16 @@ def _get_mqtt_token(broker, realm, scene, user, id_token):
     if broker == 'oz.andrew.cmu.edu':
         # TODO: remove this workaround for non-auth broker
         url = f'https://{broker}:8888/'
-
-    # get the csrftoken for django
-    csrf_url = f'https://{broker}/user/login'
-    client = requests.session()
-    if debug_toggle:
-        csrftoken = client.get(csrf_url, verify=False).cookies['csrftoken']
+        csrftoken = None
     else:
-        csrftoken = client.get(csrf_url).cookies['csrftoken']
+        # get the csrftoken for django
+        csrf_url = f'https://{broker}/user/login'
+        client = requests.session()
+        if debug_toggle:
+            csrftoken = client.get(csrf_url, verify=False).cookies['csrftoken']
+        else:
+            csrftoken = client.get(csrf_url).cookies['csrftoken']
+
     params = {
         "id_auth": "google-installed",
         "username": user,

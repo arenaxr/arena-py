@@ -40,6 +40,10 @@ For headless environments, the ARENA library `arena.init(broker="myhost.com")` w
 ```bash
 python3 arena/auth.py signout
 ```
+### Show Permissions
+```bash
+python3 arena/auth.py permissions
+```
 
 ## ARENA-py Repository Files
 - [arena/](arena/): The ARENA Python library

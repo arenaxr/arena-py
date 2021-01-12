@@ -12,6 +12,7 @@ import webbrowser
 from pathlib import Path
 from urllib import parse, request
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlsplit
 
 import jwt
 import requests
@@ -180,6 +181,15 @@ def urlopen(url, data=None, creds=False, csrf=None):
         return res.read().decode('utf-8')
     except (URLError, HTTPError) as err:
         print("{0}: ".format(err)+url)
+        if err.code and round(err.code, -2) == 400:
+            # user not authorized on website yet, they don't have an ARENA username
+            base_url = "{0.scheme}://{0.netloc}".format(urlsplit(url))
+            print(f'Login with this this account on the website first:')
+            print(f'Trying to open login page: {base_url}/user')
+            try:
+                webbrowser.open_new_tab(f'{base_url}/user')
+            except (webbrowser.Error) as err:
+                print("Console-only login. {0}".format(err))
         sys.exit("Terminating...")
 
 

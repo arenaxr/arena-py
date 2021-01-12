@@ -117,6 +117,10 @@ def authenticate(realm, scene, broker, debug=False):
 
     # end authentication flow
     _mqtt_token = json.loads(mqtt_json)
+    username = None
+    if 'username' in _mqtt_token:
+        username = _mqtt_token['username']
+    print(f'ARENA Username: {username}')
     return _mqtt_token
 
 

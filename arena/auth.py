@@ -2,18 +2,20 @@
 arena/auth.py - Authentication methods for accessing the ARENA.
 """
 
-import time
 import json
 import os
 import pickle
 import ssl
 import sys
+import time
 import webbrowser
 from pathlib import Path
 from urllib import parse, request
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlsplit
 
 import jwt
+import requests
 from google.auth.transport.requests import AuthorizedSession, Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 
@@ -128,10 +130,20 @@ def _get_gauthid(webhost):
 
 
 def _get_mqtt_token(broker, realm, scene, user, id_token):
-    url = f'https://{broker}/auth/'
+    url = f'https://{broker}/user/mqtt_auth'
     if broker == 'oz.andrew.cmu.edu':
         # TODO: remove this workaround for non-auth broker
         url = f'https://{broker}:8888/'
+        csrftoken = None
+    else:
+        # get the csrftoken for django
+        csrf_url = f'https://{broker}/user/login'
+        client = requests.session()
+        if debug_toggle:
+            csrftoken = client.get(csrf_url, verify=False).cookies['csrftoken']
+        else:
+            csrftoken = client.get(csrf_url).cookies['csrftoken']
+
     params = {
         "id_auth": "google-installed",
         "username": user,
@@ -141,10 +153,10 @@ def _get_mqtt_token(broker, realm, scene, user, id_token):
     }
     query_string = parse.urlencode(params)
     data = query_string.encode("ascii")
-    return urlopen(url, data)
+    return urlopen(url, data=data, csrf=csrftoken)
 
 
-def urlopen(url, data=None, creds=False):
+def urlopen(url, data=None, creds=False, csrf=None):
     """ urlopen is for ARENA URL connections.
     url: the url to POST/GET.
     data: None for GET, add params for POST.
@@ -156,6 +168,9 @@ def urlopen(url, data=None, creds=False):
         req = request.Request(url)
         if creds:
             req.add_header("Cookie", f"mqtt_token={_mqtt_token['token']}")
+        if csrf:
+            req.add_header("Cookie", f"csrftoken={csrf}")
+            req.add_header("X-CSRFToken", csrf)
         if debug_toggle:
             context = ssl.create_default_context()
             context.check_hostname = False
@@ -166,6 +181,15 @@ def urlopen(url, data=None, creds=False):
         return res.read().decode('utf-8')
     except (URLError, HTTPError) as err:
         print("{0}: ".format(err)+url)
+        if isinstance(err, HTTPError) and round(err.code, -2) == 400:
+            # user not authorized on website yet, they don't have an ARENA username
+            base_url = "{0.scheme}://{0.netloc}".format(urlsplit(url))
+            print(f'Login with this this account on the website first:')
+            print(f'Trying to open login page: {base_url}/user')
+            try:
+                webbrowser.open_new_tab(f'{base_url}/user')
+            except (webbrowser.Error) as err:
+                print("Console-only login. {0}".format(err))
         sys.exit("Terminating...")
 
 

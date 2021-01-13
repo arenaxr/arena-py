@@ -146,7 +146,7 @@ def init(broker, realm, scene, callback=None, port=None, democlick=None):
     global arena_callback
     global debug_toggle
     global pseudoclick
-    debug_toggle = True
+    debug_toggle = False
     mqtt_broker = broker
     scene_path = realm + "/s/" + scene
     arena_callback = callback

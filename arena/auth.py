@@ -181,7 +181,7 @@ def urlopen(url, data=None, creds=False, csrf=None):
         return res.read().decode('utf-8')
     except (URLError, HTTPError) as err:
         print("{0}: ".format(err)+url)
-        if err.code and round(err.code, -2) == 400:
+        if isinstance(err, HTTPError) and round(err.code, -2) == 400:
             # user not authorized on website yet, they don't have an ARENA username
             base_url = "{0.scheme}://{0.netloc}".format(urlsplit(url))
             print(f'Login with this this account on the website first:')

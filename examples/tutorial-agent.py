@@ -36,16 +36,6 @@ code = []
 
 cube_ready = False
 
-def rando():
-    return float(random.randint(0, 10000)) / 1000
-
-
-def randcolor():
-    x = random.randint(0, 255)
-    y = random.randint(0, 255)
-    z = random.randint(0, 255)
-    return (x, y, z)
-
 def talk():
     morph = {
         "gltf-morph__0": {
@@ -108,7 +98,7 @@ def main():
         avatar.data.rotation = Rotation(0,0,0)
         arena.update_object(avatar)
 
-    if 200 < ticks < 500:
+    if 195 < ticks < 500:
         talk()
 
         if ticks == 200:
@@ -142,7 +132,7 @@ def main():
             arena.add_object(speech)
 
         if ticks == 320:
-            code += ["cube = Cube(object_id=\"my_cube\", position=(0,4,-2), scale=(2,2,2))"]
+            code += [f"cube = Cube(object_id=\"my_cube\", position=(0,4,{avatar.data.position.z}), scale=(2,2,2))"]
             update_code()
 
         if ticks == 340:
@@ -161,7 +151,7 @@ def main():
             code += ["arena.run_tasks()"]
             update_code()
 
-        if ticks == 420:w
+        if ticks == 420:
             speech.data.text = "Can you copy this code and\nexecute it? I'll wait!"
             arena.add_object(speech)
 
@@ -179,18 +169,29 @@ def main():
         talk()
         speech.data.text = "Congrats, you did it!"
         arena.add_object(speech)
-
-        if ticks % 10 == 0:
-            obj = Sphere(
-                clickable=True,
-                physics=Physics(type="dynamic"),
-                impulse=Impulse(position=(1,1,1), force=(1,50,1)),
-                position=(rando(), rando()+avatar.data.position.z, rando()),
-                color=randcolor(),
-                ttl=10)
-
-            arena.add_object(obj)
+        cube_ready = False
 
     ticks += 1
+
+# blink_state = 0
+# @arena.run_forever(interval_ms=1000)
+# def blink():
+#     global blink_state
+#     if blink_state == 0:
+#         blink_state = 1
+#     else:
+#         blink_state = 0
+
+#     morph = {
+#         "gltf-morph__5": {
+#             "morphtarget": "shapes.eyeBlink_L",
+#             "value": str(blink_state)
+#         },
+#         "gltf-morph__6": {
+#             "morphtarget": "shapes.eyeBlink_R",
+#             "value": str(blink_state)
+#         },
+#     }
+#     arena.update_object(avatar, **morph)
 
 arena.run_tasks()

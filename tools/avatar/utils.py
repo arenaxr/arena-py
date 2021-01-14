@@ -1,6 +1,5 @@
 import arena
 import numpy as np
-from scipy.spatial.transform import Rotation as R
 from tensorflow import keras
 
 trained_model_path = "./lmk2exp_model"

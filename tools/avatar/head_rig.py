@@ -10,18 +10,21 @@ EXP_HIST_WINDOW = 3
 EYE_THRES   = 0.17
 MOUTH_THRES = 0.05
 
-class Head(object):
-    def __init__(self, scene, user_id):
-        self.scene = scene
+class HeadRig(object):
+    def __init__(self, user_id, scene, camera):
         self.user_id = user_id
+        self.scene = scene
+        self.camera = camera
+        self.faceObj = None
+
         self.model_path = "/store/users/wiselab/models/FaceCapHeadGeneric/FaceCapHeadGeneric.gltf"
 
-        self.has_face = False
         self.rig_enabled = True
 
         self.avatar = None
 
         self.exp_filter = MeanFilter(EXP_HIST_WINDOW)
+
         self.anims = [
             "shapes.browInnerUp",
             "shapes.browDown_L",
@@ -77,15 +80,21 @@ class Head(object):
             "tongue_out"
         ]
 
+    @property
+    def has_avatar(self):
+        return "hasAvatar" in self.camera and self.camera.hasAvatar
+
+    def rig_on(self):
+        self.rig_enabled = True
+
     def rig_off(self):
         if self.rig_enabled and self.avatar:
             self.scene.delete_object(self.avatar)
         self.rig_enabled = False
 
-    def add_face(self, face_data):
-        self.face = Face(face_data)
-        self.has_face = True
-        self.update_face(face_data)
+    def add_face(self, faceObj):
+        self.faceObj = faceObj
+        self.face = Face()
 
     def create_morph(self, exp_vect):
         morph = {}
@@ -103,8 +112,11 @@ class Head(object):
                 }
         return morph
 
-    def update_face(self, face_data):
-        self.face.update(face_data)
+    def update(self):
+        if self.faceObj is None: return
+        if not self.faceObj.data.hasFace: return
+
+        self.face.update(self.faceObj.data)
 
         expressions_vect = self.face.get_expressions_vect()
         expressions_vect = expressions_vect.reshape((-1,))
@@ -120,7 +132,7 @@ class Head(object):
                     # position=(0.0, 0, -2),
                     position=self.face.trans,
                     rotation=self.face.rot,
-                    scale=(1.75,1.75,1.75),
+                    scale=(3,3,3),
                     parent="camera_"+self.user_id,
                     **morph
                 )

@@ -2,7 +2,7 @@
 #
 from arena import *
 
-arena = Arena("arena.andrew.cmu.edu", "realm", "example")
+arena = Arena("arena.andrew.cmu.edu", "realm", "public", "example")
 
 print("Three clickable URL cubes targetted to different windows" )
 

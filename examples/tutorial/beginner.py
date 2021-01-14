@@ -1,7 +1,7 @@
 from arena import *
 
 # setup library
-arena = Arena("arena.andrew.cmu.edu", "realm", "public", "example")
+arena = Arena("arena.andrew.cmu.edu", "realm", "public", "public", "example")
 
 def main():
     # make a cube

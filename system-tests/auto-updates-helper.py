@@ -7,7 +7,7 @@ from arena import *
 import random
 
 
-arena = Arena("arena.andrew.cmu.edu", "realm", "test")
+arena = Arena("arena.andrew.cmu.edu", "realm", "public", "test")
 
 cube = Cube(object_id="cube", position=(0,2,-1), rotation=(0,0,0), scale=(2,2,2), material=Material(transparent=True, opacity=1))
 

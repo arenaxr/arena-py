@@ -11,7 +11,7 @@ from utils import extract_user_id
 
 from arena import *
 
-arena = Arena("arena.andrew.cmu.edu", "realm", "avatar")
+arena = Arena("arena.andrew.cmu.edu", "realm", "public", "avatar")
 
 
 avatars = {}    # dictionary of avatars mapped to heads

@@ -5,7 +5,7 @@
 from arena import *
 import random
 
-arena = Arena("arena.andrew.cmu.edu", "realm", "test")
+arena = Arena("arena.andrew.cmu.edu", "realm", "public", "test")
 
 
 def rando():

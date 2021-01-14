@@ -28,7 +28,7 @@ Code for these can be found [here](../examples/tutorial)
 from arena import *
 
 # create library
-arena = Arena("arena.andrew.cmu.edu", "realm", "example")
+arena = Arena("arena.andrew.cmu.edu", "realm", "public", "example")
 
 @arena.run_once # make this function a task that runs once at startup
 def main():

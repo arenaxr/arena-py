@@ -11,9 +11,9 @@ EYE_THRES   = 0.17
 MOUTH_THRES = 0.05
 
 class HeadRig(object):
-    def __init__(self, user_id, scene, camera):
-        self.user_id = user_id
+    def __init__(self, scene, user_id, camera):
         self.scene = scene
+        self.user_id = user_id
         self.camera = camera
         self.faceObj = None
 

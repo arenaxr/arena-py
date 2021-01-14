@@ -6,7 +6,10 @@ trained_model_path = "./lmk2exp_model"
 model = keras.models.load_model(trained_model_path)
 
 def extract_user_id(obj_id):
-    return "_".join(obj_id.split("_")[1:])
+    try:
+        return "_".join(obj_id.split("_")[1:])
+    except:
+        return None
 
 class MeanFilter(object):
     def __init__(self, capacity):

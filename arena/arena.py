@@ -33,35 +33,35 @@ class Arena(object):
                 network_latency_interval = 10000  # run network latency update every 10s
             ):
         if os.environ.get('MQTTH') and os.environ.get('REALM') and os.environ.get('SCENE'):
-            HOST  = os.environ["MQTTH"]
-            REALM = os.environ["REALM"]
-            SCENE = os.environ["SCENE"]
+            self.HOST  = os.environ["MQTTH"]
+            self.REALM = os.environ["REALM"]
+            self.SCENE = os.environ["SCENE"]
         else:
             print("Cannot find MQTTH, REALM, and SCENE environmental variables, using input parameters instead.")
             if host and realm and scene:
-                HOST  = host
-                REALM = realm
-                SCENE = scene
+                self.HOST  = host
+                self.REALM = realm
+                self.SCENE = scene
             else:
                 sys.exit("host, realm, and scene are unspecified, aborting...")
 
-        print(f"Loading: {HOST}/{SCENE}, realm={REALM}")
+        print(f"Loading: {self.HOST}/{self.SCENE}, realm={self.REALM}")
         print("=====")
 
         self.debug = debug
 
-        self.root_topic = f"{REALM}/s/{SCENE}"
-        self.client_id = "pyClient-" + self.generate_client_id()
+        self.root_topic = f"{self.REALM}/s/{self.SCENE}"
+        self.mqttc_id = "pyClient-" + self.generate_client_id()
         self.latency_topic = "$NETWORK/latency"
 
-        self.client = mqtt.Client(
-            self.client_id, clean_session=True
+        self.mqttc = mqtt.Client(
+            self.mqttc_id, clean_session=True
         )
 
         # do auth
-        data = auth.authenticate(REALM, SCENE, HOST, debug=self.debug)
+        data = auth.authenticate(self.REALM, self.SCENE, self.HOST, debug=self.debug)
         if 'username' in data and 'token' in data:
-            self.client.username_pw_set(username=data["username"], password=data["token"])
+            self.mqttc.username_pw_set(username=data["username"], password=data["token"])
         print("=====")
 
         self.on_msg_callback = on_msg_callback
@@ -90,15 +90,15 @@ class Arena(object):
         self.run_forever(self.network_latency_update, interval_ms=network_latency_interval)
 
         if port is not None:
-            self.client.connect(HOST, port)
+            self.mqttc.connect(self.HOST, port)
         else:
-            self.client.connect(HOST)
+            self.mqttc.connect(self.HOST)
 
-        self.client.subscribe(self.root_topic + "/#")
+        self.mqttc.subscribe(self.root_topic + "/#")
 
         # set callbacks
-        self.client.on_connect = self.on_connect
-        self.client.on_message = self.on_message
+        self.mqttc.on_connect = self.on_connect
+        self.mqttc.on_message = self.on_message
 
     def generate_client_id(self):
         """Returns a random 6 digit id"""
@@ -106,11 +106,11 @@ class Arena(object):
 
     def run_network_loop(self):
         """Main Paho MQTT client network loop"""
-        self.client.loop()
+        self.mqttc.loop()
 
     def network_latency_update(self):
         """Update client latency in $NETWORK/latency"""
-        self.client.publish(self.latency_topic, "", qos=2)
+        self.mqttc.publish(self.latency_topic, "", qos=2)
 
     def run_once(self, func=None, **kwargs):
         """Runs a user-defined function on startup"""
@@ -177,7 +177,7 @@ class Arena(object):
 
     def disconnect(self):
         """Disconnects Paho MQTT client"""
-        self.client.disconnect()
+        self.mqttc.disconnect()
         print("Disconnected from ARENA!")
 
     def on_connect(self, client, userdata, flags, rc):
@@ -247,7 +247,7 @@ class Arena(object):
         evt = Event(object_id=obj.object_id,
                     type=_type,
                     position=obj.data.position,
-                    source=self.client_id,
+                    source=self.mqttc_id,
                     **kwargs)
         return self.generate_custom_event(evt, action="clientEvent")
 
@@ -302,7 +302,8 @@ class Arena(object):
             payload = json.dumps(payload)
         else:
             payload = obj.json(action=action, timestamp=d)
-        self.client.publish(topic, payload, qos=0)
+
+        self.mqttc.publish(topic, payload, qos=0)
         if self.debug: print("[publish]", payload)
         return payload
 
@@ -327,8 +328,8 @@ class Arena(object):
     def add_topic(self, sub, callback):
         """Subscribes to new topic and adds filter for callback to on_message()"""
         self.secondary_callbacks[sub] = callback
-        self.client.subscribe(sub)
+        self.mqttc.subscribe(sub)
 
     def remove_topic(self, sub):
         """Unsubscribes to topic and removes filter for callback"""
-        self.client.unsubscribe(sub)
+        self.mqttc.unsubscribe(sub)

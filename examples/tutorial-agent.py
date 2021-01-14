@@ -1,7 +1,7 @@
 from arena import *
 import random, math
 
-arena = Arena("arena-dev1.conix.io", "realm", "public/example")
+arena = Arena("arena.andrew.cmu.edu", "realm", "public", "example")
 
 model_url = "/store/users/wiselab/models/FaceCapHeadGeneric/FaceCapHeadGeneric.gltf"
 avatar = GLTF(
@@ -26,7 +26,7 @@ instructions = Text(
         object_id="instructions",
         color=(100,50,75),
         text = "",
-        position=(15.5,7,0),
+        position=(15.2,7,0),
         scale=(3,3,3)
     )
 
@@ -88,43 +88,42 @@ def main():
         avatar.data.rotation.y = math.pi
         arena.update_object(avatar)
 
-    if 100 < ticks < 160:
-        if ticks % 2 == 0:
-            avatar.data.position.z -= 0.6
-            avatar.data.position.y += 0.01
-            arena.update_object(avatar)
+    if 90 < ticks < 160:
+        avatar.data.position.z -= 0.2
+        avatar.data.position.y += 0.01
+        arena.update_object(avatar)
 
-    if 170 < ticks < 180:
+    if 160 < ticks < 180:
         avatar.data.rotation = Rotation(0,0,0)
         arena.update_object(avatar)
 
-    if 195 < ticks < 500:
+    if 175 < ticks < 500:
         talk()
 
-        if ticks == 200:
+        if ticks == 180:
             speech.data.text = "Let's write a\nPython program!"
             arena.add_object(speech)
 
             instructions.data.position.z = avatar.data.position.z
             arena.add_object(instructions)
 
-        if ticks == 220:
+        if ticks == 200:
             speech.data.text = "To my left is the Python\ncode I will have you write:"
             arena.add_object(speech)
 
             code += ["from arena import *"]
             update_code()
 
-        if ticks == 240:
+        if ticks == 220:
             speech.data.text = "Can you type the code I\nshow next to me?"
             arena.add_object(speech)
 
-        if ticks == 260:
+        if ticks == 250:
             speech.data.text = "Let's start by importing the\nARENA-py library and initializing it:"
             arena.add_object(speech)
 
-        if ticks == 280:
-            code += [f"arena = Arena(\"{arena.HOST}\", \"{arena.REALM}\", \"{arena.SCENE}\")"]
+        if ticks == 270:
+            code += [f"arena = Arena(\"{arena.HOST}\", \"{arena.REALM}\", \"{arena.NAMESPACE}\", \"{arena.SCENE}\")"]
             update_code()
 
         if ticks == 300:
@@ -132,7 +131,7 @@ def main():
             arena.add_object(speech)
 
         if ticks == 320:
-            code += [f"cube = Cube(object_id=\"my_cube\", position=(0,4,{avatar.data.position.z}), scale=(2,2,2))"]
+            code += [f"cube = Cube(object_id=\"my_cube\", position=(0,4,-2), scale=(2,2,2))"]
             update_code()
 
         if ticks == 340:
@@ -155,7 +154,12 @@ def main():
             speech.data.text = "Can you copy this code and\nexecute it? I'll wait!"
             arena.add_object(speech)
 
-        if ticks == 430:
+        if 420 < ticks < 460:
+            avatar.data.position.z += 0.2
+            avatar.data.position.y -= 0.01
+            arena.update_object(avatar)
+
+        if ticks == 480:
             close_mouth()
 
             def cube_made(msg):
@@ -169,29 +173,9 @@ def main():
         talk()
         speech.data.text = "Congrats, you did it!"
         arena.add_object(speech)
+        arena.delete_object(instructions)
         cube_ready = False
 
     ticks += 1
-
-# blink_state = 0
-# @arena.run_forever(interval_ms=1000)
-# def blink():
-#     global blink_state
-#     if blink_state == 0:
-#         blink_state = 1
-#     else:
-#         blink_state = 0
-
-#     morph = {
-#         "gltf-morph__5": {
-#             "morphtarget": "shapes.eyeBlink_L",
-#             "value": str(blink_state)
-#         },
-#         "gltf-morph__6": {
-#             "morphtarget": "shapes.eyeBlink_R",
-#             "value": str(blink_state)
-#         },
-#     }
-#     arena.update_object(avatar, **morph)
 
 arena.run_tasks()

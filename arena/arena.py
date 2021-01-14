@@ -23,6 +23,7 @@ class Arena(object):
                 self,
                 host = "arena.andrew.cmu.edu",
                 realm = "realm",
+                namespace = "public",
                 scene = "render",
                 port = None,
                 on_msg_callback = None,
@@ -32,25 +33,44 @@ class Arena(object):
                 network_loop_interval = 10,  # run mqtt client network loop every 10ms
                 network_latency_interval = 10000  # run network latency update every 10s
             ):
-        if os.environ.get('MQTTH') and os.environ.get('REALM') and os.environ.get('SCENE'):
+        if os.environ.get("MQTTH"):
             self.HOST  = os.environ["MQTTH"]
-            self.REALM = os.environ["REALM"]
-            self.SCENE = os.environ["SCENE"]
+        elif host:
+            self.HOST = host
+            print("Cannot find MQTTH environmental variable, using input parameter instead.")
         else:
-            print("Cannot find MQTTH, REALM, and SCENE environmental variables, using input parameters instead.")
-            if host and realm and scene:
-                self.HOST  = host
-                self.REALM = realm
-                self.SCENE = scene
-            else:
-                sys.exit("host, realm, and scene are unspecified, aborting...")
+            sys.exit("MQTTH is unspecified, aborting...")
 
-        print(f"Loading: {self.HOST}/{self.SCENE}, realm={self.REALM}")
+        if os.environ.get("REALM"):
+            self.REALM  = os.environ["REALM"]
+        elif realm:
+            self.REALM = realm
+            print("Cannot find REALM environmental variable, using input parameter instead.")
+        else:
+            sys.exit("REALM is unspecified, aborting...")
+
+        if os.environ.get("NAMESPACE"):
+            self.NAMESPACE  = os.environ["NAMESPACE"]
+        elif namespace:
+            self.NAMESPACE = namespace
+            print("Cannot find NAMESPACE environmental variable, using input parameter instead.")
+        else:
+            sys.exit("NAMESPACE is unspecified, aborting...")
+
+        if os.environ.get("SCENE"):
+            self.SCENE  = os.environ["SCENE"]
+        elif scene:
+            self.SCENE = scene
+            print("Cannot find SCENE environmental variable, using input parameter instead.")
+        else:
+            sys.exit("SCENE is unspecified, aborting...")
+
+        print(f"Loading: {self.HOST}/{self.NAMESPACE}/{self.SCENE}, realm={self.REALM}")
         print("=====")
 
         self.debug = debug
 
-        self.root_topic = f"{self.REALM}/s/{self.SCENE}"
+        self.root_topic = f"{self.REALM}/s/{self.NAMESPACE}/{self.SCENE}"
         self.mqttc_id = "pyClient-" + self.generate_client_id()
         self.latency_topic = "$NETWORK/latency"
 
@@ -209,6 +229,10 @@ class Arena(object):
         except:
             return
 
+        # ignore messages sent to itself
+        if "sender" in payload and payload["sender"] == self.mqttc_id:
+            return
+
         # update object attributes, if possible
         if "object_id" in payload:
             # check for events/object updates
@@ -298,10 +322,11 @@ class Arena(object):
         if action == "delete":
             payload = obj
             payload["action"] = "delete"
+            payload["sender"] = self.mqttc_id
             payload["timestamp"] = d
             payload = json.dumps(payload)
         else:
-            payload = obj.json(action=action, timestamp=d)
+            payload = obj.json(action=action, sender=self.mqttc_id, timestamp=d)
 
         self.mqttc.publish(topic, payload, qos=0)
         if self.debug: print("[publish]", payload)

@@ -1,7 +1,7 @@
 from arena import *
 
 # setup library
-arena = Arena("arena.andrew.cmu.edu", "realm", "example")
+arena = Arena("arena.andrew.cmu.edu", "realm", "public", "example")
 
 def main():
     # make a cube
@@ -13,3 +13,4 @@ def main():
 # add and start tasks
 arena.run_once(main)
 arena.run_tasks()
+

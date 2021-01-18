@@ -118,6 +118,7 @@ class Arena(object):
 
         # set callbacks
         self.mqttc.on_connect = self.on_connect
+        self.mqttc.on_disconnect = self.on_disconnect
 
     def generate_client_id(self):
         """Returns a random 6 digit id"""
@@ -187,17 +188,12 @@ class Arena(object):
 
     def run_tasks(self):
         """Run event loop"""
-        print("Connecting to ARENA...")
+        print("Connecting to the ARENA...")
         self.task_manager.run()
 
     async def sleep(self, interval_ms):
         """Public function for sleeping in async functions"""
         await asyncio.sleep(interval_ms / 1000)
-
-    def disconnect(self):
-        """Disconnects Paho MQTT client"""
-        self.mqttc.disconnect()
-        print("Disconnected from ARENA!")
 
     def on_connect(self, client, userdata, flags, rc):
         """Paho MQTT client on_connect callback"""
@@ -212,6 +208,17 @@ class Arena(object):
             print("=====")
         else:
             print("Connection error! Result code: " + rc)
+
+    def disconnect(self):
+        """Disconnects Paho MQTT client"""
+        self.mqttc.disconnect()
+
+    def on_disconnect(self, client, userdata, rc):
+        """Paho MQTT client on_disconnect callback"""
+        if rc == 0:
+            print("Disconnected from the ARENA!")
+        else:
+            print("Disconnect error! Result code: " + rc)
 
     def process_message(self, client, userdata, msg):
         """Main message processing function"""

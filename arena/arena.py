@@ -30,7 +30,7 @@ class Arena(object):
                 new_obj_callback = None,
                 delete_obj_callback = None,
                 debug = False,
-                network_loop_interval = 100,  # run mqtt client network loop every 100ms
+                network_loop_interval = 50,  # run mqtt client network loop every 50ms
                 network_latency_interval = 10000  # run network latency update every 10s
             ):
         if os.environ.get("MQTTH"):
@@ -70,10 +70,12 @@ class Arena(object):
 
         self.debug = debug
 
-        self.root_topic = f"{self.REALM}/s/{self.NAMESPACE}/{self.SCENE}"
         self.mqttc_id = "pyClient-" + self.generate_client_id()
-        self.latency_topic = "$NETWORK/latency"
-        self.unsubscribe_topic = f"{self.root_topic}/{self.mqttc_id}/#"
+
+        self.root_topic = f"{self.REALM}/s/{self.NAMESPACE}/{self.SCENE}"
+        self.scene_topic = f"{self.root_topic}/#"   # main topic for entire scene
+        self.latency_topic = "$NETWORK/latency"     # network graph latency update
+        self.ignore_topic = f"{self.root_topic}/{self.mqttc_id}/#" # ignore own messages
 
         self.mqttc = mqtt.Client(
             self.mqttc_id, clean_session=True
@@ -88,7 +90,6 @@ class Arena(object):
         self.on_msg_callback = on_msg_callback
         self.new_obj_callback = new_obj_callback
         self.delete_obj_callback = delete_obj_callback
-        self.secondary_callbacks = {}
 
         self.unspecified_objs_ids = set() # objects that exist in scene, but user does not have reference to
 
@@ -117,7 +118,6 @@ class Arena(object):
 
         # set callbacks
         self.mqttc.on_connect = self.on_connect
-        self.mqttc.on_message = self.on_message
 
     def generate_client_id(self):
         """Returns a random 6 digit id"""
@@ -205,28 +205,18 @@ class Arena(object):
             self.mqtt_connect_evt.set()
 
             # listen to all messages in scene
-            self.mqttc.subscribe(f"{self.root_topic}/#")
+            self.mqttc.subscribe(self.scene_topic)
+            self.mqttc.message_callback_add(self.scene_topic, self.process_message)
 
             print("Connected!")
             print("=====")
         else:
             print("Connection error! Result code: " + rc)
 
-    def on_message(self, client, userdata, msg):
-        """Paho MQTT client on_message callback"""
-
-        self.process_message(msg)
-
-    def process_message(self, msg):
+    def process_message(self, client, userdata, msg):
         """Main message processing function"""
-        if mqtt.topic_matches_sub(self.unsubscribe_topic, msg.topic):
+        if mqtt.topic_matches_sub(self.ignore_topic, msg.topic):
             return
-
-        # check for custom topic
-        for sub in self.secondary_callbacks:
-            if mqtt.topic_matches_sub(sub, msg.topic):
-                self.secondary_callbacks[sub](msg)
-                return
 
         # extract payload
         try:
@@ -351,11 +341,10 @@ class Arena(object):
         if self.debug: print("[get_persisted_scene_option]", output)
         return output
 
-    def add_topic(self, sub, callback):
-        """Subscribes to new topic and adds filter for callback to on_message()"""
-        self.secondary_callbacks[sub] = callback
-        self.mqttc.subscribe(sub)
+    def message_callback_add(self, sub, callback):
+        """Subscribes to new topic and adds callback"""
+        self.mqttc.message_callback_add(sub, callback)
 
-    def remove_topic(self, sub):
+    def message_callback_remove(self, sub):
         """Unsubscribes to topic and removes filter for callback"""
-        self.mqttc.unsubscribe(sub)
+        self.mqttc.message_callback_remove(sub)

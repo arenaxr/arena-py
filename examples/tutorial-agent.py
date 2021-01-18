@@ -166,10 +166,10 @@ def main():
             arena.new_obj_callback = cube_made
 
     if cube_ready:
-        arena.update_object(avatar, sound=Sound(positional=True, poolSize=1, autoplay=True, src="store/users/wiselab/audio/september.mp3"))
         talk()
         speech.data.text = "Congrats, you did it!"
         arena.add_object(speech)
+        arena.update_object(avatar, sound=Sound(positional=True, poolSize=1, autoplay=True, src="store/users/wiselab/audio/september.mp3"))
         arena.delete_object(instructions)
         cube_ready = False
 

@@ -1,7 +1,7 @@
 from arena import *
 import random, math
 
-arena = Arena("arena.andrew.cmu.edu", "realm", "public", "public", "example")
+arena = Arena("arena.andrew.cmu.edu", "realm", "public", "example")
 
 model_url = "/store/users/wiselab/models/FaceCapHeadGeneric/FaceCapHeadGeneric.gltf"
 avatar = GLTF(
@@ -17,6 +17,7 @@ speech = Text(
         object_id="my_text",
         text="Hello!",
         parent=avatar,
+        align="center",
         position=(0,0.3,0),
         scale=(0.4,0.4,0.4)
     )
@@ -25,8 +26,8 @@ arena.add_object(speech)
 instructions = Text(
         object_id="instructions",
         color=(100,50,75),
-        text = "",
-        position=(15.2,7,0),
+        text="",
+        position=(15.4,7,0),
         scale=(3,3,3)
     )
 
@@ -55,12 +56,7 @@ def close_mouth():
     arena.update_object(avatar, **morph)
 
 def update_code():
-    # hack (but an allowed hack), set "align" attribute
-    instructions.data.text = {
-            "value": "\n\n".join(code),
-            "align": "left"
-        }
-    arena.add_object(instructions)
+    arena.update_object(instructions, text="\n\n".join(code), align="left")
 
 @arena.run_forever(interval_ms=50)
 def main():
@@ -170,6 +166,7 @@ def main():
             arena.new_obj_callback = cube_made
 
     if cube_ready:
+        arena.update_object(avatar, sound=Sound(positional=True, poolSize=1, autoplay=True, src="store/users/wiselab/audio/september.mp3"))
         talk()
         speech.data.text = "Congrats, you did it!"
         arena.add_object(speech)

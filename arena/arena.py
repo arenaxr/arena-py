@@ -30,7 +30,7 @@ class Arena(object):
                 new_obj_callback = None,
                 delete_obj_callback = None,
                 debug = False,
-                network_loop_interval = 10,  # run mqtt client network loop every 10ms
+                network_loop_interval = 100,  # run mqtt client network loop every 100ms
                 network_latency_interval = 10000  # run network latency update every 10s
             ):
         if os.environ.get("MQTTH"):
@@ -73,6 +73,7 @@ class Arena(object):
         self.root_topic = f"{self.REALM}/s/{self.NAMESPACE}/{self.SCENE}"
         self.mqttc_id = "pyClient-" + self.generate_client_id()
         self.latency_topic = "$NETWORK/latency"
+        self.unsubscribe_topic = f"{self.root_topic}/{self.mqttc_id}/#"
 
         self.mqttc = mqtt.Client(
             self.mqttc_id, clean_session=True
@@ -113,8 +114,6 @@ class Arena(object):
             self.mqttc.connect(self.HOST, port)
         else:
             self.mqttc.connect(self.HOST)
-
-        self.mqttc.subscribe(self.root_topic + "/#")
 
         # set callbacks
         self.mqttc.on_connect = self.on_connect
@@ -204,6 +203,10 @@ class Arena(object):
         """Paho MQTT client on_connect callback"""
         if rc == 0:
             self.mqtt_connect_evt.set()
+
+            # listen to all messages in scene
+            self.mqttc.subscribe(f"{self.root_topic}/#")
+
             print("Connected!")
             print("=====")
         else:
@@ -211,10 +214,13 @@ class Arena(object):
 
     def on_message(self, client, userdata, msg):
         """Paho MQTT client on_message callback"""
+
         self.process_message(msg)
 
     def process_message(self, msg):
         """Main message processing function"""
+        if mqtt.topic_matches_sub(self.unsubscribe_topic, msg.topic):
+            return
 
         # check for custom topic
         for sub in self.secondary_callbacks:
@@ -227,10 +233,6 @@ class Arena(object):
             payload_str = msg.payload.decode("utf-8", "ignore")
             payload = json.loads(payload_str)
         except:
-            return
-
-        # ignore messages sent to itself
-        if "sender" in payload and payload["sender"] == self.mqttc_id:
             return
 
         # update object attributes, if possible
@@ -317,19 +319,18 @@ class Arena(object):
 
     def _publish(self, obj, action):
         """Publishes to mqtt broker with "action":action"""
-        topic = self.root_topic + "/" + obj["object_id"]
+        topic = f"{self.root_topic}/{self.mqttc_id}/{obj['object_id']}"
         d = datetime.now().isoformat()[:-3]+"Z"
         if action == "delete":
             payload = obj
             payload["action"] = "delete"
-            payload["sender"] = self.mqttc_id
             payload["timestamp"] = d
             payload = json.dumps(payload)
         else:
-            payload = obj.json(action=action, sender=self.mqttc_id, timestamp=d)
+            payload = obj.json(action=action, timestamp=d)
 
         self.mqttc.publish(topic, payload, qos=0)
-        if self.debug: print("[publish]", payload)
+        if self.debug: print("[publish]", topic, payload)
         return payload
 
     def get_persisted_obj(self, object_id, broker, scene):

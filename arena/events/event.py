@@ -1,5 +1,5 @@
-from .base_object import *
-from .attributes import Data
+from ..base_object import *
+from ..attributes import Data
 import uuid
 
 

@@ -50,6 +50,10 @@ python3 -c "from arena import auth; auth.signout()"
 ```bash
 python3 -c "from arena import auth; auth.permissions()"
 ```
+### Show Permissions
+```bash
+python3 arena/auth.py permissions
+```
 
 ## ARENA-py Repository Files
 - [arena/](arena/): The ARENA Python library

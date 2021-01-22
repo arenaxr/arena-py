@@ -1,6 +1,6 @@
-# move-cubes.py
+# move-boxs.py
 #
-# Make two cubes that move away from each other (and a bunch of dodecahedrons!).
+# Make two boxs that move away from each other (and a bunch of dodecahedrons!).
 # For testing tasks and object creation.
 
 from arena import *
@@ -18,11 +18,11 @@ def evt_handler(msg):
     print("clicked", music_on)
     music_on = not music_on
     if music_on:
-        arena.update_object(cube, sound=Sound(positional=True, poolSize=1, autoplay=True, src="store/users/wiselab/audio/september.mp3"))
+        arena.update_object(box, sound=Sound(positional=True, poolSize=1, autoplay=True, src="store/users/wiselab/audio/september.mp3"))
 
 
-cube = Cube(object_id="cube", position=Position(0,3,0), scale=Scale(2,2,2), click_listener=True, evt_handler=evt_handler)
-arena.add_object(cube)
+box = Box(object_id="box", position=Position(0,3,0), scale=Scale(2,2,2), click_listener=True, evt_handler=evt_handler)
+arena.add_object(box)
 
 sphere = Sphere(object_id="sphere", position=Position(0,3,0), scale=Scale(1.5,1.5,1.5))
 arena.add_object(sphere)
@@ -37,10 +37,10 @@ def make_text(text, parent):
 
 i = 0
 @arena.run_forever(interval_ms=500, arg="hi")
-def move_cube(arg):
+def move_box(arg):
     global i # non allocated variables need to be global
-    cube.update_attributes(position=Position(i,3,0))
-    arena.update_object(cube)
+    box.update_attributes(position=Position(i,3,0))
+    arena.update_object(box)
     i += 0.2
     print(arg)
 
@@ -57,7 +57,7 @@ def make_dodecahedrons():
     arena.add_object(Dodecahedron(position=Position(random.randint(-10,10),random.randint(0,5),random.randint(-10,10))))
 
 
-arena.run_once(make_text, text="arena-py 2.0?", parent="cube")
+arena.run_once(make_text, text="arena-py 2.0?", parent="box")
 arena.run_forever(move_sphere, 1000)
 arena.run_forever(make_dodecahedrons, 2000)
 

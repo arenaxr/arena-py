@@ -36,7 +36,7 @@ class Object(BaseObject):
 
         # print warning if object is being created with the same id as an existing object
         if Object.exists(object_id):
-            print(f"[WARNING] an object with object_id of {object_id} was already created. The previous object will be overwritten.")
+            print("[WARNING]", f"An object with object_id of {object_id} was already created. The previous object will be overwritten.")
             Object.remove(Object.get(object_id))
 
         # setup attributes in the "data" field
@@ -154,12 +154,20 @@ class Object(BaseObject):
     def exists(cls, object_id):
         return object_id in Object.all_objects
 
+class Box(Object):
+    """
+    Class for Box in the ARENA.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(object_type="box", **kwargs)
+
 class Cube(Object):
     """
     Class for Cube in the ARENA.
     """
     def __init__(self, **kwargs):
-        super().__init__(object_type="cube", **kwargs)
+        print("[WARNING]", "Cube will be deprecated soon, please use Box instead!")
+        super().__init__(object_type="box", **kwargs)
 
 class Sphere(Object):
     """

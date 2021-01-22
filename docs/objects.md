@@ -9,31 +9,31 @@ See Appendix for all types of objects.
 
 Attributes can be added upon Object creation in the three ways used below (special attributes like position, rotation, scale, color, etc. can be added with tuples, lists, or dictionaries).
 ```python
-cube = Cube(
-    object_id="my_cube",
+box = Box(
+    object_id="my_box",
     position=Position(0,4,-2),
     rotation=(0,0,0,1),
     scale={"x":2,"y":2,"z":2}
 )
 
-arena.add_object(cube)
+arena.add_object(box)
 ```
 
 # Adding Attributes
 ```python
 # use update_attributes with kwargs to add attributes
-cube.update_attributes(physics=Physics(type="dynamic"))
+box.update_attributes(physics=Physics(type="dynamic"))
 
 # don't forget to call arena.update_object to see your chnages in the ARENA!
-arena.update_object(cube)
+arena.update_object(box)
 ```
 
 # Updating Attributes
 Most attributes (except object_id, persist, ttl, and parent) are under the "data" field. Access these by using ```obj.data```.
 ```python
-cube.data.position.x = 2
-# cube.update_attributes(position=Position(2,4,-2)) works too
-arena.update_object(cube)
+box.data.position.x = 2
+# box.update_attributes(position=Position(2,4,-2)) works too
+arena.update_object(box)
 ```
 
 ## Removing Object Attributes
@@ -44,9 +44,9 @@ obj.data.click_listener = None
 
 # Appendix
 
-## Cube
+## Box
 ```python
-Cube(...)
+Box(...)
 ```
 
 ## Sphere
@@ -158,11 +158,11 @@ Object(object_type, ...)
 ## ARENA Object JSON example
 ```json
 {
-    "object_id": "my_cube",
+    "object_id": "my_box",
     "type": "object",
     "persist": false,
     "data": {
-        "object_type": "cube",
+        "object_type": "box",
         "position": {
             "x": 0,
             "y": 4,

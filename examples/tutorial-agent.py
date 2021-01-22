@@ -35,7 +35,7 @@ ticks = 0
 
 code = []
 
-cube_ready = False
+box_ready = False
 
 def talk():
     morph = {
@@ -62,7 +62,7 @@ def update_code():
 def main():
     global ticks
     global code
-    global cube_ready
+    global box_ready
 
     if ticks < 80:
         talk()
@@ -123,19 +123,19 @@ def main():
             update_code()
 
         if ticks == 300:
-            speech.data.text = "Next, let's create our\nfirst Object: a cube!"
+            speech.data.text = "Next, let's create our\nfirst Object: a box!"
             arena.add_object(speech)
 
         if ticks == 320:
-            code += [f"cube = Cube(object_id=\"my_cube\", position=(0,4,-2), scale=(2,2,2))"]
+            code += [f"box = Box(object_id=\"my_box\", position=(0,4,-2), scale=(2,2,2))"]
             update_code()
 
         if ticks == 340:
-            speech.data.text = "Next, let's add that cube\nto the ARENA:"
+            speech.data.text = "Next, let's add that box\nto the ARENA:"
             arena.add_object(speech)
 
         if ticks == 360:
-            code += ["arena.add_object(cube)"]
+            code += ["arena.add_object(box)"]
             update_code()
 
         if ticks == 380:
@@ -158,20 +158,20 @@ def main():
         if ticks == 480:
             close_mouth()
 
-            def cube_made(msg):
-                global cube_ready
+            def box_made(msg):
+                global box_ready
                 if "object_id" in msg:
-                    cube_ready = (msg["object_id"] == "my_cube")
+                    box_ready = (msg["object_id"] == "my_box")
 
-            arena.new_obj_callback = cube_made
+            arena.new_obj_callback = box_made
 
-    if cube_ready:
+    if box_ready:
         talk()
         speech.data.text = "Congrats, you did it!"
         arena.add_object(speech)
         arena.update_object(avatar, sound=Sound(positional=True, poolSize=1, autoplay=True, src="store/users/wiselab/audio/september.mp3"))
         arena.delete_object(instructions)
-        cube_ready = False
+        box_ready = False
 
     ticks += 1
 

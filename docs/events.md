@@ -22,7 +22,7 @@ def click_handler(evt): # evt = Event(...)
     evt.data.source
     # etc etc
 
-cube = Cube(..., evt_handler=click_handler) # note the use of "evt_handler=click_handler"
+box = Box(..., evt_handler=click_handler) # note the use of "evt_handler=click_handler"
 ```
 
 ## Generating events with ARENA-py
@@ -56,7 +56,7 @@ arena.manipulate_camera(
 # make camera look at something/some position:
 arena.look_at(
     camera,
-    target=cube # can also do a position: (0,0,0)
+    target=box # can also do a position: (0,0,0)
 )
 ```
 
@@ -77,7 +77,7 @@ Event(object_id, action, type, ...)
 # ARENA Event JSON example
 ```json
 {
-    "object_id": "my_cube",
+    "object_id": "my_box",
     "action": "clientEvent",
     "type": "mousedown",
     "data": {

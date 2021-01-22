@@ -38,19 +38,19 @@ def main():
 ```
 
 ## Our first object
-Inside main(), lets make a cube!
+Inside main(), lets make a box!
 ```python
-cube = Cube(object_id="my_cube", position=Position(0,4,-2), scale=Scale(2,2,2))
+box = Box(object_id="my_box", position=Position(0,4,-2), scale=Scale(2,2,2))
 ```
 Note the input arguments. The names must match what they will be in the ARENA JSON specification. We don't have to worry too much about that now, but keep this in mind, as typos will be very bad!
 
-Cube is a type of "Object". See [objects.md](objects.md).
+Box is a type of "Object". See [objects.md](objects.md).
 
 Position and Scale are what we call "Attributes". See [attributes.md](attributes.md).
 
 ## Adding our object to the ARENA
 ```python
-arena.add_object(cube)
+arena.add_object(box)
 ```
 
 ## Start the event loop
@@ -60,7 +60,7 @@ arena.run_once(main)
 arena.run_tasks()
 ```
 
-Now, go into the scene to see your cube!
+Now, go into the scene to see your box!
 
 # Appendix
 ```python
@@ -70,10 +70,10 @@ from arena import *
 arena = Arena("arena.andrew.cmu.edu", "realm", "public", "example")
 
 def main():
-    # make a cube
-    cube = Cube(object_id="my_cube", position=Position(0,4,-2), scale=Scale(2,2,2))
-    # add the cube
-    arena.add_object(cube)
+    # make a box
+    box = Box(object_id="my_box", position=Position(0,4,-2), scale=Scale(2,2,2))
+    # add the box
+    arena.add_object(box)
 
 # add and start tasks
 arena.run_once(main)

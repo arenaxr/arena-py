@@ -1,4 +1,4 @@
-# transCubes.py
+# transBoxs.py
 #
 # draw a symmetric structure of transparent mostly red blue (yellow) rectangles
 
@@ -54,7 +54,7 @@ def randcolor():
 
 
 def do(name, randx, randy, randz, scalex, scaley, scalez, color):
-    obj = Cube(
+    obj = Box(
             object_id=name,
             position=(randx, randy, randz),
             scale=(scalex, scaley, scalez),
@@ -70,7 +70,7 @@ counter = 0
 def do_stuff():
     global counter
 
-    name = "cube_" + str(counter)
+    name = "box_" + str(counter)
     counter += 1
     randx = randmove()
     randy = randmove()

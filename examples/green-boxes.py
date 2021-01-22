@@ -12,7 +12,7 @@ color = (0, 255, 0)
 x = 1
 
 @arena.run_forever(interval_ms=500)
-def make_cubes():
+def make_boxs():
     global x
 
     # Create a bunch of green boxes drawn directly to screen
@@ -20,7 +20,7 @@ def make_cubes():
                 random.randrange(10),
                 -random.randrange(10))
     arena.add_object(
-            Cube(
+            Box(
                 position=position,
                 color=color,
             )

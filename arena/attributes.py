@@ -264,7 +264,10 @@ class Data(Attribute):
                     color = v.lstrip('#')
                     hexcolor = re.search(r'^(?:[0-9a-fA-F]{3}){1,2}$', color)
                     if not hexcolor:
-                        wcrgb = webcolors.name_to_rgb(color)
+                        try:
+                            wcrgb = webcolors.name_to_rgb(color)
+                        except:
+                            wcrgb = webcolors.name_to_rgb("0"+color)
                         v = (wcrgb.red, wcrgb.green, wcrgb.blue)
                     else:
                         v = tuple(int(color[c:c+2], 16) for c in (0, 2, 4))

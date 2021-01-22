@@ -20,8 +20,8 @@ def new_obj_callback(msg):
 arena = Arena("arena.andrew.cmu.edu", "realm", "public", "test")
 arena.new_obj_callback = new_obj_callback
 
-# cube = Cube(object_id="cube")
-# arena.add_object(cube)
+# box = Box(object_id="box")
+# arena.add_object(box)
 
 @arena.run_forever(interval_ms=500, cams=cams)
 def move_cams(cams):

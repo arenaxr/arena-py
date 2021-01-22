@@ -5,23 +5,23 @@ arena = Arena("arena.andrew.cmu.edu", "realm", "public", "example")
 
 @arena.run_async
 async def func():
-    # make a cube
-    cube = Cube(object_id="my_cube", position=Position(0,4,-2), scale=Scale(2,2,2))
-    arena.add_object(cube)
+    # make a box
+    box = Box(object_id="my_box", position=Position(0,4,-2), scale=Scale(2,2,2))
+    arena.add_object(box)
 
     def mouse_handler(evt):
         if evt.type == "mousedown":
-            cube.data.position.x += 0.5
-            arena.update_object(cube)
+            box.data.position.x += 0.5
+            arena.update_object(box)
 
     # add click_listener
-    arena.update_object(cube, click_listener=True, evt_handler=mouse_handler)
+    arena.update_object(box, click_listener=True, evt_handler=mouse_handler)
 
     # sleep for 10 seconds
     await arena.sleep(10000)
 
-    # delete cube
-    arena.delete_object(cube)
+    # delete box
+    arena.delete_object(box)
 
 # start tasks
 arena.run_tasks()

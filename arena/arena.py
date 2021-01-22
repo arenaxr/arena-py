@@ -82,7 +82,7 @@ class Arena(object):
         )
 
         # do auth
-        data = auth.authenticate(self.REALM, self.SCENE, self.HOST, debug=self.debug)
+        data = auth.authenticate(self.REALM, f"{self.NAMESPACE}/{self.SCENE}", self.HOST, debug=self.debug)
         if 'username' in data and 'token' in data:
             self.mqttc.username_pw_set(username=data["username"], password=data["token"])
         print("=====")

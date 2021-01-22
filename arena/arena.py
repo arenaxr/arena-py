@@ -23,7 +23,7 @@ class Arena(object):
                 self,
                 host = "arena.andrew.cmu.edu",
                 realm = "realm",
-                namespace = "public",
+                namespace = None,
                 scene = "render",
                 port = None,
                 on_msg_callback = None,

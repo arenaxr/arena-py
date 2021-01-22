@@ -1,5 +1,4 @@
 # simple general purpose functions
-import random
 
 class Utils(object):
     @classmethod

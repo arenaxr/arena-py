@@ -46,11 +46,15 @@ For headless environments, the ARENA library `Arena(host="myhost.com")` will pro
 ```bash
 python3 -c "from arena import auth; auth.signout()"
 ```
+### Show Permissions
+```bash
+python3 -c "from arena import auth; auth.permissions()"
+```
 
 ## ARENA-py Repository Files
 - [arena/](arena/): The ARENA Python library
-- [demos/](demos/): Demos of cool ARENA applications
 - [digital-twins/](digital-twins/): Digital twins of physical spaces
 - [examples/](examples/): Canonical examples of ARENA functions from the [documentation](https://conix-center.github.io/ARENA/content/python/))
+- [examples/legacy/](examples/legacy/): Deprecated demos for ARENA-py < 0.1.0
 - [system-tests/](system-tests/): Workouts for the ARENA
 - [tools/](tools/): Reusable tools for any ARENA scene

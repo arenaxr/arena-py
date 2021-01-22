@@ -28,13 +28,11 @@ def move_cams(cams):
     for c in cams:
         arena.manipulate_camera(
             c,
-            "camera-override",
             position=(rando(),1.6,rando()),
             rotation=(0,0,0,1)
         )
-        arena.manipulate_camera(
+        arena.look_at(
             c,
-            "look-at",
             target=(0,0,0)
         )
 

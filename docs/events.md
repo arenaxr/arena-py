@@ -49,15 +49,13 @@ arena.manipulate_camera(obj, type, ...)
 # move camera:
 arena.manipulate_camera(
     camera,
-    type="camera-override",
     position=(rando(),1.6,rando()),
     rotation=(0,0,0,1)
 )
 
 # make camera look at something/some position:
-arena.manipulate_camera(
+arena.look_at(
     camera,
-    type="look-at",
     target=cube # can also do a position: (0,0,0)
 )
 ```

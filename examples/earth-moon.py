@@ -2,34 +2,65 @@
 ''' Sample scene: Earth and Moon with Markers.
     Example of setting up and activating interactive animation.
 '''
-import arena
+from arena import *
 
-arena.init("arena.andrew.cmu.edu", "realm", "example")
-# Create models
-earth = arena.Object(
-    objName="gltf-model_Earth", objType=arena.Shape.gltf_model,
-    location=(0, 0.1, 0), scale=(5, 5, 5),
-    url="models/Earth.glb")
-moon = arena.Object(
-    objName="gltf-model_Moon", objType=arena.Shape.gltf_model,
-    location=(0, 0.05, 0.6), scale=(0.05, 0.05, 0.05),
-    url="models/Moon.glb", parent="gltf-model_Earth")
-# Define animation and movement
-earth.update(
-    data='{"animation": { "property": "rotation", "to": "0 360 0", "loop": true, "dur": 20000, "easing": "linear"}}')
-earth.update(
-    data='{"startEvents": "click", "property": "scale", "dur": 1000, "from": "10 10 10", "to": "5 5 5", "easing": "easeInOutCirc", "loop": 5, "dir": "alternate"}')
-# Add a click-listener
-earth.update(clickable=True)
-# Create marker objects
-arena.Object(objName="box0", color=(0, 0, 255), scale=(0.2, 0.2, 0.2))
-arena.Object(objName="box1", color=(255, 0, 0), scale=(0.2, 0.2, 0.2),
-             location=(-0.7,  1.67, 2.11))
-arena.Object(objName="box2", color=(255, 0, 0), scale=(0.2, 0.2, 0.2),
-             location=(-2.88, 2.80, -2.12))
-arena.Object(objName="box3", color=(255, 0, 0), scale=(0.2, 0.2, 0.2),
-             location=(-0.09, 1.30, -3.66))
-arena.Object(objName="box4", color=(255, 0, 0), scale=(0.2, 0.2, 0.2),
-             location=(3.31, 2.00, -0.97))
+arena = Arena("arena.andrew.cmu.edu", "realm", "public", "example")
 
-arena.handle_events()
+@arena.run_once
+def main():
+    # Create models
+    earth = GLTF(
+            object_id="gltf-model_Earth",
+            position=(0, 0.1, 0),
+            scale=(10, 10, 10),
+            url="models/Earth.glb"
+        )
+    moon = GLTF(
+            object_id="gltf-model_Moon",
+            position=(0, 0.05, 0.6),
+            scale=(0.05, 0.05, 0.05),
+            url="models/Moon.glb",
+            parent="gltf-model_Earth"
+        )
+
+    arena.add_object(earth)
+    arena.add_object(moon)
+
+    ## Define animation and movement
+    arena.update_object(
+        earth,
+        animation=Animation(
+            property="rotation",
+            end=(0,360,0),
+            loop=True,
+            dur=20000,
+            easing="linear"
+        )
+    )
+    arena.update_object(
+        moon,
+        animation=Animation(
+            property="scale",
+            start=(0.05, 0.05, 0.05), end=(0.1,0.1,0.1),
+            startEvents="click",
+            loop=6,
+            dur=1000,
+            dir="alternate",
+            easing="easeInOutCirc"
+        ),
+        clickable=True
+    )
+    print(earth.json())
+
+    ## Create marker objects
+    arena.add_object(Cube(object_id="box0", color=(0,255,0), scale=(0.2, 0.2, 0.2)))
+    arena.add_object(Cube(object_id="box1", color=(255,0,0), scale=(0.2, 0.2, 0.2),
+                            position=(-0.7,  1.67, 2.11)))
+    arena.add_object(Cube(object_id="box2", color=(0,255,255), scale=(0.2, 0.2, 0.2),
+                            position=(-2.88, 2.80, -2.12)))
+    arena.add_object(Cube(object_id="box3", color=(0,0,255), scale=(0.2, 0.2, 0.2),
+                            position=(-0.09, 1.30, -3.66)))
+    arena.add_object(Cube(object_id="box4", color=(100,200,50), scale=(0.2, 0.2, 0.2),
+                            position=(3.31, 2.00, -0.97)))
+
+arena.run_tasks()

@@ -1,803 +1,384 @@
-import enum
-import json
-import random
-import signal
+import os
 import sys
-import time
-from datetime import datetime
-from threading import Event
-
+import asyncio
 import paho.mqtt.client as mqtt
+from datetime import datetime
 
-from arena import auth
+from .attributes import *
+from .objects import *
+from .events import *
+from .utils import *
+from .event_loop import *
 
-# globals
-running = False
-mqtt_broker = ""
-scene_path = ""
-client = mqtt.Client(
-    "client-" + str(random.randrange(0, 1000000)), clean_session=True, userdata=None
-)
-object_count = 0
-callbacks = {}
-secondary_callbacks = {}
-arena_callback = None
-messages = []
-debug_toggle = False
-pseudoclick = None  # (x,y) tuple of pixel coordinates to display clicks
-msgs_ready = Event()
+from . import auth
 
 
-def signal_handler(sig, frame):
-    stop()
+class Arena(object):
+    """
+    Main ARENA client for ARENA-py.
+    Wrapper around Paho MQTT client and EventLoop.
+    Can create and execute various user-defined functions.
+    """
+    def __init__(
+                self,
+                host = "arena.andrew.cmu.edu",
+                realm = "realm",
+                namespace = None,
+                scene = "render",
+                port = None,
+                on_msg_callback = None,
+                new_obj_callback = None,
+                delete_obj_callback = None,
+                debug = False,
+                network_loop_interval = 50,  # run mqtt client network loop every 50ms
+                network_latency_interval = 10000  # run network latency update every 10s
+            ):
+        if os.environ.get("MQTTH"):
+            self.HOST  = os.environ["MQTTH"]
+        elif host:
+            self.HOST = host
+            print("Cannot find MQTTH environmental variable, using input parameter instead.")
+        else:
+            sys.exit("MQTTH is unspecified, aborting...")
 
+        if os.environ.get("REALM"):
+            self.REALM  = os.environ["REALM"]
+        elif realm:
+            self.REALM = realm
+            print("Cannot find REALM environmental variable, using input parameter instead.")
+        else:
+            sys.exit("REALM is unspecified, aborting...")
 
-#def arena_callback(msg):
-#    arena_callback(msg.payload)
+        if os.environ.get("NAMESPACE"):
+            self.NAMESPACE  = os.environ["NAMESPACE"]
+        elif namespace:
+            self.NAMESPACE = namespace
+            print("Cannot find NAMESPACE environmental variable, using input parameter instead.")
+        else:
+            sys.exit("NAMESPACE is unspecified, aborting...")
 
+        if os.environ.get("SCENE"):
+            self.SCENE  = os.environ["SCENE"]
+        elif scene:
+            self.SCENE = scene
+            print("Cannot find SCENE environmental variable, using input parameter instead.")
+        else:
+            sys.exit("SCENE is unspecified, aborting...")
 
-def arena_publish(scene_path, MESSAGE):
-    #print(json.dumps(MESSAGE))
+        print(f"Loading: {self.HOST}/{self.NAMESPACE}/{self.SCENE}, realm={self.REALM}")
+        print("=====")
 
-    d = datetime.now().isoformat()[:-3]+'Z'
-    MESSAGE["timestamp"] = d
-    client.publish(scene_path, json.dumps(MESSAGE), retain=False)
+        self.debug = debug
 
+        self.mqttc_id = "pyClient-" + self.generate_client_id()
 
-def process_message(msg):
-    global arena_callback
-    global pseudoclick
-    #print("process_message: "+str(msg.payload))
+        self.namespace_scene =  f"{self.NAMESPACE}/{self.SCENE}"
+        self.root_topic = f"{self.REALM}/s/{self.namespace_scene}"
+        self.scene_topic = f"{self.root_topic}/#"   # main topic for entire scene
+        self.latency_topic = "$NETWORK/latency"     # network graph latency update
+        self.ignore_topic = f"{self.root_topic}/{self.mqttc_id}/#" # ignore own messages
 
-    # manage secondary subscriptions to the same bus, not always JSON
-    for sub in secondary_callbacks:
-        if mqtt.topic_matches_sub(sub, msg.topic):
-            secondary_callbacks[sub](msg)
+        self.mqttc = mqtt.Client(
+            self.mqttc_id, clean_session=True
+        )
+
+        # do auth
+        data = auth.authenticate(self.REALM, self.namespace_scene, self.HOST, debug=self.debug)
+        if 'username' in data and 'token' in data:
+            self.mqttc.username_pw_set(username=data["username"], password=data["token"])
+        print("=====")
+
+        self.on_msg_callback = on_msg_callback
+        self.new_obj_callback = new_obj_callback
+        self.delete_obj_callback = delete_obj_callback
+
+        self.unspecified_objs_ids = set() # objects that exist in scene, but user does not have reference to
+
+        self.task_manager = EventLoop(self.disconnect)
+
+        # have all tasks wait until mqtt client is connected before starting
+        self.mqtt_connect_evt = asyncio.Event()
+        self.mqtt_connect_evt.clear()
+
+        # add mqtt client loop to list of tasks
+        self.network_loop_interval = network_loop_interval
+        self.network_loop = PersistantWorker(
+                                func=self.run_network_loop,
+                                event=None,
+                                interval=self.network_loop_interval
+                            )
+        self.task_manager.add_task(self.network_loop)
+
+        # run network latency update task every 10 secs
+        self.run_forever(self.network_latency_update, interval_ms=network_latency_interval)
+
+        if port is not None:
+            self.mqttc.connect(self.HOST, port)
+        else:
+            self.mqttc.connect(self.HOST)
+
+        # set callbacks
+        self.mqttc.on_connect = self.on_connect
+        self.mqttc.on_disconnect = self.on_disconnect
+
+    def generate_client_id(self):
+        """Returns a random 6 digit id"""
+        return str(random.randrange(100000, 999999))
+
+    def run_network_loop(self):
+        """Main Paho MQTT client network loop"""
+        self.mqttc.loop()
+
+    def network_latency_update(self):
+        """Update client latency in $NETWORK/latency"""
+        self.mqttc.publish(self.latency_topic, "", qos=2)
+
+    def run_once(self, func=None, **kwargs):
+        """Runs a user-defined function on startup"""
+        if func is not None:
+            w = SingleWorker(func, self.mqtt_connect_evt, **kwargs)
+            self.task_manager.add_task(w)
+        else:
+            # if there is no func, we are in a decorator
+            def _run_once(func):
+                self.run_once(func, **kwargs)
+                return func
+            return _run_once
+
+    def run_after_interval(self, func=None, interval_ms=1000, **kwargs):
+        """Runs a user-defined function after a interval_ms milliseconds"""
+        if func is not None:
+            if interval_ms < 0:
+                print("Invalid interval! Defaulting to 1000ms")
+                interval_ms = 1000
+            w = LazyWorker(func, self.mqtt_connect_evt, interval_ms, **kwargs)
+            self.task_manager.add_task(w)
+        else:
+            # if there is no func, we are in a decorator
+            def _run_after_interval(func):
+                self.run_after_interval(func, interval_ms, **kwargs)
+                return func
+            return _run_after_interval
+
+    def run_async(self, func=None, **kwargs):
+        """Runs a user defined aynscio function"""
+        if func is not None:
+            w = AsyncWorker(func, self.mqtt_connect_evt, **kwargs)
+            self.task_manager.add_task(w)
+        else:
+            # if there is no func, we are in a decorator
+            def _run_async(func):
+                self.run_async(func, **kwargs)
+                return func
+            return _run_async
+
+    def run_forever(self, func=None, interval_ms=1000, **kwargs):
+        """Runs a function every interval_ms milliseconds"""
+        if func is not None:
+            if interval_ms < 0:
+                print("Invalid interval! Defaulting to 1000ms")
+                interval_ms = 1000
+            t = PersistantWorker(func, self.mqtt_connect_evt, interval_ms, **kwargs)
+            self.task_manager.add_task(t)
+        else:
+            # if there is no func, we are in a decorator
+            def _run_forever(func):
+                self.run_forever(func, interval_ms, **kwargs)
+                return func
+            return _run_forever
+
+    def run_tasks(self):
+        """Run event loop"""
+        print("Connecting to the ARENA...")
+        self.task_manager.run()
+
+    async def sleep(self, interval_ms):
+        """Public function for sleeping in async functions"""
+        await asyncio.sleep(interval_ms / 1000)
+
+    def on_connect(self, client, userdata, flags, rc):
+        """Paho MQTT client on_connect callback"""
+        if rc == 0:
+            self.mqtt_connect_evt.set()
+
+            # listen to all messages in scene
+            self.mqttc.subscribe(self.scene_topic)
+            self.mqttc.message_callback_add(self.scene_topic, self.process_message)
+
+            print("Connected!")
+            print("=====")
+        else:
+            print("Connection error! Result code: " + rc)
+
+    def disconnect(self):
+        """Disconnects Paho MQTT client"""
+        self.mqttc.disconnect()
+
+    def on_disconnect(self, client, userdata, rc):
+        """Paho MQTT client on_disconnect callback"""
+        if rc == 0:
+            print("Disconnected from the ARENA!")
+        else:
+            print("Disconnect error! Result code: " + rc)
+
+    def process_message(self, client, userdata, msg):
+        """Main message processing function"""
+        if mqtt.topic_matches_sub(self.ignore_topic, msg.topic):
             return
 
-    # otherwise, all arena object data is required to be JSON
-    # first call specific objects' callbacks
-    payload = msg.payload.decode("utf-8", "ignore")
-    try:
-        MESSAGE = json.loads(payload)
-    except:
-        if debug_toggle:
-            print("JSON parsing failed!")
-        return
+        # extract payload
+        try:
+            payload_str = msg.payload.decode("utf-8", "ignore")
+            payload = json.loads(payload_str)
+        except:
+            return
 
-    if "object_id" in MESSAGE:
-        object_id = MESSAGE["object_id"]
-    else:
-        if debug_toggle:
-            print("Message has no object_id!")
+        # update object attributes, if possible
+        if "object_id" in payload:
+            # check for events/object updates
+            event = None
+            if "action" in payload:
+                if payload["action"] == "clientEvent":
+                    event = Event(**payload)
+                elif self.delete_obj_callback and payload["action"] == "delete":
+                    self.delete_obj_callback(payload)
+                    return
 
-    if pseudoclick:  # display random clicks in right corner for demos
-        if MESSAGE["action"] == "clientEvent" and MESSAGE["type"] == "mousedown":
-            draw_psuedoclick(xpix=pseudoclick[0], ypix=pseudoclick[1])
+            object_id = payload["object_id"]
+            if object_id in self.all_objects:
+                obj = self.all_objects[object_id]
+                if not event: # update object if not an event
+                    obj.update_attributes(**payload)
+                elif obj.evt_handler:
+                    obj.evt_handler(event)
 
-    if object_id in callbacks:
-        evtType = 'object' # event type is required
-        clickPos=(0,0,0)
-        Pos=(0,0,0)
-        Rot=(0,0,0,1)
-        Src=""
-        # Unpack JSON data
-        objId  = MESSAGE["object_id"]
-        Action = MESSAGE["action"] # create/delete/update/clientEvent
-        if ("type" in MESSAGE):
-            evtType = MESSAGE["type"] # object/rig/mousedown/mouseup/mouseenter/mouseleave/controler++
-        if ("data" in MESSAGE):
-            if ("clickPos" in MESSAGE["data"]):
-                clickPos = (MESSAGE["data"]["clickPos"]["x"],MESSAGE["data"]["clickPos"]["y"],MESSAGE["data"]["clickPos"]["z"])
-            if ("position" in MESSAGE["data"]):
-                Pos = (MESSAGE["data"]["position"]["x"],MESSAGE["data"]["position"]["y"],MESSAGE["data"]["position"]["z"])
-            if ("rotation" in MESSAGE["data"]):
-                Rot = (MESSAGE["data"]["rotation"]["x"],MESSAGE["data"]["rotation"]["y"],MESSAGE["data"]["rotation"]["z"],MESSAGE["data"]["rotation"]["w"])
-            if ("source" in MESSAGE["data"]):
-                Src = MESSAGE["data"]["source"]
-        # slight oversight: MQTT messages don't set 'type' for delete events
-        if (Action == 'delete'):
-            evtType = 'object'
+            # if it is an object the lib has not seen before, call new object callback
+            elif object_id not in self.unspecified_objs_ids and self.new_obj_callback:
+                self.new_obj_callback(payload)
+                self.unspecified_objs_ids.add(object_id)
 
-        # Repackage into & return a GenericEvent
-        event_data = GenericEvent(
-            object_id=objId,
-            event_action=EventAction[Action],# delete/create/update/clientEvent
-            event_type=EventType[evtType],  # object/rig/mouseup/mousedown/mouseenter/mouseleave/collision/controller++
-            position=Pos,
-            rotation=Rot,
-            click_pos=clickPos,
-            source=Src)
-        callbacks[object_id](event_data)
+            # call new message callback if not an event
+            if not event and self.on_msg_callback:
+                self.on_msg_callback(payload)
 
-    # else call general callback set at init time, for all messages
-    elif arena_callback:
-        arena_callback(payload)
+    def generate_custom_event(self, evt, action="clientEvent"):
+        """Publishes an custom event. Could be user or library defined"""
+        return self._publish(evt, action)
 
+    def generate_click_event(self, obj, type="mousedown", **kwargs):
+        """Publishes an click event"""
+        _type = type
+        evt = Event(object_id=obj.object_id,
+                    type=_type,
+                    position=obj.data.position,
+                    source=self.mqttc_id,
+                    **kwargs)
+        return self.generate_custom_event(evt, action="clientEvent")
 
-def draw_psuedoclick(xpix, ypix):
-    x = (xpix + random.randrange(-10, 10)) / 10000
-    y = (ypix + random.randrange(-10, 10)) / 10000
-    Object(objType=Shape.circle, scale=(
-        0.003, 0.003, 0.003), location=(x, y, -0.1), ttl=0.1,
-        transparency=Transparency(True, 0.3), parent="myCamera")
+    def manipulate_camera(self, cam, **kwargs):
+        """Publishes a camera manipulation event"""
+        if kwargs["position"] is not None:
+            if isinstance(kwargs["position"], tuple) or isinstance(kwargs["position"], list):
+                kwargs["position"] = Position(*kwargs["position"])
+            elif isinstance(position, dict):
+                kwargs["position"] = Position(**kwargs["position"])
 
+        if kwargs["rotation"] is not None:
+            if isinstance(kwargs["rotation"], tuple) or isinstance(kwargs["rotation"], list):
+                kwargs["rotation"] = Rotation(*kwargs["rotation"])
+            elif isinstance(rotation, dict):
+                kwargs["rotation"] = Rotation(**kwargs["rotation"])
 
-def on_message(client, userdata, msg):
-    messages.append(msg)
-    msgs_ready.set()
-
-
-def on_connect(client, userdata, flags, rc):
-    if rc == 0:
-        print("connected")
-    else:
-        print("connection error, result code: " + rc)
-
-
-# def on_log(client, userdata, level, buf):
-#    print("log:" + buf)
-
-
-def init(broker, realm, scene, callback=None, port=None, democlick=None):
-    global client
-    global scene_path
-    global mqtt_broker
-    global arena_callback
-    global debug_toggle
-    global pseudoclick
-    debug_toggle = False
-    mqtt_broker = broker
-    scene_path = realm + "/s/" + scene
-    arena_callback = callback
-    pseudoclick = democlick
-
-    data = auth.authenticate(realm, scene, broker, debug=debug_toggle)
-    if 'username' in data and 'token' in data:
-        client.username_pw_set(username=data['username'], password=data['token'])
-
-    #print("arena callback:", callback)
-    #print("connecting to broker ", mqtt_broker)
-    #print("scene_path ", scene_path)
-    if (port != None):
-        client.connect(mqtt_broker, port)
-    else:
-        client.connect(mqtt_broker)
-
-    # print("subscribing")
-    client.subscribe(scene_path + "/#")
-
-    # fall-thru callback for all things on scene
-    # not on specific subscribed topics
-    client.on_connect = on_connect
-    client.on_message = on_message
-
-    # client.on_log = on_log
-    client.enable_logger()
-
-    # add signal handler to remove objects on quit
-    signal.signal(signal.SIGINT, signal_handler)
-    start()
-
-def poll_events():
-    # Instead of while loop, just manually cycle through any pending events in mqtt queue
-    # This can be used if you don't want handle_events() to loop forever at the end of your program.
-    # Instead you need to periodically call poll_events() from your main thread
-    if running:
-        for i in messages:
-            process_message(messages.pop(0))
-
-def handle_events():
-    # process messages are available
-    # if not, block until messages arrive
-    while running:
-        if len(messages) > 0:
-            process_message(messages.pop(0))
+        if isinstance(cam, Object):
+            object_id = cam.object_id
         else:
-            msgs_ready.clear()
-            msgs_ready.wait()
+            object_id = cam
+        evt = Event(object_id=object_id,
+                    type="camera-override",
+                    object_type="camera",
+                    **kwargs)
+        return self.generate_custom_event(evt, action="create")
 
-def flush_events():
-    if running:
-        while len(messages) > 0:
-            print("flush_events")
-            process_message(messages.pop(0))
+    def look_at(self, cam, target):
+        """Publishes a camera manipulation event"""
+        if isinstance(target, tuple) or isinstance(target, list):
+            target = Position(*target)
+        elif isinstance(target, dict):
+            target = Position(**target)
+        elif isinstance(target, Object):
+            target = target.object_id
 
-def start():
-    global client
-    global running
-    running = True
-    print("starting network loop")
-    client.loop_start()  # start MQTT network loop
-    print("started")
-
-
-def add_topic(sub, callback):
-    """Subscribes to new topic and adds filter for callback to on_message()"""
-    global client
-    secondary_callbacks[sub] = callback
-    client.subscribe(sub)
-
-
-def remove_topic(sub):
-    """Unsubscribes to topic and removes filter for callback"""
-    global client
-    client.unsubscribe(sub)
-
-
-def debug():
-    global debug_toggle
-    debug_toggle = True
-
-
-def stop():
-    global client
-    global running
-    running = False
-    print("stopping client loop")
-    client.loop_stop()  # stop loop
-    print("disconnecting")
-    client.disconnect()
-    print("disconnected")
-    sys.exit()
-
-
-def agran(float_num):
-    """Reduces floating point numbers to ARENA granularity."""
-    return round(float_num, 3)
-
-
-def get_network_persisted_obj(object_id, broker, scene):
-    # pass token to persist
-    data = auth.urlopen(
-        url=f'https://{broker}/persist/{scene}/{object_id}', creds=True)
-    output = json.loads(data)
-    return output
-
-
-def get_network_persisted_scene(broker, scene):
-    # pass token to persist
-    data = auth.urlopen(
-        url=f'https://{broker}/persist/{scene}', creds=True)
-    output = json.loads(data)
-    return output
-
-
-class Physics(enum.Enum):
-    none = "none"
-    static = "static"
-    dynamic = "dynamic"
-
-
-class Shape(enum.Enum):
-    cube = "cube"
-    sphere = "sphere"
-    circle = "circle"
-    cone = "cone"
-    cylinder = "cylinder"
-    dodecahedron = "dodecahedron"
-    icosahedron = "icosahedron"
-    tetrahedron = "tetrahedron"
-    octahedron = "octahedron"
-    plane = "plane"
-    ring = "ring"
-    torus = "torus"
-    torusKnot = "torusKnot"
-    triangle = "triangle"
-    gltf_model = "gltf-model"
-    image = "image"
-    particle = "particle"
-    text = "text"
-    line = "line"
-    light = "light"
-    thickline = "thickline"
-
-
-class EventType(enum.Enum):
-    """Values of  MQTT 'type'"""
-
-    rig = "rig"
-    object = "object"
-    mousedown = "mousedown"
-    mouseup = "mouseup"
-    mouseenter = "mouseenter"
-    mouseleave = "mouseleave"
-    collision = "collision"
-    triggerdown = "triggerdown"
-    triggerup = "triggerup"
-    gripdown = "gripdown"
-    gripup = "gripup"
-    menudown = "menudown"
-    menuup = "menuup"
-    systemdown = "systemdown"
-    systemup = "systemup"
-    trackpaddown = "trackpaddown"
-    trackpadup = "trackpadup"
-
-class ObjectType(enum.Enum):
-    object = "object"
-    rig = "rig"
-    bone = "bone"
-
-class EventAction(enum.Enum):
-    """Kinds of actions"""
-
-    delete = "delete"
-    create = "create"
-    update = "update"
-    clientEvent = "clientEvent"
-
-class Transparency:
-    transparent = False
-    opacity = 1
-    def __init__(self, transparent=transparent, opacity=opacity):
-        self.transparent = transparent
-        self.opacity = opacity
-
-class Line:
-    start = (0, 0, 0)
-    end = (0, 0, 0)
-    line_width = 1
-    color = "#FFFFFF"
-    def __init__(self, start=start, end=end, line_width=line_width, color=color):
-        self.start = start
-        self.end = end
-        self.line_width = line_width
-        self.color = color
-
-class Thickline:
-    path = [] # array of tuple coordinates
-    line_width = 1
-    color = "#FFFFFF"
-    def __init__(self, path=path, line_width=line_width, color=color):
-        self.path = path
-        self.line_width = line_width
-        self.color = color
-
-class Impulse:
-    on = None
-    force = (0, 0, 0)
-    position = (0, 0, 0)
-    def __init__(self, on=on, force=force, position=position):
-        self.on = on
-        self.force = force
-        self.position = position
-
-class Animation:
-    clip = ""
-    loop = ""
-    repetitions = 1
-    timeScale = 1
-    def __init__(self, clip=clip, loop=loop, repetitions=repetitions, timeScale=timeScale):
-        self.clip = clip
-        self.loop = loop
-        self.repetitions = repetitions
-        self.timeScale = timeScale
-
-
-class GenericEvent:
-    """Event data any ARENA event"""
-    object_id = ""
-    event_action = EventAction.clientEvent
-    event_type = EventType.mousedown
-    update_type = ObjectType.object
-    position = (0, 0, 0)
-    rotation = (0, 0, 0, 1)
-    click_pos = (0, 0, 0)
-    source = ""
-
-    def __init__(self, object_id=object_id, event_action=event_action, event_type=event_type, update_type=update_type, position=position, rotation=rotation, click_pos=click_pos, source=source):
-        self.object_id = object_id
-        self.event_action = event_action
-        self.event_type = event_type
-        self.update_type = update_type
-        self.position = position
-        self.rotation = rotation
-        self.click_pos = click_pos
-        self.source = source
-
-class ClickEvent:
-    """Event data e.g. mouse interaction"""
-    object_id = ""
-    position = (0, 0, 0)
-    click_pos = (0, 0, 0)
-    event_type = EventType.mousedown
-    source = ""
-
-    def __init__(self, object_id=object_id, position=position, click_pos=click_pos, event_type=event_type, source=source):
-        self.object_id = object_id
-        self.position = position
-        self.click_pos=click_pos
-        self.event_type = event_type
-        self.source = source
-
-
-class updateRig:
-    def __init__(self, object_id, position, rotation):
-        global debug_toggle
-        MESSAGE = {
-            "object_id": object_id,
-            "action": "update",
-            "type": "rig",
-            "data": {
-                "position": {
-                    "x": agran(position[0]),
-                    "y": agran(position[1]),
-                    "z": agran(position[2])
-                    },
-                "rotation": {
-                    "x": agran(rotation[0]),
-                    "y": agran(rotation[1]),
-                    "z": agran(rotation[2]),
-                    "w": agran(rotation[3])
-                },
-            },
-        }
-        if debug_toggle:
-            print(json.dumps(MESSAGE))
-        arena_publish(scene_path, MESSAGE)
-
-
-class updateBone:
-    object_id = ""
-    bone_id = ""
-    position = None
-    rotation = None
-    scale = None
-    def __init__(self, object_id=object_id, bone_id=bone_id, position=position, rotation=rotation, scale=scale):
-        global debug_toggle
-        MESSAGE = {
-            "object_id": object_id,
-            "bone": bone_id,
-            "action": "update",
-            "type": "bone",
-            "data": {}
-        }
-        if (position != None):
-            pos = {
-                "x": agran(position[0]),
-                "y": agran(position[1]),
-                "z": agran(position[2])
-            }
-            MESSAGE["data"]["position"]=pos
-        if (rotation != None):
-            rot= {
-                "x": agran(rotation[0]),
-                "y": agran(rotation[1]),
-                "z": agran(rotation[2]),
-                "w": agran(rotation[3])
-                }
-            MESSAGE["data"]["rotation"] = rot
-        if (scale != None):
-            sc = {
-                "x": agran(scale[0]),
-                "y": agran(scale[1]),
-                "z": agran(scale[2])
-                }
-            MESSAGE["data"]["scale"] = sc
-
-        if debug_toggle:
-            print(json.dumps(MESSAGE))
-        arena_publish(scene_path, MESSAGE)
-
-
-def tuple_to_string(tuple):
-    return str(tuple[0])+' '+str(tuple[1])+' '+str(tuple[2])
-
-
-class Object:
-    """Geometric shape object for the arena type Arena.Shape"""
-
-    objType = Shape.cube
-    location = (0, 0, 0)
-    rotation = (0, 0, 0, 1)
-    scale = (1, 1, 1)
-    color = (255, 255, 255)
-    objName = ""
-    ttl = 0
-    parent = ""
-    persist = False
-    physics = Physics.none
-    clickable = False
-    url = ""
-    text = None
-    transparentOcclude = False
-    line = None
-    thickline = None
-    collision_listener = False
-    transparency = None
-    impulse = None
-    animation = None
-    data = ""
-    callback = None
-
-    def __init__(
-        self,
-        objName=objName,
-        objType=objType,
-        location=location,
-        rotation=rotation,
-        scale=scale,
-        color=color,
-        persist=persist,
-        ttl=ttl,
-        physics=physics,
-        parent=parent,
-        clickable=clickable,
-        transparency=transparency,
-        impulse=impulse,
-        animation=animation,
-        url=url,
-        text=text,
-        transparentOcclude=transparentOcclude,
-        line=line,
-        thickline=thickline,
-        collision_listener=collision_listener,
-        data=data,
-        callback=callback
-    ):
-        """Initializes the data."""
-        global object_count
-        global object_list
-        global debug_toggle
-        self.objType = objType
-        self.location = location
-        self.rotation = rotation
-        self.scale = scale
-        self.color = color
-        self.persist = persist
-        self.ttl = ttl
-        self.parent = parent
-        self.physics = physics
-        self.clickable = clickable
-        self.url = url
-        self.text = text
-        self.transparentOcclude = transparentOcclude
-        self.line = line
-        self.thickline = thickline
-        self.collision_listener = collision_listener
-        self.transparency = transparency
-        self.impulse = impulse
-        self.data = data
-        self.callback = callback
-        # print("loc: " + str(self.loc))
-        # avoid name clashes by enumerating each new object
-        if objName == "":
-            self.objName = self.objType.value + "_" + str(object_count)
+        if isinstance(cam, Object):
+            object_id = cam.object_id
         else:
-            self.objName = objName
+            object_id = cam
+        evt = Event(object_id=object_id,
+                    type="camera-override",
+                    object_type="look-at",
+                    target=target)
+        return self.generate_custom_event(evt, action="create")
 
-        if (callback != None):
-            #print("adding callback")
-            callbacks[self.objName] = callback
+    @property
+    def all_objects(self):
+        """Returns all objects created by the user"""
+        return Object.all_objects
 
-        object_count = object_count + 1
-        #object_list.append(self)
+    def add_object(self, obj):
+        """Public function to create an object"""
+        return self._publish(obj, "create")
 
-        # do all the work
-        self.redraw()
+    def update_object(self, obj, **kwargs):
+        """Public function to update an object"""
+        if kwargs:
+            obj.update_attributes(**kwargs)
+        return self._publish(obj, "update")
 
-    def fireEvent(self, event=None, position=(0, 0, 0), source=None):
-        global debug_toggle
-        if event is None:
-            event = EventType.mousedown.value
+    def delete_object(self, obj):
+        """Public function to delete an object"""
+        payload = {
+            "object_id": obj.object_id
+        }
+        Object.remove(obj)
+        return self._publish(payload, "delete")
+
+    def _publish(self, obj, action):
+        """Publishes to mqtt broker with "action":action"""
+        topic = f"{self.root_topic}/{self.mqttc_id}/{obj['object_id']}"
+        d = datetime.now().isoformat()[:-3]+"Z"
+        if action == "delete":
+            payload = obj
+            payload["action"] = "delete"
+            payload["timestamp"] = d
+            payload = json.dumps(payload)
         else:
-            event = event.value
-        if source is None:
-            source = "arenaLibrary"
-        MESSAGE = {
-            "object_id": self.objName,
-            "action": "clientEvent",
-            "type": event,
-            "data": {
-                "position": {"x": position[0], "y": position[1], "z": position[2]},
-                "source": source,
-            },
-        }
+            payload = obj.json(action=action, timestamp=d)
 
-        if debug_toggle:
-            print(json.dumps(MESSAGE))
-        arena_publish(scene_path, MESSAGE)
+        self.mqttc.publish(topic, payload, qos=0)
+        if self.debug: print("[publish]", topic, payload)
+        return payload
 
-    def update(
-            self,
-            location=None,
-            rotation=None,
-            scale=None,
-            color=None,
-            physics=None,
-            data=None,
-            clickable=None,
-            ttl=None,
-            url=None,
-            text=None,
-            transparentOcclude=None,
-            line=None,
-            thickline=None,
-            collision_listener=None,
-            animation=None,
-            transparency=None,
-            impulse=None,
-            parent=None,
-            persist=None):
-        global debug_toggle
-        if persist is not None:
-            self.persist = persist
-        if location is not None:
-            self.location = location
-        if rotation is not None:
-            self.rotation = rotation
-        if scale is not None:
-            self.scale = scale
-        if color is not None:
-            self.color = color
-        if clickable is not None:
-            self.clickable = clickable
-        if physics is not None:
-            self.physics = physics
-        if data is not None:
-            self.data = data
-        if ttl is not None:
-            self.ttl = ttl
-        if url is not None:
-            self.url = url
-        if text is not None:
-            self.text = text
-        if transparentOcclude is not None:
-            self.transparentOcclude = transparentOcclude
-        if collision_listener is not None:
-            self.collision_listener = collision_listener
-        if animation is not None:
-            self.animation = animation
-        if impulse is not None:
-            self.impulse = impulse
-        if transparency is not None:
-            self.transparency = transparency
-        if parent is not None:
-            self.parent = parent
-        self.redraw()
+    def get_persisted_obj(self, object_id, broker, scene):
+        """Returns a dictionary for a persisted object. [TODO] wrap the output as an Object"""
+        # pass token to persist
+        data = auth.urlopen(
+            url=f'https://{broker}/persist/{scene}/{object_id}', creds=True)
+        output = json.loads(data)
+        if self.debug: print("[get_persisted_obj]", output)
+        return output
 
-    #    def __del__(self):
-    #        print ("del (self) ", self.objName)
-    #        self.delete()
+    def get_persisted_scene_option(self, broker, scene):
+        """Returns a dictionary for scene-options. [TODO] wrap the output as a BaseObject"""
+        # pass token to persist
+        data = auth.urlopen(
+            url=f'https://{broker}/persist/{scene}', creds=True)
+        output = json.loads(data)
+        if self.debug: print("[get_persisted_scene_option]", output)
+        return output
 
-    def delete(self):
-        global debug_toggle
-        if self.objName in callbacks:
-            del callbacks[self.objName]
-        MESSAGE = {
-            "object_id": self.objName,
-            "action": "delete"
-        }
-        # print("deleting " + json.dumps(MESSAGE))
-        # print("client ", client)
-        # print ("scene_path ", scene_path)
-        if debug_toggle:
-            print(json.dumps(MESSAGE))
-        arena_publish(scene_path, MESSAGE)
+    def message_callback_add(self, sub, callback):
+        """Subscribes to new topic and adds callback"""
+        self.mqttc.message_callback_add(sub, callback)
 
-    def position(self, location=(0, 0, 0)):
-        global debug_toggle
-        self.location = location
-        MESSAGE = {
-            "object_id": self.objName,
-            "action": "update",
-            "type": "object",
-            "data": {
-                "position": {
-                    "x": agran(self.location[0]),
-                    "y": agran(self.location[1]),
-                    "z": agran(self.location[2]),
-                }
-            },
-        }
-        # print("move str: " + json.dumps(update_msg))
-        if debug_toggle:
-            print(json.dumps(MESSAGE))
-        arena_publish(scene_path, MESSAGE)
-
-    def redraw(self):
-        global scene_path
-        global debug_toggle
-        color_str = "#%06x" % (
-            int(self.color[0]) * 65536 + int(self.color[1]) * 256 + int(self.color[2])
-        )
-        MESSAGE = {
-            "object_id": self.objName,
-            "action": "create",
-            "type": "object",
-            "persist": self.persist,
-            "data": {
-                "object_type": self.objType.value,
-                "position": {
-                    "x": agran(self.location[0]),
-                    "y": agran(self.location[1]),
-                    "z": agran(self.location[2])
-                },
-                "rotation": {
-                    "x": agran(self.rotation[0]),
-                    "y": agran(self.rotation[1]),
-                    "z": agran(self.rotation[2]),
-                    "w": agran(self.rotation[3])
-                },
-                "scale": {
-                    "x": agran(self.scale[0]),
-                    "y": agran(self.scale[1]),
-                    "z": agran(self.scale[2])
-                    },
-                "color": color_str,
-            },
-        }
-        if self.url != "":
-            MESSAGE["data"]["url"] = self.url
-        if self.text != None:
-            MESSAGE["data"]["text"] = self.text
-        if self.transparentOcclude:
-            MESSAGE["data"]["material"] = {
-                "colorWrite": false,
-                "render-order": 0
-            }
-        if self.line != None:
-            MESSAGE["data"]["start"] = {
-                "x": agran(self.line.start[0]),
-                "y": agran(self.line.start[1]),
-                "z": agran(self.line.start[2])
-            }
-            MESSAGE["data"]["end"] = {
-                "x": agran(self.line.end[0]),
-                "y": agran(self.line.end[1]),
-                "z": agran(self.line.end[2])
-            }
-            #MESSAGE["data"]["lineWidth"] = self.line.line_width
-            MESSAGE["data"]["color"] = self.line.color
-        if self.thickline != None:
-            pathstring = ""
-            for point in self.thickline.path:
-                pathstring = pathstring +\
-                             str(agran(point[0]))+' '+\
-                             str(agran(point[1]))+' '+\
-                             str(agran(point[2]))+','
-            MESSAGE["data"]["path"] = pathstring.rstrip(',')
-            MESSAGE["data"]["lineWidth"] = self.thickline.line_width
-            MESSAGE["data"]["color"] = self.thickline.color
-        if self.collision_listener != False:
-            MESSAGE["data"]["collision-listener"] = ""
-        if self.data != "":
-            MESSAGE["data"].update(json.loads(self.data))
-        if self.physics != Physics.none:
-            MESSAGE["data"]["dynamic-body"] = {"type": self.physics.value}
-        if self.clickable:
-            MESSAGE["data"]["click-listener"] = ""
-        if self.ttl != 0:
-            MESSAGE["ttl"] = self.ttl
-        if self.animation != None:
-            MESSAGE["data"]["animation-mixer"] = {
-                "clip": self.animation.clip,
-                "loop": self.animation.loop,
-                "repetitions": self.animation.repetitions,
-                "timeScale": self.animation.timeScale
-            }
-        if self.transparency != None:
-            MESSAGE["data"]["material"] = {
-                "transparent": self.transparency.transparent,
-                "opacity": self.transparency.opacity
-            }
-        if self.impulse != None:
-            MESSAGE["data"]["impulse"] = {
-                "on": self.impulse.on,
-                "force": tuple_to_string(self.impulse.force),
-                "position": tuple_to_string(self.impulse.position)
-            }
-        if self.parent != "":
-            MESSAGE["data"]["parent"] = self.parent
-
-        # print("publishing " + json.dumps(MESSAGE) + " to " + scene_path)
-        if debug_toggle:
-            print(json.dumps(MESSAGE))
-        arena_publish(scene_path, MESSAGE)
-
-
-def __init__(self, name):
-    """Initializes the data."""
-    self.name = name
-    print("(Initializing {})".format(self.name))
+    def message_callback_remove(self, sub):
+        """Unsubscribes to topic and removes filter for callback"""
+        self.mqttc.message_callback_remove(sub)

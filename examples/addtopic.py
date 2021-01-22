@@ -1,29 +1,41 @@
 # addtopic.py
-''' Demonstrate subscribing to a secondary topic on the same broker and monitor 
+''' Demonstrate subscribing to a secondary topic on the same broker and monitor
 messages from the secondary topic within the same program.
 '''
 
-import arena
+from arena import *
+import json
 
+TOPIC = "$NETWORK"
 
 def objects_callback(event):
     print("Object message: "+str(event))
 
 
 def secondary_callback(msg):
-    print("Secondary message: "+str(msg.topic)+" "+str(msg.payload))
+    print("-----")
+    print(f"Secondary message:\nTopic: {str(msg.topic)}\nPayload: {json.loads(msg.payload)}")
+    print("-----")
 
 
 # subscribe to objects
-arena.init("arena.andrew.cmu.edu", "realm", "example", objects_callback)
-# publish object message
-arena.Object(objType=arena.Shape.sphere,
-             location=(1, 1, -1), color=(255, 0, 0))
-# subscribe to secondary
-arena.add_topic("$SYS/#", secondary_callback)
+arena = Arena("arena.andrew.cmu.edu", "realm", "public", "example", on_msg_callback=objects_callback)
 
-# unsubscribe to secondary
-arena.remove_topic("$SYS/#")
+@arena.run_async
+async def test():
+    # subscribe to secondary (in this case the network graph!)
+    arena.add_topic(TOPIC, secondary_callback)
+    print(f"Subscribed to {TOPIC}")
+    print()
+
+    # sleep for 5 seconds
+    await arena.sleep(5000)
+
+    # unsubscribe to secondary
+    arena.remove_topic(TOPIC)
+    print()
+    print(f"Unsubscribed to {TOPIC}")
+    print()
 
 # our main event loop
-arena.handle_events()
+arena.run_tasks()

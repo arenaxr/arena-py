@@ -1,4 +1,9 @@
-import arena
-arena.init("arena.andrew.cmu.edu", "realm", "example")
-arena.Object(objType=arena.Shape.cube)
-arena.handle_events()
+from arena import *
+
+arena = Arena("arena.andrew.cmu.edu", "realm", "public", "example")
+
+@arena.run_once
+def make_cube():
+    arena.add_object(Cube())
+
+arena.run_tasks()

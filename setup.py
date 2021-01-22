@@ -1,27 +1,29 @@
 import setuptools
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+with open("README.md", "r") as readme:
+    long_description = readme.read()
 
 setuptools.setup(
     name="arena-py",
-    version="0.0.6",
+    version="0.1.0",
     author="Conix Research Center",
     author_email="info@conix.io",
     license="BSD 3-clause \"New\" or \"Revised License\"",
-    description="Draw objects in the ARENA using Python!",
+    description="Draw objects and run programs in the ARENA using Python!",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/conix-center/ARENA-py",
     packages=setuptools.find_packages(),
-    install_requires=[ "aiohttp",
-                       "paho-mqtt~=1.5.0",
-                       "numpy~=1.18.1",
-                       "requests~=2.23.0",
-                       "scipy~=1.5.4",
-                       "webcolors~=1.3",
-                       "google_auth_oauthlib~=0.4.2",
-                       "PyJWT~=2.0.0" ],
+    install_requires=[
+        "aiohttp",
+        "paho-mqtt~=1.5.0",
+        "numpy~=1.18.1",
+        "requests~=2.23.0",
+        "scipy~=1.5.4",
+        "webcolors~=1.3",
+        "google_auth_oauthlib~=0.4.2",
+        "PyJWT~=2.0.0"
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: BSD License",

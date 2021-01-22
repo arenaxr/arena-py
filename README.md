@@ -53,7 +53,7 @@ python3 -c "from arena import auth; auth.permissions()"
 
 ## ARENA-py Repository Files
 - [arena/](arena/): The ARENA Python library
-- [examples/](examples/): Canonical examples of ARENA functions from the [documentation](https://conix-center.github.io/ARENA/content/python/))
+- [examples/](examples/): Canonical examples of ARENA functions from the [documentation](https://conix-center.github.io/ARENA/content/python/)
 - [examples/legacy/](examples/legacy/): Deprecated demos for ARENA-py < 0.1.0
 - [examples/legacy/digital-twins/](examples/legacy/digital-twins/): Digital twins of physical spaces for ARENA-py < 0.1.0
 - [system-tests/](system-tests/): Workouts for the ARENA

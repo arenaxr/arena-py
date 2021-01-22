@@ -72,7 +72,8 @@ class Arena(object):
 
         self.mqttc_id = "pyClient-" + self.generate_client_id()
 
-        self.root_topic = f"{self.REALM}/s/{self.NAMESPACE}/{self.SCENE}"
+        self.namespace_scene =  f"{self.NAMESPACE}/{self.SCENE}"
+        self.root_topic = f"{self.REALM}/s/{self.namespace_scene}"
         self.scene_topic = f"{self.root_topic}/#"   # main topic for entire scene
         self.latency_topic = "$NETWORK/latency"     # network graph latency update
         self.ignore_topic = f"{self.root_topic}/{self.mqttc_id}/#" # ignore own messages
@@ -82,7 +83,7 @@ class Arena(object):
         )
 
         # do auth
-        data = auth.authenticate(self.REALM, f"{self.NAMESPACE}/{self.SCENE}", self.HOST, debug=self.debug)
+        data = auth.authenticate(self.REALM, self.namespace_scene, self.HOST, debug=self.debug)
         if 'username' in data and 'token' in data:
             self.mqttc.username_pw_set(username=data["username"], password=data["token"])
         print("=====")

@@ -1,5 +1,5 @@
 """
-arena/auth.py - Authentication methods for accessing the ARENA.
+auth.py - Authentication methods for accessing the ARENA.
 """
 
 import json

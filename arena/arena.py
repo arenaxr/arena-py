@@ -13,7 +13,6 @@ from .event_loop import *
 
 from . import auth
 
-
 class Arena(object):
     """
     Main ARENA client for ARENA-py.

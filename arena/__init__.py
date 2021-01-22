@@ -5,7 +5,7 @@ Draw objects in the ARENA using Python!
 """
 
 __version__     = "0.1.0"
-__author__      = "Conix Research Center"
+__author__      = "CONIX Research Center"
 
 __license__     = "BSD 3-Clause"
 __maintainer__  = "WiSE Lab, Carnegie Mellon University"

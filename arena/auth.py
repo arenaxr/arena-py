@@ -26,32 +26,28 @@ _scopes = ["openid",
 _user_gauth_path = f'{str(Path.home())}/.arena_google_auth'
 _user_mqtt_path = f'{str(Path.home())}/.arena_mqtt_auth'
 _local_mqtt_path = f'.arena_mqtt_auth'
-_mqtt_token = {}
+_csrftoken = None
+_mqtt_token = None
+_id_token = None
 
 
-def authenticate(realm, scene, broker, debug=False):
+def authenticate_user(host, debug=False):
+    """
+    Begins authentication flow, getting Google auth, opening web browser if
+    needed, getting username and state from ARENA server.
+    host: The hostname of the ARENA webserver.
+    debug: True to skip SSL verify for localhost tests.
+    Returns: Username from arena-account, or None.
+    """
     global debug_toggle
-    global _mqtt_token
+    global _id_token
     debug_toggle = debug
-    webhost = broker  # broker expected on web-client host
     print("Signing in to the ARENA...")
 
-    # TODO: remove this workaround for dev broker/webhost separation
-    if broker == 'oz.andrew.cmu.edu':
-        webhost = 'xr.andrew.cmu.edu'
+    local_token = _local_token_check()
+    if local_token:
+        return local_token["username"]
 
-    # TODO: remove local check after ARTS supports mqtt_token passing
-    # check for local mqtt_token first
-    if os.path.exists(_local_mqtt_path):
-        print("Using local MQTT token.")
-        f = open(_local_mqtt_path, "r")
-        mqtt_json = f.read()
-        f.close()
-        # TODO: check token expiration
-        _mqtt_token = json.loads(mqtt_json)
-        return _mqtt_token
-
-    # begin authentication flow
     creds = None
     browser = None
     try:
@@ -73,7 +69,7 @@ def authenticate(realm, scene, broker, debug=False):
             session = AuthorizedSession(creds)
         else:
             print("Requesting new Google authentication.")
-            gauth_json = _get_gauthid(webhost)
+            gauth_json = _get_gauthid(host)
             flow = InstalledAppFlow.from_client_config(
                 json.loads(gauth_json), _scopes)
             if browser:
@@ -87,34 +83,44 @@ def authenticate(realm, scene, broker, debug=False):
             pickle.dump(creds, token)
         os.chmod(_user_gauth_path, 0o600)  # set user-only perms.
 
-    id_token = creds.id_token
+    username = None
+    _id_token = creds.id_token
+    user_info = _get_user_state(host, _id_token)
+    _user_info = json.loads(user_info)
+    if 'authenticated' in _user_info and 'username' in _user_info:
+        username = _user_info["username"]
     profile_info = session.get(
         'https://www.googleapis.com/userinfo/v2/me').json()
+    if profile_info:
+        print(f'Authenticated Google account: {profile_info["email"]}')
+    return username
 
-    # use JWT for authentication
-    if profile_info != None:
-        mqtt_json = None
-        user = profile_info['email']
-        print(f'Authenticated Google account: {user}')
 
-        # TODO: permissions may change by owner or admin,
-        # for now, get a fresh mqtt_token each time
-        # if os.path.exists(_user_mqtt_path):
-        #     f = open(_user_mqtt_path, "r")
-        #     mqtt_json = f.read()
-        #     f.close()
-        # # TODO: check token expiration
+def authenticate_scene(host, realm, scene, username, debug=False):
+    """ End authentication flow, requesting permissions may change by owner
+    or admin, for now, get a fresh mqtt_token each time.
+    host: The hostname of the ARENA webserver.
+    realm: The topic realm name.
+    scene: The namespace/scene name combination.
+    username: The ARENA username for the user.
+    debug: True to skip SSL verify for localhost tests.
+    Returns: username and mqtt_token from arena-account.
+    """
+    global debug_toggle
+    global _id_token
+    global _mqtt_token
+    debug_toggle = debug
+    local_token = _local_token_check()
+    if local_token:
+        return local_token["username"]
 
-        # if no credentials available, get them.
-        if not mqtt_json:
-            print("Using remote-authenticated MQTT token.")
-            mqtt_json = _get_mqtt_token(broker, realm, scene, user, id_token)
-            # save mqtt_token
-            with open(_user_mqtt_path, mode="w") as d:
-                d.write(mqtt_json)
-            os.chmod(_user_mqtt_path, 0o600)  # set user-only perms.
+    print("Using remote-authenticated MQTT token.")
+    mqtt_json = _get_mqtt_token(host, realm, scene, username, _id_token)
+    # save mqtt_token
+    with open(_user_mqtt_path, mode="w") as d:
+        d.write(mqtt_json)
+    os.chmod(_user_mqtt_path, 0o600)  # set user-only perms.
 
-    # end authentication flow
     _mqtt_token = json.loads(mqtt_json)
     username = None
     if 'username' in _mqtt_token:
@@ -123,37 +129,63 @@ def authenticate(realm, scene, broker, debug=False):
     return _mqtt_token
 
 
-# TODO: will be deprecated after using arena-account
-def _get_gauthid(webhost):
-    url = f'https://{webhost}/conf/gauth.json'
+def _local_token_check():
+    # TODO: remove local check after ARTS supports mqtt_token passing
+    # check for local mqtt_token first
+    if os.path.exists(_local_mqtt_path):
+        print("Using local MQTT token.")
+        f = open(_local_mqtt_path, "r")
+        mqtt_json = f.read()
+        f.close()
+        # TODO: check token expiration
+        _mqtt_token = json.loads(mqtt_json)
+        return _mqtt_token
+    return None
+
+
+def _get_csrftoken(host):
+    # get the csrftoken for django
+    global _csrftoken
+    csrf_url = f'https://{host}/user/login'
+    client = requests.session()
+    if debug_toggle:
+        _csrftoken = client.get(csrf_url, verify=False).cookies['csrftoken']
+    else:
+        _csrftoken = client.get(csrf_url).cookies['csrftoken']
+    return _csrftoken
+
+
+def _get_gauthid(host):
+    url = f'https://{host}/conf/gauth.json'
     return urlopen(url)
 
 
-def _get_mqtt_token(broker, realm, scene, user, id_token):
-    url = f'https://{broker}/user/mqtt_auth'
-    if broker == 'oz.andrew.cmu.edu':
-        # TODO: remove this workaround for non-auth broker
-        url = f'https://{broker}:8888/'
-        csrftoken = None
-    else:
-        # get the csrftoken for django
-        csrf_url = f'https://{broker}/user/login'
-        client = requests.session()
-        if debug_toggle:
-            csrftoken = client.get(csrf_url, verify=False).cookies['csrftoken']
-        else:
-            csrftoken = client.get(csrf_url).cookies['csrftoken']
+def _get_user_state(host, id_token):
+    global _csrftoken
+    url = f'https://{host}/user/user_state'
+    if not _csrftoken:
+        _csrftoken = _get_csrftoken(host)
+    params = {"id_token": id_token}
+    query_string = parse.urlencode(params)
+    data = query_string.encode("ascii")
+    return urlopen(url, data=data, csrf=_csrftoken)
 
+
+def _get_mqtt_token(host, realm, scene, username, id_token):
+    global _csrftoken
+    url = f'https://{host}/user/mqtt_auth'
+    if not _csrftoken:
+        _csrftoken = _get_csrftoken(host)
     params = {
         "id_auth": "google-installed",
-        "username": user,
+        "username": username,
         "id_token": id_token,
         "realm": realm,
         "scene": scene
     }
     query_string = parse.urlencode(params)
     data = query_string.encode("ascii")
-    return urlopen(url, data=data, csrf=csrftoken)
+    return urlopen(url, data=data, csrf=_csrftoken)
 
 
 def urlopen(url, data=None, creds=False, csrf=None):
@@ -161,6 +193,7 @@ def urlopen(url, data=None, creds=False, csrf=None):
     url: the url to POST/GET.
     data: None for GET, add params for POST.
     creds: True to pass the MQTT token as a cookie.
+    csrf: The csrftoken.
     """
     global debug_toggle
     global _mqtt_token
@@ -216,9 +249,8 @@ def _print_mqtt_token(jwt):
 
 
 def permissions():
-    # TODO: remove local check after ARTS supports mqtt_token passing
-    # check for local mqtt_token first
     mqtt_path = None
+    # check for local mqtt_token first
     if os.path.exists(_local_mqtt_path):
         print("Using local MQTT token.")
         mqtt_path = _local_mqtt_path

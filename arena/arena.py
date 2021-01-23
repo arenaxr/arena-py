@@ -23,6 +23,7 @@ class Arena(object):
                 self,
                 host = "arena.andrew.cmu.edu",
                 realm = "realm",
+                *, # allows skipping namespace
                 namespace = None,
                 scene = "render",
                 port = None,
@@ -40,6 +41,11 @@ class Arena(object):
             print("Cannot find MQTTH environmental variable, using input parameter instead.")
         else:
             sys.exit("MQTTH is unspecified, aborting...")
+
+        # do user auth
+        username = auth.authenticate_user(self.HOST, debug=debug)
+        if not namespace:
+            namespace = username
 
         if os.environ.get("REALM"):
             self.REALM  = os.environ["REALM"]
@@ -82,8 +88,8 @@ class Arena(object):
             self.mqttc_id, clean_session=True
         )
 
-        # do auth
-        data = auth.authenticate(self.REALM, self.namespace_scene, self.HOST, debug=self.debug)
+        # do scene auth
+        data = auth.authenticate_scene(self.HOST, self.REALM, self.namespace_scene, username, self.debug)
         if 'username' in data and 'token' in data:
             self.mqttc.username_pw_set(username=data["username"], password=data["token"])
         print("=====")

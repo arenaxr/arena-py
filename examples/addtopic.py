@@ -19,7 +19,7 @@ def secondary_callback(msg):
 
 
 # subscribe to objects
-arena = Arena("arena.andrew.cmu.edu", "realm", "public", "example", on_msg_callback=objects_callback)
+arena = Arena(host="arena.andrew.cmu.edu", realm="realm", scene="example", on_msg_callback=objects_callback)
 
 @arena.run_async
 async def test():

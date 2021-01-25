@@ -8,7 +8,7 @@ import random
 
 
 # start ARENA client
-arena = Arena("arena.andrew.cmu.edu", "realm", "public", "test")
+arena = Arena(host="arena.andrew.cmu.edu", realm="realm", scene="test")
 
 
 music_on = False

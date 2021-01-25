@@ -98,7 +98,7 @@ class Data(Attribute):
                         try:
                             wcrgb = webcolors.name_to_rgb(color)
                         except:
-                            wcrgb = webcolors.name_to_rgb("0"+color)
+                            wcrgb = webcolors.hex_to_rgb("#0"+color)
                         v = (wcrgb.red, wcrgb.green, wcrgb.blue)
                     else:
                         v = tuple(int(color[c:c+2], 16) for c in (0, 2, 4))

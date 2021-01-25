@@ -1,7 +1,7 @@
 from arena import *
 
 # start ARENA client
-arena = Arena("arena.andrew.cmu.edu", "realm", "public", "test")
+arena = Arena(host="arena.andrew.cmu.edu", realm="realm", scene="test")
 
 @arena.run_once
 def f1():

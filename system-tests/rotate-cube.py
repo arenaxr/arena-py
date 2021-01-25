@@ -7,7 +7,7 @@ import random
 
 
 # start ARENA client
-arena = Arena("arena.andrew.cmu.edu", "realm", "public", "test")
+arena = Arena(host="arena.andrew.cmu.edu", realm="realm", scene="test")
 
 box = Box(object_id="box", position=(0,4,-2), scale=Scale(2,2,2), rotation=(0,0,0), color=Color(0,0,0))
 arena.add_object(box)

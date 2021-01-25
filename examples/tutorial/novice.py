@@ -1,7 +1,7 @@
 from arena import *
 
 # setup library
-arena = Arena("arena.andrew.cmu.edu", "realm", "public", "example")
+arena = Arena(host="arena.andrew.cmu.edu", realm="realm", scene="example")
 
 @arena.run_async
 async def func():

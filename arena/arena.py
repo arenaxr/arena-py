@@ -22,55 +22,44 @@ class Arena(object):
     """
     def __init__(
                 self,
-                host = "arena.andrew.cmu.edu",
-                realm = "realm",
-                *, # allows skipping namespace
-                namespace = None,
-                scene = "render",
-                port = None,
                 on_msg_callback = None,
                 new_obj_callback = None,
                 delete_obj_callback = None,
                 debug = False,
                 network_loop_interval = 50,  # run mqtt client network loop every 50ms
-                network_latency_interval = 10000  # run network latency update every 10s
+                network_latency_interval = 10000,  # run network latency update every 10s
+                **kwargs
             ):
         if os.environ.get("MQTTH"):
             self.HOST  = os.environ["MQTTH"]
-        elif host:
-            self.HOST = host
+        elif "host" in kwargs:
+            self.HOST = kwargs["host"]
             print("Cannot find MQTTH environmental variable, using input parameter instead.")
         else:
-            sys.exit("MQTTH is unspecified, aborting...")
-
-        # do user auth
-        username = auth.authenticate_user(self.HOST, debug=debug)
-        if not namespace:
-            namespace = username
+            sys.exit("MQTTH (host) is unspecified, aborting...")
 
         if os.environ.get("REALM"):
             self.REALM  = os.environ["REALM"]
-        elif realm:
-            self.REALM = realm
+        elif "realm" in kwargs:
+            self.REALM = kwargs["realm"]
             print("Cannot find REALM environmental variable, using input parameter instead.")
         else:
-            sys.exit("REALM is unspecified, aborting...")
-
-        if os.environ.get("NAMESPACE"):
-            self.NAMESPACE  = os.environ["NAMESPACE"]
-        elif namespace:
-            self.NAMESPACE = namespace
-            print("Cannot find NAMESPACE environmental variable, using input parameter instead.")
-        else:
-            sys.exit("NAMESPACE is unspecified, aborting...")
+            sys.exit("REALM (realm) is unspecified, aborting...")
 
         if os.environ.get("SCENE"):
             self.SCENE  = os.environ["SCENE"]
-        elif scene:
-            self.SCENE = scene
+        elif "scene" in kwargs:
+            self.SCENE = kwargs["scene"]
             print("Cannot find SCENE environmental variable, using input parameter instead.")
         else:
-            sys.exit("SCENE is unspecified, aborting...")
+            sys.exit("SCENE (scene) is unspecified, aborting...")
+
+        # do user auth
+        username = auth.authenticate_user(self.HOST, debug=debug)
+        if "namespace" not in kwargs:
+            self.NAMESPACE = username
+        else:
+            self.NAMESPACE = kwargs["namespace"]
 
         print(f"Loading: {self.HOST}/{self.NAMESPACE}/{self.SCENE}, realm={self.REALM}")
         print("=====")
@@ -119,7 +108,7 @@ class Arena(object):
         # run network latency update task every 10 secs
         self.run_forever(self.network_latency_update, interval_ms=network_latency_interval)
 
-        if port is not None:
+        if "port" in kwargs:
             self.mqttc.connect(self.HOST, port)
         else:
             self.mqttc.connect(self.HOST)

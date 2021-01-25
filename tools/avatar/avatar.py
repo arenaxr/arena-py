@@ -13,7 +13,7 @@ from arena import *
 
 
 avatars = {}
-arena = Arena("arena.andrew.cmu.edu", "realm", "public", "avatar")
+arena = Arena(host="arena.andrew.cmu.edu", realm="realm", scene="avatar")
 
 
 def new_obj_callback(msg):

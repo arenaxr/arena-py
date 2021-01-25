@@ -8,11 +8,10 @@ pip3 install arena-py
 Ok, now let's get started!
 
 ### Setup environmental variables (reccomended but not required)
-Replace [host], [realm], [namespace], and [scene] with your desired mqtt broker, realm, namespace, and scene name, respectively.
+Replace [host], [realm], and [scene] with your desired mqtt broker, realm, and scene name, respectively.
 ```shell
 export MQTTH=[host]
 export REALM=[realm]
-export NAMESPACE=[namespace]
 export SCENE=[scene]
 ```
 
@@ -25,9 +24,9 @@ from arena import *
 ```python
 arena = Arena()
 ```
-You can also pass host, realm, namespace, and scene as arguments, if you don't want to use enviornmental variables:
+You can also pass host, realm, and scene as arguments, if you don't want to use enviornmental variables:
 ```python
-arena = Arena([host], [realm], [namespace], [scene])
+arena = Arena(host=[host], realm=[realm], scene=[scene])
 ```
 Note: ARENA-py will always favor environmental variables over arguments.
 

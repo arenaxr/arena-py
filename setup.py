@@ -5,7 +5,7 @@ with open("README.md", "r") as readme:
 
 setuptools.setup(
     name="arena-py",
-    version="0.1.0",
+    version="0.1.2",
     author="Conix Research Center",
     author_email="info@conix.io",
     license="BSD 3-clause \"New\" or \"Revised License\"",
@@ -15,7 +15,7 @@ setuptools.setup(
     url="https://github.com/conix-center/ARENA-py",
     packages=setuptools.find_packages(),
     install_requires=[
-        "aiohttp",
+        "aiohttp~=3.6.2",
         "paho-mqtt~=1.5.0",
         "numpy~=1.18.1",
         "requests~=2.23.0",

@@ -132,7 +132,7 @@ class HeadRig(object):
                     # position=(0.0, 0, -2),
                     position=self.face.trans,
                     rotation=self.face.rot,
-                    scale=(3,3,3),
+                    scale=(1.75,1.75,1.75),
                     parent="camera_"+self.user_id,
                     **morph
                 )

@@ -1,5 +1,5 @@
 from .arena_object import Object
-from ..attributes import Position
+from ..attributes import Attribute, Position
 
 class ThickLine(Object):
     """

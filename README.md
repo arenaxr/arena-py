@@ -11,7 +11,6 @@ pip3 install arena-py
 ```
 
 ## Hello ARENA
-1. View the ARENA at https://arena.andrew.cmu.edu/example
 1. Run the `hello.py` example:
 ```shell
 cd examples

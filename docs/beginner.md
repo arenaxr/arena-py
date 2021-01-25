@@ -24,7 +24,7 @@ from arena import *
 ```python
 arena = Arena()
 ```
-You can also pass host, realm, and scene as arguments, if you don't want to use enviornmental variables:
+You can also pass host, realm, and scene as arguments, if you don't want to use enviornmental variables. These *must* be keyword arguments:
 ```python
 arena = Arena(host=[host], realm=[realm], scene=[scene])
 ```

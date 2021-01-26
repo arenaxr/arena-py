@@ -293,7 +293,7 @@ class Arena(object):
                     type="camera-override",
                     object_type="camera",
                     **kwargs)
-        return self.generate_custom_event(evt, action="create")
+        return self.generate_custom_event(evt, action="update")
 
     def look_at(self, cam, target):
         """Publishes a camera manipulation event"""
@@ -312,7 +312,7 @@ class Arena(object):
                     type="camera-override",
                     object_type="look-at",
                     target=target)
-        return self.generate_custom_event(evt, action="create")
+        return self.generate_custom_event(evt, action="update")
 
     @property
     def all_objects(self):

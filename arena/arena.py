@@ -204,7 +204,7 @@ class Arena(object):
             print("Connected!")
             print("=====")
         else:
-            print("Connection error! Result code: " + rc)
+            print(f"Connection error! Result code: {rc}")
 
     def disconnect(self):
         """Disconnects Paho MQTT client"""
@@ -215,7 +215,7 @@ class Arena(object):
         if rc == 0:
             print("Disconnected from the ARENA!")
         else:
-            print("Disconnect error! Result code: " + rc)
+            print(f"Disconnect error! Result code: {rc}")
 
     def process_message(self, client, userdata, msg):
         """Main message processing function"""

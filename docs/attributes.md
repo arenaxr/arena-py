@@ -60,7 +60,7 @@ color=(red, green, blue)
 ## Animation
 An animation can be added by:
 ```python
-animation=Animation(...)
+animation=Animation(...) or animation_mixer=Animation(...) for GLTF animations
 ```
 Note: please use "start" and "end" as arguments for fields "from" and "to" in json (done to prevent using the python reserved word "from"):
 ```python

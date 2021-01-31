@@ -1,10 +1,11 @@
 from ..utils import Utils
 from .attribute import Attribute
+from .position import Position
 
 class Animation(Attribute):
     """
     Animation Attribute.
-    Usage: animation_mixer=Animation(...)
+    Usage: animation=Animation(...) or animation_mixer=Animation(...)
     """
     def __init__(self, **kwargs):
         if "start" in kwargs:

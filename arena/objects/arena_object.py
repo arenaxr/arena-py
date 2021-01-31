@@ -11,7 +11,7 @@ class Object(BaseObject):
 
     all_objects = {} # dict of all objects created so far
 
-    def __init__(self, evt_handler=None, **kwargs):
+    def __init__(self, evt_handler=None, update_handler=None, **kwargs):
         # "object_id" is required in kwargs, defaulted to random uuid4
         object_id = kwargs.get("object_id", str(uuid.uuid4()))
         if "object_id" in kwargs: del kwargs["object_id"]
@@ -59,13 +59,17 @@ class Object(BaseObject):
                 )
 
         self.evt_handler = evt_handler
+        self.update_handler = update_handler
 
         # add current object to all_objects dict
         Object.add(self)
 
-    def update_attributes(self, evt_handler=None, **kwargs):
+    def update_attributes(self, evt_handler=None, update_handler=None, **kwargs):
         if evt_handler:
             self.evt_handler = evt_handler
+
+        if update_handler:
+            self.update_handler = update_handler
 
         if "data" not in self:
             return
@@ -78,9 +82,12 @@ class Object(BaseObject):
         data = self.data
         Data.update_data(data, kwargs)
 
+        if self.update_handler:
+            self.update_handler(self)
+
     def json(self, **kwargs):
         # kwargs are for additional param to add to json, like "action":"create"
-        res = { k:v for k,v in vars(self).items() if k != "evt_handler" }
+        res = { k:v for k,v in vars(self).items() if k != "evt_handler" and k != "update_handler" }
         res.update(kwargs)
 
         data = res["data"].__dict__.copy()
@@ -99,10 +106,20 @@ class Object(BaseObject):
             del data["physics"]
             data["dynamic-body"] = ref
 
+        if "dynamic_body" in data:
+            ref = data["dynamic_body"]
+            del data["dynamic_body"]
+            data["dynamic-body"] = ref
+
         # handle special case where "clickable" should be "click-listener"
         if "clickable" in data:
             ref = data["clickable"]
             del data["clickable"]
+            data["click-listener"] = ref
+
+        if "click_listener" in data:
+            ref = data["click_listener"]
+            del data["click_listener"]
             data["click-listener"] = ref
 
         # remove underscores from specific keys
@@ -111,15 +128,10 @@ class Object(BaseObject):
             del data["goto_url"]
             data["goto-url"] = ref
 
-        if "click_listener" in data:
-            ref = data["click_listener"]
-            del data["click_listener"]
-            data["click-listener"] = ref
-
-        if "dynamic_body" in data:
-            ref = data["dynamic_body"]
-            del data["dynamic_body"]
-            data["dynamic-body"] = ref
+        if "animation_mixer" in data:
+            ref = data["animation_mixer"]
+            del data["animation_mixer"]
+            data["animation-mixer"] = ref
 
         # for animation, replace "start" and "end" with "from" and "to"
         if "animation" in data:

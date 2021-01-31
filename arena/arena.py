@@ -56,7 +56,9 @@ class Arena(object):
 
         # do user auth
         username = auth.authenticate_user(self.HOST, debug=debug)
-        if "namespace" not in kwargs:
+        if os.environ.get("NAMESPACE"):
+            self.NAMESPACE = os.environ["NAMESPACE"]
+        elif "namespace" not in kwargs:
             self.NAMESPACE = username
         else:
             self.NAMESPACE = kwargs["namespace"]
@@ -276,13 +278,13 @@ class Arena(object):
         if kwargs["position"] is not None:
             if isinstance(kwargs["position"], tuple) or isinstance(kwargs["position"], list):
                 kwargs["position"] = Position(*kwargs["position"])
-            elif isinstance(position, dict):
+            elif isinstance(kwargs["position"], dict):
                 kwargs["position"] = Position(**kwargs["position"])
 
         if kwargs["rotation"] is not None:
             if isinstance(kwargs["rotation"], tuple) or isinstance(kwargs["rotation"], list):
                 kwargs["rotation"] = Rotation(*kwargs["rotation"])
-            elif isinstance(rotation, dict):
+            elif isinstance(kwargs["rotation"], dict):
                 kwargs["rotation"] = Rotation(**kwargs["rotation"])
 
         if isinstance(cam, Object):

@@ -42,6 +42,16 @@ obj.data.click_listener = None
 # obj.update_attributes(click_listener=None) works too
 ```
 
+## Update Handler
+The update_handler will be called whenever the object is updated by the library of by some external program
+```python
+def update(obj):
+    print(obj)
+
+obj.update_handler = update
+# obj.update_attributes(update_handler=update) works too
+```
+
 # Appendix
 
 ## Box

@@ -4,6 +4,8 @@ from ..utils import *
 from .attribute import Attribute
 from .position import Position
 from .rotation import Rotation
+from .goto_url import GotoUrl
+from .physics import Physics
 from .scale import Scale
 from .color import Color
 
@@ -68,12 +70,7 @@ class Data(Attribute):
                     else:
                         data[k] = Rotation(*v[:4])
                 elif isinstance(v, dict):
-                    # rotation doesnt exist or rotation originally in euler
-                    if k not in data or not data[k].is_quaternion:
-                        v = Rotation.q2e((v["x"], v["y"], v["z"], v["w"]))
-                        data[k] = Rotation(*v)
-                    else:
-                        data[k] = Rotation(**v)
+                    data[k] = Rotation(**v)
                 else:
                     data[k] = v
 

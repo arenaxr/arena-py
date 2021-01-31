@@ -16,12 +16,15 @@ def make_xr_logo():
     )
     arena.add_object(xr_logo)
 
-@arena.run_forever(interval_ms=1000)
+@arena.run_forever(interval_ms=2500)
 def periodic():
     global x
     global xr_logo    # non allocated variables need to be global
 
     if x%4==0:
+        # Move object back to start (capturing previous location from animation)
+        # When using animated positions, don't mix with standard Position( ) object
+        arena.update_object(xr_logo, animation=Animation(property="position", start=(0,0,-10), end=(0,0,-5),easing="linear",dur=0 ) )
         # Trigger a single "wave" animation
         arena.update_object(xr_logo, animation_mixer=Animation(clip="wave", loop="once" ) )
         print( "Wave Once")
@@ -34,8 +37,8 @@ def periodic():
         print( "Wave and Rotate Repeat")
     if x%4==3:
         arena.update_object(xr_logo, animation_mixer=Animation(clip="*",loop="repeat" ) )
-        arena.update_object(xr_logo, animation=Animation(property="position",start=(0,0,-5), end=(0,0,-10),easing="linear",dur=1000 ) )
-        arena.update_object(xr_logo, animation__2=Animation(property="rotation",start=(0,0,0), end=(0,360,0),easing="linear",dur=1000 ) )
+        arena.update_object(xr_logo, animation=Animation(property="position", start=(0,0,-5), end=(0,0,-10),easing="linear",dur=1000 ) )
+        arena.update_object(xr_logo, animation__2=Animation(property="rotation", start=(0,0,0), end=(0,180,0),easing="linear",dur=1000 ) )
         print( "Wave and Rotate Repeat and move with tweening")
 
     x=x+1

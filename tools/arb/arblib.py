@@ -9,7 +9,7 @@ import enum
 import json
 import re
 
-import arena
+from arena import *
 import webcolors
 from scipy.spatial.transform import Rotation
 
@@ -80,20 +80,20 @@ METERS = ["mm", "cm", "dm", "m"]
 DEGREES = ["1", "5", "10", "45", "90"]
 COLORS = ["ffffff", "ff0000", "ffa500", "ffff00", "00ff00",
           "0000ff", "4b0082", "800080", "a52a2a", "000000"]
-SHAPES = [arena.Shape.sphere.value,
-          arena.Shape.cube.value,
-          arena.Shape.cone.value,
-          arena.Shape.cylinder.value,
-          arena.Shape.dodecahedron.value,
-          arena.Shape.icosahedron.value,
-          arena.Shape.octahedron.value,
-          arena.Shape.tetrahedron.value,
-          arena.Shape.torus.value,
-          arena.Shape.torusKnot.value,
-          arena.Shape.circle.value,
-          arena.Shape.plane.value,
-          arena.Shape.ring.value,
-          arena.Shape.triangle.value]
+SHAPES = [Sphere()['data']['object_type'],
+          Box()['data']['object_type'],
+          Cone()['data']['object_type'],
+          Cylinder()['data']['object_type'],
+          Dodecahedron()['data']['object_type'],
+          Icosahedron()['data']['object_type'],
+          Octahedron()['data']['object_type'],
+          Tetrahedron()['data']['object_type'],
+          Torus()['data']['object_type'],
+          TorusKnot()['data']['object_type'],
+          Circle()['data']['object_type'],
+          Plane()['data']['object_type'],
+          Ring()['data']['object_type'],
+          Triangle()['data']['object_type']]
 DEF_MANIFEST = [{  # default model, if none loaded
     "name": "duck",
     "url_gltf": "models/Duck.glb",
@@ -127,7 +127,7 @@ class ButtonType(enum.Enum):
 
 
 class User:
-    def __init__(self, camname, panel_callback):
+    def __init__(self, mngr: Arena, camname, panel_callback):
         self.camname = camname
         self.mode = Mode.NONE
         self.clipboard = self.cliptarget = None
@@ -150,15 +150,15 @@ class User:
 
         # AR Control Panel
         self.follow_lock = False
-        self.follow = arena.Object(
+        self.follow = Box(
             objName=("follow_" + camname),
-            objType=arena.Shape.cube,
             parent=camname,
-            transparency=arena.Transparency(True, 0),
+            material=Material(transparent=True, opacity=0),
             location=(0, 0, -PANEL_RADIUS * 0.1),
             scale=(0.1, 0.01, 0.1),
             rotation=(0.7, 0, 0, 0.7),
         )
+        mngr.add_object(self.follow)
         self.redpill = False
         self.panel = {}  # button dictionary
         followname = self.follow.objName
@@ -257,7 +257,7 @@ class User:
 
 
 class Button:
-    def __init__(self, camname, mode, x=0, y=0, label="", parent=None,
+    def __init__(self, mngr: Arena, camname, mode, x=0, y=0, label="", parent=None,
                  drop=None, color=CLR_BUTTON, enable=True, callback=None,
                  btype=ButtonType.ACTION):
         if label == "":
@@ -401,7 +401,7 @@ class ObjectPersistence:
         # self.text self.transparency self.data self.ttl
 
 
-def init_origin():
+def init_origin(mngr: Arena):
     """Origin object, construction cone, so user knows ARB is running."""
     size = [0.2, 0.4, 0.2]
     arena.Object(  # 370mm x 370mm # 750mm
@@ -423,7 +423,7 @@ def init_origin():
         scale=(size[0], size[1] / 10, size[2]))
 
 
-def update_persisted_obj(realm, scene, object_id, label,
+def update_persisted_obj(mngr: Arena, realm, scene, object_id, label,
                          action="update", data=None, persist="true", ttl=None):
     msg = {
         "object_id": object_id,

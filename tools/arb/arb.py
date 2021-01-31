@@ -18,7 +18,7 @@ import statistics
 
 import arblib
 from arblib import ButtonType, Mode
-import arena
+from arena import *
 
 BROKER = "arena.andrew.cmu.edu"
 PORT = None
@@ -989,9 +989,6 @@ def scene_callback(msg):
 # parse args and wait for events
 init_args()
 random.seed()
-if DEMO:
-    arena.init(BROKER, REALM, SCENE, port=PORT, callback=scene_callback,
-               democlick=(400, -250))
-else:
-    arena.init(BROKER, REALM, SCENE, port=PORT, callback=scene_callback)
-arena.handle_events()
+arena = Arena(host=BROKER, realm=REALM, scene=SCENE,
+              port=PORT, on_msg_callback=scene_callback)
+arena.run_tasks()

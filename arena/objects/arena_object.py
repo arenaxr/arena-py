@@ -113,6 +113,10 @@ class Object(BaseObject):
             if "color" == k:
                 json_data["color"] = v.hex
 
+            # rotation should be in quaternions
+            elif "rotation" == k:
+                json_data["rotation"] = data["rotation"].quaternion
+
             # handle special case where "physics" should be "dynamic-body"
             elif "physics" == k or "dynamic_body" == k:
                 json_data["dynamic-body"] = v

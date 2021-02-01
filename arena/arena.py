@@ -276,13 +276,13 @@ class Arena(object):
     def manipulate_camera(self, cam, **kwargs):
         """Publishes a camera manipulation event"""
         if kwargs["position"] is not None:
-            if isinstance(kwargs["position"], tuple) or isinstance(kwargs["position"], list):
+            if isinstance(kwargs["position"], (list, tuple)):
                 kwargs["position"] = Position(*kwargs["position"])
             elif isinstance(kwargs["position"], dict):
                 kwargs["position"] = Position(**kwargs["position"])
 
         if kwargs["rotation"] is not None:
-            if isinstance(kwargs["rotation"], tuple) or isinstance(kwargs["rotation"], list):
+            if isinstance(kwargs["rotation"], (list, tuple)):
                 kwargs["rotation"] = Rotation(*kwargs["rotation"])
             elif isinstance(kwargs["rotation"], dict):
                 kwargs["rotation"] = Rotation(**kwargs["rotation"])

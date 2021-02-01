@@ -56,7 +56,7 @@ class Data(Attribute):
             # allow user to input tuples, lists, dicts, etc for specific Attributes.
             # everything gets converted to corresponding attribute
             if k == "position" and not isinstance(v, Position):
-                if isinstance(v, tuple) or isinstance(v, list):
+                if isinstance(v, (list,tuple)):
                     data[k] = Position(*v[:3])
                 elif isinstance(v, dict):
                     data[k] = Position(**v)
@@ -64,7 +64,7 @@ class Data(Attribute):
                     data[k] = v
 
             elif k == "rotation" and not isinstance(v, Rotation):
-                if isinstance(v, tuple) or isinstance(v, list):
+                if isinstance(v, (list,tuple)):
                     if len(v) == 3:
                         data[k] = Rotation(*v[:3], None)
                     else:
@@ -75,7 +75,7 @@ class Data(Attribute):
                     data[k] = v
 
             elif k == "scale" and not isinstance(v, Scale):
-                if isinstance(v, tuple) or isinstance(v, list):
+                if isinstance(v, (list,tuple)):
                     data[k] = Scale(*v[:3])
                 elif isinstance(v, dict):
                     data[k] = Scale(**v)
@@ -83,7 +83,7 @@ class Data(Attribute):
                     data[k] = v
 
             elif k == "color":
-                if isinstance(v, tuple) or isinstance(v, list):
+                if isinstance(v, (list,tuple)):
                     data[k] = Color(*v[:3])
                 elif isinstance(v, dict):
                     data[k] = Color(**v)

@@ -323,13 +323,17 @@ class Arena(object):
 
     def add_object(self, obj):
         """Public function to create an object"""
-        return self._publish(obj, "create")
+        res = self._publish(obj, "create")
+        self.run_animations(obj)
+        return res
 
     def update_object(self, obj, **kwargs):
         """Public function to update an object"""
         if kwargs:
             obj.update_attributes(**kwargs)
-        return self._publish(obj, "update")
+        res = self._publish(obj, "update")
+        self.run_animations(obj)
+        return res
 
     def delete_object(self, obj):
         """Public function to delete an object"""

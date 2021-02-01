@@ -85,6 +85,7 @@ class Object(BaseObject):
                 self.animations.add(anim)
         else:
             self.animations.add(animation)
+        return self.animations
 
     def clear_animations(self):
         self.animations = set()

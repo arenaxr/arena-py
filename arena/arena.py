@@ -54,6 +54,7 @@ class Arena(object):
         else:
             sys.exit("SCENE (scene) is unspecified, aborting...")
 
+        print("=====")
         # do user auth
         username = auth.authenticate_user(self.HOST, debug=debug)
         if os.environ.get("NAMESPACE"):
@@ -62,9 +63,6 @@ class Arena(object):
             self.NAMESPACE = username
         else:
             self.NAMESPACE = kwargs["namespace"]
-
-        print(f"Loading: {self.HOST}/{self.NAMESPACE}/{self.SCENE}, realm={self.REALM}")
-        print("=====")
 
         self.debug = debug
 
@@ -85,6 +83,7 @@ class Arena(object):
         if 'username' in data and 'token' in data:
             self.mqttc.username_pw_set(username=data["username"], password=data["token"])
         print("=====")
+
 
         self.on_msg_callback = on_msg_callback
         self.new_obj_callback = new_obj_callback
@@ -118,6 +117,8 @@ class Arena(object):
         # set callbacks
         self.mqttc.on_connect = self.on_connect
         self.mqttc.on_disconnect = self.on_disconnect
+
+        print(f"Loading: https://{self.HOST}/{self.NAMESPACE}/{self.SCENE}, realm={self.REALM}")
 
     def generate_client_id(self):
         """Returns a random 6 digit id"""

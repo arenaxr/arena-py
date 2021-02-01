@@ -7,23 +7,23 @@ class GLTF(Object):
     Class for GLTF Model in the ARENA.
     """
     def __init__(self, url="", **kwargs):
-        self.morphs = []
+        self.morphs = {}
         super().__init__(object_type="gltf-model", url=url, **kwargs)
 
     def update_morph(self, morph):
         if isinstance(morph, (list,tuple)):
-            self.morphs += list(morph)
+            for m in morph:
+                self.morphs[m.morphtarget] = m
         elif isinstance(morph, Morph):
-            self.morphs += [morph]
+            self.morphs[morph.morphtarget] = morph
         return self.morphs
 
-    def remove_morph_at_index(self, idx):
-        if 0 <= idx < len(self.morphs):
-            return self.morphs.pop(idx)
-        return -1
+    def remove_morph(self, morph):
+        if morph.morphtarget in self.morphs:
+            del self.morphs[morph.morphtarget]
 
     def clear_morphs(self):
-        self.morphs = []
+        self.morphs = {}
 
     def json_preprocess(self, **kwargs):
         # kwargs are for additional param to add to json, like "action":"create"
@@ -32,5 +32,5 @@ class GLTF(Object):
         return json_payload
 
     def json_postprocess(self, json_payload, json_data):
-        for i,morph in enumerate(self.morphs):
+        for i,morph in enumerate(self.morphs.values()):
             json_data[f"gltf-morph__{i}"] = vars(morph)

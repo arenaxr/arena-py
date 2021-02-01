@@ -20,11 +20,11 @@ def close_eye():
     morph = {
         "gltf-morph__0": {
             "morphtarget": "eyeTop",
-            "value": "0.8" 
+            "value": "0.8"
         },
         "gltf-morph__1": {
             "morphtarget": "eyeBottom",
-            "value": "0.8" 
+            "value": "0.8"
         }
     }
     return morph
@@ -33,11 +33,11 @@ def open_eye():
     morph = {
         "gltf-morph__0": {
             "morphtarget": "eyeTop",
-            "value": "0.0" 
+            "value": "0.0"
         },
         "gltf-morph__1": {
             "morphtarget": "eyeBottom",
-            "value": "0.0" 
+            "value": "0.0"
         }
     }
     return morph

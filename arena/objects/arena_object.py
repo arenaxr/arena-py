@@ -42,21 +42,14 @@ class Object(BaseObject):
         # setup attributes in the "data" field
         data = kwargs.get("data", kwargs)
         data = Data(**data)
+        super().__init__(
+                object_id=object_id,
+                type="object",
+                persist=persist,
+                data=data
+            )
         if ttl:
-            super().__init__(
-                    object_id=object_id,
-                    type="object",
-                    persist=persist,
-                    ttl=ttl,
-                    data=data
-                )
-        else:
-            super().__init__(
-                    object_id=object_id,
-                    type="object",
-                    persist=persist,
-                    data=data
-                )
+            self.ttl = ttl
 
         self.evt_handler = evt_handler
         self.update_handler = update_handler
@@ -90,64 +83,47 @@ class Object(BaseObject):
         res = { k:v for k,v in vars(self).items() if k != "evt_handler" and k != "update_handler" }
         res.update(kwargs)
 
-        data = res["data"].__dict__.copy()
+        json_data = {}
+        data = vars(res["data"])
 
-        # color should be a hex string
-        if "color" in data:
-            data["color"] = data["color"].hex
+        for k,v in data.items():
+            # color should be a hex string
+            if "color" == k:
+                json_data["color"] = v.hex
 
-        # rotation should be in quaternions
-        if "rotation" in data:
-            data["rotation"] = data["rotation"].quaternion
+            # handle special case where "physics" should be "dynamic-body"
+            elif "physics" == k or "dynamic_body" == k:
+                json_data["dynamic-body"] = v
 
-        # handle special case where "physics" should be "dynamic-body"
-        if "physics" in data:
-            ref = data["physics"]
-            del data["physics"]
-            data["dynamic-body"] = ref
+            # handle special case where "clickable" should be "click-listener"
+            elif "clickable" == k or "click_listener" == k:
+                json_data["click-listener"] = v
 
-        if "dynamic_body" in data:
-            ref = data["dynamic_body"]
-            del data["dynamic_body"]
-            data["dynamic-body"] = ref
+            # remove underscores from specific keys
+            elif "goto_url" == k:
+                json_data["goto-url"] = v
 
-        # handle special case where "clickable" should be "click-listener"
-        if "clickable" in data:
-            ref = data["clickable"]
-            del data["clickable"]
-            data["click-listener"] = ref
+            elif "animation_mixer" == k:
+                json_data["animation-mixer"] = v
 
-        if "click_listener" in data:
-            ref = data["click_listener"]
-            del data["click_listener"]
-            data["click-listener"] = ref
+            # for animation, replace "start" and "end" with "from" and "to"
+            elif isinstance(k, str) and "animation" == k[:len("animation")]:
+                animation = vars(v).copy()
+                if "start" in animation:
+                    animation["from"] = animation["start"]
+                    del animation["start"]
+                if "end" in animation:
+                    animation["to"] = animation["end"]
+                    del animation["end"]
+                json_data[k] = animation
 
-        # remove underscores from specific keys
-        if "goto_url" in data:
-            ref = data["goto_url"]
-            del data["goto_url"]
-            data["goto-url"] = ref
+            else:
+                json_data[k] = v
 
-        if "animation_mixer" in data:
-            ref = data["animation_mixer"]
-            del data["animation_mixer"]
-            data["animation-mixer"] = ref
-
-        # for animation, replace "start" and "end" with "from" and "to"
-        if "animation" in data:
-            animation = data["animation"].__dict__.copy()
-            if "start" in animation:
-                animation["from"] = animation["start"]
-                del animation["start"]
-            if "end" in animation:
-                animation["to"] = animation["end"]
-                del animation["end"]
-            data["animation"] = animation
-
-        res["data"] = data
+        res["data"] = json_data
         return self.json_encode(res)
 
-    # methods for global object dictionary
+    # methods for global objects dictionary
     @classmethod
     def get(cls, object_id):
         return Object.all_objects.get(object_id, None)

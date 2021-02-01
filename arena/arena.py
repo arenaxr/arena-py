@@ -339,6 +339,28 @@ class Arena(object):
         Object.remove(obj)
         return self._publish(payload, "delete")
 
+    def run_animations(self, obj):
+        if obj.animations:
+            payload = {
+                "object_id": obj.object_id,
+                "type": obj.type,
+                "data": {"object_type": obj.data.object_type}
+            }
+            for i,animation in enumerate(obj.animations):
+                if isinstance(animation, Animation):
+                    if isinstance(animation, AnimationMixer):
+                        payload["data"][f"animation-mixer"] = vars(animation)
+                    else:
+                        anim = vars(animation).copy()
+                        if i == 0:
+                            payload["data"][f"animation"] = anim
+                        else:
+                            payload["data"][f"animation__{i}"] = anim
+                        Utils.dict_key_replace(anim, "start", "from")
+                        Utils.dict_key_replace(anim, "end", "to")
+            obj.clear_animations()
+            return self._publish(payload, "dispatch_animation")
+
     def _publish(self, obj, action):
         """Publishes to mqtt broker with "action":action"""
         topic = f"{self.root_topic}/{self.mqttc_id}/{obj['object_id']}"
@@ -346,6 +368,11 @@ class Arena(object):
         if action == "delete":
             payload = obj
             payload["action"] = "delete"
+            payload["timestamp"] = d
+            payload = json.dumps(payload)
+        if action == "dispatch_animation":
+            payload = obj
+            payload["action"] = "update"
             payload["timestamp"] = d
             payload = json.dumps(payload)
         else:

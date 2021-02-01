@@ -1,3 +1,4 @@
+from .animation_mixer import AnimationMixer
 from .animation import Animation
 from .attribute import Attribute
 from .color import Color

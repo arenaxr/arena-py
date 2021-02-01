@@ -22,6 +22,8 @@ Code for these can be found [here](../examples/tutorial)
 
 [Tasks](tasks.md)
 
+[Animations](animations.md)
+
 ## A simple program
 
 ```python

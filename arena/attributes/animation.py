@@ -5,7 +5,7 @@ from .position import Position
 class Animation(Attribute):
     """
     Animation Attribute.
-    Usage: animation=Animation(...) or animation_mixer=Animation(...)
+    Usage: Animation(...)
     """
     def __init__(self, **kwargs):
         if "start" in kwargs:

@@ -1,5 +1,5 @@
 from ..base_object import *
-from ..attributes import Data
+from ..attributes import Animation, Data
 from ..utils import *
 import uuid
 
@@ -53,6 +53,7 @@ class Object(BaseObject):
 
         self.evt_handler = evt_handler
         self.update_handler = update_handler
+        self.animations = set()
 
         # add current object to all_objects dict
         Object.add(self)
@@ -78,9 +79,19 @@ class Object(BaseObject):
         if self.update_handler:
             self.update_handler(self)
 
+    def dispatch_animation(self, animation):
+        if isinstance(animation, (tuple, list)):
+            for anim in animation:
+                self.animations.add(anim)
+        else:
+            self.animations.add(animation)
+
+    def clear_animations(self):
+        self.animations = set()
+
     def json(self, **kwargs):
         # kwargs are for additional param to add to json, like "action":"create"
-        res = { k:v for k,v in vars(self).items() if k != "evt_handler" and k != "update_handler" }
+        res = { k:v for k,v in vars(self).items() if not callable(v) and k != "animations" }
         res.update(kwargs)
 
         json_data = {}
@@ -109,14 +120,9 @@ class Object(BaseObject):
             # for animation, replace "start" and "end" with "from" and "to"
             elif isinstance(k, str) and "animation" == k[:len("animation")]:
                 animation = vars(v).copy()
-                if "start" in animation:
-                    animation["from"] = animation["start"]
-                    del animation["start"]
-                if "end" in animation:
-                    animation["to"] = animation["end"]
-                    del animation["end"]
+                Utils.dict_key_replace(animation, "start", "from")
+                Utils.dict_key_replace(animation, "end", "to")
                 json_data[k] = animation
-
             else:
                 json_data[k] = v
 

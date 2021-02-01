@@ -53,7 +53,7 @@ class Object(BaseObject):
 
         self.evt_handler = evt_handler
         self.update_handler = update_handler
-        self.animations = set()
+        self.animations = []
 
         # add current object to all_objects dict
         Object.add(self)
@@ -81,22 +81,32 @@ class Object(BaseObject):
 
     def dispatch_animation(self, animation):
         if isinstance(animation, (tuple, list)):
-            for anim in animation:
-                self.animations.add(anim)
-        else:
-            self.animations.add(animation)
+            self.animations += list(animation)
+        elif isinstance(animation, Animation):
+            self.animations += [animation]
         return self.animations
 
+    def remove_animation_at_index(self, idx):
+        if 0 <= idx < len(self.animations):
+            return self.animations.pop(idx)
+        return -1
+
     def clear_animations(self):
-        self.animations = set()
+        self.animations = []
+
+    def json_preprocess(self, **kwargs):
+        # kwargs are for additional param to add to json, like "action":"create"
+        json_payload = { k:v for k,v in vars(self).items() if not callable(v) and k != "animations" }
+        json_payload.update(kwargs)
+        return json_payload
+
+    def json_postprocess(self, json_payload, json_data): # to be done by subclasses, if needed
+        pass
 
     def json(self, **kwargs):
-        # kwargs are for additional param to add to json, like "action":"create"
-        res = { k:v for k,v in vars(self).items() if not callable(v) and k != "animations" }
-        res.update(kwargs)
-
         json_data = {}
-        data = vars(res["data"])
+        json_payload = self.json_preprocess(**kwargs)
+        data = vars(json_payload["data"])
 
         for k,v in data.items():
             # color should be a hex string
@@ -127,8 +137,9 @@ class Object(BaseObject):
             else:
                 json_data[k] = v
 
-        res["data"] = json_data
-        return self.json_encode(res)
+        json_payload["data"] = json_data
+        self.json_postprocess(json_payload, json_data)
+        return self.json_encode(json_payload)
 
     # methods for global objects dictionary
     @classmethod

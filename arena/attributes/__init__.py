@@ -6,6 +6,7 @@ from .data import Data
 from .goto_url import GotoUrl
 from .impulse import Impulse
 from .material import Material
+from .morph import Morph
 from .physics import Physics
 from .position import Position
 from .rotation import Rotation

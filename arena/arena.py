@@ -351,17 +351,16 @@ class Arena(object):
                 "data": {"object_type": obj.data.object_type}
             }
             for i,animation in enumerate(obj.animations):
-                if isinstance(animation, Animation):
-                    if isinstance(animation, AnimationMixer):
-                        payload["data"][f"animation-mixer"] = vars(animation)
+                if isinstance(animation, AnimationMixer):
+                    payload["data"][f"animation-mixer"] = vars(animation)
+                else:
+                    anim = vars(animation).copy()
+                    if i == 0:
+                        payload["data"][f"animation"] = anim
                     else:
-                        anim = vars(animation).copy()
-                        if i == 0:
-                            payload["data"][f"animation"] = anim
-                        else:
-                            payload["data"][f"animation__{i}"] = anim
-                        Utils.dict_key_replace(anim, "start", "from")
-                        Utils.dict_key_replace(anim, "end", "to")
+                        payload["data"][f"animation__{i}"] = anim
+                    Utils.dict_key_replace(anim, "start", "from")
+                    Utils.dict_key_replace(anim, "end", "to")
             obj.clear_animations()
             return self._publish(payload, "dispatch_animation")
 

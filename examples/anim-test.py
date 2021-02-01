@@ -17,30 +17,6 @@ def make_xr_logo():
     arena.add_object(xr_logo)
 
 
-close_eye = {
-    "gltf-morph__0": {
-        "morphtarget": "eyeTop",
-        "value": "0.8"
-    },
-    "gltf-morph__1": {
-        "morphtarget": "eyeBottom",
-        "value": "0.8"
-    }
-}
-
-open_eye = {
-    "gltf-morph__0": {
-        "morphtarget": "eyeTop",
-        "value": "0.0"
-    },
-    "gltf-morph__1": {
-        "morphtarget": "eyeBottom",
-        "value": "0.0"
-    }
-}
-
-
-
 @arena.run_forever(interval_ms=2500)
 def periodic():
     global x
@@ -72,13 +48,13 @@ def periodic():
     if x%7==3:
         # can input a list/tuple of animations
         xr_logo.dispatch_animation(
-                (
+                [
                     AnimationMixer(clip="*",loop="repeat" ),
                     Animation(property="position",start=(0,0,-5),end=(0,0,-10),easing="linear",dur=1000 )
-                )
+                ]
             )
         xr_logo.dispatch_animation(
-                Animation(property="rotation",start=(0,0,0),end=(0,180,0),easing="linear",dur=1000 )
+                Animation(property="rotation",start=(0,0,0),end=(0,360,0),easing="linear",dur=1000 )
             )
         arena.update_object(xr_logo) # can also use update_object to run dispatched animations
         print( "Wave and Rotate Repeat and move with tweening")
@@ -95,11 +71,15 @@ def periodic():
         arena.run_animations(xr_logo)
 
     if x%7==5:
-        arena.update_object(xr_logo,**close_eye )
+        close_eye_morphs = [Morph(morphtarget="eyeBottom",value=0.8), Morph(morphtarget="eyeTop",value=0.8)]
+        xr_logo.update_morph(close_eye_morphs)
+        arena.update_object(xr_logo)
         print( "Morph Target Close Eye")
 
     if x%7==6:
-        arena.update_object(xr_logo,**open_eye )
+        open_eye_morph = [Morph(morphtarget="eyeTop",value=0.0), Morph(morphtarget="eyeBottom",value=0.0)]
+        xr_logo.update_morph(open_eye_morph)
+        arena.update_object(xr_logo)
         print( "Morph Target Open Eye")
 
     x=x+1

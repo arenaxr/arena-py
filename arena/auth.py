@@ -212,7 +212,7 @@ def urlopen(url, data=None, creds=False, csrf=None):
         else:
             res = request.urlopen(req, data=data)
         return res.read().decode('utf-8')
-    except (URLError, HTTPError) as err:
+    except (requests.exceptions.ConnectionError, ConnectionError, URLError, HTTPError) as err:
         print("{0}: ".format(err)+url)
         if isinstance(err, HTTPError) and round(err.code, -2) == 400:
             # user not authorized on website yet, they don't have an ARENA username

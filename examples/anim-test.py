@@ -66,7 +66,10 @@ def periodic():
                 AnimationMixer(clip="*",loop="once" )
             )
         xr_logo.dispatch_animation(
-                Animation(property="position",start=(0,0,-10),end=(0,0,-5),easing="linear",dur=0 )
+                Animation(property="position",start=(0,0,-10),end=(0,0,-5),easing="linear",dur=1000 )
+            )
+        xr_logo.dispatch_animation(
+                Animation(property="rotation",start=(0,360,0),end=(0,0,0),easing="linear",dur=1000 )
             )
         arena.run_animations(xr_logo)
 

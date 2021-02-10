@@ -148,10 +148,14 @@ def _get_csrftoken(host):
     global _csrftoken
     csrf_url = f'https://{host}/user/login'
     client = requests.session()
-    if debug_toggle:
-        _csrftoken = client.get(csrf_url, verify=False).cookies['csrftoken']
+    verify = not debug_toggle
+    client.get(csrf_url, verify=verify)  # sets cookie
+    if 'csrftoken' in client.cookies:
+        _csrftoken = client.cookies['csrftoken']
+    elif 'csrf' in client.cookies:
+        _csrftoken = client.cookies['csrf']
     else:
-        _csrftoken = client.get(csrf_url).cookies['csrftoken']
+        _csrftoken = None
     return _csrftoken
 
 

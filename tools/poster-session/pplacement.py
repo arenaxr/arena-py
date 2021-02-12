@@ -22,6 +22,7 @@ def make_wall(name_suffix, position, rotation, wall_data):
     persist=True # False=objects will disappear after a reload (and only appear to clients already viewing the scene when they are created)
     wall_color = Color(151, 171, 216) # color of the wall
     text_color = Color(0, 66, 117)
+    back_text_color = Color(96, 122, 163)
     text_font = 'exo2bold'
 
     # these will be the name of the objects in the scene
@@ -29,10 +30,12 @@ def make_wall(name_suffix, position, rotation, wall_data):
     wall_name       = name_suffix + '_wall'
     img_name        = name_suffix + '_img'
     light_name      = name_suffix + '_light'
-    lblTitle_name   = name_suffix + '_lbltitle'
-    lblAuthors_name = name_suffix + '_lblauthors'
-    slidesLnk_name  = name_suffix + '_slideslink'
-    videoLnk_name   = name_suffix + '_videolink'
+    lbl_title_name   = name_suffix + '_lbltitle'
+    lbl_authors_name = name_suffix + '_lblauthors'
+    lbl_back_name   = name_suffix + '_lblback'
+    lbl_back_title_name   = name_suffix + '_lblbacktitle'
+    slides_lnk_name  = name_suffix + '_slideslink'
+    video_lnk_name   = name_suffix + '_videolink'
 
     # invisible root object; all other objects children of this object
     root = Object(
@@ -69,7 +72,7 @@ def make_wall(name_suffix, position, rotation, wall_data):
 
     # button to video
     videolink = Image(
-        object_id=videoLnk_name,
+        object_id=video_lnk_name,
         parent=root_name,
         persist=persist,
         position=Position(4, 3, 0.510),
@@ -82,7 +85,7 @@ def make_wall(name_suffix, position, rotation, wall_data):
 
     # button to presentation slides
     slideslink = Image(
-        object_id=slidesLnk_name,
+        object_id=slides_lnk_name,
         parent=root_name,
         persist=persist,
         position=Position(4, 2, 0.510),
@@ -95,7 +98,7 @@ def make_wall(name_suffix, position, rotation, wall_data):
 
     # title
     lbltitle = Text(
-        object_id=lblTitle_name,
+        object_id=lbl_title_name,
         parent=root_name,
         persist=persist,
         position=Position(0, 5, 0.510),
@@ -108,7 +111,7 @@ def make_wall(name_suffix, position, rotation, wall_data):
 
     # authors
     lbl = Text(
-        object_id=lblAuthors_name,
+        object_id=lbl_authors_name,
         parent=root_name,
         persist=persist,
         position=Position(0, 4.5, 0.510),
@@ -118,20 +121,34 @@ def make_wall(name_suffix, position, rotation, wall_data):
         width=4
     )
     arena.add_object(lbl)
-"""
-    # a light for the wall
-    plight = Light(
-        object_id=light_name,
+
+    # back
+    lblback = Text(
+        object_id=lbl_back_name,
         parent=root_name,
         persist=persist,
-        position=Position(0, 5, 3),
-        rotation=Rotation(-30,0,0),
-        type='spot',
-        color='#ffffff',
-        intensity=0.1
+        position=Position(0, 3.6, -0.55),
+        rotation=Rotation(0, 180, 0),
+        text="On the other side:",
+        color=back_text_color,
+        font=text_font,
+        width=9
     )
-    arena.add_object(plight)
-"""
+    arena.add_object(lblback)
+
+    # title, back
+    lbltitleb = Text(
+        object_id=lbl_back_title_name,
+        parent=root_name,
+        persist=persist,
+        position=Position(0, 2.7, -0.55),
+        rotation=Rotation(0, 180, 0),
+        text=wall_data['title'],
+        color=back_text_color,
+        font=text_font,
+        width=8
+    )
+    arena.add_object(lbltitleb)
 
 def make_walls():
     # remove old file
@@ -149,11 +166,10 @@ def make_walls():
         if p['theme'] == theme:
             p_to_add.append(p)
 
-    #t = Layout(Layout.ROWCOL, p_to_add).get_transforms(row_dist=20, col_dist=20, row_off=20, col_off=-50)
+    t = Layout(Layout.ROWCOL, p_to_add).get_transforms(row_dist=20, col_dist=20, row_off=20, col_off=-50)
     #t = Layout(Layout.CIRCLE, p_to_add).get_transforms(radius=50)
     #t = Layout(Layout.SQUARE, p_to_add).get_transforms(length=100)
-    t = Layout(Layout.LINE, p_to_add).get_transforms(length=200)
-    #print(t)
+    #t = Layout(Layout.LINE, p_to_add).get_transforms(length=200)
 
     for i in range(len(p_to_add)):
         make_wall(p_to_add[i]['lname'], Position(t[i]['x'], t[i]['y'], t[i]['z']), Rotation(t[i]['rx'],t[i]['ry'],t[i]['rz']), p_to_add[i])
@@ -165,7 +181,7 @@ if __name__ == '__main__':
     #exit()
 
     # init the ARENA library
-    arena = Arena(host='arena.andrew.cmu.edu', realm='realm', scene=theme+'1')
+    arena = Arena(host='arena.andrew.cmu.edu', realm='realm', scene=theme)
 
     # add and start tasks
     arena.run_once(make_walls)

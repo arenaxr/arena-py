@@ -25,7 +25,7 @@ arena.add_object(speech)
 
 instructions = Text(
         object_id="instructions",
-        material=Material(color=(100,50,75)),
+        color=(100,50,75),
         text="",
         position=(15.4,7,0),
         scale=(3,3,3)
@@ -56,7 +56,7 @@ def close_mouth():
     arena.update_object(avatar, **morph)
 
 def update_code():
-    arena.update_object(instructions, text="\n\n".join(code), align="left")
+    print(arena.update_object(instructions, text="\n\n".join(code), align="left"))
 
 @arena.run_forever(interval_ms=50)
 def main():
@@ -81,7 +81,7 @@ def main():
         close_mouth()
 
     if ticks == 90:
-        avatar.data.rotation.y = math.pi
+        avatar.data.rotation.y = 180
         arena.update_object(avatar)
 
     if 90 < ticks < 160:
@@ -102,7 +102,7 @@ def main():
             arena.update_object(speech)
 
             instructions.data.position.z = avatar.data.position.z
-            arena.add_object(instructions)
+            print(arena.add_object(instructions))
 
         if ticks == 200:
             speech.data.text = "To my left is the Python\ncode I will have you write:"

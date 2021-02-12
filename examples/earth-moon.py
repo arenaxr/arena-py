@@ -53,14 +53,14 @@ def main():
     print(earth.json())
 
     ## Create marker objects
-    arena.add_object(Box(object_id="box0", color=(0,255,0), scale=(0.2, 0.2, 0.2)))
-    arena.add_object(Box(object_id="box1", color=(255,0,0), scale=(0.2, 0.2, 0.2),
+    arena.add_object(Box(object_id="box0", material=Material(color=(0,255,0)), scale=(0.2, 0.2, 0.2)))
+    arena.add_object(Box(object_id="box1", material=Material(color=(255,0,0)), scale=(0.2, 0.2, 0.2),
                             position=(-0.7,  1.67, 2.11)))
-    arena.add_object(Box(object_id="box2", color=(0,255,255), scale=(0.2, 0.2, 0.2),
+    arena.add_object(Box(object_id="box2", material=Material(color=(0,255,255)), scale=(0.2, 0.2, 0.2),
                             position=(-2.88, 2.80, -2.12)))
-    arena.add_object(Box(object_id="box3", color=(0,0,255), scale=(0.2, 0.2, 0.2),
+    arena.add_object(Box(object_id="box3", material=Material(color=(0,0,255)), scale=(0.2, 0.2, 0.2),
                             position=(-0.09, 1.30, -3.66)))
-    arena.add_object(Box(object_id="box4", color=(100,200,50), scale=(0.2, 0.2, 0.2),
+    arena.add_object(Box(object_id="box4", material=Material(color=(100,200,50)), scale=(0.2, 0.2, 0.2),
                             position=(3.31, 2.00, -0.97)))
 
 arena.run_tasks()

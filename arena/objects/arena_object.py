@@ -34,6 +34,13 @@ class Object(BaseObject):
         # remove "action", if exists
         if "action" in kwargs: del kwargs["action"]
 
+        # default "object_type" to entity
+        if "object_type" not in kwargs:
+            kwargs["object_type"] = "entity"
+
+        if "color" in kwargs:
+            print("[DEPRECATED]", "Color must now be specified in material=Material(color=Color(...))!")
+
         # print warning if object is being created with the same id as an existing object
         if Object.exists(object_id):
             print("[WARNING]", f"An object with object_id of {object_id} was already created. The previous object will be overwritten.")
@@ -112,6 +119,12 @@ class Object(BaseObject):
             # color should be a hex string
             if "color" == k:
                 json_data["color"] = v.hex
+
+            elif "material" == k:
+                json_data["material"] = vars(v).copy()
+                if "color" in v:
+                    color = v["color"]
+                    json_data["material"]["color"] = color.hex
 
             # rotation should be in quaternions
             elif "rotation" == k:

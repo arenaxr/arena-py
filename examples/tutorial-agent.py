@@ -25,7 +25,7 @@ arena.add_object(speech)
 
 instructions = Text(
         object_id="instructions",
-        color=(100,50,75),
+        material=Material(color=(100,50,75)),
         text="",
         position=(15.4,7,0),
         scale=(3,3,3)

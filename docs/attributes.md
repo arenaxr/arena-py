@@ -56,6 +56,13 @@ color=Color(red, green, blue)
 # or
 color=(red, green, blue)
 ```
+Note: as of 0.1.8, color should be specified in Material!
+
+## Material
+The color and transparency of an object can be set by:
+```python
+material=Material(color, transparent, opacity, ...)
+```
 
 ## Animation
 An animation can be added by:
@@ -71,12 +78,6 @@ Animation(start="something", end="something else ") == Animation(to="something",
 A sound can be added to an object using:
 ```python
 sound=Sound(positional, poolSize, autoplay, src, ...)
-```
-
-## Material
-The transparency of an object can be set by:
-```python
-material=Material(transparent, opacity, ...)
 ```
 
 ## GotoUrl

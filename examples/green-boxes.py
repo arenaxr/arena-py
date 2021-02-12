@@ -19,12 +19,11 @@ def make_boxs():
     position = (random.randrange(10)-5,
                 random.randrange(10),
                 -random.randrange(10))
-    arena.add_object(
-            Box(
-                position=position,
-                color=color,
-            )
+    box = Object(
+            position=position,
+            material=Material(color=color)
         )
+    arena.add_object(box)
     x = x + 1
 
     print("object " + str(x-1) + " at " + str(position))

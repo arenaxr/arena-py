@@ -1,5 +1,3 @@
-import re
-import webcolors
 from ..utils import *
 from .attribute import Attribute
 from .position import Position
@@ -84,24 +82,28 @@ class Data(Attribute):
 
             elif k == "color":
                 if isinstance(v, (list,tuple)):
-                    data[k] = Color(*v[:3])
+                    color = Color(*v[:3])
                 elif isinstance(v, dict):
-                    data[k] = Color(**v)
+                    color = Color(**v)
                 elif isinstance(v, str):
-                    # hex to tuple to Color
-                    color = v.lstrip('#')
-                    hexcolor = re.search(r'^(?:[0-9a-fA-F]{3}){1,2}$', color)
-                    if not hexcolor:
-                        try:
-                            wcrgb = webcolors.name_to_rgb(color)
-                        except:
-                            wcrgb = webcolors.hex_to_rgb("#0"+color)
-                        v = (wcrgb.red, wcrgb.green, wcrgb.blue)
-                    else:
-                        v = tuple(int(color[c:c+2], 16) for c in (0, 2, 4))
-                    data[k] = Color(*v)
+                    color = Color(v)
                 else:
-                    data[k] = v
+                    color = v
+                data[k] = color
+
+            elif k == "material":
+                data[k] = v
+                if "color" in v:
+                    color = v["color"]
+                    if isinstance(color, (list,tuple)):
+                        color = Color(*color[:3])
+                    elif isinstance(color, dict):
+                        color = Color(**color)
+                    elif isinstance(color, str):
+                        color = Color(color)
+                    else:
+                        color = v
+                    v["color"] = color
 
             elif isinstance(v, Attribute):
                 data[k] = v

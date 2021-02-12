@@ -328,6 +328,12 @@ class Arena(object):
         self.run_animations(obj)
         return res
 
+    def add_objects(self, objs):
+        """Public function to create multiple objects in a list"""
+        for obj in objs:
+            self.add_objects(obj)
+        return len(objs)
+
     def update_object(self, obj, **kwargs):
         """Public function to update an object"""
         if kwargs:
@@ -335,6 +341,12 @@ class Arena(object):
         res = self._publish(obj, "update")
         self.run_animations(obj)
         return res
+
+    def update_objects(self, obj, **kwargs):
+        """Public function to update multiple objects in a list"""
+        for obj in objs:
+            self.update_object(obj, **kwargs)
+        return len(objs)
 
     def delete_object(self, obj):
         """Public function to delete an object"""

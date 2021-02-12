@@ -1,10 +1,10 @@
 """
 ARENA-py
 
-Draw objects in the ARENA using Python!
+Draw objects and run programs in the ARENA using Python!
 """
 
-__version__     = "0.1.7"
+__version__     = "0.1.8"
 __author__      = "CONIX Research Center"
 
 __license__     = "BSD 3-Clause"

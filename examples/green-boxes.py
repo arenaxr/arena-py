@@ -19,7 +19,7 @@ def make_boxs():
     position = (random.randrange(10)-5,
                 random.randrange(10),
                 -random.randrange(10))
-    box = Object(
+    box = Box(
             position=position,
             material=Material(color=color)
         )

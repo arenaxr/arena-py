@@ -20,11 +20,11 @@ def rotate_box():
 
     direction = random.randint(1,3)
     if direction == 1:
-        box.data.rotation.x += sign*0.1
+        box.data.rotation.x += sign*10
     elif direction == 2:
-        box.data.rotation.y += sign*0.1
+        box.data.rotation.y += sign*10
     elif direction == 3:
-        box.data.rotation.z += sign*0.1
+        box.data.rotation.z += sign*10
 
     color = random.randint(1,3)
     if color == 1:

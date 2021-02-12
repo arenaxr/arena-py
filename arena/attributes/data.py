@@ -80,7 +80,7 @@ class Data(Attribute):
                 else:
                     data[k] = v
 
-            elif k == "color":
+            elif k == "color" and not isinstance(v, Color):
                 if isinstance(v, (list,tuple)):
                     color = Color(*v[:3])
                 elif isinstance(v, dict):

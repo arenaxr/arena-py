@@ -103,7 +103,8 @@ class Object(BaseObject):
 
     def json_preprocess(self, **kwargs):
         # kwargs are for additional param to add to json, like "action":"create"
-        json_payload = { k:v for k,v in vars(self).items() if not callable(v) and k != "animations" }
+        json_payload = { k:v for k,v in vars(self).items() if k != "evt_handler" and \
+                                            k != "update_handler" and k != "animations" }
         json_payload.update(kwargs)
         return json_payload
 
@@ -128,7 +129,14 @@ class Object(BaseObject):
 
             # rotation should be in quaternions
             elif "rotation" == k:
-                json_data["rotation"] = data["rotation"].quaternion
+                rot = data["rotation"]
+                if rot.is_quaternion:
+                    json_data["rotation"] = rot
+                else:
+                    # remove w if euler
+                    rot_json = vars(rot).copy()
+                    del rot_json["w"]
+                    json_data["rotation"] = rot_json
 
             # handle special case where "physics" should be "dynamic-body"
             elif "physics" == k or "dynamic_body" == k:

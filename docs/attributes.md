@@ -39,7 +39,7 @@ rotation=Rotation(x, y, z)
 # or
 rotation=(x, y, z)
 ```
-Note: All units for rotation are in **radians**.
+Note: All units for quaternion rotation are in **radians** and euler rotation is in **degrees**.
 
 ## Scale
 The scale of an object can be specified by:

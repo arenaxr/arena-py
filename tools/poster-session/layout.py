@@ -7,14 +7,14 @@ import numpy as np
 
 class Layout:
     """
-    Generates layouts for a the number of itens in the given collection
+    Generates layouts for the number of itens in the given collection
 
     Attributes
     ----------
-    ROWCOL: Row/col layout
-    CIRCLE: Circle layout
-    SQUARE: Square layout
-    LINE: Line Layout
+    ROWCOL: Row/col layout type
+    CIRCLE: Circle layout type
+    SQUARE: Square layout type
+    LINE: Line layout type
 
     """
     ROWCOL = 'rowcol'
@@ -23,10 +23,36 @@ class Layout:
     LINE = 'line'
 
     def __init__(self, type, collection):
+        """
+        Create an instance for the given layout type, for the given collection
+        The collection if only used to get its length when creating the tranforms
+
+        Parameters
+        ----------
+        type : str
+            one of the types supported: Layout.ROWCOL, Layout.CIRCLE, ...
+        collection : list
+            a list of object to which we can do len(collection)
+        """
         self.type = type
         self.collection = collection
 
     def get_transforms(self, **kwargs):
+        """
+        Return a list (of size len(collection); see constructor) of translation and rotation tuples
+        The tuples returned are in the form { x, y, x, rx, ry, rx }
+
+        Usage examples:
+            t = Layout(Layout.ROWCOL, alist).get_transforms(row_dist=20, col_dist=20, row_off=20, col_off=-50)
+            t = Layout(Layout.CIRCLE, alist).get_transforms(radius=50)
+            t = Layout(Layout.SQUARE, alist).get_transforms(length=100)
+            t = Layout(Layout.LINE, alist).get_transforms(length=200)
+
+        Parameters
+        ----------
+        kwargs
+            Variable list of parameters, depending on the layout type
+        """
         if (self.type == Layout.ROWCOL): return self.row_layout(**kwargs)
         if (self.type == Layout.CIRCLE): return self.circle_layout(**kwargs)
         if (self.type == Layout.LINE): return self.line_layout(**kwargs)

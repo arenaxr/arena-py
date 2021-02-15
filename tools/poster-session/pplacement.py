@@ -27,16 +27,16 @@ def make_wall(name_suffix, position, rotation, wall_data):
     text_font = 'exo2bold'
 
     # these will be the name of the objects in the scene
-    root_name       = name_suffix + '_root'
-    wall_name       = name_suffix + '_wall'
-    img_name        = name_suffix + '_img'
-    light_name      = name_suffix + '_light'
-    lbl_title_name   = name_suffix + '_lbltitle'
-    lbl_authors_name = name_suffix + '_lblauthors'
-    lbl_back_name   = name_suffix + '_lblback'
-    lbl_back_title_name   = name_suffix + '_lblbacktitle'
-    slides_lnk_name  = name_suffix + '_slideslink'
-    video_lnk_name   = name_suffix + '_videolink'
+    root_name           = f'{name_suffix}_root'
+    wall_name           = f'{name_suffix}_wall'
+    img_name            = f'{name_suffix}_img'
+    light_name          = f'{name_suffix}_light'
+    lbl_title_name      = f'{name_suffix}_lbltitle'
+    lbl_authors_name    = f'{name_suffix}_lblauthors'
+    lbl_back_name       = f'{name_suffix}_lblback'
+    lbl_back_title_name = f'{name_suffix}_lblbacktitle'
+    slides_lnk_name     = f'{name_suffix}_slideslink'
+    video_lnk_name      = f'{name_suffix}_videolink'
 
     # invisible root object; all other objects children of this object
     root = Object(
@@ -67,7 +67,7 @@ def make_wall(name_suffix, position, rotation, wall_data):
         persist=persist,
         position=Position(0, 2.2, 0.510),
         scale=Scale(7.2,4.05,1),
-        url=wall_data['imgURL'] #'https://arena.andrew.cmu.edu/store/users/comsenter/images/template_hero_image.jpg'
+        url=wall_data['imgURL']
     )
     arena.add_object(img)
 
@@ -116,7 +116,7 @@ def make_wall(name_suffix, position, rotation, wall_data):
         parent=root_name,
         persist=persist,
         position=Position(0, 4.5, 0.510),
-        text=wall_data['fname'] + ' ' + wall_data['lname'],
+        text=f'{wall_data["fname"]} {wall_data["lname"]}',
         color=text_color,
         font=text_font,
         width=4
@@ -160,10 +160,16 @@ def make_walls():
 
     landmarks = Landmarks();
     for i in range(len(p_to_add)):
-        make_wall(p_to_add[i]['lname'], Position(t[i]['x'], t[i]['y'], t[i]['z']), Rotation(t[i]['rx'],t[i]['ry'],t[i]['rz']), p_to_add[i])
-        lbl = p_to_add[i]['lname'] + ': ' + p_to_add[i]['title']
-        lbl_cut = lbl[0:50] + '...'
-        landmarks.push(p_to_add[i]['lname'] + '_img', lbl_cut)
+        make_wall(
+            p_to_add[i]['lname'],
+            Position(t[i]['x'],
+            t[i]['y'], t[i]['z']),
+            Rotation(t[i]['rx'],t[i]['ry'],t[i]['rz']),
+            p_to_add[i]
+        )
+        lbl = f'{p_to_add[i]["lname"]}: {p_to_add[i]["title"]}'
+        lbl_cut = f'{lbl[0:50]}...'
+        landmarks.push(f'{p_to_add[i]["lname"]}_img', lbl_cut)
 
     landmarks.add_to_arena(theme);
 

@@ -9,11 +9,13 @@ from arena import *
 persist=True # False=objects will disappear after a reload (and only appear to clients already viewing the scene when they are created)
 sign_frame_color = Color(150, 150, 150) # color of the wall
 sign_panel_color = Color(255, 255, 255) # color of the wall
-title_text_color = Color(225, 75, 40)
+#title_text_color = Color(225, 75, 40)
+title_text_color = Color(0, 55, 95)
 link_text_color = Color(0, 0, 0)
 title_text_font = 'exo2bold'
 link_text_font = 'exo2semibold'
-
+title_text_font_width = 5
+link_text_font_width = 4
 
 
 arena = Arena(host="arena.andrew.cmu.edu",realm="realm",scene="example")
@@ -52,7 +54,7 @@ def draw_signs():
                     text=title_text,
                     color=title_text_color,
                     font=title_text_font,
-                    width=5,
+                    width=title_text_font_width,
                     persist=persist,
                     parent=root_name
                 )
@@ -88,7 +90,8 @@ def draw_signs():
                             text=link_text,
                             color=link_text_color,
                             font=link_text_font,
-                            width=5,
+                            width=link_text_font_width,
+                            wrapCount=60,
                             parent=root_name,
                             persist=persist
                         )

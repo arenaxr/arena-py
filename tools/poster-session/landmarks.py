@@ -23,13 +23,13 @@ class Landmarks(dict):
         self['type'] = 'landmarks'
         self['data'] = { 'landmarks' : [] }
 
-    def push(self, obj_id, lbl):
+    def push_landmark(self, obj_id, lbl):
         self['data']['landmarks'].append({
             "object_id": obj_id,
             "label": lbl
         })
 
-    def add_to_arena(self, scene, realm='realm', mqtt_host="arena.andrew.cmu.edu", mqtt_port=8883):
+    def add_object(self, scene, realm='realm', mqtt_host="arena.andrew.cmu.edu", mqtt_port=8883):
         # get mqtt credentials
         _user_mqtt_path = f'{str(Path.home())}/.arena_mqtt_auth'
         with open(_user_mqtt_path) as f:

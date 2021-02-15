@@ -169,9 +169,9 @@ def make_walls():
         )
         lbl = f'{p_to_add[i]["lname"]}: {p_to_add[i]["title"]}'
         lbl_cut = f'{lbl[0:50]}...'
-        landmarks.push(f'{p_to_add[i]["lname"]}_img', lbl_cut)
+        landmarks.push_landmark(f'{p_to_add[i]["lname"]}_img', lbl_cut)
 
-    landmarks.add_to_arena(theme);
+    landmarks.add_object(theme);
 
 if __name__ == '__main__':
 

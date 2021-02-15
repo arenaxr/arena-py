@@ -1,5 +1,6 @@
 from arena import *
 from layout import Layout
+from landmarks import Landmarks
 from google_drive_downloader import GoogleDriveDownloader as gdd
 import os
 import math
@@ -122,26 +123,12 @@ def make_wall(name_suffix, position, rotation, wall_data):
     )
     arena.add_object(lbl)
 
-    # back
-    lblback = Text(
-        object_id=lbl_back_name,
-        parent=root_name,
-        persist=persist,
-        position=Position(0, 3.6, -0.55),
-        rotation=Rotation(0, 180, 0),
-        text="On the other side:",
-        color=back_text_color,
-        font=text_font,
-        width=9
-    )
-    arena.add_object(lblback)
-
     # title, back
     lbltitleb = Text(
         object_id=lbl_back_title_name,
         parent=root_name,
         persist=persist,
-        position=Position(0, 2.7, -0.55),
+        position=Position(0, 3, -0.55),
         rotation=Rotation(0, 180, 0),
         text=wall_data['title'],
         color=back_text_color,
@@ -171,14 +158,16 @@ def make_walls():
     #t = Layout(Layout.SQUARE, p_to_add).get_transforms(length=100)
     #t = Layout(Layout.LINE, p_to_add).get_transforms(length=200)
 
+    landmarks = Landmarks();
     for i in range(len(p_to_add)):
         make_wall(p_to_add[i]['lname'], Position(t[i]['x'], t[i]['y'], t[i]['z']), Rotation(t[i]['rx'],t[i]['ry'],t[i]['rz']), p_to_add[i])
+        lbl = p_to_add[i]['lname'] + ': ' + p_to_add[i]['title']
+        lbl_cut = lbl[0:50] + '...'
+        landmarks.push(p_to_add[i]['lname'] + '_img', lbl_cut)
+
+    landmarks.add_to_arena(theme);
 
 if __name__ == '__main__':
-
-    #print(get_positions(n=10, cols=3, row_dist=40, col_dist=40, row_off=-20, col_off=2))
-
-    #exit()
 
     # init the ARENA library
     arena = Arena(host='arena.andrew.cmu.edu', realm='realm', scene=theme)

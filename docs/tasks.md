@@ -5,6 +5,16 @@ Tasks are ways you can run programs in the ARENA.
 You can think of tasks like threads. In fact, they behave a bit like Python threads, but unlike threads,
 ARENA-py tasks are all run in a single event loop.
 
+## Run Tasks/Start Event Loop
+```python
+arena.run_tasks()
+```
+
+## Stop Running Tasks/Stop Event Loop
+```python
+arena.stop_tasks()
+```
+
 ## Tasks
 
 You can run a task once at startup:
@@ -95,14 +105,4 @@ def forever(objs):
         print(o)
 
 # arena.run_forever(forever, 1234, objs=objs) # also works
-```
-
-## Run Tasks
-```python
-arena.run_tasks()
-```
-
-## Stop Running Tasks
-```python
-arena.stop_tasks()
 ```

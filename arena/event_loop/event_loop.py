@@ -1,3 +1,4 @@
+import os
 import signal
 import asyncio
 
@@ -8,7 +9,10 @@ class EventLoop(object):
     def __init__(self, shutdown_func=None):
         self.tasks = []
         self.loop = asyncio.get_event_loop()
-        self.signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
+        if os.name == 'nt': # windows
+            self.signals = (signal.SIGTERM, signal.SIGINT)
+        else:
+            self.signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
         self.shutdown_func = shutdown_func
 
     async def _shutdown(self):
@@ -19,13 +23,19 @@ class EventLoop(object):
     def add_task(self, worker):
         self.tasks += [worker.run()]
 
+    def shutdown_wrapper(self, *args):
+        asyncio.ensure_future(self._shutdown())
+
     def run(self):
         # cancellation of Future ensures all tasks (even if not completed) are cancelled
         self.future = asyncio.gather(*self.tasks)
         for s in self.signals:
-            self.loop.add_signal_handler(
-                s, lambda s=s: asyncio.ensure_future(self._shutdown())
-            )
+            if os.name == 'nt': # windows
+                signal.signal(s, self.shutdown_wrapper)
+            else:
+                self.loop.add_signal_handler(
+                    s, self.shutdown_wrapper
+                )
 
         # run event loop
         try:

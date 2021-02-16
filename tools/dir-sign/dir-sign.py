@@ -129,7 +129,6 @@ def draw_signs():
         print( "Need to add environmental variable to point to jason file")
         print( "export JSONCFG=directory_cfg.json")
 
-    print("\n\nProgram done, press ctrl-c to exit")
     arena.stop_tasks()
 
 arena.run_tasks()

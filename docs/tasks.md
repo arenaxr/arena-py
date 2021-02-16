@@ -96,3 +96,13 @@ def forever(objs):
 
 # arena.run_forever(forever, 1234, objs=objs) # also works
 ```
+
+## Run Tasks
+```python
+arena.run_tasks()
+```
+
+## Stop Running Tasks
+```python
+arena.stop_tasks()
+```

@@ -9,7 +9,7 @@ class EventLoop(object):
     def __init__(self, shutdown_func=None):
         self.tasks = []
         self.loop = asyncio.get_event_loop()
-        if os.name == 'nt': # windows
+        if os.name == 'nt': # Windows doesnt have SIGHUP signal
             self.signals = (signal.SIGTERM, signal.SIGINT)
         else:
             self.signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
@@ -30,7 +30,7 @@ class EventLoop(object):
         # cancellation of Future ensures all tasks (even if not completed) are cancelled
         self.future = asyncio.gather(*self.tasks)
         for s in self.signals:
-            if os.name == 'nt': # windows
+            if os.name == 'nt': # Windows has add_signal_handler unimplemented
                 signal.signal(s, self.shutdown_wrapper)
             else:
                 self.loop.add_signal_handler(

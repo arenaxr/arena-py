@@ -12,20 +12,9 @@
 Code for these can be found [here](../examples/tutorial)
 
 ## General Documentation
-[Attributes](attributes.md)
-
-[Objects](objects.md)
-
-[Events](events.md)
-
-[Callbacks](callbacks.md)
-
-[Tasks](tasks.md)
-
-[Animations](animations.md)
+See [ARENA Documentation: Python](https://conix-center.github.io/ARENA/content/python/).
 
 ## A simple program
-
 ```python
 from arena import *
 

@@ -191,6 +191,10 @@ class Arena(object):
         print("Connecting to the ARENA...")
         self.task_manager.run()
 
+    def stop_tasks(self):
+        """Stop event loop"""
+        self.task_manager.stop()
+
     async def sleep(self, interval_ms):
         """Public function for sleeping in async functions"""
         await asyncio.sleep(interval_ms / 1000)

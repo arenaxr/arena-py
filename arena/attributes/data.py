@@ -102,7 +102,7 @@ class Data(Attribute):
                     elif isinstance(color, str):
                         color = Color(color)
                     else:
-                        color = v
+                        color = v["color"]
                     v["color"] = color
 
             elif isinstance(v, Attribute):

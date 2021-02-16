@@ -2,7 +2,7 @@ from .worker import Worker
 
 class PersistantWorker(Worker):
     """
-    Wrapper for an ARENA task that runs oat a fixed interval.
+    Wrapper for an ARENA task that runs at a periodic interval.
     """
     def __init__(self, func, event=None, interval=1000, *args, **kwargs):
         super().__init__(func, event, *args, **kwargs)

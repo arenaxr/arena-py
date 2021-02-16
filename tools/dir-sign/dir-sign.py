@@ -37,14 +37,14 @@ def draw_signs():
                 print( "Directory Title: " + value["title"])
                 title_text = value["title"]
 
-                root_name = "sign_" + str(cnt) 
+                root_name = "sign_" + str(cnt)
                 print( "Root Name: " + root_name)
                 # invisible root object; all other objects children of this object
                 root = Object(
                     object_id=root_name,
                     object_type='entity',
                     material=Material(transparent=True),
-                    persist=persist                
+                    persist=persist
                 )
                 arena.add_object(root)
 
@@ -52,14 +52,14 @@ def draw_signs():
                     object_id=root_name+"_title",
                     position=Position(0.1, 3.3, 0),
                     text=title_text,
-                    color=title_text_color,
+                    material=Material(color=title_text_color),
                     font=title_text_font,
                     width=title_text_font_width,
                     persist=persist,
                     parent=root_name
                 )
                 arena.add_object(titleText)
- 
+
                 entry=0
                 for key2 in value:
                     if "link" in key2:
@@ -76,7 +76,7 @@ def draw_signs():
                             width=5.0,
                             height=0.30,
                             depth=0.1,
-                            color=sign_panel_color,
+                            material=Material(color=sign_panel_color),
                             clickable=True,
                             goto_url=GotoUrl(dest=link_mode,on="mousedown", url=link_url),
                             persist=persist,
@@ -88,7 +88,7 @@ def draw_signs():
                             object_id=root_name+"_text_" + str(entry),
                             position=Position(0.1, 3-(entry*0.4), 0),
                             text=link_text,
-                            color=link_text_color,
+                            material=Material(color=link_text_color),
                             font=link_text_font,
                             width=link_text_font_width,
                             wrapCount=60,
@@ -96,16 +96,16 @@ def draw_signs():
                             persist=persist
                         )
                         arena.add_object(linkText)
-                        
+
                         entry+=1
-                
+
                 signFrame = Box(
-                    object_id=root_name+"_frame", 
+                    object_id=root_name+"_frame",
                     position=Position(0, 3.55-entry*0.25, -0.2),
                     width=4.5,
                     height=entry*0.5,
                     depth=0.2,
-                    color=sign_frame_color,
+                    material=Material(color=sign_frame_color),
                     clickable=True,
                     goto_url=GotoUrl(dest=link_mode,on="mousedown", url=link_url),
                     persist=persist,
@@ -123,12 +123,13 @@ def draw_signs():
                 root.update_attributes(rotation=sign_rotation)
                 root.update_attributes(scale=sign_scale)
 
-                arena.update_object(root) 
+                arena.update_object(root)
                 cnt+=1
     else:
-        print( "Need to add environmental variable to point to jason file") 
-        print( "export JSONCFG=directory_cfg.json") 
+        print( "Need to add environmental variable to point to jason file")
+        print( "export JSONCFG=directory_cfg.json")
 
     print("\n\nProgram done, press ctrl-c to exit")
+    arena.stop_tasks()
 
 arena.run_tasks()

@@ -34,3 +34,6 @@ class EventLoop(object):
             pass
         finally:
             self.loop.close()
+
+    def stop(self):
+        self.loop.stop()

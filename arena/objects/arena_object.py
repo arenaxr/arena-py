@@ -153,6 +153,9 @@ class Object(BaseObject):
             elif "goto_url" == k:
                 json_data["goto-url"] = v
 
+            elif "collision_listener" == k:
+                json_data["collision-listener"] = v
+
             elif "animation_mixer" == k:
                 json_data["animation-mixer"] = v
 

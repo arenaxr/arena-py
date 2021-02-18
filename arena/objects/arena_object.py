@@ -117,8 +117,11 @@ class Object(BaseObject):
         data = vars(json_payload["data"])
 
         for k,v in data.items():
+            if v is None:
+                json_data[k] = v
+
             # color should be a hex string
-            if "color" == k:
+            elif "color" == k:
                 json_data["color"] = v.hex
 
             elif "material" == k:

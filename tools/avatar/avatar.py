@@ -23,9 +23,12 @@ def new_obj_callback(msg):
     if user_id is None: return
 
     if "camera" in msg["object_id"]:
-        avatars[user_id] = HeadRig(arena, user_id, Camera(**msg))
+        if user_id not in avatars:
+            avatars[user_id] = HeadRig(arena, user_id, Camera(**msg))
 
     if "type" in msg and "face-features" == msg["type"] and user_id in avatars:
+        if user_id not in avatars:
+            avatars[user_id] = HeadRig(arena, user_id, Camera(**msg))
         avatars[user_id].add_face(Object(**msg))
 
 

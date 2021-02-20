@@ -1,7 +1,6 @@
 from arena import Position, Rotation
 import numpy as np
 from scipy.spatial import distance
-import math
 
 from utils import *
 
@@ -24,10 +23,11 @@ class Face(object):
         new_quat = data["pose"]["quaternions"]
         new_euler = Rotation(*new_quat).euler
         filtered_euler = self.rot_filter.add((new_euler.x, new_euler.y, new_euler.z)) # filter
-        filtered_euler[0] *= 0.5            # scale down
-        filtered_euler[0] -= math.pi/20     # rotate up a bit
+        filtered_euler[0] *= -1.2   # flip direction and scale up a bit
+        filtered_euler[0] += 5      # rotate up a bit
+        filtered_euler[1] *= 0.7    # scale down
         # head faces backward at first, rotate head 180 to correct
-        filtered_euler[1] += math.pi
+        filtered_euler[1] += 180
         self.rot = Rotation(*filtered_euler)
 
         # update translation

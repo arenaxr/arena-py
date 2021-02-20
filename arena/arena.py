@@ -390,7 +390,7 @@ class Arena(object):
             payload["action"] = "delete"
             payload["timestamp"] = d
             payload = json.dumps(payload)
-        if action == "dispatch_animation":
+        elif action == "dispatch_animation":
             payload = obj
             payload["action"] = "update"
             payload["timestamp"] = d

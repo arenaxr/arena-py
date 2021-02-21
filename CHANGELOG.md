@@ -19,3 +19,6 @@ ARENA-py notable changes. Started 2021-19-2.
 ### Changed
 - `Arena` class renamed to `Scene`, but using `Arena` is still allowed. Updated examples to reflect this.
 - Tiny bug fix with `update_objects`.
+
+[0.1.13]: https://github.com/conix-center/ARENA-py/commit/589f095dab1f31acd3662b1283af7cded2197b08
+[0.1.12]: https://github.com/conix-center/ARENA-py/commit/1c66c37a8fb8c37a15650bc26924ae7a44606903

@@ -81,12 +81,13 @@ class Scene(object):
         )
 
         # do scene auth
-        data = auth.authenticate_scene(self.host, self.realm, self.namespace_scene, username, self.debug)
+        data = auth.authenticate_scene(self.host, self.realm,
+                                       self.namespace_scene, username, self.debug)
         if 'username' in data and 'token' in data:
             self.mqttc.username_pw_set(username=data["username"], password=data["token"])
         print("=====")
 
-
+        # set up callbacks
         self.on_msg_callback = on_msg_callback
         self.new_obj_callback = new_obj_callback
         self.delete_obj_callback = delete_obj_callback
@@ -96,7 +97,8 @@ class Scene(object):
         self.unspecified_objs_ids = set() # objects that exist in the scene,
                                           # but this scene instance does not
                                           # have a reference to
-        self.users = {}
+        self.users = {} # dict of all users
+        self.landmarks = Landmarks() # scene landmarks
 
         self.task_manager = EventLoop(self.disconnect)
 
@@ -121,7 +123,7 @@ class Scene(object):
         else:
             self.mqttc.connect(self.host)
 
-        # set callbacks
+        # set paho mqtt callbacks
         self.mqttc.on_connect = self.on_connect
         self.mqttc.on_disconnect = self.on_disconnect
 
@@ -279,8 +281,7 @@ class Scene(object):
                     obj.evt_handler(event)
 
             # run user_join_callback when user is found
-            elif object_id not in self.users:
-                if object_type and object_type == "camera":
+            elif object_type and object_type == "camera" and object_id not in self.users:
                     self.users[object_id] = Camera(**payload)
                     if self.user_join_callback:
                         self.user_join_callback(self.users[object_id])
@@ -350,6 +351,17 @@ class Scene(object):
                     object_type="look-at",
                     target=target)
         return self.generate_custom_event(evt, action="update")
+
+    def add_landmark(self, obj, label):
+        if isinstance(obj, Object):
+            landmark_id = obj.object_id
+        else:
+            landmark_id = Object
+        # object must be persisted to make landmarks make sense
+        obj.persist = True
+        self.add_object(obj)
+        self.landmarks.add(landmark_id, label)
+        return self._publish(self.landmarks, "create")
 
     @property
     def all_objects(self):
@@ -460,5 +472,5 @@ class Scene(object):
 
 class Arena(Scene):
     """
-    Another name for scene.
+    Another name for Scene.
     """

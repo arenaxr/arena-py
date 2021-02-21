@@ -56,7 +56,7 @@ def close_mouth():
     arena.update_object(avatar, **morph)
 
 def update_code():
-    print(arena.update_object(instructions, text="\n\n".join(code), align="left"))
+    arena.update_object(instructions, text="\n\n".join(code), align="left")
 
 @arena.run_forever(interval_ms=50)
 def main():
@@ -102,7 +102,7 @@ def main():
             arena.update_object(speech)
 
             instructions.data.position.z = avatar.data.position.z
-            print(arena.add_object(instructions))
+            arena.add_object(instructions)
 
         if ticks == 200:
             speech.data.text = "To my left is the Python\ncode I will have you write:"
@@ -120,7 +120,7 @@ def main():
             arena.update_object(speech)
 
         if ticks == 270:
-            code += [f"arena = Scene(\"{arena.HOST}\", \"{arena.REALM}\", \"{arena.NAMESPACE}\", \"{arena.SCENE}\")"]
+            code += [f"arena = Scene(host=\"{arena.host}\", realm=\"{arena.realm}\", namespace=\"{arena.namespace}\", scene\"{arena.scene}\")"]
             update_code()
 
         if ticks == 300:
@@ -160,6 +160,7 @@ def main():
             close_mouth()
 
             def box_made(msg):
+                print(msg)
                 global box_ready
                 if "object_id" in msg:
                     box_ready = (msg["object_id"] == "my_box")

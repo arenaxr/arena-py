@@ -38,31 +38,31 @@ class Scene(object):
             self.host = kwargs["host"]
             print("Cannot find MQTTH environmental variable, using input parameter instead.")
         else:
-            sys.exit("MQTTH (host) is unspecified, aborting...")
+            sys.exit("mqtt host argument (host) is unspecified, aborting...")
 
-        if os.environ.get("realm"):
-            self.realm  = os.environ["realm"]
+        if os.environ.get("REALM"):
+            self.realm  = os.environ["REALM"]
         elif "realm" in kwargs:
             self.realm = kwargs["realm"]
-            print("Cannot find realm environmental variable, using input parameter instead.")
+            print("Cannot find REALM environmental variable, using input parameter instead.")
         else:
-            sys.exit("realm (realm) is unspecified, aborting...")
+            sys.exit("realm argument (realm) is unspecified, aborting...")
 
-        if os.environ.get("scene"):
-            self.scene  = os.environ["scene"]
+        if os.environ.get("SCENE"):
+            self.scene  = os.environ["SCENE"]
         elif "scene" in kwargs:
             self.scene = kwargs["scene"]
-            print("Cannot find scene environmental variable, using input parameter instead.")
+            print("Cannot find SCENE environmental variable, using input parameter instead.")
         else:
-            sys.exit("scene (scene) is unspecified, aborting...")
+            sys.exit("scene argument (scene) is unspecified, aborting...")
 
         self.debug = debug
 
         print("=====")
         # do user auth
         username = auth.authenticate_user(self.host, debug=self.debug)
-        if os.environ.get("namespace"):
-            self.namespace = os.environ["namespace"]
+        if os.environ.get("NAMESPACE"):
+            self.namespace = os.environ["NAMESPACE"]
         elif "namespace" not in kwargs:
             self.namespace = username
         else:

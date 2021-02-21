@@ -2,7 +2,8 @@
 Draw objects and run programs in the ARENA using Python!
 
 ## Documentation
-The ARENA Python library user guide and tutorials: [ARENA Documentation: Python](https://conix-center.github.io/ARENA/content/python/).
+The ARENA Python library user guide and tutorials:
+[ARENA Documentation: Python](https://conix-center.github.io/ARENA/content/python/).
 
 ## Setup
 Install package using pip:
@@ -11,7 +12,7 @@ pip3 install arena-py
 ```
 
 ## Hello ARENA
-1. Run the `hello.py` example:
+Run the `hello.py` example:
 ```shell
 cd examples
 python hello.py
@@ -36,11 +37,18 @@ message protocol: JSON messages described in more detail at https://github.com/c
 That forms a layer, in turn, on top of [A-Frame](https://aframe.io/) and [THREE.js](http://threejs.org/) javascript libraries.
 
 ## Authentication
-We are adding protection to the ARENA MQTT broker, eventually to host an ACL list to limit access to change your scenes. As a first step, we are requiring Python programs to supply authentication through a Google account.
+We are adding protection to the ARENA MQTT broker, eventually to host an ACL list to limit access to change your scenes.
+As a first step, we are requiring Python programs to supply authentication through a Google account.
+
 ### Sign-In Desktop OS
-If you have a web browser available, the ARENA library `Arena(host="myhost.com")` will launch a web browser the first time and ask you for an account to authenticate you with, before opening a client MQTT connection.
+If you have a web browser available, the ARENA library `Arena(host="myhost.com")` will launch a web browser the first time
+and ask you for an account to authenticate you with, before opening a client MQTT connection.
+
 ### Sign-In Server/Headless OS
-For headless environments, the ARENA library `Arena(host="myhost.com")` will provide you with a url to cut and paste in a browser anywhere, ask you for an account to authenticate you with, and show you a code you can enter on the command line, before opening a client MQTT connection.
+For headless environments, the ARENA library `Arena(host="myhost.com")` will provide you with a url to cut and paste in a
+browser anywhere, ask you for an account to authenticate you with, and show you a code you can enter on the command line,
+before opening a client MQTT connection.
+
 ### Sign-Out
 ```bash
 python3 -c "from arena import auth; auth.signout()"
@@ -50,10 +58,13 @@ python3 -c "from arena import auth; auth.signout()"
 python3 -c "from arena import auth; auth.permissions()"
 ```
 
+## Changelog
+Changelog can be found [here](CHANGELOG.md).
+
 ## ARENA-py Repository Files
 - [arena/](arena/): The ARENA Python library
 - [examples/](examples/): Canonical examples of ARENA functions from the [documentation](https://conix-center.github.io/ARENA/content/python/)
-- [examples/legacy/](examples/legacy/): Deprecated demos for ARENA-py < 0.1.0
-- [examples/legacy/digital-twins/](examples/legacy/digital-twins/): Digital twins of physical spaces for ARENA-py < 0.1.0
-- [system-tests/](system-tests/): Workouts for the ARENA
+- [examples/legacy/](examples/legacy/): **Deprecated** demos for ARENA-py < 0.1.0
+- [examples/legacy/digital-twins/](examples/legacy/digital-twins/): **Deprecated** demo of digital twins of physical spaces for ARENA-py < 0.1.0
+- [system-tests/](system-tests/): Workouts and tests for ARENA-py
 - [tools/](tools/): Reusable tools for any ARENA scene

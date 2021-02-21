@@ -14,7 +14,7 @@ from .event_loop import *
 
 from . import auth
 
-class Arena(object):
+class Scene(object):
     """
     Main ARENA client for ARENA-py.
     Wrapper around Paho MQTT client and EventLoop.
@@ -22,54 +22,56 @@ class Arena(object):
     """
     def __init__(
                 self,
-                on_msg_callback = None,
-                new_obj_callback = None,
-                delete_obj_callback = None,
                 debug = False,
                 network_loop_interval = 50,  # run mqtt client network loop every 50ms
                 network_latency_interval = 10000,  # run network latency update every 10s
+                on_msg_callback = None,
+                new_obj_callback = None,
+                user_join_callback = None,
+                user_left_callback = None,
+                delete_obj_callback = None,
                 **kwargs
             ):
         if os.environ.get("MQTTH"):
-            self.HOST  = os.environ["MQTTH"]
+            self.host  = os.environ["MQTTH"]
         elif "host" in kwargs:
-            self.HOST = kwargs["host"]
+            self.host = kwargs["host"]
             print("Cannot find MQTTH environmental variable, using input parameter instead.")
         else:
             sys.exit("MQTTH (host) is unspecified, aborting...")
 
-        if os.environ.get("REALM"):
-            self.REALM  = os.environ["REALM"]
+        if os.environ.get("realm"):
+            self.realm  = os.environ["realm"]
         elif "realm" in kwargs:
-            self.REALM = kwargs["realm"]
-            print("Cannot find REALM environmental variable, using input parameter instead.")
+            self.realm = kwargs["realm"]
+            print("Cannot find realm environmental variable, using input parameter instead.")
         else:
-            sys.exit("REALM (realm) is unspecified, aborting...")
+            sys.exit("realm (realm) is unspecified, aborting...")
 
-        if os.environ.get("SCENE"):
-            self.SCENE  = os.environ["SCENE"]
+        if os.environ.get("scene"):
+            self.scene  = os.environ["scene"]
         elif "scene" in kwargs:
-            self.SCENE = kwargs["scene"]
-            print("Cannot find SCENE environmental variable, using input parameter instead.")
+            self.scene = kwargs["scene"]
+            print("Cannot find scene environmental variable, using input parameter instead.")
         else:
-            sys.exit("SCENE (scene) is unspecified, aborting...")
-
-        print("=====")
-        # do user auth
-        username = auth.authenticate_user(self.HOST, debug=debug)
-        if os.environ.get("NAMESPACE"):
-            self.NAMESPACE = os.environ["NAMESPACE"]
-        elif "namespace" not in kwargs:
-            self.NAMESPACE = username
-        else:
-            self.NAMESPACE = kwargs["namespace"]
+            sys.exit("scene (scene) is unspecified, aborting...")
 
         self.debug = debug
 
+        print("=====")
+        # do user auth
+        username = auth.authenticate_user(self.host, debug=self.debug)
+        if os.environ.get("namespace"):
+            self.namespace = os.environ["namespace"]
+        elif "namespace" not in kwargs:
+            self.namespace = username
+        else:
+            self.namespace = kwargs["namespace"]
+
         self.mqttc_id = "pyClient-" + self.generate_client_id()
 
-        self.namespace_scene =  f"{self.NAMESPACE}/{self.SCENE}"
-        self.root_topic = f"{self.REALM}/s/{self.namespace_scene}"
+        self.namespace_scene =  f"{self.namespace}/{self.scene}"
+        self.root_topic = f"{self.realm}/s/{self.namespace_scene}"
         self.scene_topic = f"{self.root_topic}/#"   # main topic for entire scene
         self.latency_topic = "$NETWORK/latency"     # network graph latency update
         self.ignore_topic = f"{self.root_topic}/{self.mqttc_id}/#" # ignore own messages
@@ -79,7 +81,7 @@ class Arena(object):
         )
 
         # do scene auth
-        data = auth.authenticate_scene(self.HOST, self.REALM, self.namespace_scene, username, self.debug)
+        data = auth.authenticate_scene(self.host, self.realm, self.namespace_scene, username, self.debug)
         if 'username' in data and 'token' in data:
             self.mqttc.username_pw_set(username=data["username"], password=data["token"])
         print("=====")
@@ -88,8 +90,13 @@ class Arena(object):
         self.on_msg_callback = on_msg_callback
         self.new_obj_callback = new_obj_callback
         self.delete_obj_callback = delete_obj_callback
+        self.user_join_callback = user_join_callback
+        self.user_left_callback = user_left_callback
 
-        self.unspecified_objs_ids = set() # objects that exist in scene, but user does not have reference to
+        self.unspecified_objs_ids = set() # objects that exist in the scene,
+                                          # but this scene instance does not
+                                          # have a reference to
+        self.users = {}
 
         self.task_manager = EventLoop(self.disconnect)
 
@@ -110,15 +117,15 @@ class Arena(object):
         self.run_forever(self.network_latency_update, interval_ms=network_latency_interval)
 
         if "port" in kwargs:
-            self.mqttc.connect(self.HOST, port)
+            self.mqttc.connect(self.host, port)
         else:
-            self.mqttc.connect(self.HOST)
+            self.mqttc.connect(self.host)
 
         # set callbacks
         self.mqttc.on_connect = self.on_connect
         self.mqttc.on_disconnect = self.on_disconnect
 
-        print(f"Loading: https://{self.HOST}/{self.NAMESPACE}/{self.SCENE}, realm={self.REALM}")
+        print(f"Loading: https://{self.host}/{self.namespace}/{self.scene}, realm={self.realm}")
 
     def generate_client_id(self):
         """Returns a random 6 digit id"""
@@ -238,22 +245,45 @@ class Arena(object):
 
         # update object attributes, if possible
         if "object_id" in payload:
-            # check for events/object updates
-            event = None
-            if "action" in payload:
-                if payload["action"] == "clientEvent":
-                    event = Event(**payload)
-                elif self.delete_obj_callback and payload["action"] == "delete":
-                    self.delete_obj_callback(payload)
-                    return
-
             object_id = payload["object_id"]
+            data = {}
+            object_type = None
+            event = None
+
+            # parse data and object_type #
+            if "data" in payload:
+                data = payload["data"]
+                if "object_type" in data:
+                    object_type = data["object_type"]
+
+            # parse action and react accordingly #
+            if "action" in payload:
+                action = payload["action"]
+                if action == "clientEvent":
+                    event = Event(**payload)
+                elif action == "delete":
+                    if "camera" in object_id: # object is a camera
+                        if self.user_left_callback:
+                            if object_id in self.users:
+                                self.user_left_callback(self.users[object_id])
+                    elif self.delete_obj_callback:
+                        self.delete_obj_callback(payload)
+                    return # dont do anything else
+
+            # parse payload and handle callbacks #
             if object_id in self.all_objects:
                 obj = self.all_objects[object_id]
                 if not event: # update object if not an event
                     obj.update_attributes(**payload)
                 elif obj.evt_handler:
                     obj.evt_handler(event)
+
+            # run user_join_callback when user is found
+            elif object_id not in self.users:
+                if object_type and object_type == "camera":
+                    self.users[object_id] = Camera(**payload)
+                    if self.user_join_callback:
+                        self.user_join_callback(self.users[object_id])
 
             # if it is an object the lib has not seen before, call new object callback
             elif object_id not in self.unspecified_objs_ids and self.new_obj_callback:
@@ -346,7 +376,7 @@ class Arena(object):
         self.run_animations(obj)
         return res
 
-    def update_objects(self, obj, **kwargs):
+    def update_objects(self, objs, **kwargs):
         """Public function to update multiple objects in a list"""
         for obj in objs:
             self.update_object(obj, **kwargs)
@@ -427,3 +457,8 @@ class Arena(object):
     def message_callback_remove(self, sub):
         """Unsubscribes to topic and removes filter for callback"""
         self.mqttc.message_callback_remove(sub)
+
+class Arena(Scene):
+    """
+    Another name for scene.
+    """

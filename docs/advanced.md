@@ -33,7 +33,7 @@ print(arena.update_object(avatar, **morph)) # will print what was published as a
 ```
 You can also enable debug when creating the Arena object
 ```python
-arena = Arena(debug=True)
+arena = Scene(debug=True)
 ```
 
 # Appendix
@@ -42,7 +42,7 @@ from arena import *
 import random
 
 # setup library
-arena = Arena(host="arena.andrew.cmu.edu", realm="realm", scene="example")
+arena = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
 
 # create avatar/3d head
 model_url = "/store/users/wiselab/models/FaceCapHeadGeneric/FaceCapHeadGeneric.gltf"

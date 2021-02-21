@@ -1,7 +1,7 @@
 from arena import *
 import random, math
 
-arena = Arena(host="arena.andrew.cmu.edu", realm="realm", scene="example")
+arena = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
 
 model_url = "/store/users/wiselab/models/FaceCapHeadGeneric/FaceCapHeadGeneric.gltf"
 avatar = GLTF(
@@ -120,7 +120,7 @@ def main():
             arena.update_object(speech)
 
         if ticks == 270:
-            code += [f"arena = Arena(\"{arena.HOST}\", \"{arena.REALM}\", \"{arena.NAMESPACE}\", \"{arena.SCENE}\")"]
+            code += [f"arena = Scene(\"{arena.HOST}\", \"{arena.REALM}\", \"{arena.NAMESPACE}\", \"{arena.SCENE}\")"]
             update_code()
 
         if ticks == 300:

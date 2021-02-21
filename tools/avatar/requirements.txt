@@ -1,5 +1,5 @@
-arena-py~=0.1.11
+arena-py
 paho-mqtt~=1.5.0
 numpy~=1.18.1
-tensorflow
+tensorflow~=1.14.0
 scipy

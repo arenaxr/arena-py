@@ -5,7 +5,7 @@
 from arena import *
 import random
 
-arena = Arena(host="arena.andrew.cmu.edu", realm="realm", scene="test")
+scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="test")
 
 
 def rando():
@@ -19,7 +19,7 @@ def randcolor():
     return (x, y, z)
 
 
-@arena.run_forever(interval_ms=100)
+@scene.run_forever(interval_ms=100)
 def make_balls():
     obj = Sphere(
         clickable=True,
@@ -29,6 +29,6 @@ def make_balls():
         material=Material(color=randcolor()),
         ttl=60)
 
-    arena.add_object(obj)
+    scene.add_object(obj)
 
-arena.run_tasks()
+scene.run_tasks()

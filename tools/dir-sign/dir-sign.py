@@ -18,7 +18,7 @@ title_text_font_width = 5
 link_text_font_width = 4
 
 
-arena = Arena(host="arena.andrew.cmu.edu",realm="realm",scene="example")
+arena = Scene(host="arena.andrew.cmu.edu",realm="realm",scene="example")
 
 print( "Starting up")
 

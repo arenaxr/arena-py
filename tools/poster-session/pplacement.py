@@ -176,7 +176,7 @@ def make_walls():
 if __name__ == '__main__':
 
     # init the ARENA library
-    arena = Arena(host='arena.andrew.cmu.edu', realm='realm', scene=theme)
+    arena = Scene(host='arena.andrew.cmu.edu', realm='realm', scene=theme)
 
     # add and start tasks
     arena.run_once(make_walls)

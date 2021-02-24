@@ -70,6 +70,7 @@ class Scene(object):
 
         self.mqttc_id = "pyClient-" + self.generate_client_id()
 
+        # set up scene variables
         self.namespace_scene =  f"{self.namespace}/{self.scene}"
         self.root_topic = f"{self.realm}/s/{self.namespace_scene}"
         self.scene_topic = f"{self.root_topic}/#"   # main topic for entire scene
@@ -81,10 +82,16 @@ class Scene(object):
         )
 
         # do scene auth
-        data = auth.authenticate_scene(self.host, self.realm,
-                                       self.namespace_scene, username, self.debug)
-        if 'username' in data and 'token' in data:
-            self.mqttc.username_pw_set(username=data["username"], password=data["token"])
+        if os.environ.get("ARENA_USERNAME") and os.environ.get("ARENA_PASSWORD"):
+            username = os.environ["ARENA_USERNAME"]
+            password = os.environ["ARENA_PASSWORD"]
+        else:
+            data = auth.authenticate_scene(self.host, self.realm,
+                                           self.namespace_scene, username, self.debug)
+            if 'username' in data and 'token' in data:
+                username = data["username"]
+                password = data["token"]
+        self.mqttc.username_pw_set(username=username, password=password)
         print("=====")
 
         # set up callbacks

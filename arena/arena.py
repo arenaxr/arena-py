@@ -115,7 +115,7 @@ class Scene(object):
 
         # add mqtt client loop to list of tasks
         self.network_loop_interval = network_loop_interval
-        self.network_loop = PersistantWorker(
+        self.network_loop = PersistentWorker(
                                 func=self.run_network_loop,
                                 event=None,
                                 interval=self.network_loop_interval
@@ -193,7 +193,7 @@ class Scene(object):
             if interval_ms < 0:
                 print("Invalid interval! Defaulting to 1000ms")
                 interval_ms = 1000
-            t = PersistantWorker(func, self.mqtt_connect_evt, interval_ms, **kwargs)
+            t = PersistentWorker(func, self.mqtt_connect_evt, interval_ms, **kwargs)
             self.task_manager.add_task(t)
         else:
             # if there is no func, we are in a decorator

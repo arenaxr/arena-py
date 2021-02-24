@@ -2,9 +2,10 @@
 
 ARENA-py notable changes. Started 2021-19-2.
 
-## [Unreleased] - 2021-19-24
+## [Unreleased] - 2021-24-2
 ### Added
-- Allow user defined username and passwords with env vars ARENA_USERNAME, ARENA_PASSWORD.
+- Allow user defined username and passwords with env vars ARENA_USERNAME, ARENA_PASSWORD. Need to
+specify both to bypass auth.
 
 ## [0.1.13] - 2021-19-2
 ### Added

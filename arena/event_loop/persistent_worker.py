@@ -1,6 +1,6 @@
 from .worker import Worker
 
-class PersistantWorker(Worker):
+class PersistentWorker(Worker):
     """
     Wrapper for an ARENA task that runs at a periodic interval.
     """

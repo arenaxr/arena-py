@@ -15,7 +15,7 @@ setuptools.setup(
     url="https://github.com/conix-center/ARENA-py",
     packages=setuptools.find_packages(),
     install_requires=[
-        "aiohttp~=3.6.2",
+        "aiohttp>=3.7.4",
         "paho-mqtt~=1.5.0",
         "numpy~=1.18.1",
         "requests~=2.23.0",

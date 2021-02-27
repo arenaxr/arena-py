@@ -465,6 +465,7 @@ class Scene(object):
         obj = None
         if object_id in self.all_objects:
             obj = self.all_objects[object_id]
+            obj.persist = True
         else:
             # pass token to persist
             data = auth.urlopen(

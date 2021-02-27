@@ -2,9 +2,9 @@
 
 ARENA-py notable changes. Started 2021-19-2.
 
-## [0.1.14] - 2021-27-2
+## [0.1.15] - 2021-27-2
 ### Changed
-- Bug fix with get_persisted_obj
+- Bug fix with get_persisted_obj. Ensures that perist=True.
 
 ## [0.1.14] - 2021-24-2
 ### Added

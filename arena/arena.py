@@ -260,13 +260,25 @@ class Scene(object):
             object_type = None
             event = None
 
-            # parse data and object_type #
+            # parse data and object_type
             if "data" in payload:
                 data = payload["data"]
                 if "object_type" in data:
                     object_type = data["object_type"]
 
-            # parse action and react accordingly #
+            # parse payload and handle object callbacks
+            if object_id in self.all_objects:
+                obj = self.all_objects[object_id]
+                if not event: # update object if not an event
+                    obj.update_attributes(**payload)
+                elif obj.evt_handler:
+                    obj.evt_handler(event)
+                    return
+            else:
+                # [TODO]: check object_type
+                obj = Object(**payload)
+
+            # parse action and react accordingly
             if "action" in payload:
                 action = payload["action"]
                 if action == "clientEvent":
@@ -277,31 +289,27 @@ class Scene(object):
                             if object_id in self.users:
                                 self.user_left_callback(self.users[object_id])
                     elif self.delete_obj_callback:
-                        self.delete_obj_callback(payload)
-                    return # dont do anything else
-
-            # parse payload and handle callbacks #
-            if object_id in self.all_objects:
-                obj = self.all_objects[object_id]
-                if not event: # update object if not an event
-                    obj.update_attributes(**payload)
-                elif obj.evt_handler:
-                    obj.evt_handler(event)
+                        self.delete_obj_callback(obj)
+                    return # dont do anything else if action == delete
 
             # run user_join_callback when user is found
-            elif object_type and object_type == "camera" and object_id not in self.users:
-                    self.users[object_id] = Camera(**payload)
+            if object_type and object_type == "camera":
+                if object_id not in self.users:
+                    if object_id in self.all_objects:
+                        self.users[object_id] = obj
+                    else:
+                        self.users[object_id] = Camera(**payload)
                     if self.user_join_callback:
                         self.user_join_callback(self.users[object_id])
 
             # if it is an object the lib has not seen before, call new object callback
             elif object_id not in self.unspecified_objs_ids and self.new_obj_callback:
-                self.new_obj_callback(payload)
+                self.new_obj_callback(obj)
                 self.unspecified_objs_ids.add(object_id)
 
             # call new message callback if not an event
             if not event and self.on_msg_callback:
-                self.on_msg_callback(payload)
+                self.on_msg_callback(obj)
 
     def generate_custom_event(self, evt, action="clientEvent"):
         """Publishes an custom event. Could be user or library defined"""
@@ -452,20 +460,27 @@ class Scene(object):
         if self.debug: print("[publish]", topic, payload)
         return payload
 
-    def get_persisted_obj(self, object_id, broker, scene):
-        """Returns a dictionary for a persisted object. [TODO] wrap the output as an Object"""
-        # pass token to persist
-        data = auth.urlopen(
-            url=f'https://{broker}/persist/{scene}/{object_id}', creds=True)
-        output = json.loads(data)
-        if self.debug: print("[get_persisted_obj]", output)
-        return output
+    def get_persisted_obj(self, object_id):
+        """Returns a dictionary for a persisted object. [TODO] check object_type"""
+        obj = None
+        if object_id in self.all_objects:
+            obj = self.all_objects[object_id]
+        else:
+            # pass token to persist
+            data = auth.urlopen(
+                url=f'https://{self.host}/persist/{self.namespace_scene}/{object_id}', creds=True)
+            output = json.loads(data)
+            if len(output) > 0:
+                obj = Object(**output[0])
+        print(f'https://{self.host}/persist/{self.scene}/{object_id}')
+        if self.debug: print("[get_persisted_obj]", obj)
+        return obj
 
-    def get_persisted_scene_option(self, broker, scene):
+    def get_persisted_scene_option(self):
         """Returns a dictionary for scene-options. [TODO] wrap the output as a BaseObject"""
         # pass token to persist
         data = auth.urlopen(
-            url=f'https://{broker}/persist/{scene}', creds=True)
+            url=f'https://{self.host}/persist/{self.namespace_scene}', creds=True)
         output = json.loads(data)
         if self.debug: print("[get_persisted_scene_option]", output)
         return output

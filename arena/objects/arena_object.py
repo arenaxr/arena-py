@@ -31,6 +31,9 @@ class Object(BaseObject):
         # remove timestamp, if exists
         if "timestamp" in kwargs: del kwargs["timestamp"]
 
+        # remove "updatedAt", if exists
+        if "updatedAt" in kwargs: del kwargs["updatedAt"]
+
         # remove "action", if exists
         if "action" in kwargs: del kwargs["action"]
 

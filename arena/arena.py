@@ -471,8 +471,9 @@ class Scene(object):
                 url=f'https://{self.host}/persist/{self.namespace_scene}/{object_id}', creds=True)
             output = json.loads(data)
             if len(output) > 0:
-                obj = Object(**output[0])
-        print(f'https://{self.host}/persist/{self.scene}/{object_id}')
+                output = output[0]
+                obj = Object(object_id=output["object_id"], data=output["attributes"])
+                obj.persist = True
         if self.debug: print("[get_persisted_obj]", obj)
         return obj
 

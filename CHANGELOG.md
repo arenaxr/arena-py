@@ -2,10 +2,16 @@
 
 ARENA-py notable changes. Started 2021-19-2.
 
+## [0.1.14] - 2021-27-2
+### Changed
+- Bug fix with get_persisted_obj
+
 ## [0.1.14] - 2021-24-2
 ### Added
 - Allow user defined username and passwords with env vars ARENA_USERNAME, ARENA_PASSWORD. Need to
 specify both to bypass auth.
+
+### Changed
 - scene callbacks (on_msg, new_obj, delete_obj, etc.) have an Object instance as an argument rather than dict.
 - get_persisted_obj returns an Object.
 

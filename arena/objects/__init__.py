@@ -7,6 +7,7 @@ from .dodecahedron import Dodecahedron
 from .gltf import GLTF
 from .icosahedron import Icosahedron
 from .image import Image
+from .landmarks import Landmarks
 from .light import Light
 from .line import Line
 from .arena_object import Object

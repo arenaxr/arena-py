@@ -148,10 +148,14 @@ def _get_csrftoken(host):
     global _csrftoken
     csrf_url = f'https://{host}/user/login'
     client = requests.session()
-    if debug_toggle:
-        _csrftoken = client.get(csrf_url, verify=False).cookies['csrftoken']
+    verify = not debug_toggle
+    client.get(csrf_url, verify=verify)  # sets cookie
+    if 'csrftoken' in client.cookies:
+        _csrftoken = client.cookies['csrftoken']
+    elif 'csrf' in client.cookies:
+        _csrftoken = client.cookies['csrf']
     else:
-        _csrftoken = client.get(csrf_url).cookies['csrftoken']
+        _csrftoken = None
     return _csrftoken
 
 
@@ -212,7 +216,7 @@ def urlopen(url, data=None, creds=False, csrf=None):
         else:
             res = request.urlopen(req, data=data)
         return res.read().decode('utf-8')
-    except (URLError, HTTPError) as err:
+    except (requests.exceptions.ConnectionError, ConnectionError, URLError, HTTPError) as err:
         print("{0}: ".format(err)+url)
         if isinstance(err, HTTPError) and round(err.code, -2) == 400:
             # user not authorized on website yet, they don't have an ARENA username

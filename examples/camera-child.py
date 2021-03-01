@@ -3,7 +3,7 @@
 '''
 from arena import Arena, Circle
 
-arena = Arena(host="arena.andrew.cmu.edu", realm="realm", scene="example")
+arena = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
 
 def new_obj_callback(msg):
     if "camera" in msg["object_id"]:

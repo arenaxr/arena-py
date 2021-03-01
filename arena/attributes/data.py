@@ -1,9 +1,9 @@
-import re
-import webcolors
 from ..utils import *
 from .attribute import Attribute
 from .position import Position
 from .rotation import Rotation
+from .goto_url import GotoUrl
+from .physics import Physics
 from .scale import Scale
 from .color import Color
 
@@ -54,7 +54,7 @@ class Data(Attribute):
             # allow user to input tuples, lists, dicts, etc for specific Attributes.
             # everything gets converted to corresponding attribute
             if k == "position" and not isinstance(v, Position):
-                if isinstance(v, tuple) or isinstance(v, list):
+                if isinstance(v, (list,tuple)):
                     data[k] = Position(*v[:3])
                 elif isinstance(v, dict):
                     data[k] = Position(**v)
@@ -62,49 +62,48 @@ class Data(Attribute):
                     data[k] = v
 
             elif k == "rotation" and not isinstance(v, Rotation):
-                if isinstance(v, tuple) or isinstance(v, list):
+                if isinstance(v, (list,tuple)):
                     if len(v) == 3:
                         data[k] = Rotation(*v[:3], None)
                     else:
                         data[k] = Rotation(*v[:4])
                 elif isinstance(v, dict):
-                    # rotation doesnt exist or rotation originally in euler
-                    if k not in data or not data[k].is_quaternion:
-                        v = Rotation.q2e((v["x"], v["y"], v["z"], v["w"]))
-                        data[k] = Rotation(*v)
-                    else:
-                        data[k] = Rotation(**v)
+                    data[k] = Rotation(**v)
                 else:
                     data[k] = v
 
             elif k == "scale" and not isinstance(v, Scale):
-                if isinstance(v, tuple) or isinstance(v, list):
+                if isinstance(v, (list,tuple)):
                     data[k] = Scale(*v[:3])
                 elif isinstance(v, dict):
                     data[k] = Scale(**v)
                 else:
                     data[k] = v
 
-            elif k == "color":
-                if isinstance(v, tuple) or isinstance(v, list):
-                    data[k] = Color(*v[:3])
+            elif k == "color" and not isinstance(v, Color):
+                if isinstance(v, (list,tuple)):
+                    color = Color(*v[:3])
                 elif isinstance(v, dict):
-                    data[k] = Color(**v)
+                    color = Color(**v)
                 elif isinstance(v, str):
-                    # hex to tuple to Color
-                    color = v.lstrip('#')
-                    hexcolor = re.search(r'^(?:[0-9a-fA-F]{3}){1,2}$', color)
-                    if not hexcolor:
-                        try:
-                            wcrgb = webcolors.name_to_rgb(color)
-                        except:
-                            wcrgb = webcolors.hex_to_rgb("#0"+color)
-                        v = (wcrgb.red, wcrgb.green, wcrgb.blue)
-                    else:
-                        v = tuple(int(color[c:c+2], 16) for c in (0, 2, 4))
-                    data[k] = Color(*v)
+                    color = Color(v)
                 else:
-                    data[k] = v
+                    color = v
+                data[k] = color
+
+            elif k == "material":
+                data[k] = v
+                if "color" in v:
+                    color = v["color"]
+                    if isinstance(color, (list,tuple)):
+                        color = Color(*color[:3])
+                    elif isinstance(color, dict):
+                        color = Color(**color)
+                    elif isinstance(color, str):
+                        color = Color(color)
+                    else:
+                        color = v["color"]
+                    v["color"] = color
 
             elif isinstance(v, Attribute):
                 data[k] = v

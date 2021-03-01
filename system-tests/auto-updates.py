@@ -7,17 +7,20 @@ from arena import *
 import random
 
 
-arena = Arena(host="arena.andrew.cmu.edu", realm="realm", scene="test")
+scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="test")
 
 def evt_handler(evt): # should magically be able to click, thanks to auto-updates-helper.py...
     print("clicked")
 
-box = Box(object_id="box", position=Position(0,2,-1), rotation=(0,0,0), scale=Scale(2,2,2), material=Material(transparent=True, opacity=1), evt_handler=evt_handler)
-arena.add_object(box)
+def update_handler(obj):
+    print(obj.data.position.x)
 
-arena.update_object(box, click_listener=False)
+box = Box(object_id="box", position=Position(0,2,-1), rotation=(0,0,0), scale=Scale(2,2,2), material=Material(transparent=True, opacity=1), evt_handler=evt_handler, update_handler=update_handler)
+scene.add_object(box)
 
-@arena.run_forever(interval_ms=2000)
+scene.update_object(box, click_listener=False)
+
+@scene.run_forever(interval_ms=2000)
 def main():
     # note: nothing in this program moves the box to x=10,
     # it is auto-updates-helper.py that moves the box
@@ -25,6 +28,6 @@ def main():
         box.data.position.x = 0
         box.data.rotation.x = 0
         box.data.scale.y = 2
-        arena.update_object(box)
+        scene.update_object(box)
 
-arena.run_tasks()
+scene.run_tasks()

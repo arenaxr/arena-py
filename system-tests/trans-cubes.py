@@ -7,7 +7,7 @@ import random
 import time
 
 
-arena = Arena(host="arena.andrew.cmu.edu", realm="realm", scene="test")
+scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="test")
 
 
 def randmove():
@@ -58,15 +58,14 @@ def do(name, randx, randy, randz, scalex, scaley, scalez, color):
             object_id=name,
             position=(randx, randy, randz),
             scale=(scalex, scaley, scalez),
-            color=color,
-            material=Material(transparent=True, opacity=0.5),
+            material=Material(color=color, transparent=True, opacity=0.5),
             animation=Animation(property="rotation", to="0 360 0", loop=5, dur=10000, easing="linear")
         )
-    arena.add_object(obj)
+    scene.add_object(obj)
 
 
 counter = 0
-@arena.run_forever
+@scene.run_forever
 def do_stuff():
     global counter
 
@@ -92,4 +91,4 @@ def do_stuff():
     do(name + "b", randx, -randy, randz, scalex, scaley, scalez, color)
     do(name + "c", -randx, -randy, randz, scalex, scaley, scalez, color)
 
-arena.run_tasks()
+scene.run_tasks()

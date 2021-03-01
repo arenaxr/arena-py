@@ -13,7 +13,15 @@ from arena import *
 
 
 avatars = {}
-arena = Arena(host="arena.andrew.cmu.edu", realm="realm", scene="avatar")
+scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="avatar")
+
+
+def user_join_callback(camera):
+    global avatars
+
+    user_id = extract_user_id(camera.object_id)
+    if user_id and user_id not in avatars:
+        avatars[user_id] = HeadRig(scene, user_id, camera)
 
 
 def new_obj_callback(msg):
@@ -22,10 +30,9 @@ def new_obj_callback(msg):
     user_id = extract_user_id(msg["object_id"])
     if user_id is None: return
 
-    if "camera" in msg["object_id"]:
-        avatars[user_id] = HeadRig(arena, user_id, Camera(**msg))
-
     if "type" in msg and "face-features" == msg["type"] and user_id in avatars:
+        if user_id not in avatars:
+            avatars[user_id] = HeadRig(scene, user_id, Camera(**msg))
         avatars[user_id].add_face(Object(**msg))
 
 
@@ -44,7 +51,8 @@ def on_msg_callback(msg):
             avatar.rig_off()
 
 
-arena.on_msg_callback = on_msg_callback
-arena.new_obj_callback = new_obj_callback
+scene.on_msg_callback = on_msg_callback
+scene.new_obj_callback = new_obj_callback
+scene.user_join_callback = user_join_callback
 
-arena.run_tasks()
+scene.run_tasks()

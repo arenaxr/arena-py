@@ -35,13 +35,13 @@ def new_obj_callback(msg):
         cam = Camera(**msg)
         cam_state.add_cam(cam)
 
-arena = Arena(host="arena.andrew.cmu.edu", realm="realm", scene="example")
+arena = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
 arena.new_obj_callback = new_obj_callback
 
 
 def line_follow():
     if cam_state.displacement >= 0.5:
-        line = ThickLine(path=(cam_state.prev_pos, cam_state.curr_pos), lineWidth=5, color="#abcdef")
+        line = ThickLine(path=(cam_state.prev_pos, cam_state.curr_pos), lineWidth=5, material=Material(color="#abcdef"))
         arena.add_object(line)
 
         lines.append(line)

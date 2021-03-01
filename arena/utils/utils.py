@@ -18,3 +18,12 @@ class Utils(object):
             except:
                 pass
         return round(float_num, 3)
+
+    @classmethod
+    def dict_key_replace(cls, d, key, new_key):
+        """Repalces a key,val with a new key,val"""
+        if key in d:
+            ref = d[key]
+            del d[key]
+            d[new_key] = ref
+        return d

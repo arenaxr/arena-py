@@ -24,12 +24,12 @@ from arblib import ButtonType, Mode
 BROKER = "arena.andrew.cmu.edu"
 PORT = None
 REALM = "realm"
-SCENE = ""  # no default scene, arb works on any scene
+NAMESPACE = None
+SCENE = None  # no default scene, arb works on any scene
 MANIFEST = arblib.DEF_MANIFEST
 MODELS = []
 USERS = {}  # dictionary of user instances
 CONTROLS = {}  # dictionary of active controls
-DEMO = False
 scene = None  # the global scene connection object
 
 EVT_MOUSEENTER = "mouseenter"
@@ -38,19 +38,13 @@ EVT_MOUSEDOWN = "mousedown"
 EVT_MOUSEUP = "mouseup"
 
 
-# parse args and wait for events
-init_args()
-random.seed()
-scene = Scene(host=BROKER, realm=REALM, scene=SCENE,
-              port=PORT, on_msg_callback=scene_callback)
-scene.run_tasks()
-
-
 def init_args():
-    global BROKER, PORT, REALM, SCENE, MODELS, MANIFEST, DEMO
+    global BROKER, PORT, REALM, NAMESPACE, SCENE, MODELS, MANIFEST
     parser = argparse.ArgumentParser(description='ARENA AR Builder.')
     parser.add_argument(
         'scene', type=str, help='ARENA scene name')
+    parser.add_argument(
+        '-n', '--namespace', type=str, help='ARENA namespace', default=NAMESPACE)
     parser.add_argument(
         '-b', '--broker', type=str, help='MQTT message broker hostname', default=BROKER)
     parser.add_argument(
@@ -64,14 +58,14 @@ def init_args():
     args = parser.parse_args()
     print(args)
     SCENE = args.scene
-    if args.demo:
-        DEMO = True
     if args.broker is not None:
         BROKER = args.broker
     if args.port is not None:
         PORT = args.port
     if args.realm is not None:
         REALM = args.realm
+    if args.namespace is not None:
+        NAMESPACE = args.namespace
     if args.models is not None:
         mfile = open(args.models)
         data = json.load(mfile)
@@ -359,7 +353,7 @@ def show_redpill_scene(enabled):
                  line=Line((x, y, -glen), (x, y, glen), 1, hcolor))
         else:
             arblib.delete_obj(scene, name)
-    pobjs = scene.get_persisted_scene(BROKER, SCENE)
+    pobjs = scene.get_persisted_scene()
     for pobj in pobjs:
         obj = arblib.ObjectPersistence(pobj)
         # show occluded objects
@@ -923,7 +917,7 @@ def make_wall(camname):
 
 def scene_callback(msg):
     # This is the MQTT message evt_handler function for the scene
-    json_msg = json.loads(msg)
+    json_msg = msg  # json.loads(msg)
     if "action" not in json_msg or "data" not in json_msg or "object_id" not in json_msg:
         return
 
@@ -1015,6 +1009,16 @@ def scene_callback(msg):
 # parse args and wait for events
 init_args()
 random.seed()
-arena = Scene(host=BROKER, realm=REALM, scene=SCENE,
-              port=PORT, on_msg_callback=scene_callback)
-arena.run_tasks()
+kwargs = {}
+if PORT:
+    kwargs["port"] = PORT
+if NAMESPACE:
+    kwargs["namespace"] = NAMESPACE
+scene = Scene(
+    debug=True, # TODO: remove debug
+    host=BROKER,
+    realm=REALM,
+    scene=SCENE,
+    on_msg_callback=scene_callback,
+    kwargs=kwargs)
+scene.run_tasks()

@@ -10,8 +10,9 @@ import re
 
 import webcolors
 from arena import (Box, Circle, Cone, Cylinder, Dodecahedron, Icosahedron,
-                   Light, Material, Object, Octahedron, Plane, Ring, Scene,
-                   Sphere, Tetrahedron, Text, Torus, TorusKnot, Triangle, Physics)
+                   Light, Material, Object, Octahedron, Physics, Plane, Ring,
+                   Scene, Sphere, Tetrahedron, Text, Torus, TorusKnot,
+                   Triangle)
 from scipy.spatial.transform import Rotation
 
 CLICKLINE_LEN = 1  # meters
@@ -188,7 +189,7 @@ class User:
         ]
         for but in buttons:
             pbutton = Button(camname, but[0], but[1], but[2], enable=but[3], btype=but[4],
-                             parent=followname, callback=panel_callback)
+                             parent=followname, evt_handler=panel_callback)
             self.panel[pbutton.button.objName] = pbutton
             self.arena.add_object(pbutton)
 
@@ -224,7 +225,7 @@ class User:
             self.arena.delete_object(self.lamp)
 
     def set_clipboard(self,
-                      callback=None,
+                      evt_handler=None,
                       object_type=Sphere()['data']['object_type'],
                       scale=(0.05, 0.05, 0.05),
                       location=(0, 0, -CLIP_RADIUS),
@@ -240,7 +241,7 @@ class User:
             material=Material(transparent=True, opacity=0.4),
             url=url,
             clickable=True,
-            callback=callback)
+            evt_handler=evt_handler)
         self.cliptarget = Circle(  # add helper target object to find true origin
             object_id=(self.camname+"_cliptarget"),
             location=location,
@@ -248,7 +249,7 @@ class User:
             scale=(0.005, 0.005, 0.005),
             material=Material(transparent=True, opacity=0.4),
             clickable=True,
-            callback=callback)
+            evt_handler=evt_handler)
 
     def del_clipboard(self):
         if self.cliptarget:
@@ -259,7 +260,7 @@ class User:
 
 class Button:
     def __init__(self, arena: Scene, camname, mode, x=0, y=0, label="", parent=None,
-                 drop=None, color=CLR_BUTTON, enable=True, callback=None,
+                 drop=None, color=CLR_BUTTON, enable=True, evt_handler=None,
                  btype=ButtonType.ACTION):
         self.arena = arena
         if label == "":
@@ -303,7 +304,7 @@ class Button:
             scale=scale,
             color=self.colorbut,
             clickable=True,
-            callback=callback,
+            evt_handler=evt_handler,
         )
         scale = (1, 1, 1)
         if btype == ButtonType.TOGGLE:
@@ -438,7 +439,7 @@ def init_origin(arena: Scene):
         scale=(size[0], size[1] / 10, size[2])))
 
 
-def update_persisted_obj(arena: Scene, realm, scene, object_id, label,
+def update_persisted_obj(arena: Scene, object_id, label,
                          action="update", data=None, persist="true", ttl=None):
     msg = {
         "object_id": object_id,
@@ -449,80 +450,80 @@ def update_persisted_obj(arena: Scene, realm, scene, object_id, label,
         msg["persist"] = persist
         msg["ttl"] = ttl
         msg["data"] = data
-    arena_publish(realm + "/s/" + scene + "/" + object_id, msg)
+    arena._publish(obj=msg, action=action)
     print(label + " " + object_id)
 
 
-def opaque_obj(realm, scene, object_id, opacity):
+def opaque_obj(arena: Scene, object_id, opacity):
     data = {"material": {"transparent": True, "opacity": opacity}}
-    update_persisted_obj(realm, scene, object_id, "Opaqued", data=data)
+    update_persisted_obj(arena, object_id, "Opaqued", data=data)
 
 
-def occlude_obj(realm, scene, object_id, occlude):
+def occlude_obj(arena: Scene, object_id, occlude):
     # NOTE: transparency does not allow occlusion so remove transparency here.
     data = {"material": {"colorWrite": occlude == BOOLS[1],
                          "transparent": False,
                          "opacity": 1},
             "render-order": 0}
-    update_persisted_obj(realm, scene, object_id, "Occluded", data=data)
+    update_persisted_obj(arena, object_id, "Occluded", data=data)
 
 
-def color_obj(realm, scene, object_id, hcolor):
+def color_obj(arena: Scene, object_id, hcolor):
     # NOTE: "color" updates base color, NOT reflected live.
     # "material":{"color"} updates raw color, IS reflected live.
     data = {"color": "#" + hcolor, "material": {"color": "#" + hcolor}}
-    update_persisted_obj(realm, scene, object_id, "Colored", data=data)
+    update_persisted_obj(arena, object_id, "Colored", data=data)
 
 
-def stretch_obj(realm, scene, object_id, scale, location):
+def stretch_obj(arena: Scene, object_id, scale, location):
     data = {"scale": {
-        "x": (scale[0]),
-        "y": (scale[1]),
-        "z": (scale[2])
+        "x": scale[0],
+        "y": scale[1],
+        "z": scale[2]
     }, "location": {
-        "x": (location[0]),
-        "y": (location[1]),
-        "z": (location[2])
+        "x": location[0],
+        "y": location[1],
+        "z": location[2]
     }}
-    update_persisted_obj(realm, scene, object_id, "Stretched", data=data)
+    update_persisted_obj(arena, object_id, "Stretched", data=data)
 
 
-def scale_obj(realm, scene, object_id, scale):
+def scale_obj(arena: Scene, object_id, scale):
     data = {"scale": {
-        "x": (scale[0]),
-        "y": (scale[1]),
-        "z": (scale[2])
+        "x": scale[0],
+        "y": scale[1],
+        "z": scale[2]
     }}
-    update_persisted_obj(realm, scene, object_id, "Scaled", data=data)
+    update_persisted_obj(arena, object_id, "Scaled", data=data)
 
 
-def move_obj(realm, scene, object_id, location):
+def move_obj(arena: Scene, object_id, location):
     data = {"location": {
-        "x": (location[0]),
-        "y": (location[1]),
-        "z": (location[2])
+        "x": location[0],
+        "y": location[1],
+        "z": location[2]
     }}
-    update_persisted_obj(realm, scene, object_id, "locationed", data=data)
+    update_persisted_obj(arena, object_id, "locationed", data=data)
 
 
-def rotate_obj(realm, scene, object_id, rotation):
+def rotate_obj(arena: Scene, object_id, rotation):
     data = {"rotation": {
-        "x": (rotation[0]),
-        "y": (rotation[1]),
-        "z": (rotation[2]),
-        "w": (rotation[3])
+        "x": rotation[0],
+        "y": rotation[1],
+        "z": rotation[2],
+        "w": rotation[3]
     }}
-    update_persisted_obj(realm, scene, object_id, "Rotated", data=data)
+    update_persisted_obj(arena, object_id, "Rotated", data=data)
 
 
-def parent_obj(realm, scene, object_id, parent_id):
+def parent_obj(arena: Scene, object_id, parent_id):
     data = {"parent": parent_id}
-    update_persisted_obj(realm, scene, object_id,
+    update_persisted_obj(arena, object_id,
                          parent_id + " adopted", data=data)
 
 
-def delete_obj(realm, scene, object_id):
-    update_persisted_obj(realm, scene, object_id, "Deleted", action="delete")
+def delete_obj(arena: Scene, object_id):
+    update_persisted_obj(arena, object_id, "Deleted", action="delete")
 
 
 def rgb2hex(rgb):

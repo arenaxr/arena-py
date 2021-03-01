@@ -6,7 +6,7 @@
 # pylint: disable=missing-docstring
 
 # TODO: highlight mouseenter to avoid click
-# TODO: fix follow unlock position relative, not default
+# TODO: fix follow unlock location relative, not default
 # TODO: handle click-listener objects with 1.1 x scale shield?
 # TODO: add easy doc overlay for each button operation
 
@@ -16,9 +16,10 @@ import math
 import random
 import statistics
 
+from arena import Box, Circle, Cone, Line, Material, Object, Scene, GLTF
+
 import arblib
 from arblib import ButtonType, Mode
-from arena import *
 
 BROKER = "arena.andrew.cmu.edu"
 PORT = None
@@ -78,18 +79,18 @@ def handle_panel_event(event, dropdown=False):
     if owner != camname:
         return None, None, None  # only owner may activate
     objid = event.object_id
-    if event.event_type == arena.EventType.mouseenter or \
-            event.event_type == arena.EventType.mouseleave:
-        if event.event_type == arena.EventType.mouseenter:
+    if event.event_type == EventType.mouseenter or \
+            event.event_type == EventType.mouseleave:
+        if event.event_type == EventType.mouseenter:
             hover = True
-        elif event.event_type == arena.EventType.mouseleave:
+        elif event.event_type == EventType.mouseleave:
             hover = False
         if dropdown:
             button = USERS[camname].dbuttons[objid].set_hover(hover)
         else:
             button = USERS[camname].panel[objid].set_hover(hover)
 
-    if event.event_type != arena.EventType.mousedown:
+    if event.event_type != EventType.mousedown:
         return None, None, None
     if dropdown:
         drop = obj[5]
@@ -103,7 +104,7 @@ def handle_clip_event(event):
     owner = obj[0] + "_" + obj[1] + "_" + obj[2]  # callback owner in object_id
     if owner != camname:
         return None  # only owner may activate
-    if event.event_type != arena.EventType.mousedown:
+    if event.event_type != EventType.mousedown:
         return None
     return camname
 
@@ -114,18 +115,18 @@ def handle_clickline_event(event, mode):
     object_id = click_id[0]
     direction = (click_id[1])[0: 2]
     move = (click_id[1])[1: 4]
-    if event.event_type == arena.EventType.mouseenter:
+    if event.event_type == EventType.mouseenter:
         CONTROLS[object_id][event.object_id].update(
-            transparency=arena.Transparency(True, arblib.OPC_CLINE_HOVER))
-    elif event.event_type == arena.EventType.mouseleave:
+            material=Material(transparent=True, opacity=arblib.OPC_CLINE_HOVER))
+    elif event.event_type == EventType.mouseleave:
         CONTROLS[object_id][event.object_id].update(
-            transparency=arena.Transparency(True, arblib.OPC_CLINE))
+            material=Material(transparent=True, opacity=arblib.OPC_CLINE))
     # allow any user to change an object
-    if event.event_type != arena.EventType.mousedown:
+    if event.event_type != EventType.mousedown:
         return None, None, None
     if USERS[event.source].mode != mode:
         return None, None, None
-    pobjs = arena.get_network_persisted_obj(object_id, BROKER, SCENE)
+    pobjs = get_network_persisted_obj(object_id, BROKER, SCENE)
     if not pobjs:
         return None, None, None
     obj = arblib.ObjectPersistence(pobjs[0])
@@ -164,7 +165,7 @@ def panel_callback(event=None):
         USERS[camname].del_clipboard()
         # clear last dropdown
         for but in USERS[camname].dbuttons:
-            USERS[camname].dbuttons[but].delete()
+            USERS[camname].dbuttons[but].delete()  # TODO: migrate delete
         USERS[camname].dbuttons.clear()
 
     active = USERS[camname].panel[objid].active
@@ -182,14 +183,14 @@ def panel_callback(event=None):
         update_dropdown(camname, objid, mode, arblib.SHAPES, 2, shape_callback)
         USERS[camname].set_clipboard(
             callback=clipboard_callback,
-            obj_type=arena.Shape(USERS[camname].target_style))
+            object_type=USERS[camname].target_style)
     elif mode == Mode.MODEL:
         update_dropdown(camname, objid, mode, MODELS, 2, model_callback)
         idx = MODELS.index(USERS[camname].target_style)
         url = MANIFEST[idx]['url_gltf']
         sca = MANIFEST[idx]['scale']
         USERS[camname].set_clipboard(
-            callback=clipboard_callback, obj_type=arena.Shape.gltf_model,
+            callback=clipboard_callback, object_type=GLTF()['data']['object_type'],
             scale=(sca, sca, sca), url=url)
     elif mode == Mode.COLOR:
         update_dropdown(camname, objid, mode,
@@ -205,7 +206,7 @@ def panel_callback(event=None):
         USERS[camname].set_textright(USERS[camname].typetext)
     elif mode == Mode.WALL:
         USERS[camname].set_clipboard(
-            obj_type=arena.Shape.circle, callback=wall_callback,
+            object_type=Circle()['data']['object_type'], callback=wall_callback,
             scale=(0.005, 0.005, 0.005))
         USERS[camname].set_textright("Start: tap flush corner.")
     elif mode == Mode.NUDGE:
@@ -229,7 +230,7 @@ def panel_callback(event=None):
 def update_dropdown(camname, objid, mode, options, row, callback):
     # show new dropdown
     if USERS[camname].panel[objid].active:
-        followname = USERS[camname].follow.objName
+        followname = USERS[camname].follow.object_id
         maxwidth = min(len(options), 10)
         drop_button_offset = -math.floor(maxwidth / 2)
         for i, option in enumerate(options):
@@ -240,7 +241,7 @@ def update_dropdown(camname, objid, mode, options, row, callback):
             dbutton = arblib.Button(
                 camname, mode, (i % maxwidth) + drop_button_offset, row,
                 label=option, parent=followname, color=bcolor, drop=option, callback=callback)
-            USERS[camname].dbuttons[dbutton.button.objName] = dbutton
+            USERS[camname].dbuttons[dbutton.button.object_id] = dbutton
             if (i + 1) % maxwidth == 0:  # next row
                 if row < 0:
                     row -= 1
@@ -264,7 +265,7 @@ def model_callback(event=None):
     url = MANIFEST[idx]['url_gltf']
     sca = MANIFEST[idx]['scale']
     USERS[camname].set_clipboard(
-        callback=clipboard_callback, obj_type=arena.Shape.gltf_model,
+        callback=clipboard_callback, object_type=GLTF()['data']['object_type'],
         scale=(sca, sca, sca), url=url)
     USERS[camname].set_textright(model)
     USERS[camname].target_style = model
@@ -276,7 +277,7 @@ def shape_callback(event=None):
         return
     shape = drop
     USERS[camname].set_clipboard(
-        callback=clipboard_callback, obj_type=arena.Shape(shape))
+        callback=clipboard_callback, object_type=shape)
     USERS[camname].set_textright(shape)
     USERS[camname].target_style = shape
 
@@ -328,34 +329,34 @@ def show_redpill_scene(enabled):
     for z in range(-glen, glen + 1):
         name = "grid_z" + str(z)
         if enabled:
-            arena.Object(objName=name, objType=arena.Shape.line,
-                         line=arena.Line((-glen, y, z), (glen, y, z), 1, hcolor))
+            Line(object_id=name,
+                 line=Line((-glen, y, z), (glen, y, z), 1, hcolor))
         else:
             arblib.delete_obj(REALM, SCENE, name)
     for x in range(-glen, glen + 1):
         name = "grid_x" + str(x)
         if enabled:
-            arena.Object(objName=name, objType=arena.Shape.line,
-                         line=arena.Line((x, y, -glen), (x, y, glen), 1, hcolor))
+            Line(object_id=name,
+                 line=Line((x, y, -glen), (x, y, glen), 1, hcolor))
         else:
             arblib.delete_obj(REALM, SCENE, name)
-    pobjs = arena.get_network_persisted_scene(BROKER, SCENE)
+    pobjs = get_network_persisted_scene(BROKER, SCENE)
     for pobj in pobjs:
         obj = arblib.ObjectPersistence(pobj)
         # show occluded objects
         if obj.transparent_occlude:
             name = "redpill_" + obj.object_id
             if enabled:
-                arena.Object(
-                    objName=name,
-                    objType=obj.object_type,
-                    location=obj.position,
+                Object(
+                    object_id=name,
+                    object_type=obj.object_type,
+                    location=obj.location,
                     rotation=obj.rotation,
                     scale=obj.scale,
                     color=obj.color,
                     clickable=True,
                     url=obj.url,
-                    transparency=arena.Transparency(True, 0.5),
+                    material=Material(transparent=True, opacity=0.5),
                 )
                 print("Wrapping occlusion " + name)
             else:
@@ -365,11 +366,11 @@ def show_redpill_scene(enabled):
 def do_rename(camname, old_id, new_id):
     if new_id == old_id:
         return
-    pobjs = arena.get_network_persisted_obj(old_id, BROKER, SCENE)
+    pobjs = get_network_persisted_obj(old_id, BROKER, SCENE)
     if not pobjs:
         return
     data = json.dumps(pobjs[0]["attributes"])
-    arena.Object(objName=new_id, persist=True, data=data)
+    Object(object_id=new_id, persist=True, data=data)
     USERS[camname].target_id = new_id
     print("Duplicating " + old_id + " to " + new_id)
     arblib.delete_obj(REALM, SCENE, old_id)
@@ -377,24 +378,24 @@ def do_rename(camname, old_id, new_id):
 
 def show_redpill_obj(camname, object_id):
     # any scene changes must not persist
-    pobjs = arena.get_network_persisted_obj(object_id, BROKER, SCENE)
+    pobjs = get_network_persisted_obj(object_id, BROKER, SCENE)
     if not pobjs:
         return
     obj = arblib.ObjectPersistence(pobjs[0])
     # enable mouse enter/leave pos/rot/scale
-    USERS[camname].set_textstatus(object_id + ' p' + str(obj.position) +
+    USERS[camname].set_textstatus(object_id + ' p' + str(obj.location) +
                                   ' r' + str(obj.rotation) + ' s' + str(obj.scale))
 
 
 def do_move_select(camname, object_id):
-    pobjs = arena.get_network_persisted_obj(object_id, BROKER, SCENE)
+    pobjs = get_network_persisted_obj(object_id, BROKER, SCENE)
     if not pobjs:
         return
     obj = arblib.ObjectPersistence(pobjs[0])
     USERS[camname].target_id = object_id
     USERS[camname].set_clipboard(
         callback=clipboard_callback,
-        obj_type=obj.object_type,
+        object_type=obj.object_type,
         scale=obj.scale,
         color=obj.color,
         url=obj.url,
@@ -405,26 +406,26 @@ def update_controls(objid):
     if objid not in CONTROLS.keys():
         CONTROLS[objid] = {}
     for ctrl in CONTROLS[objid]:
-        CONTROLS[objid][ctrl].delete()
+        CONTROLS[objid][ctrl].delete()  # TODO: migrate delete
     CONTROLS[objid].clear()
 
 
-def do_nudge_select(camname, objid, position=None):
+def do_nudge_select(camname, objid, location=None):
     color = arblib.CLR_NUDGE
     delim = "_"+Mode.NUDGE.value+"_"
     callback = nudgeline_callback
-    if not position:
-        pobjs = arena.get_network_persisted_obj(objid, BROKER, SCENE)
+    if not location:
+        pobjs = get_network_persisted_obj(objid, BROKER, SCENE)
         if not pobjs:
             return
         obj = arblib.ObjectPersistence(pobjs[0])
-        position = obj.position
+        location = obj.location
     # nudge object + or - on 3 axis
-    make_clickline("x", 1, objid, position, delim, color, callback)
-    make_clickline("y", 1, objid, position, delim, color, callback)
-    make_clickline("z", 1, objid, position, delim, color, callback)
-    make_followspot(objid, position, delim, color)
-    pos = (round(position[0], 3), round(position[1], 3), round(position[2], 3))
+    make_clickline("x", 1, objid, location, delim, color, callback)
+    make_clickline("y", 1, objid, location, delim, color, callback)
+    make_clickline("z", 1, objid, location, delim, color, callback)
+    make_followspot(objid, location, delim, color)
+    pos = (round(location[0], 3), round(location[1], 3), round(location[2], 3))
     USERS[camname].set_textright(USERS[camname].target_style + " p" + str(pos))
 
 
@@ -433,15 +434,15 @@ def do_scale_select(camname, objid, scale=None):
     delim = "_"+Mode.SCALE.value+"_"
     callback = scaleline_callback
     if not scale:
-        pobjs = arena.get_network_persisted_obj(objid, BROKER, SCENE)
+        pobjs = get_network_persisted_obj(objid, BROKER, SCENE)
         if not pobjs:
             return
         obj = arblib.ObjectPersistence(pobjs[0])
-        position = obj.position
+        location = obj.location
         scale = obj.scale
         # scale entire object + or - on all axis
-        make_clickline("x", 1, objid, position, delim, color, callback)
-        make_followspot(objid, position, delim, color)
+        make_clickline("x", 1, objid, location, delim, color, callback)
+        make_followspot(objid, location, delim, color)
     sca = (round(scale[0], 3), round(scale[1], 3), round(scale[2], 3))
     USERS[camname].set_textright(USERS[camname].target_style + " s" + str(sca))
 
@@ -451,24 +452,24 @@ def do_stretch_select(camname, objid, scale=None):
     delim = "_"+Mode.STRETCH.value+"_"
     callback = stretchline_callback
     if not scale:
-        pobjs = arena.get_network_persisted_obj(objid, BROKER, SCENE)
+        pobjs = get_network_persisted_obj(objid, BROKER, SCENE)
         if not pobjs:
             return
         obj = arblib.ObjectPersistence(pobjs[0])
-        if obj.object_type == arena.Shape.gltf_model:  # scale too unpredictable
+        if obj.object_type == GLTF()['data']['object_type']:  # scale too unpredictable
             return
         if obj.rotation != (0, 0, 0, 1):  # scale too unpredictable
             return
-        position = obj.position
+        location = obj.location
         scale = obj.scale
-        # scale and reposition on one of 6 sides
-        make_clickline("x", 1, objid, position, delim, color, callback)
-        make_clickline("x", -1, objid, position, delim, color, callback)
-        make_clickline("y", 1, objid, position, delim, color, callback)
-        make_clickline("y", -1, objid, position, delim, color, callback)
-        make_clickline("z", 1, objid, position, delim, color, callback)
-        make_clickline("z", -1, objid, position, delim, color, callback)
-        make_followspot(objid, position, delim, color)
+        # scale and relocation on one of 6 sides
+        make_clickline("x", 1, objid, location, delim, color, callback)
+        make_clickline("x", -1, objid, location, delim, color, callback)
+        make_clickline("y", 1, objid, location, delim, color, callback)
+        make_clickline("y", -1, objid, location, delim, color, callback)
+        make_clickline("z", 1, objid, location, delim, color, callback)
+        make_clickline("z", -1, objid, location, delim, color, callback)
+        make_followspot(objid, location, delim, color)
     sca = (round(scale[0], 3), round(scale[1], 3), round(scale[2], 3))
     USERS[camname].set_textright(USERS[camname].target_style + " s" + str(sca))
 
@@ -478,35 +479,38 @@ def do_rotate_select(camname, objid, rotation=None):
     delim = "_"+Mode.ROTATE.value+"_"
     callback = rotateline_callback
     if not rotation:
-        pobjs = arena.get_network_persisted_obj(objid, BROKER, SCENE)
+        pobjs = get_network_persisted_obj(objid, BROKER, SCENE)
         if not pobjs:
             return
         obj = arblib.ObjectPersistence(pobjs[0])
-        position = obj.position
+        location = obj.location
         rotation = obj.rotation
         # rotate object + or - on 3 axis, plus show original axis as after
         # effect
-        make_clickline("x", 1, objid, position, delim, color, callback, True)
-        make_clickline("y", 1, objid, position, delim, color, callback, True)
-        make_clickline("z", 1, objid, position, delim, color, callback, True)
-        make_followspot(objid, position, delim, color)
+        make_clickline("x", 1, objid, location, delim, color, callback, True)
+        make_clickline("y", 1, objid, location, delim, color, callback, True)
+        make_clickline("z", 1, objid, location, delim, color, callback, True)
+        make_followspot(objid, location, delim, color)
     rote = arblib.rotation_quat2euler(rotation)
     euler = (round(rote[0], 1), round(rote[1], 1), round(rote[2], 1))
     USERS[camname].set_textright(
         USERS[camname].target_style + "d r" + str(euler))
 
 
-def make_followspot(object_id, position, delim, color):
+def make_followspot(object_id, location, delim, color):
     name = (object_id + delim + "spot")
-    CONTROLS[object_id][name] = (arena.Object(  # follow spot on ground
-        objType=arena.Shape.circle,
-        objName=name,
+    CONTROLS[object_id][name] = (Circle(  # follow spot on ground
+        object_id=name,
         scale=(0.1, 0.1, 0.1),
         color=color,
         ttl=arblib.TTL_TEMP,
-        location=(position[0], arblib.FLOOR_Y, position[2]),
+        location=(location[0], arblib.FLOOR_Y, location[2]),
         rotation=(-0.7, 0, 0, 0.7),
-        data='{"material":{"transparent":true,"opacity":0.4,"shader":"flat"}}'))
+        material=Material(
+            transparent=True,
+            opacity=0.4,
+            shader="flat"),
+    ))
 
 
 def regline(object_id, axis, direction, delim, suffix, start,
@@ -517,13 +521,12 @@ def regline(object_id, axis, direction, delim, suffix, start,
                (end[2] - start[2]) * 10)
         start = (0, 0, 0)
     name = (object_id + delim + axis + direction + "_" + suffix)
-    CONTROLS[object_id][name] = (arena.Object(
-        objType=arena.Shape.line,
-        objName=name,
+    CONTROLS[object_id][name] = (Line(
+        object_id=name,
         color=color,
         ttl=arblib.TTL_TEMP,
         parent=parent,
-        line=arena.Line(start, end, line_width, color)))
+        line=Line(start, end, line_width, color)))
 
 
 def cubeline(object_id, axis, direction, delim, suffix, start,
@@ -540,9 +543,8 @@ def cubeline(object_id, axis, direction, delim, suffix, start,
     elif start[0] == end[0] and start[1] == end[1]:
         scale = (line_width, line_width, abs(start[2] - end[2]))
     name = (object_id + delim + axis + direction + "_" + suffix)
-    CONTROLS[object_id][name] = (arena.Object(
-        objType=arena.Shape.cube,
-        objName=name,
+    CONTROLS[object_id][name] = (Box(
+        object_id=name,
         color=color,
         ttl=arblib.TTL_TEMP,
         parent=parent,
@@ -550,7 +552,11 @@ def cubeline(object_id, axis, direction, delim, suffix, start,
         location=(statistics.median([start[0], end[0]]),
                   statistics.median([start[1], end[1]]),
                   statistics.median([start[2], end[2]])),
-        data='{"material":{"transparent":true,"opacity":0.4,"shader":"flat"}}'))
+        material=Material(
+            transparent=True,
+            opacity=0.4,
+            shader="flat"),
+    ))
 
 
 def dir_clickers(object_id, axis, direction, delim, location,
@@ -568,28 +574,26 @@ def dir_clickers(object_id, axis, direction, delim, location,
     elif axis == "z":
         loc = (location[0], location[1], location[2] + npos)
     name = (object_id + delim + axis + "p_" + direction)
-    CONTROLS[object_id][name] = (arena.Object(   # click object positive
-        objType=arena.Shape.cone,
-        objName=name,
+    CONTROLS[object_id][name] = (Cone(   # click object positive
+        object_id=name,
         color=color,
         clickable=True,
         location=location,
         rotation=cones[axis + direction][0],
         scale=(0.05, 0.09, 0.05),
-        transparency=arena.Transparency(True, arblib.OPC_CLINE),
+        material=Material(transparent=True, opacity=arblib.OPC_CLINE),
         ttl=arblib.TTL_TEMP,
         parent=parent,
         callback=callback))
     name = (object_id + delim + axis + "n_" + direction)
-    CONTROLS[object_id][name] = (arena.Object(  # click object negative
-        objType=arena.Shape.cone,
-        objName=name,
+    CONTROLS[object_id][name] = (Cone(  # click object negative
+        object_id=name,
         color=color,
         clickable=True,
         location=loc,
         rotation=cones[axis + direction][1],
         scale=(0.05, 0.09, 0.05),
-        transparency=arena.Transparency(True, arblib.OPC_CLINE),
+        material=Material(transparent=True, opacity=arblib.OPC_CLINE),
         ttl=arblib.TTL_TEMP,
         parent=parent,
         callback=callback))
@@ -659,7 +663,7 @@ def nudgeline_callback(event=None):
     obj, direction, move = handle_clickline_event(event, Mode.NUDGE)
     if not obj and not direction:
         return
-    nudged = loc = obj.position
+    nudged = loc = obj.location
     inc = meters_increment(USERS[event.source].target_style)
     if direction == "xp":
         nudged = (incr_pos(loc[0], inc), loc[1], loc[2])
@@ -674,9 +678,9 @@ def nudgeline_callback(event=None):
     elif direction == "zn":
         nudged = (loc[0], loc[1], incr_neg(loc[2], inc))
     arblib.move_obj(REALM, SCENE, obj.object_id, nudged)
-    print(str(obj.position) + " to " + str(nudged))
+    print(str(obj.location) + " to " + str(nudged))
     # always redraw nudgelines
-    do_nudge_select(event.source, obj.object_id, position=nudged)
+    do_nudge_select(event.source, obj.object_id, location=nudged)
 
 
 def scaleline_callback(event=None):
@@ -703,7 +707,7 @@ def stretchline_callback(event=None):
     if not obj and not direction and not move:
         return
     scaled = sca = obj.scale
-    moved = loc = obj.position
+    moved = loc = obj.location
     inc = meters_increment(USERS[event.source].target_style)
     if direction == "xp":
         scaled = (incr_pos(sca[0], inc), sca[1], sca[2])
@@ -726,7 +730,7 @@ def stretchline_callback(event=None):
     if scaled[0] <= 0 or scaled[1] <= 0 or scaled[2] <= 0:
         return
     arblib.stretch_obj(REALM, SCENE, obj.object_id,
-                       scale=scaled, position=moved)
+                       scale=scaled, location=moved)
     print(str(obj.scale) + " to " + str(scaled))
     do_stretch_select(event.source, obj.object_id, scale=scaled)
 
@@ -769,26 +773,26 @@ def recenter(scaled, sca, loc, move):
 def create_obj(camname, clipboard, location):
     randstr = str(random.randrange(0, 1000000))
     # make a copy of static object in place
-    new_obj = arena.Object(
+    new_obj = Object(
         persist=True,
-        objName=clipboard.objType.name + "_" + randstr,
-        objType=clipboard.objType,
+        object_id=clipboard.object_type.name + "_" + randstr,
+        object_type=clipboard.object_type,
         location=location,
         rotation=(0, 0, 0, 1),  # undo clipboard rotation for visibility
         scale=clipboard.scale,
         color=clipboard.color,
-        transparency=arena.Transparency(False),
+        material=Material(transparent=False),
         url=clipboard.url,
         clickable=True)
-    USERS[camname].target_id = new_obj.objName
-    print("Created " + new_obj.objName)
+    USERS[camname].target_id = new_obj.object_id
+    print("Created " + new_obj.object_id)
 
 
 def clipboard_callback(event=None):
     camname = handle_clip_event(event)
     if not camname:
         return
-    location = event.position
+    location = event.location
     if USERS[camname].mode == Mode.CREATE or USERS[camname].mode == Mode.MODEL:
         create_obj(camname, USERS[camname].clipboard, location)
     elif USERS[camname].mode == Mode.MOVE:
@@ -829,8 +833,8 @@ def do_wall_end(camname):
 def make_wall(camname):
     # Wall theory: capture two poses and use them to place a wall object.
     # Also assumes first corner easier to capture accurate rotation than last.
-    # Click 1: Capture the position and rotation.
-    # Click 2: Capture the position only.
+    # Click 1: Capture the location and rotation.
+    # Click 2: Capture the location only.
     sloc = USERS[camname].wloc_start
     eloc = USERS[camname].wloc_end
     srot = USERS[camname].wrot_start
@@ -838,11 +842,11 @@ def make_wall(camname):
     print("S POS " + str((sloc[0], sloc[1], sloc[2])))
     print("E POS " + str((eloc[0], eloc[1], eloc[2])))
     # center point (blue)
-    locx = arena.agran(statistics.median([sloc[0], eloc[0]]))
-    locy = arena.agran(statistics.median([sloc[1], eloc[1]]))
-    locz = arena.agran(statistics.median([sloc[2], eloc[2]]))
+    locx = (statistics.median([sloc[0], eloc[0]]))
+    locy = (statistics.median([sloc[1], eloc[1]]))
+    locz = (statistics.median([sloc[2], eloc[2]]))
     arblib.temp_loc_marker((locx, locy, locz), (0, 0, 255))
-    print("wall position " + str((locx, locy, locz)))
+    print("wall location " + str((locx, locy, locz)))
     # rotation
     print("S ROT " + str((srot[0], srot[1], srot[2], srot[3])))
     print("E ROT " + str((erot[0], erot[1], erot[2], erot[3])))
@@ -876,19 +880,18 @@ def make_wall(camname):
     print("wall scale " + str((scax, scay, scaz)))
     # make wall
     randstr = str(random.randrange(0, 1000000))
-    new_wall = arena.Object(
+    new_wall = Box(
         persist=True,
         clickable=True,
-        objName="wall_" + randstr,
-        objType=arena.Shape.cube,
+        object_id="wall_" + randstr,
         location=(locx, locy, locz),
         rotation=(rotx, roty, rotz, rotw),
         scale=(scax, scay, scaz),
         color=(200, 200, 200),
-        transparency=arena.Transparency(True, 0.5),
+        material=Material(transparent=True, opacity=0.5),
     )
-    USERS[camname].target_id = new_wall.objName
-    print("Created " + new_wall.objName +
+    USERS[camname].target_id = new_wall.object_id
+    print("Created " + new_wall.object_id +
           " r" + str((rotx, roty, rotz, rotw)) +
           " s" + str((scax, scay, scaz)))
     # TODO: remove wall opacity in final wall feature
@@ -908,9 +911,9 @@ def scene_callback(msg):
             USERS[camname] = arblib.User(camname, panel_callback)
 
         # save camera's attitude in the world
-        USERS[camname].location = (json_msg["data"]["position"]["x"],
-                                   json_msg["data"]["position"]["y"],
-                                   json_msg["data"]["position"]["z"])
+        USERS[camname].location = (json_msg["data"]["location"]["x"],
+                                   json_msg["data"]["location"]["y"],
+                                   json_msg["data"]["location"]["z"])
         USERS[camname].rotation = (json_msg["data"]["rotation"]["x"],
                                    json_msg["data"]["rotation"]["y"],
                                    json_msg["data"]["rotation"]["z"],
@@ -926,7 +929,7 @@ def scene_callback(msg):
             px = arblib.PANEL_RADIUS * -math.cos(ty)
             py = arblib.PANEL_RADIUS * math.sin(tx)
             pz = arblib.PANEL_RADIUS * math.sin(ty)
-            USERS[camname].follow.position(location=(px, py, pz))
+            USERS[camname].follow.location(location=(px, py, pz))
         # else: # TODO: panel lock location drop is inaccurate
             # users[camname].lockx = rx + arblib.LOCK_XOFF
             # users[camname].locky = -(ry * math.pi) - arblib.LOCK_YOFF
@@ -989,6 +992,6 @@ def scene_callback(msg):
 # parse args and wait for events
 init_args()
 random.seed()
-arena = Arena(host=BROKER, realm=REALM, scene=SCENE,
+arena = Scene(host=BROKER, realm=REALM, scene=SCENE,
               port=PORT, on_msg_callback=scene_callback)
 arena.run_tasks()

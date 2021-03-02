@@ -10,6 +10,8 @@ scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="test")
 def main():
     object_id = "the_box"
     box = scene.get_persisted_obj(object_id)
+    box.data.position = Position(0,4,0)
+    scene.update_object(box)
     print(box)
 
 scene.run_tasks()

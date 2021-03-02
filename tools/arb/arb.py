@@ -172,7 +172,7 @@ def panel_callback(event=None):
         USERS[camname].del_clipboard()
         # clear last dropdown
         for but in USERS[camname].dbuttons:
-            USERS[camname].dbuttons[but].delete()  # TODO: migrate delete
+            scene.delete_object(USERS[camname].dbuttons[but])
         USERS[camname].dbuttons.clear()
 
     active = USERS[camname].panel[objid].active
@@ -339,15 +339,21 @@ def show_redpill_scene(enabled):
     for z in range(-glen, glen + 1):
         name = "grid_z" + str(z)
         if enabled:
-            scene.add_object(Line(object_id=name,
-                 line=Line((-glen, y, z), (glen, y, z), 1, hcolor)))
+            scene.add_object(Line(
+                object_id=name,
+                start=(-glen, y, z),
+                end=(glen, y, z),
+                material=Material(color=hcolor)))
         else:
             arblib.delete_obj(scene, name)
     for x in range(-glen, glen + 1):
         name = "grid_x" + str(x)
         if enabled:
-            scene.add_object(Line(object_id=name,
-                 line=Line((x, y, -glen), (x, y, glen), 1, hcolor)))
+            scene.add_object(Line(
+                object_id=name,
+                start=(x, y, -glen),
+                end=(x, y, glen),
+                material=Material(color=hcolor)))
         else:
             arblib.delete_obj(scene, name)
     pobjs = scene.get_persisted_scene()
@@ -416,7 +422,7 @@ def update_controls(objid):
     if objid not in CONTROLS.keys():
         CONTROLS[objid] = {}
     for ctrl in CONTROLS[objid]:
-        CONTROLS[objid][ctrl].delete()  # TODO: migrate delete
+        scene.delete_object(CONTROLS[objid][ctrl])
     CONTROLS[objid].clear()
 
 
@@ -473,7 +479,7 @@ def do_stretch_select(camname, objid, scale=None):
             return
         position = obj.position
         scale = obj.scale
-        # scale and relocation on one of 6 sides
+        # scale and reposition on one of 6 sides
         make_clickline("x", 1, objid, position, delim, color, evt_handler)
         make_clickline("x", -1, objid, position, delim, color, evt_handler)
         make_clickline("y", 1, objid, position, delim, color, evt_handler)
@@ -541,7 +547,8 @@ def regline(object_id, axis, direction, delim, suffix, start,
         material=Material(color=color),
         ttl=arblib.TTL_TEMP,
         parent=parent,
-        line=Line(start, end, line_width, color))
+        start=start,
+        end=end)
     scene.add_object(CONTROLS[object_id][name])
 
 

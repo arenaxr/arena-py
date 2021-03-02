@@ -2,6 +2,10 @@
 
 ARENA-py notable changes. Started 2021-19-2.
 
+## [0.1.17] - 2021-2-3
+### Changed
+- Event handler bug fix.
+
 ## [0.1.16] - 2021-1-3
 ### Changed
 - Bug fix with turning dictionaries into Material attributes.

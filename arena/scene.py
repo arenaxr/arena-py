@@ -260,23 +260,11 @@ class Scene(object):
             object_type = None
             event = None
 
-            # parse data and object_type
+            # parse object_type
             if "data" in payload:
                 data = payload["data"]
                 if "object_type" in data:
                     object_type = data["object_type"]
-
-            # parse payload and handle object callbacks
-            if object_id in self.all_objects:
-                obj = self.all_objects[object_id]
-                if not event: # update object if not an event
-                    obj.update_attributes(**payload)
-                elif obj.evt_handler:
-                    obj.evt_handler(event)
-                    return
-            else:
-                # [TODO]: check object_type
-                obj = Object(**payload)
 
             # parse action and react accordingly
             if "action" in payload:
@@ -291,6 +279,18 @@ class Scene(object):
                     elif self.delete_obj_callback:
                         self.delete_obj_callback(obj)
                     return # dont do anything else if action == delete
+
+            # parse payload and handle object callbacks
+            if object_id in self.all_objects:
+                obj = self.all_objects[object_id]
+                if not event: # update object if not an event
+                    obj.update_attributes(**payload)
+                elif obj.evt_handler:
+                    obj.evt_handler(event)
+                    return
+            else:
+                # [TODO]: check object_type
+                obj = Object(**payload)
 
             # run user_join_callback when user is found
             if object_type and object_type == "camera":

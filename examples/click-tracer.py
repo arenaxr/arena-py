@@ -9,14 +9,14 @@ def main():
         if evt.type == "mousedown":
             start = evt.data.clickPos
             end = evt.data.position
-            line = ThickLine(path=(start, end),
-                             material=Material(
-                                color=(random.randint(0,255),
-                                       random.randint(0,255),
-                                       random.randint(0,255))
-                             ),
-                             lineWidth=5)
-            arena.add_object(line)
+            line = Line(start=start, end=end,
+                        material=Material(
+                            color=(random.randint(0,255),
+                                   random.randint(0,255),
+                                   random.randint(0,255))
+                            )
+                        )
+            print(arena.add_object(line))
 
     box = Box(object_id="my_box",
               material=Material(color=(255,0,0)),

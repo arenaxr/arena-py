@@ -1,6 +1,6 @@
 from arena import *
 
-arena = Arena(host="arena.andrew.cmu.edu",realm="realm",scene="example")
+arena = Scene(host="arena.andrew.cmu.edu",realm="realm",scene="example")
 
 x=0
 

@@ -7,17 +7,17 @@ from arena import *
 import random
 
 
-arena = Arena(host="arena.andrew.cmu.edu", realm="realm", scene="test")
+scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="test")
 
 box = Box(object_id="box", position=(0,2,-1), rotation=(0,0,0), scale=(2,2,2), material=Material(transparent=True, opacity=1))
 
-@arena.run_forever(interval_ms=1000)
+@scene.run_forever(interval_ms=1000)
 def main():
     box.data.position.x += 1
     box.data.rotation.x += 0.1
     box.data.scale.y -= 0.01
     box.data.material.opacity = (box.data.material.opacity - 0.01) % 1
-    print(arena.update_object(
+    print(scene.update_object(
         box,
         click_listener=True,
         # physics=Physics("dynamic"),
@@ -25,4 +25,4 @@ def main():
 
     ))
 
-arena.run_tasks()
+scene.run_tasks()

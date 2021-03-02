@@ -2,7 +2,7 @@ from .worker import Worker
 
 class LazyWorker(Worker):
     """
-    Wrapper for an ARENA task that after an interval (ms).
+    Wrapper for an ARENA task that runs after an interval (ms).
     """
     def __init__(self, func, event=None, interval=1000, *args, **kwargs):
         super().__init__(func, event, *args, **kwargs)

@@ -31,6 +31,9 @@ class Object(BaseObject):
         # remove timestamp, if exists
         if "timestamp" in kwargs: del kwargs["timestamp"]
 
+        # remove "updatedAt", if exists
+        if "updatedAt" in kwargs: del kwargs["updatedAt"]
+
         # remove "action", if exists
         if "action" in kwargs: del kwargs["action"]
 
@@ -117,8 +120,11 @@ class Object(BaseObject):
         data = vars(json_payload["data"])
 
         for k,v in data.items():
+            if v is None:
+                json_data[k] = v
+
             # color should be a hex string
-            if "color" == k:
+            elif "color" == k:
                 json_data["color"] = v.hex
 
             elif "material" == k:
@@ -149,6 +155,9 @@ class Object(BaseObject):
             # remove underscores from specific keys
             elif "goto_url" == k:
                 json_data["goto-url"] = v
+
+            elif "collision_listener" == k:
+                json_data["collision-listener"] = v
 
             elif "animation_mixer" == k:
                 json_data["animation-mixer"] = v

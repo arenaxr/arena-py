@@ -5,36 +5,32 @@
 from arena import *
 import random
 
-cams = []
-
 def rando():
     return float(random.randint(-100000, 100000)) / 1000
 
 
-def new_obj_callback(msg):
-    global cams
-    if "camera" in msg["object_id"]:
-        cams += [Camera(**msg)]
+def user_join_callback(camera):
+    print(f"User found: {camera.displayName} [object_id={camera.object_id}]")
 
 
-arena = Arena(host="arena.andrew.cmu.edu", realm="realm", scene="test")
-arena.new_obj_callback = new_obj_callback
+scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="test")
+scene.user_join_callback = user_join_callback
 
 # box = Box(object_id="box")
-# arena.add_object(box)
+# scene.add_object(box)
 
-@arena.run_forever(interval_ms=500, cams=cams)
-def move_cams(cams):
-    for c in cams:
-        arena.manipulate_camera(
+@scene.run_forever(interval_ms=500)
+def move_cams():
+    for c in scene.users:
+        scene.manipulate_camera(
             c,
             position=(rando(),1.6,rando()),
             rotation=(0,0,0,1)
         )
-        arena.look_at(
+        scene.look_at(
             c,
             target=(0,0,0)
         )
 
 
-arena.run_tasks()
+scene.run_tasks()

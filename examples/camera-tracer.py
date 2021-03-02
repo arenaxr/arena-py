@@ -35,7 +35,7 @@ def new_obj_callback(msg):
         cam = Camera(**msg)
         cam_state.add_cam(cam)
 
-arena = Arena(host="arena.andrew.cmu.edu", realm="realm", scene="example")
+arena = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
 arena.new_obj_callback = new_obj_callback
 
 

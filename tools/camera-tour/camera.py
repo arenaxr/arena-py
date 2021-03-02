@@ -14,7 +14,7 @@ if len(sys.argv) > 1:
     SCENE=sys.argv[1]
 
 
-arena = Arena(HOST, "realm", SCENE)
+arena = Scene(HOST, "realm", SCENE)
 
 limit=12.5
 

@@ -2,6 +2,10 @@
 
 ARENA-py notable changes. Started 2021-19-2.
 
+## [0.1.16] - 2021-1-3
+### Changed
+- Bug fix with turning dictionaries into Material attributes.
+
 ## [0.1.15] - 2021-27-2
 ### Changed
 - Bug fix with get_persisted_obj. Ensures that `persist` is True.

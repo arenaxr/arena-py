@@ -5,6 +5,7 @@ from .rotation import Rotation
 from .goto_url import GotoUrl
 from .physics import Physics
 from .scale import Scale
+from .material import Material
 from .color import Color
 
 class Data(Attribute):
@@ -92,7 +93,6 @@ class Data(Attribute):
                 data[k] = color
 
             elif k == "material":
-                data[k] = v
                 if "color" in v:
                     color = v["color"]
                     if isinstance(color, (list,tuple)):
@@ -104,6 +104,10 @@ class Data(Attribute):
                     else:
                         color = v["color"]
                     v["color"] = color
+                if isinstance(v, dict):
+                    data[k] = Material(**v)
+                else:
+                    data[k] = v
 
             elif isinstance(v, Attribute):
                 data[k] = v

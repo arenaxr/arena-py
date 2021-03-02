@@ -123,10 +123,12 @@ def handle_clickline_event(event, mode):
     direction = (click_id[1])[0: 2]
     move = (click_id[1])[1: 4]
     if event.type == EVT_MOUSEENTER:
-        CONTROLS[object_id][event.object_id].update_attributes(
+        scene.update_object(
+            CONTROLS[object_id][event.object_id],
             material=Material(transparent=True, opacity=arblib.OPC_CLINE_HOVER))
     elif event.type == EVT_MOUSELEAVE:
-        CONTROLS[object_id][event.object_id].update_attributes(
+        scene.update_object(
+            CONTROLS[object_id][event.object_id],
             material=Material(transparent=True, opacity=arblib.OPC_CLINE))
     # allow any user to change an object
     if event.type != EVT_MOUSEDOWN:
@@ -926,20 +928,17 @@ def make_wall(camname):
 
 
 def scene_callback(msg):
-    print(msg)
+    # print(msg)
     # This is the MQTT message evt_handler function for the scene
-    json_msg = msg  # json.dumps(msg)
-    # if "action" not in json_msg or "data" not in json_msg or "object_id" not in json_msg:
-    #     return
     object_id = action = msg_type = object_type = None
-    if "object_id" in json_msg:
-        object_id = json_msg["object_id"]
-    if "action" in json_msg:
-        action = json_msg["action"]
-    if "type" in json_msg:
-        msg_type = json_msg["type"]
-    if "data" in json_msg and "object_type" in json_msg["data"]:
-        object_type = json_msg["data"]["object_type"]
+    if "object_id" in msg:
+        object_id = msg["object_id"]
+    if "action" in msg:
+        action = msg["action"]
+    if "type" in msg:
+        msg_type = msg["type"]
+    if "data" in msg and "object_type" in msg["data"]:
+        object_type = msg["data"]["object_type"]
 
     if object_type == "camera":
         # camera updates define users present
@@ -948,16 +947,16 @@ def scene_callback(msg):
             USERS[camname] = arblib.User(scene, camname, panel_callback)
 
         # save camera's attitude in the world
-        USERS[camname].position = (json_msg["data"]["position"]["x"],
-                                   json_msg["data"]["position"]["y"],
-                                   json_msg["data"]["position"]["z"])
-        USERS[camname].rotation = (json_msg["data"]["rotation"]["x"],
-                                   json_msg["data"]["rotation"]["y"],
-                                   json_msg["data"]["rotation"]["z"],
-                                   json_msg["data"]["rotation"]["w"])
+        USERS[camname].position = (msg["data"]["position"]["x"],
+                                   msg["data"]["position"]["y"],
+                                   msg["data"]["position"]["z"])
+        USERS[camname].rotation = (msg["data"]["rotation"]["x"],
+                                   msg["data"]["rotation"]["y"],
+                                   msg["data"]["rotation"]["z"],
+                                   msg["data"]["rotation"]["w"])
 
-        rx = json_msg["data"]["rotation"]["x"]
-        ry = json_msg["data"]["rotation"]["y"]
+        rx = msg["data"]["rotation"]["x"]
+        ry = msg["data"]["rotation"]["y"]
 
         # floating controller
         if not USERS[camname].follow_lock:
@@ -966,7 +965,7 @@ def scene_callback(msg):
             px = arblib.PANEL_RADIUS * -math.cos(ty)
             py = arblib.PANEL_RADIUS * math.sin(tx)
             pz = arblib.PANEL_RADIUS * math.sin(ty)
-            USERS[camname].follow.update_attributes(position=(px, py, pz))
+            scene.update_object(USERS[camname].follow, position=(px, py, pz))
         # else: # TODO: panel lock position drop is inaccurate
             # users[camname].lockx = rx + arblib.LOCK_XOFF
             # users[camname].locky = -(ry * math.pi) - arblib.LOCK_YOFF
@@ -976,7 +975,7 @@ def scene_callback(msg):
         # print(object_id + "  " +
         #      action + "  " + msg_type)
         # camera updates define users present
-        camname = json_msg["data"]["source"]
+        camname = msg["data"]["source"]
         if camname not in USERS:
             USERS[camname] = arblib.User(scene, camname, panel_callback)
 

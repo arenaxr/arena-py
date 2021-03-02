@@ -206,14 +206,14 @@ class User:
         return text
 
     def set_textleft(self, mode):
-        self.hudtext_left.update_attributes(text=str(mode))
+        self.scene.update_object(self.hudtext_left, text=str(mode))
 
     def set_textright(self, text, color=CLR_HUDTEXT):
-        self.hudtext_right.update_attributes(
-            text=text, material=Material(color=color))
+        self.scene.update_object(self.hudtext_right, text=text,
+                                 material=Material(color=color))
 
     def set_textstatus(self, text):
-        self.hudtext_status.update_attributes(text=text)
+        self.scene.update_object(self.hudtext_status, text=text)
 
     def set_lamp(self, enabled):
         if enabled:
@@ -326,21 +326,22 @@ class Button:
     def set_active(self, active):
         self.active = active
         if active:
-            self.button.update_attributes(material=Material(color=CLR_SELECT))
+            self.scene.update_object(
+                self.button, material=Material(color=CLR_SELECT))
         else:
-            self.button.update_attributes(material=Material(color=CLR_BUTTON))
-            self.text.update_attributes(material=Material(color=self.colortxt))
+            self.scene.update_object(
+                self.button, material=Material(color=CLR_BUTTON))
+            self.scene.update_object(
+                self.text, material=Material(color=self.colortxt))
 
     def set_hover(self, hover):
         if hover:
             opacity = OPC_BUTTON_HOVER
         else:
             opacity = OPC_BUTTON
-        self.button.update_attributes(
-            material=Material(
-                transparent=True,
-                opacity=opacity,
-                shader="flat"))
+        self.scene.update_object(
+            self.button,
+            material=Material(transparent=True, opacity=opacity, shader="flat"))
 
     def delete(self):
         """Delete method so that child text object also gets deleted."""
@@ -428,8 +429,8 @@ def init_origin(scene: Scene):
         object_id="arb-origin-hole",
         material=Material(
             colorWrite=False,
-            render_order=0,  # TODO: resolve render-order
         ),
+        # render-order="0",  # TODO: resolve render-order
         position=(0, size[1] - (size[1] / 2 / 15), 0),
         scale=(size[0] / 15, size[1] / 10, size[2] / 15)))
     scene.add_object(Box(
@@ -468,7 +469,7 @@ def occlude_obj(scene: Scene, object_id, occlude):
     data = {"material": {"colorWrite": occlude == BOOLS[1],
                          "transparent": False,
                          "opacity": 1},
-            "render-order": 0}
+            "render-order": "0"}
     update_persisted_obj(scene, object_id, "Occluded", data=data)
 
 

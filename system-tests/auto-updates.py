@@ -9,7 +9,7 @@ import random
 
 scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="test")
 
-def evt_handler(evt): # should magically be able to click, thanks to auto-updates-helper.py...
+def evt_handler(scene, evt, msg): # should magically be able to click, thanks to auto-updates-helper.py...
     print("clicked")
 
 def update_handler(obj):

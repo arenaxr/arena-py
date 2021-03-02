@@ -2,6 +2,15 @@
 
 ARENA-py notable changes. Started 2021-19-2.
 
+## [0.1.18] - 2021-2-3
+### Added
+- use `scene.get_persisted_objs()` to get all persisted objects in a scene.
+
+### Changed
+- Improved message parsing and Object creation whenever a message arrives.
+- Callbacks and event handlers now take __three__ arguments (`scene`, `obj`/`evt`, `msg`). `scene` is a reference to the scene.
+`obj`/`evt` is an `Object` or `Event` (depending on the callback/handler). `msg` is the raw JSON message if needed by user.
+
 ## [0.1.17] - 2021-2-3
 ### Changed
 - Event handler bug fix.
@@ -41,6 +50,7 @@ specify both to bypass auth.
 - `Arena` class renamed to `Scene`, but using `Arena` is still allowed. Updated examples to reflect this.
 - Tiny bug fix with `update_objects`.
 
+[0.1.17]: https://github.com/conix-center/ARENA-py/tree/0a7897c89bd4a08c03c0c626601e4686cacc368c
 [0.1.16]: https://github.com/conix-center/ARENA-py/tree/8e42dac35a9de7a6b610a1b6663606d1adf1a17e
 [0.1.15]: https://github.com/conix-center/ARENA-py/tree/e8182f476ebdb9c2878e16cefea9671a6f5c49f6
 [0.1.14]: https://github.com/conix-center/ARENA-py/tree/d4c2d6627f38bd05264dd2a2da3f852648e5ee39

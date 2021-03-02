@@ -190,7 +190,7 @@ class User:
         for but in buttons:
             pbutton = Button(
                 scene, camname, but[0], but[1], but[2], enable=but[3], btype=but[4],
-                parent=followname, evt_handler=panel_callback)
+                parent=followname, callback=panel_callback)
             self.panel[pbutton.button.object_id] = pbutton
 
     def make_hudtext(self, label, position, text):
@@ -228,7 +228,7 @@ class User:
             self.scene.delete_object(self.lamp)
 
     def set_clipboard(self,
-                      evt_handler=None,
+                      callback=None,
                       object_type=Sphere()['data']['object_type'],
                       scale=(0.05, 0.05, 0.05),
                       position=(0, 0, -CLIP_RADIUS),
@@ -243,7 +243,8 @@ class User:
             material=Material(color=color, transparent=True, opacity=0.4),
             url=url,
             clickable=True,
-            evt_handler=evt_handler)
+            evt_handler=callback)
+        self.scene.add_object(self.clipboard)
         self.cliptarget = Circle(  # add helper target object to find true origin
             object_id=(self.camname+"_cliptarget"),
             position=position,
@@ -251,7 +252,8 @@ class User:
             scale=(0.005, 0.005, 0.005),
             material=Material(transparent=True, opacity=0.4),
             clickable=True,
-            evt_handler=evt_handler)
+            evt_handler=callback)
+        self.scene.add_object(self.cliptarget)
 
     def del_clipboard(self):
         if self.cliptarget:
@@ -262,7 +264,7 @@ class User:
 
 class Button:
     def __init__(self, scene: Scene, camname, mode, x=0, y=0, label="", parent=None,
-                 drop=None, color=CLR_BUTTON, enable=True, evt_handler=None,
+                 drop=None, color=CLR_BUTTON, enable=True, callback=None,
                  btype=ButtonType.ACTION):
         self.scene = scene
         if label == "":
@@ -306,7 +308,7 @@ class Button:
             position=(x * 1.1, PANEL_RADIUS, y * -1.1),
             scale=scale,
             clickable=True,
-            evt_handler=evt_handler,
+            evt_handler=callback,
         )
         scene.add_object(self.button)
         scale = (1, 1, 1)

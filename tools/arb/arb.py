@@ -82,7 +82,7 @@ def handle_panel_event(event, dropdown=False):
     obj = event.object_id.split("_")
     camname = event.data.source
     owner = obj[0] + "_" + obj[1] + "_" + \
-        obj[2]  # evt_handler owner in object_id
+        obj[2]  # callback owner in object_id
     if owner != camname:
         return None, None, None  # only owner may activate
     objid = event.object_id
@@ -108,7 +108,7 @@ def handle_clip_event(event):
     obj = event.object_id.split("_")
     camname = event.data.source
     owner = obj[0] + "_" + obj[1] + "_" + \
-        obj[2]  # evt_handler owner in object_id
+        obj[2]  # callback owner in object_id
     if owner != camname:
         return None  # only owner may activate
     if event.type != EVT_MOUSEDOWN:
@@ -191,7 +191,7 @@ def panel_callback(event=None):
     if mode == Mode.CREATE:
         update_dropdown(camname, objid, mode, arblib.SHAPES, 2, shape_callback)
         USERS[camname].set_clipboard(
-            evt_handler=clipboard_callback,
+            callback=clipboard_callback,
             object_type=USERS[camname].target_style)
     elif mode == Mode.MODEL:
         update_dropdown(camname, objid, mode, MODELS, 2, model_callback)
@@ -199,7 +199,7 @@ def panel_callback(event=None):
         url = MANIFEST[idx]['url_gltf']
         sca = MANIFEST[idx]['scale']
         USERS[camname].set_clipboard(
-            evt_handler=clipboard_callback, object_type=GLTF()[
+            callback=clipboard_callback, object_type=GLTF()[
                 'data']['object_type'],
             scale=(sca, sca, sca), url=url)
     elif mode == Mode.COLOR:
@@ -217,7 +217,7 @@ def panel_callback(event=None):
     elif mode == Mode.WALL:
         USERS[camname].set_clipboard(
             object_type=Circle()[
-                'data']['object_type'], evt_handler=wall_callback,
+                'data']['object_type'], callback=wall_callback,
             scale=(0.005, 0.005, 0.005))
         USERS[camname].set_textright("Start: tap flush corner.")
     elif mode == Mode.NUDGE:
@@ -238,7 +238,7 @@ def panel_callback(event=None):
             do_rotate_select(camname, USERS[camname].target_id)
 
 
-def update_dropdown(camname, objid, mode, options, row, evt_handler):
+def update_dropdown(camname, objid, mode, options, row, callback):
     # show new dropdown
     if USERS[camname].panel[objid].active:
         followname = USERS[camname].follow.object_id
@@ -251,7 +251,7 @@ def update_dropdown(camname, objid, mode, options, row, evt_handler):
                 bcolor = arblib.CLR_SELECT
             dbutton = arblib.Button(
                 scene, camname, mode, (i % maxwidth) + drop_button_offset, row,
-                label=option, parent=followname, color=bcolor, drop=option, evt_handler=evt_handler)
+                label=option, parent=followname, color=bcolor, drop=option, callback=callback)
             USERS[camname].dbuttons[dbutton.button.object_id] = dbutton
             if (i + 1) % maxwidth == 0:  # next row
                 if row < 0:
@@ -276,7 +276,7 @@ def model_callback(event=None):
     url = MANIFEST[idx]['url_gltf']
     sca = MANIFEST[idx]['scale']
     USERS[camname].set_clipboard(
-        evt_handler=clipboard_callback, object_type=GLTF()[
+        callback=clipboard_callback, object_type=GLTF()[
             'data']['object_type'],
         scale=(sca, sca, sca), url=url)
     USERS[camname].set_textright(model)
@@ -289,7 +289,7 @@ def shape_callback(event=None):
         return
     shape = drop
     USERS[camname].set_clipboard(
-        evt_handler=clipboard_callback, object_type=shape)
+        callback=clipboard_callback, object_type=shape)
     USERS[camname].set_textright(shape)
     USERS[camname].target_style = shape
 
@@ -358,7 +358,7 @@ def show_redpill_scene(enabled):
                 material=Material(color=hcolor)))
         else:
             arblib.delete_obj(scene, name)
-    pobjs = scene.get_persisted_scene()
+    pobjs = scene.get_persisted_scene_option()
     for pobj in pobjs:
         obj = arblib.ObjectPersistence(pobj)
         # show occluded objects
@@ -367,14 +367,14 @@ def show_redpill_scene(enabled):
             if enabled:
                 scene.add_object(Object(
                     object_id=name,
-                    object_type=obj.object_type,
-                    position=obj.position,
-                    rotation=obj.rotation,
-                    scale=obj.scale,
+                    object_type=obj.data.object_type,
+                    position=obj.data.position,
+                    rotation=obj.data.rotation,
+                    scale=obj.data.scale,
                     clickable=True,
-                    url=obj.url,
+                    url=obj.data.url,
                     material=Material(
-                        color=obj.color, transparent=True, opacity=0.5),
+                        color=obj.data.material.color, transparent=True, opacity=0.5),
                 ))
                 print("Wrapping occlusion " + name)
             else:
@@ -412,8 +412,8 @@ def do_move_select(camname, object_id):
     obj = arblib.ObjectPersistence(pobjs[0])
     USERS[camname].target_id = object_id
     USERS[camname].set_clipboard(
-        evt_handler=clipboard_callback,
-        object_type=obj.object_type,
+        callback=clipboard_callback,
+        object_type=obj.data.object_type,
         scale=obj.scale,
         color=obj.color,
         url=obj.url,
@@ -431,7 +431,7 @@ def update_controls(objid):
 def do_nudge_select(camname, objid, position=None):
     color = arblib.CLR_NUDGE
     delim = "_"+Mode.NUDGE.value+"_"
-    evt_handler = nudgeline_callback
+    callback = nudgeline_callback
     if not position:
         pobjs = scene.get_persisted_obj(objid)
         if not pobjs:
@@ -439,9 +439,9 @@ def do_nudge_select(camname, objid, position=None):
         obj = arblib.ObjectPersistence(pobjs[0])
         position = obj.position
     # nudge object + or - on 3 axis
-    make_clickline("x", 1, objid, position, delim, color, evt_handler)
-    make_clickline("y", 1, objid, position, delim, color, evt_handler)
-    make_clickline("z", 1, objid, position, delim, color, evt_handler)
+    make_clickline("x", 1, objid, position, delim, color, callback)
+    make_clickline("y", 1, objid, position, delim, color, callback)
+    make_clickline("z", 1, objid, position, delim, color, callback)
     make_followspot(objid, position, delim, color)
     pos = (round(position[0], 3), round(position[1], 3), round(position[2], 3))
     USERS[camname].set_textright(USERS[camname].target_style + " p" + str(pos))
@@ -450,7 +450,7 @@ def do_nudge_select(camname, objid, position=None):
 def do_scale_select(camname, objid, scale=None):
     color = arblib.CLR_SCALE
     delim = "_"+Mode.SCALE.value+"_"
-    evt_handler = scaleline_callback
+    callback = scaleline_callback
     if not scale:
         pobjs = scene.get_persisted_obj(objid)
         if not pobjs:
@@ -459,7 +459,7 @@ def do_scale_select(camname, objid, scale=None):
         position = obj.position
         scale = obj.scale
         # scale entire object + or - on all axis
-        make_clickline("x", 1, objid, position, delim, color, evt_handler)
+        make_clickline("x", 1, objid, position, delim, color, callback)
         make_followspot(objid, position, delim, color)
     sca = (round(scale[0], 3), round(scale[1], 3), round(scale[2], 3))
     USERS[camname].set_textright(USERS[camname].target_style + " s" + str(sca))
@@ -468,26 +468,26 @@ def do_scale_select(camname, objid, scale=None):
 def do_stretch_select(camname, objid, scale=None):
     color = arblib.CLR_STRETCH
     delim = "_"+Mode.STRETCH.value+"_"
-    evt_handler = stretchline_callback
+    callback = stretchline_callback
     if not scale:
         pobjs = scene.get_persisted_obj(objid)
         if not pobjs:
             return
         obj = arblib.ObjectPersistence(pobjs[0])
         # scale too unpredictable
-        if obj.object_type == GLTF()['data']['object_type']:
+        if obj.data.object_type == GLTF()['data']['object_type']:
             return
         if obj.rotation != (0, 0, 0, 1):  # scale too unpredictable
             return
         position = obj.position
         scale = obj.scale
         # scale and reposition on one of 6 sides
-        make_clickline("x", 1, objid, position, delim, color, evt_handler)
-        make_clickline("x", -1, objid, position, delim, color, evt_handler)
-        make_clickline("y", 1, objid, position, delim, color, evt_handler)
-        make_clickline("y", -1, objid, position, delim, color, evt_handler)
-        make_clickline("z", 1, objid, position, delim, color, evt_handler)
-        make_clickline("z", -1, objid, position, delim, color, evt_handler)
+        make_clickline("x", 1, objid, position, delim, color, callback)
+        make_clickline("x", -1, objid, position, delim, color, callback)
+        make_clickline("y", 1, objid, position, delim, color, callback)
+        make_clickline("y", -1, objid, position, delim, color, callback)
+        make_clickline("z", 1, objid, position, delim, color, callback)
+        make_clickline("z", -1, objid, position, delim, color, callback)
         make_followspot(objid, position, delim, color)
     sca = (round(scale[0], 3), round(scale[1], 3), round(scale[2], 3))
     USERS[camname].set_textright(USERS[camname].target_style + " s" + str(sca))
@@ -496,7 +496,7 @@ def do_stretch_select(camname, objid, scale=None):
 def do_rotate_select(camname, objid, rotation=None):
     color = arblib.CLR_ROTATE
     delim = "_"+Mode.ROTATE.value+"_"
-    evt_handler = rotateline_callback
+    callback = rotateline_callback
     if not rotation:
         pobjs = scene.get_persisted_obj(objid)
         if not pobjs:
@@ -506,12 +506,9 @@ def do_rotate_select(camname, objid, rotation=None):
         rotation = obj.rotation
         # rotate object + or - on 3 axis, plus show original axis as after
         # effect
-        make_clickline("x", 1, objid, position, delim,
-                       color, evt_handler, True)
-        make_clickline("y", 1, objid, position, delim,
-                       color, evt_handler, True)
-        make_clickline("z", 1, objid, position, delim,
-                       color, evt_handler, True)
+        make_clickline("x", 1, objid, position, delim, color, callback, True)
+        make_clickline("y", 1, objid, position, delim, color, callback, True)
+        make_clickline("z", 1, objid, position, delim, color, callback, True)
         make_followspot(objid, position, delim, color)
     rote = arblib.rotation_quat2euler(rotation)
     euler = (round(rote[0], 1), round(rote[1], 1), round(rote[2], 1))
@@ -586,7 +583,7 @@ def cubeline(object_id, axis, direction, delim, suffix, start,
 
 
 def dir_clickers(object_id, axis, direction, delim, position,
-                 color, cones, evt_handler, parent=""):
+                 color, cones, callback, parent=""):
     if parent:
         position = (position[0] * 10, position[1] * 10, position[2] * 10)
     loc = position
@@ -610,7 +607,7 @@ def dir_clickers(object_id, axis, direction, delim, position,
                           opacity=arblib.OPC_CLINE),
         ttl=arblib.TTL_TEMP,
         parent=parent,
-        evt_handler=evt_handler)
+        evt_handler=callback)
     scene.add_object(CONTROLS[object_id][name])
     name = (object_id + delim + axis + "n_" + direction)
     CONTROLS[object_id][name] = Cone(  # click object negative
@@ -623,12 +620,12 @@ def dir_clickers(object_id, axis, direction, delim, position,
                           opacity=arblib.OPC_CLINE),
         ttl=arblib.TTL_TEMP,
         parent=parent,
-        evt_handler=evt_handler)
+        evt_handler=callback)
     scene.add_object(CONTROLS[object_id][name])
 
 
 def make_clickline(axis, linelen, objid, start, delim,
-                   color, evt_handler, ghost=False, parent=None):
+                   color, callback, ghost=False, parent=None):
     if objid not in CONTROLS.keys():
         CONTROLS[objid] = {}
     endx = endy = endz = 0
@@ -656,7 +653,7 @@ def make_clickline(axis, linelen, objid, start, delim,
         cones = arblib.DIRECT_CONES
     dir_clickers(  # click objects
         object_id=objid, axis=axis, direction=direction, delim=delim, position=end,
-        color=color, cones=cones, evt_handler=evt_handler, parent=parent)
+        color=color, cones=cones, callback=callback, parent=parent)
 
 
 def do_move_relocate(camname, newlocation):
@@ -803,13 +800,13 @@ def create_obj(camname, clipboard, position):
     # make a copy of static object in place
     new_obj = Object(
         persist=True,
-        object_id=clipboard.object_type.name + "_" + randstr,
-        object_type=clipboard.object_type,
+        object_id=clipboard.data.object_type + "_" + randstr,
+        object_type=clipboard.data.object_type,
         position=position,
         rotation=(0, 0, 0, 1),  # undo clipboard rotation for visibility
-        scale=clipboard.scale,
-        material=Material(color=clipboard.color, transparent=False),
-        url=clipboard.url,
+        scale=clipboard.data.scale,
+        material=Material(color=clipboard.data.material.color, transparent=False),
+        url=clipboard.data.url,
         clickable=True)
     scene.add_object(new_obj)
     USERS[camname].target_id = new_obj.object_id
@@ -820,7 +817,7 @@ def clipboard_callback(event=None):
     camname = handle_clip_event(event)
     if not camname:
         return
-    position = event.position
+    position = event.data.position
     if USERS[camname].mode == Mode.CREATE or USERS[camname].mode == Mode.MODEL:
         create_obj(camname, USERS[camname].clipboard, position)
     elif USERS[camname].mode == Mode.MOVE:
@@ -928,8 +925,7 @@ def make_wall(camname):
 
 
 def scene_callback(msg):
-    # print(msg)
-    # This is the MQTT message evt_handler function for the scene
+    # This is the MQTT message callback function for the scene
     object_id = action = msg_type = object_type = None
     if "object_id" in msg:
         object_id = msg["object_id"]
@@ -939,6 +935,7 @@ def scene_callback(msg):
         msg_type = msg["type"]
     if "data" in msg and "object_type" in msg["data"]:
         object_type = msg["data"]["object_type"]
+    print(f'{object_type} {action} {msg_type} {object_id}') # TODO: remove debug
 
     if object_type == "camera":
         # camera updates define users present

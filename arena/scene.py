@@ -288,6 +288,9 @@ class Scene(object):
                 elif obj.evt_handler:
                     obj.evt_handler(event)
                     return
+                elif self.on_msg_callback: # allow events for uncached
+                    self.on_msg_callback(event)
+                    return
             else:
                 # [TODO]: check object_type
                 obj = Object(**payload)
@@ -308,7 +311,7 @@ class Scene(object):
                 self.unspecified_objs_ids.add(object_id)
 
             # call new message callback if not an event
-            if not event and self.on_msg_callback:
+            if self.on_msg_callback:
                 self.on_msg_callback(obj)
 
     def generate_custom_event(self, evt, action="clientEvent"):

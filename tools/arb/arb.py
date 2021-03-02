@@ -80,7 +80,7 @@ def handle_panel_event(event, dropdown=False):
     # naming order: camera_number_name_button_bname_dname
     drop = None
     obj = event.object_id.split("_")
-    camname = event.source
+    camname = event.data.source
     owner = obj[0] + "_" + obj[1] + "_" + \
         obj[2]  # evt_handler owner in object_id
     if owner != camname:
@@ -106,7 +106,7 @@ def handle_panel_event(event, dropdown=False):
 def handle_clip_event(event):
     # naming order: camera_number_name_object
     obj = event.object_id.split("_")
-    camname = event.source
+    camname = event.data.source
     owner = obj[0] + "_" + obj[1] + "_" + \
         obj[2]  # evt_handler owner in object_id
     if owner != camname:
@@ -133,7 +133,7 @@ def handle_clickline_event(event, mode):
     # allow any user to change an object
     if event.type != EVT_MOUSEDOWN:
         return None, None, None
-    if USERS[event.source].mode != mode:
+    if USERS[event.data.source].mode != mode:
         return None, None, None
     pobjs = scene.get_persisted_obj(object_id)
     if not pobjs:
@@ -174,7 +174,7 @@ def panel_callback(event=None):
         USERS[camname].del_clipboard()
         # clear last dropdown
         for but in USERS[camname].dbuttons:
-            scene.delete_object(USERS[camname].dbuttons[but])
+            USERS[camname].dbuttons[but].delete()
         USERS[camname].dbuttons.clear()
 
     active = USERS[camname].panel[objid].active
@@ -692,7 +692,7 @@ def nudgeline_callback(event=None):
     if not obj and not direction:
         return
     nudged = loc = obj.position
-    inc = meters_increment(USERS[event.source].target_style)
+    inc = meters_increment(USERS[event.data.source].target_style)
     if direction == "xp":
         nudged = (incr_pos(loc[0], inc), loc[1], loc[2])
     elif direction == "xn":
@@ -708,7 +708,7 @@ def nudgeline_callback(event=None):
     arblib.move_obj(scene, obj.object_id, nudged)
     print(str(obj.position) + " to " + str(nudged))
     # always redraw nudgelines
-    do_nudge_select(event.source, obj.object_id, position=nudged)
+    do_nudge_select(event.data.source, obj.object_id, position=nudged)
 
 
 def scaleline_callback(event=None):
@@ -716,7 +716,7 @@ def scaleline_callback(event=None):
     if not obj and not direction:
         return
     scaled = sca = obj.scale
-    inc = meters_increment(USERS[event.source].target_style)
+    inc = meters_increment(USERS[event.data.source].target_style)
     if direction == "xp":
         scaled = (incr_pos(sca[0], inc), incr_pos(
             sca[1], inc), incr_pos(sca[2], inc))
@@ -727,7 +727,7 @@ def scaleline_callback(event=None):
         return
     arblib.scale_obj(scene, obj.object_id, scaled)
     print(str(obj.scale) + " to " + str(scaled))
-    do_scale_select(event.source, obj.object_id, scale=scaled)
+    do_scale_select(event.data.source, obj.object_id, scale=scaled)
 
 
 def stretchline_callback(event=None):
@@ -736,7 +736,7 @@ def stretchline_callback(event=None):
         return
     scaled = sca = obj.scale
     moved = loc = obj.position
-    inc = meters_increment(USERS[event.source].target_style)
+    inc = meters_increment(USERS[event.data.source].target_style)
     if direction == "xp":
         scaled = (incr_pos(sca[0], inc), sca[1], sca[2])
         moved = (recenter(scaled[0], sca[0], loc[0], move), loc[1], loc[2])
@@ -760,7 +760,7 @@ def stretchline_callback(event=None):
     arblib.stretch_obj(scene, obj.object_id,
                        scale=scaled, position=moved)
     print(str(obj.scale) + " to " + str(scaled))
-    do_stretch_select(event.source, obj.object_id, scale=scaled)
+    do_stretch_select(event.data.source, obj.object_id, scale=scaled)
 
 
 def rotateline_callback(event=None):
@@ -768,7 +768,7 @@ def rotateline_callback(event=None):
     if not obj and not direction:
         return
     rotated = rot = obj.rotation
-    inc = float(USERS[event.source].target_style)
+    inc = float(USERS[event.data.source].target_style)
     rot = arblib.rotation_quat2euler(rot)
     rot = (round(rot[0]), round(rot[1]), round(rot[2]))
     if direction == "xp":
@@ -788,7 +788,7 @@ def rotateline_callback(event=None):
     rotated = arblib.rotation_euler2quat(rotated)
     arblib.rotate_obj(scene, obj.object_id, rotated)
     print(str(obj.rotation) + " to " + str(rotated))
-    do_rotate_select(event.source, obj.object_id, rotation=rotated)
+    do_rotate_select(event.data.source, obj.object_id, rotation=rotated)
 
 
 def recenter(scaled, sca, loc, move):

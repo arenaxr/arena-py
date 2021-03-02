@@ -221,8 +221,8 @@ class User:
                 object_id=self.camname+"_lamp",
                 parent=self.camname,
                 material=Material(color=(144, 144, 173)),
-                data='{"light":{"type":"point","intensity":"0.75"}}',
-            )
+                type="point",
+                intensity=0.75)
             self.scene.add_object(self.lamp)
         elif self.lamp:
             self.scene.delete_object(self.lamp)

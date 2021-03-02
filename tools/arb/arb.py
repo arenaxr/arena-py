@@ -6,7 +6,7 @@
 # pylint: disable=missing-docstring
 
 # TODO: highlight mouseenter to avoid click
-# TODO: fix follow unlock location relative, not default
+# TODO: fix follow unlock position relative, not default
 # TODO: handle click-listener objects with 1.1 x scale shield?
 # TODO: add easy doc overlay for each button operation
 
@@ -123,10 +123,10 @@ def handle_clickline_event(event, mode):
     direction = (click_id[1])[0: 2]
     move = (click_id[1])[1: 4]
     if event.type == EVT_MOUSEENTER:
-        CONTROLS[object_id][event.object_id].update(
+        CONTROLS[object_id][event.object_id].update_attributes(
             material=Material(transparent=True, opacity=arblib.OPC_CLINE_HOVER))
     elif event.type == EVT_MOUSELEAVE:
-        CONTROLS[object_id][event.object_id].update(
+        CONTROLS[object_id][event.object_id].update_attributes(
             material=Material(transparent=True, opacity=arblib.OPC_CLINE))
     # allow any user to change an object
     if event.type != EVT_MOUSEDOWN:
@@ -339,15 +339,15 @@ def show_redpill_scene(enabled):
     for z in range(-glen, glen + 1):
         name = "grid_z" + str(z)
         if enabled:
-            Line(object_id=name,
-                 line=Line((-glen, y, z), (glen, y, z), 1, hcolor))
+            scene.add_object(Line(object_id=name,
+                 line=Line((-glen, y, z), (glen, y, z), 1, hcolor)))
         else:
             arblib.delete_obj(scene, name)
     for x in range(-glen, glen + 1):
         name = "grid_x" + str(x)
         if enabled:
-            Line(object_id=name,
-                 line=Line((x, y, -glen), (x, y, glen), 1, hcolor))
+            scene.add_object(Line(object_id=name,
+                 line=Line((x, y, -glen), (x, y, glen), 1, hcolor)))
         else:
             arblib.delete_obj(scene, name)
     pobjs = scene.get_persisted_scene()
@@ -357,17 +357,17 @@ def show_redpill_scene(enabled):
         if obj.transparent_occlude:
             name = "redpill_" + obj.object_id
             if enabled:
-                Object(
+                scene.add_object(Object(
                     object_id=name,
                     object_type=obj.object_type,
-                    location=obj.location,
+                    position=obj.position,
                     rotation=obj.rotation,
                     scale=obj.scale,
-                    color=obj.color,
                     clickable=True,
                     url=obj.url,
-                    material=Material(transparent=True, opacity=0.5),
-                )
+                    material=Material(
+                        color=obj.color, transparent=True, opacity=0.5),
+                ))
                 print("Wrapping occlusion " + name)
             else:
                 arblib.delete_obj(scene, name)
@@ -380,7 +380,7 @@ def do_rename(camname, old_id, new_id):
     if not pobjs:
         return
     data = json.dumps(pobjs[0]["attributes"])
-    Object(object_id=new_id, persist=True, data=data)
+    scene.add_object(Object(object_id=new_id, persist=True, data=data))
     USERS[camname].target_id = new_id
     print("Duplicating " + old_id + " to " + new_id)
     arblib.delete_obj(scene, old_id)
@@ -393,7 +393,7 @@ def show_redpill_obj(camname, object_id):
         return
     obj = arblib.ObjectPersistence(pobjs[0])
     # enable mouse enter/leave pos/rot/scale
-    USERS[camname].set_textstatus(object_id + ' p' + str(obj.location) +
+    USERS[camname].set_textstatus(object_id + ' p' + str(obj.position) +
                                   ' r' + str(obj.rotation) + ' s' + str(obj.scale))
 
 
@@ -420,22 +420,22 @@ def update_controls(objid):
     CONTROLS[objid].clear()
 
 
-def do_nudge_select(camname, objid, location=None):
+def do_nudge_select(camname, objid, position=None):
     color = arblib.CLR_NUDGE
     delim = "_"+Mode.NUDGE.value+"_"
     evt_handler = nudgeline_callback
-    if not location:
+    if not position:
         pobjs = scene.get_persisted_obj(objid)
         if not pobjs:
             return
         obj = arblib.ObjectPersistence(pobjs[0])
-        location = obj.location
+        position = obj.position
     # nudge object + or - on 3 axis
-    make_clickline("x", 1, objid, location, delim, color, evt_handler)
-    make_clickline("y", 1, objid, location, delim, color, evt_handler)
-    make_clickline("z", 1, objid, location, delim, color, evt_handler)
-    make_followspot(objid, location, delim, color)
-    pos = (round(location[0], 3), round(location[1], 3), round(location[2], 3))
+    make_clickline("x", 1, objid, position, delim, color, evt_handler)
+    make_clickline("y", 1, objid, position, delim, color, evt_handler)
+    make_clickline("z", 1, objid, position, delim, color, evt_handler)
+    make_followspot(objid, position, delim, color)
+    pos = (round(position[0], 3), round(position[1], 3), round(position[2], 3))
     USERS[camname].set_textright(USERS[camname].target_style + " p" + str(pos))
 
 
@@ -448,11 +448,11 @@ def do_scale_select(camname, objid, scale=None):
         if not pobjs:
             return
         obj = arblib.ObjectPersistence(pobjs[0])
-        location = obj.location
+        position = obj.position
         scale = obj.scale
         # scale entire object + or - on all axis
-        make_clickline("x", 1, objid, location, delim, color, evt_handler)
-        make_followspot(objid, location, delim, color)
+        make_clickline("x", 1, objid, position, delim, color, evt_handler)
+        make_followspot(objid, position, delim, color)
     sca = (round(scale[0], 3), round(scale[1], 3), round(scale[2], 3))
     USERS[camname].set_textright(USERS[camname].target_style + " s" + str(sca))
 
@@ -471,16 +471,16 @@ def do_stretch_select(camname, objid, scale=None):
             return
         if obj.rotation != (0, 0, 0, 1):  # scale too unpredictable
             return
-        location = obj.location
+        position = obj.position
         scale = obj.scale
         # scale and relocation on one of 6 sides
-        make_clickline("x", 1, objid, location, delim, color, evt_handler)
-        make_clickline("x", -1, objid, location, delim, color, evt_handler)
-        make_clickline("y", 1, objid, location, delim, color, evt_handler)
-        make_clickline("y", -1, objid, location, delim, color, evt_handler)
-        make_clickline("z", 1, objid, location, delim, color, evt_handler)
-        make_clickline("z", -1, objid, location, delim, color, evt_handler)
-        make_followspot(objid, location, delim, color)
+        make_clickline("x", 1, objid, position, delim, color, evt_handler)
+        make_clickline("x", -1, objid, position, delim, color, evt_handler)
+        make_clickline("y", 1, objid, position, delim, color, evt_handler)
+        make_clickline("y", -1, objid, position, delim, color, evt_handler)
+        make_clickline("z", 1, objid, position, delim, color, evt_handler)
+        make_clickline("z", -1, objid, position, delim, color, evt_handler)
+        make_followspot(objid, position, delim, color)
     sca = (round(scale[0], 3), round(scale[1], 3), round(scale[2], 3))
     USERS[camname].set_textright(USERS[camname].target_style + " s" + str(sca))
 
@@ -494,37 +494,38 @@ def do_rotate_select(camname, objid, rotation=None):
         if not pobjs:
             return
         obj = arblib.ObjectPersistence(pobjs[0])
-        location = obj.location
+        position = obj.position
         rotation = obj.rotation
         # rotate object + or - on 3 axis, plus show original axis as after
         # effect
-        make_clickline("x", 1, objid, location, delim,
+        make_clickline("x", 1, objid, position, delim,
                        color, evt_handler, True)
-        make_clickline("y", 1, objid, location, delim,
+        make_clickline("y", 1, objid, position, delim,
                        color, evt_handler, True)
-        make_clickline("z", 1, objid, location, delim,
+        make_clickline("z", 1, objid, position, delim,
                        color, evt_handler, True)
-        make_followspot(objid, location, delim, color)
+        make_followspot(objid, position, delim, color)
     rote = arblib.rotation_quat2euler(rotation)
     euler = (round(rote[0], 1), round(rote[1], 1), round(rote[2], 1))
     USERS[camname].set_textright(
         USERS[camname].target_style + "d r" + str(euler))
 
 
-def make_followspot(object_id, location, delim, color):
+def make_followspot(object_id, position, delim, color):
     name = (object_id + delim + "spot")
-    CONTROLS[object_id][name] = (Circle(  # follow spot on ground
+    CONTROLS[object_id][name] = Circle(  # follow spot on ground
         object_id=name,
         scale=(0.1, 0.1, 0.1),
-        color=color,
         ttl=arblib.TTL_TEMP,
-        location=(location[0], arblib.FLOOR_Y, location[2]),
+        position=(position[0], arblib.FLOOR_Y, position[2]),
         rotation=(-0.7, 0, 0, 0.7),
         material=Material(
+            color=color,
             transparent=True,
             opacity=0.4,
             shader="flat"),
-    ))
+    )
+    scene.add_object(CONTROLS[object_id][name])
 
 
 def regline(object_id, axis, direction, delim, suffix, start,
@@ -535,12 +536,13 @@ def regline(object_id, axis, direction, delim, suffix, start,
                (end[2] - start[2]) * 10)
         start = (0, 0, 0)
     name = (object_id + delim + axis + direction + "_" + suffix)
-    CONTROLS[object_id][name] = (Line(
+    CONTROLS[object_id][name] = Line(
         object_id=name,
-        color=color,
+        material=Material(color=color),
         ttl=arblib.TTL_TEMP,
         parent=parent,
-        line=Line(start, end, line_width, color)))
+        line=Line(start, end, line_width, color))
+    scene.add_object(CONTROLS[object_id][name])
 
 
 def cubeline(object_id, axis, direction, delim, suffix, start,
@@ -557,60 +559,63 @@ def cubeline(object_id, axis, direction, delim, suffix, start,
     elif start[0] == end[0] and start[1] == end[1]:
         scale = (line_width, line_width, abs(start[2] - end[2]))
     name = (object_id + delim + axis + direction + "_" + suffix)
-    CONTROLS[object_id][name] = (Box(
+    CONTROLS[object_id][name] = Box(
         object_id=name,
-        color=color,
         ttl=arblib.TTL_TEMP,
         parent=parent,
         scale=scale,
-        location=(statistics.median([start[0], end[0]]),
+        position=(statistics.median([start[0], end[0]]),
                   statistics.median([start[1], end[1]]),
                   statistics.median([start[2], end[2]])),
         material=Material(
+            color=color,
             transparent=True,
             opacity=0.4,
             shader="flat"),
-    ))
+    )
+    scene.add_object(CONTROLS[object_id][name])
 
 
-def dir_clickers(object_id, axis, direction, delim, location,
+def dir_clickers(object_id, axis, direction, delim, position,
                  color, cones, evt_handler, parent=""):
     if parent:
-        location = (location[0] * 10, location[1] * 10, location[2] * 10)
-    loc = location
+        position = (position[0] * 10, position[1] * 10, position[2] * 10)
+    loc = position
     npos = 0.1
     if direction == "p":
         npos = -0.1
     if axis == "x":
-        loc = (location[0] + npos, location[1], location[2])
+        loc = (position[0] + npos, position[1], position[2])
     elif axis == "y":
-        loc = (location[0], location[1] + npos, location[2])
+        loc = (position[0], position[1] + npos, position[2])
     elif axis == "z":
-        loc = (location[0], location[1], location[2] + npos)
+        loc = (position[0], position[1], position[2] + npos)
     name = (object_id + delim + axis + "p_" + direction)
-    CONTROLS[object_id][name] = (Cone(   # click object positive
+    CONTROLS[object_id][name] = Cone(   # click object positive
         object_id=name,
-        color=color,
         clickable=True,
-        location=location,
+        position=position,
         rotation=cones[axis + direction][0],
         scale=(0.05, 0.09, 0.05),
-        material=Material(transparent=True, opacity=arblib.OPC_CLINE),
+        material=Material(color=color, transparent=True,
+                          opacity=arblib.OPC_CLINE),
         ttl=arblib.TTL_TEMP,
         parent=parent,
-        evt_handler=evt_handler))
+        evt_handler=evt_handler)
+    scene.add_object(CONTROLS[object_id][name])
     name = (object_id + delim + axis + "n_" + direction)
-    CONTROLS[object_id][name] = (Cone(  # click object negative
+    CONTROLS[object_id][name] = Cone(  # click object negative
         object_id=name,
-        color=color,
         clickable=True,
-        location=loc,
+        position=loc,
         rotation=cones[axis + direction][1],
         scale=(0.05, 0.09, 0.05),
-        material=Material(transparent=True, opacity=arblib.OPC_CLINE),
+        material=Material(color=color, transparent=True,
+                          opacity=arblib.OPC_CLINE),
         ttl=arblib.TTL_TEMP,
         parent=parent,
-        evt_handler=evt_handler))
+        evt_handler=evt_handler)
+    scene.add_object(CONTROLS[object_id][name])
 
 
 def make_clickline(axis, linelen, objid, start, delim,
@@ -641,7 +646,7 @@ def make_clickline(axis, linelen, objid, start, delim,
     else:
         cones = arblib.DIRECT_CONES
     dir_clickers(  # click objects
-        object_id=objid, axis=axis, direction=direction, delim=delim, location=end,
+        object_id=objid, axis=axis, direction=direction, delim=delim, position=end,
         color=color, cones=cones, evt_handler=evt_handler, parent=parent)
 
 
@@ -677,7 +682,7 @@ def nudgeline_callback(event=None):
     obj, direction, move = handle_clickline_event(event, Mode.NUDGE)
     if not obj and not direction:
         return
-    nudged = loc = obj.location
+    nudged = loc = obj.position
     inc = meters_increment(USERS[event.source].target_style)
     if direction == "xp":
         nudged = (incr_pos(loc[0], inc), loc[1], loc[2])
@@ -692,9 +697,9 @@ def nudgeline_callback(event=None):
     elif direction == "zn":
         nudged = (loc[0], loc[1], incr_neg(loc[2], inc))
     arblib.move_obj(scene, obj.object_id, nudged)
-    print(str(obj.location) + " to " + str(nudged))
+    print(str(obj.position) + " to " + str(nudged))
     # always redraw nudgelines
-    do_nudge_select(event.source, obj.object_id, location=nudged)
+    do_nudge_select(event.source, obj.object_id, position=nudged)
 
 
 def scaleline_callback(event=None):
@@ -721,7 +726,7 @@ def stretchline_callback(event=None):
     if not obj and not direction and not move:
         return
     scaled = sca = obj.scale
-    moved = loc = obj.location
+    moved = loc = obj.position
     inc = meters_increment(USERS[event.source].target_style)
     if direction == "xp":
         scaled = (incr_pos(sca[0], inc), sca[1], sca[2])
@@ -744,7 +749,7 @@ def stretchline_callback(event=None):
     if scaled[0] <= 0 or scaled[1] <= 0 or scaled[2] <= 0:
         return
     arblib.stretch_obj(scene, obj.object_id,
-                       scale=scaled, location=moved)
+                       scale=scaled, position=moved)
     print(str(obj.scale) + " to " + str(scaled))
     do_stretch_select(event.source, obj.object_id, scale=scaled)
 
@@ -784,20 +789,20 @@ def recenter(scaled, sca, loc, move):
         return loc - (abs(sca - scaled) / 2)
 
 
-def create_obj(camname, clipboard, location):
+def create_obj(camname, clipboard, position):
     randstr = str(random.randrange(0, 1000000))
     # make a copy of static object in place
     new_obj = Object(
         persist=True,
         object_id=clipboard.object_type.name + "_" + randstr,
         object_type=clipboard.object_type,
-        location=location,
+        position=position,
         rotation=(0, 0, 0, 1),  # undo clipboard rotation for visibility
         scale=clipboard.scale,
-        color=clipboard.color,
-        material=Material(transparent=False),
+        material=Material(color=clipboard.color, transparent=False),
         url=clipboard.url,
         clickable=True)
+    scene.add_object(new_obj)
     USERS[camname].target_id = new_obj.object_id
     print("Created " + new_obj.object_id)
 
@@ -806,11 +811,11 @@ def clipboard_callback(event=None):
     camname = handle_clip_event(event)
     if not camname:
         return
-    location = event.location
+    position = event.position
     if USERS[camname].mode == Mode.CREATE or USERS[camname].mode == Mode.MODEL:
-        create_obj(camname, USERS[camname].clipboard, location)
+        create_obj(camname, USERS[camname].clipboard, position)
     elif USERS[camname].mode == Mode.MOVE:
-        do_move_relocate(camname, location)
+        do_move_relocate(camname, position)
 
 
 def wall_callback(event=None):
@@ -829,7 +834,7 @@ def wall_callback(event=None):
 
 def do_wall_start(camname):
     # start (red)
-    USERS[camname].wloc_start = USERS[camname].location
+    USERS[camname].wloc_start = USERS[camname].position
     USERS[camname].wrot_start = USERS[camname].rotation
     arblib.temp_loc_marker(USERS[camname].wloc_start, (255, 0, 0))
     arblib.temp_rot_marker(USERS[camname].wloc_start,
@@ -838,7 +843,7 @@ def do_wall_start(camname):
 
 def do_wall_end(camname):
     # end (green)
-    USERS[camname].wloc_end = USERS[camname].location
+    USERS[camname].wloc_end = USERS[camname].position
     USERS[camname].wrot_end = USERS[camname].rotation
     arblib.temp_loc_marker(USERS[camname].wloc_end, (0, 255, 0))
     arblib.temp_rot_marker(USERS[camname].wloc_end, USERS[camname].wrot_end)
@@ -847,8 +852,8 @@ def do_wall_end(camname):
 def make_wall(camname):
     # Wall theory: capture two poses and use them to place a wall object.
     # Also assumes first corner easier to capture accurate rotation than last.
-    # Click 1: Capture the location and rotation.
-    # Click 2: Capture the location only.
+    # Click 1: Capture the position and rotation.
+    # Click 2: Capture the position only.
     sloc = USERS[camname].wloc_start
     eloc = USERS[camname].wloc_end
     srot = USERS[camname].wrot_start
@@ -860,7 +865,7 @@ def make_wall(camname):
     locy = (statistics.median([sloc[1], eloc[1]]))
     locz = (statistics.median([sloc[2], eloc[2]]))
     arblib.temp_loc_marker((locx, locy, locz), (0, 0, 255))
-    print("wall location " + str((locx, locy, locz)))
+    print("wall position " + str((locx, locy, locz)))
     # rotation
     print("S ROT " + str((srot[0], srot[1], srot[2], srot[3])))
     print("E ROT " + str((erot[0], erot[1], erot[2], erot[3])))
@@ -898,18 +903,19 @@ def make_wall(camname):
         persist=True,
         clickable=True,
         object_id="wall_" + randstr,
-        location=(locx, locy, locz),
+        position=(locx, locy, locz),
         rotation=(rotx, roty, rotz, rotw),
         scale=(scax, scay, scaz),
-        color=(200, 200, 200),
-        material=Material(transparent=True, opacity=0.5),
+        material=Material(color=(200, 200, 200),
+                          transparent=True, opacity=0.5),
     )
+    scene.add_object(new_wall)
     USERS[camname].target_id = new_wall.object_id
     print("Created " + new_wall.object_id +
           " r" + str((rotx, roty, rotz, rotw)) +
           " s" + str((scax, scay, scaz)))
     # TODO: remove wall opacity in final wall feature
-    # TODO: push wall front side flush with markers (location-(wall/2))
+    # TODO: push wall front side flush with markers (position-(wall/2))
 
 
 def scene_callback(msg):
@@ -935,7 +941,7 @@ def scene_callback(msg):
             USERS[camname] = arblib.User(scene, camname, panel_callback)
 
         # save camera's attitude in the world
-        USERS[camname].location = (json_msg["data"]["position"]["x"],
+        USERS[camname].position = (json_msg["data"]["position"]["x"],
                                    json_msg["data"]["position"]["y"],
                                    json_msg["data"]["position"]["z"])
         USERS[camname].rotation = (json_msg["data"]["rotation"]["x"],
@@ -953,8 +959,8 @@ def scene_callback(msg):
             px = arblib.PANEL_RADIUS * -math.cos(ty)
             py = arblib.PANEL_RADIUS * math.sin(tx)
             pz = arblib.PANEL_RADIUS * math.sin(ty)
-            USERS[camname].follow.update_attributes(location=(px, py, pz))
-        # else: # TODO: panel lock location drop is inaccurate
+            USERS[camname].follow.update_attributes(position=(px, py, pz))
+        # else: # TODO: panel lock position drop is inaccurate
             # users[camname].lockx = rx + arblib.LOCK_XOFF
             # users[camname].locky = -(ry * math.pi) - arblib.LOCK_YOFF
 

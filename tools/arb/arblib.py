@@ -134,7 +134,7 @@ class User:
         self.camname = camname
         self.mode = Mode.NONE
         self.clipboard = self.cliptarget = None
-        self.target_id = self.location = self.rotation = None
+        self.target_id = self.position = self.rotation = None
         self.target_style = self.typetext = ""
         self.locky = LOCK_YOFF
         self.lockx = LOCK_XOFF
@@ -157,7 +157,7 @@ class User:
             object_id=("follow_" + camname),
             parent=camname,
             material=Material(transparent=True, opacity=0),
-            location=(0, 0, -PANEL_RADIUS * 0.1),
+            position=(0, 0, -PANEL_RADIUS * 0.1),
             scale=(0.1, 0.01, 0.1),
             rotation=(0.7, 0, 0, 0.7),
         )
@@ -193,31 +193,34 @@ class User:
                 parent=followname, evt_handler=panel_callback)
             self.panel[pbutton.button.object_id] = pbutton
 
-    def make_hudtext(self, label, location, text):
-        return Text(
+    def make_hudtext(self, label, position, text):
+        text = Text(
             object_id=(label + "_" + self.camname),
             parent=self.camname,
             text=text,
-            location=location,
-            color=CLR_HUDTEXT,
+            position=position,
+            material=Material(color=CLR_HUDTEXT),
             scale=(0.1, 0.1, 0.1),
         )
+        self.scene.add_object(text)
+        return text
 
     def set_textleft(self, mode):
-        self.hudtext_left.update(text=str(mode))
+        self.hudtext_left.update_attributes(text=str(mode))
 
     def set_textright(self, text, color=CLR_HUDTEXT):
-        self.hudtext_right.update(text=text, color=color)
+        self.hudtext_right.update_attributes(
+            text=text, material=Material(color=color))
 
     def set_textstatus(self, text):
-        self.hudtext_status.update(text=text)
+        self.hudtext_status.update_attributes(text=text)
 
     def set_lamp(self, enabled):
         if enabled:
             self.lamp = Light(
                 object_id=self.camname+"_lamp",
                 parent=self.camname,
-                color=(144, 144, 173),
+                material=Material(color=(144, 144, 173)),
                 data='{"light":{"type":"point","intensity":"0.75"}}',
             )
             self.scene.add_object(self.lamp)
@@ -228,23 +231,22 @@ class User:
                       evt_handler=None,
                       object_type=Sphere()['data']['object_type'],
                       scale=(0.05, 0.05, 0.05),
-                      location=(0, 0, -CLIP_RADIUS),
+                      position=(0, 0, -CLIP_RADIUS),
                       color=(255, 255, 255),
                       url=""):
         self.clipboard = Object(  # show item to be created
             object_id=(self.camname+"_clipboard"),
             object_type=object_type,
-            location=location,
-            color=color,
+            position=position,
             parent=self.camname,
             scale=scale,
-            material=Material(transparent=True, opacity=0.4),
+            material=Material(color=color, transparent=True, opacity=0.4),
             url=url,
             clickable=True,
             evt_handler=evt_handler)
         self.cliptarget = Circle(  # add helper target object to find true origin
             object_id=(self.camname+"_cliptarget"),
-            location=location,
+            position=position,
             parent=self.camname,
             scale=(0.005, 0.005, 0.005),
             material=Material(transparent=True, opacity=0.4),
@@ -297,15 +299,16 @@ class Button:
             object_type=shape,
             parent=parent,
             material=Material(
+                color=self.colorbut,
                 transparent=True,
                 opacity=OPC_BUTTON,
                 shader="flat"),
-            location=(x * 1.1, PANEL_RADIUS, y * -1.1),
+            position=(x * 1.1, PANEL_RADIUS, y * -1.1),
             scale=scale,
-            color=self.colorbut,
             clickable=True,
             evt_handler=evt_handler,
         )
+        scene.add_object(self.button)
         scale = (1, 1, 1)
         if btype == ButtonType.TOGGLE:
             scale = (scale[0] * 2, scale[1] * 2, scale[2])
@@ -313,26 +316,27 @@ class Button:
             object_id=(self.button.object_id + "_text"),
             parent=self.button.object_id,
             text=self.label,
-            location=(0, -0.1, 0),  # location inside to prevent ray events
+            position=(0, -0.1, 0),  # position inside to prevent ray events
             rotation=(-0.7, 0, 0, 0.7),
             scale=scale,
-            color=self.colortxt,
+            material=Material(color=self.colortxt),
         )
+        scene.add_object(self.text)
 
     def set_active(self, active):
         self.active = active
         if active:
-            self.button.update(color=CLR_SELECT)
+            self.button.update_attributes(material=Material(color=CLR_SELECT))
         else:
-            self.button.update(color=CLR_BUTTON)
-            self.text.update(color=self.colortxt)
+            self.button.update_attributes(material=Material(color=CLR_BUTTON))
+            self.text.update_attributes(material=Material(color=self.colortxt))
 
     def set_hover(self, hover):
         if hover:
             opacity = OPC_BUTTON_HOVER
         else:
             opacity = OPC_BUTTON
-        self.button.update(
+        self.button.update_attributes(
             material=Material(
                 transparent=True,
                 opacity=opacity,
@@ -348,7 +352,7 @@ class ObjectPersistence:
     """Converts persistence database object into python without using MQTT."""
     object_id = ""
     object_type = Box()['data']['object_type']
-    location = (0, 0, 0)
+    position = (0, 0, 0)
     rotation = (0, 0, 0, 1)
     scale = (1, 1, 1)
     color = (255, 255, 255)
@@ -374,10 +378,10 @@ class ObjectPersistence:
         self.persist = True  # by nature
         if "object_type" in jData["attributes"]:
             self.object_type = jData["attributes"]["object_type"]
-        if "location" in jData["attributes"]:
-            self.location = (jData["attributes"]["location"]["x"],
-                             jData["attributes"]["location"]["y"],
-                             jData["attributes"]["location"]["z"])
+        if "position" in jData["attributes"]:
+            self.position = (jData["attributes"]["position"]["x"],
+                             jData["attributes"]["position"]["y"],
+                             jData["attributes"]["position"]["z"])
         if "rotation" in jData["attributes"]:
             self.rotation = (jData["attributes"]["rotation"]["x"],
                              jData["attributes"]["rotation"]["y"],
@@ -414,28 +418,28 @@ def init_origin(scene: Scene):
     scene.add_object(Cone(  # 370mm x 370mm # 750mm
         object_id="arb-origin",
         material=Material(
+            color=(255, 114, 33),
             transparent=True,
             opacity=0.5,
             shader="flat"),
-        color=(255, 114, 33),
-        location=(0, size[1] / 2, 0),
+        position=(0, size[1] / 2, 0),
         scale=(size[0] / 2, size[1], size[2] / 2)))
     scene.add_object(Cone(
         object_id="arb-origin-hole",
         material=Material(
             colorWrite=False,
-            # render-order=0, #TODO: resolve render-order
+            render_order=0,  # TODO: resolve render-order
         ),
-        location=(0, size[1] - (size[1] / 2 / 15), 0),
+        position=(0, size[1] - (size[1] / 2 / 15), 0),
         scale=(size[0] / 15, size[1] / 10, size[2] / 15)))
     scene.add_object(Box(
         object_id="arb-origin-base",
         material=Material(
+            color=(0, 0, 0),
             transparent=True,
             opacity=0.5,
             shader="flat"),
-        color=(0, 0, 0),
-        location=(0, size[1] / 20, 0),
+        position=(0, size[1] / 20, 0),
         scale=(size[0], size[1] / 10, size[2])))
 
 
@@ -475,15 +479,15 @@ def color_obj(scene: Scene, object_id, hcolor):
     update_persisted_obj(scene, object_id, "Colored", data=data)
 
 
-def stretch_obj(scene: Scene, object_id, scale, location):
+def stretch_obj(scene: Scene, object_id, scale, position):
     data = {"scale": {
         "x": scale[0],
         "y": scale[1],
         "z": scale[2]
-    }, "location": {
-        "x": location[0],
-        "y": location[1],
-        "z": location[2]
+    }, "position": {
+        "x": position[0],
+        "y": position[1],
+        "z": position[2]
     }}
     update_persisted_obj(scene, object_id, "Stretched", data=data)
 
@@ -497,11 +501,11 @@ def scale_obj(scene: Scene, object_id, scale):
     update_persisted_obj(scene, object_id, "Scaled", data=data)
 
 
-def move_obj(scene: Scene, object_id, location):
-    data = {"location": {
-        "x": location[0],
-        "y": location[1],
-        "z": location[2]
+def move_obj(scene: Scene, object_id, position):
+    data = {"position": {
+        "x": position[0],
+        "y": position[1],
+        "z": position[2]
     }}
     update_persisted_obj(scene, object_id, "locationed", data=data)
 
@@ -539,15 +543,16 @@ def arena_color2rgb(color):
     return tuple(int(color[c:c + 2], 16) for c in (0, 2, 4))
 
 
-def temp_loc_marker(location, color):
-    return Sphere(ttl=120, color=color,
-                  material=Material(transparent=True, opacity=0.5),
-                  location=location, scale=(0.02, 0.02, 0.02), clickable=True)
+def temp_loc_marker(position, color):
+    return Sphere(ttl=120,
+                  material=Material(
+                      color=color, transparent=True, opacity=0.5),
+                  position=position, scale=(0.02, 0.02, 0.02), clickable=True)
 
 
-def temp_rot_marker(location, rotation):
+def temp_rot_marker(position, rotation):
     return Box(ttl=120, rotation=rotation,
-               location=location, scale=(0.02, 0.01, 0.15), clickable=True)
+               position=position, scale=(0.02, 0.01, 0.15), clickable=True)
 
 
 def rotation_quat2euler(quat):

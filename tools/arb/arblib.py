@@ -129,8 +129,8 @@ class ButtonType(enum.Enum):
 
 
 class User:
-    def __init__(self, arena: Scene, camname, panel_callback):
-        self.arena = arena
+    def __init__(self, scene: Scene, camname, panel_callback):
+        self.scene = scene
         self.camname = camname
         self.mode = Mode.NONE
         self.clipboard = self.cliptarget = None
@@ -141,7 +141,7 @@ class User:
         self.wloc_start = self.wloc_end = None
         self.wrot_start = self.wrot_end = None
         self.lamp = None
-        init_origin(self.arena)
+        init_origin(self.scene)
 
         # set HUD to each user
         self.hudtext_left = self.make_hudtext(
@@ -161,10 +161,10 @@ class User:
             scale=(0.1, 0.01, 0.1),
             rotation=(0.7, 0, 0, 0.7),
         )
-        self.arena.add_object(self.follow)
+        self.scene.add_object(self.follow)
         self.redpill = False
         self.panel = {}  # button dictionary
-        followname = self.follow.objName
+        followname = self.follow.object_id
         self.dbuttons = {}
         buttons = [
             # top row
@@ -188,10 +188,10 @@ class User:
             [Mode.LAMP, 2, -1, True, ButtonType.TOGGLE],
         ]
         for but in buttons:
-            pbutton = Button(camname, but[0], but[1], but[2], enable=but[3], btype=but[4],
-                             parent=followname, evt_handler=panel_callback)
-            self.panel[pbutton.button.objName] = pbutton
-            self.arena.add_object(pbutton)
+            pbutton = Button(
+                scene, camname, but[0], but[1], but[2], enable=but[3], btype=but[4],
+                parent=followname, evt_handler=panel_callback)
+            self.panel[pbutton.button.object_id] = pbutton
 
     def make_hudtext(self, label, location, text):
         return Text(
@@ -220,9 +220,9 @@ class User:
                 color=(144, 144, 173),
                 data='{"light":{"type":"point","intensity":"0.75"}}',
             )
-            self.arena.add_object(self.lamp)
+            self.scene.add_object(self.lamp)
         elif self.lamp:
-            self.arena.delete_object(self.lamp)
+            self.scene.delete_object(self.lamp)
 
     def set_clipboard(self,
                       evt_handler=None,
@@ -253,16 +253,16 @@ class User:
 
     def del_clipboard(self):
         if self.cliptarget:
-            self.arena.delete_object(self.cliptarget)
+            self.scene.delete_object(self.cliptarget)
         if self.clipboard:
-            self.arena.delete_object(self.clipboard)
+            self.scene.delete_object(self.clipboard)
 
 
 class Button:
-    def __init__(self, arena: Scene, camname, mode, x=0, y=0, label="", parent=None,
+    def __init__(self, scene: Scene, camname, mode, x=0, y=0, label="", parent=None,
                  drop=None, color=CLR_BUTTON, enable=True, evt_handler=None,
                  btype=ButtonType.ACTION):
-        self.arena = arena
+        self.scene = scene
         if label == "":
             label = mode.value
         if parent is None:
@@ -298,7 +298,7 @@ class Button:
             parent=parent,
             material=Material(
                 transparent=True,
-                opacity=str(OPC_BUTTON),
+                opacity=OPC_BUTTON,
                 shader="flat"),
             location=(x * 1.1, PANEL_RADIUS, y * -1.1),
             scale=scale,
@@ -310,8 +310,8 @@ class Button:
         if btype == ButtonType.TOGGLE:
             scale = (scale[0] * 2, scale[1] * 2, scale[2])
         self.text = Text(  # text child of button
-            object_id=(self.button.objName + "_text"),
-            parent=self.button.objName,
+            object_id=(self.button.object_id + "_text"),
+            parent=self.button.object_id,
             text=self.label,
             location=(0, -0.1, 0),  # location inside to prevent ray events
             rotation=(-0.7, 0, 0, 0.7),
@@ -335,13 +335,13 @@ class Button:
         self.button.update(
             material=Material(
                 transparent=True,
-                opacity=str(opacity),
+                opacity=opacity,
                 shader="flat"))
 
     def delete(self):
         """Delete method so that child text object also gets deleted."""
-        self.arena.delete_object(self.text)
-        self.arena.delete_object(self.button)
+        self.scene.delete_object(self.text)
+        self.scene.delete_object(self.button)
 
 
 class ObjectPersistence:
@@ -408,10 +408,10 @@ class ObjectPersistence:
         # self.text self.transparency self.data self.ttl
 
 
-def init_origin(arena: Scene):
+def init_origin(scene: Scene):
     """Origin object, construction cone, so user knows ARB is running."""
     size = [0.2, 0.4, 0.2]
-    arena.add_object(Cone(  # 370mm x 370mm # 750mm
+    scene.add_object(Cone(  # 370mm x 370mm # 750mm
         object_id="arb-origin",
         material=Material(
             transparent=True,
@@ -420,7 +420,7 @@ def init_origin(arena: Scene):
         color=(255, 114, 33),
         location=(0, size[1] / 2, 0),
         scale=(size[0] / 2, size[1], size[2] / 2)))
-    arena.add_object(Cone(
+    scene.add_object(Cone(
         object_id="arb-origin-hole",
         material=Material(
             colorWrite=False,
@@ -428,7 +428,7 @@ def init_origin(arena: Scene):
         ),
         location=(0, size[1] - (size[1] / 2 / 15), 0),
         scale=(size[0] / 15, size[1] / 10, size[2] / 15)))
-    arena.add_object(Box(
+    scene.add_object(Box(
         object_id="arb-origin-base",
         material=Material(
             transparent=True,
@@ -439,7 +439,7 @@ def init_origin(arena: Scene):
         scale=(size[0], size[1] / 10, size[2])))
 
 
-def update_persisted_obj(arena: Scene, object_id, label,
+def update_persisted_obj(scene: Scene, object_id, label,
                          action="update", data=None, persist="true", ttl=None):
     msg = {
         "object_id": object_id,
@@ -450,32 +450,32 @@ def update_persisted_obj(arena: Scene, object_id, label,
         msg["persist"] = persist
         msg["ttl"] = ttl
         msg["data"] = data
-    arena._publish(obj=msg, action=action)
+    scene._publish(obj=msg, action=action)
     print(label + " " + object_id)
 
 
-def opaque_obj(arena: Scene, object_id, opacity):
+def opaque_obj(scene: Scene, object_id, opacity):
     data = {"material": {"transparent": True, "opacity": opacity}}
-    update_persisted_obj(arena, object_id, "Opaqued", data=data)
+    update_persisted_obj(scene, object_id, "Opaqued", data=data)
 
 
-def occlude_obj(arena: Scene, object_id, occlude):
+def occlude_obj(scene: Scene, object_id, occlude):
     # NOTE: transparency does not allow occlusion so remove transparency here.
     data = {"material": {"colorWrite": occlude == BOOLS[1],
                          "transparent": False,
                          "opacity": 1},
             "render-order": 0}
-    update_persisted_obj(arena, object_id, "Occluded", data=data)
+    update_persisted_obj(scene, object_id, "Occluded", data=data)
 
 
-def color_obj(arena: Scene, object_id, hcolor):
+def color_obj(scene: Scene, object_id, hcolor):
     # NOTE: "color" updates base color, NOT reflected live.
     # "material":{"color"} updates raw color, IS reflected live.
     data = {"color": "#" + hcolor, "material": {"color": "#" + hcolor}}
-    update_persisted_obj(arena, object_id, "Colored", data=data)
+    update_persisted_obj(scene, object_id, "Colored", data=data)
 
 
-def stretch_obj(arena: Scene, object_id, scale, location):
+def stretch_obj(scene: Scene, object_id, scale, location):
     data = {"scale": {
         "x": scale[0],
         "y": scale[1],
@@ -485,45 +485,45 @@ def stretch_obj(arena: Scene, object_id, scale, location):
         "y": location[1],
         "z": location[2]
     }}
-    update_persisted_obj(arena, object_id, "Stretched", data=data)
+    update_persisted_obj(scene, object_id, "Stretched", data=data)
 
 
-def scale_obj(arena: Scene, object_id, scale):
+def scale_obj(scene: Scene, object_id, scale):
     data = {"scale": {
         "x": scale[0],
         "y": scale[1],
         "z": scale[2]
     }}
-    update_persisted_obj(arena, object_id, "Scaled", data=data)
+    update_persisted_obj(scene, object_id, "Scaled", data=data)
 
 
-def move_obj(arena: Scene, object_id, location):
+def move_obj(scene: Scene, object_id, location):
     data = {"location": {
         "x": location[0],
         "y": location[1],
         "z": location[2]
     }}
-    update_persisted_obj(arena, object_id, "locationed", data=data)
+    update_persisted_obj(scene, object_id, "locationed", data=data)
 
 
-def rotate_obj(arena: Scene, object_id, rotation):
+def rotate_obj(scene: Scene, object_id, rotation):
     data = {"rotation": {
         "x": rotation[0],
         "y": rotation[1],
         "z": rotation[2],
         "w": rotation[3]
     }}
-    update_persisted_obj(arena, object_id, "Rotated", data=data)
+    update_persisted_obj(scene, object_id, "Rotated", data=data)
 
 
-def parent_obj(arena: Scene, object_id, parent_id):
+def parent_obj(scene: Scene, object_id, parent_id):
     data = {"parent": parent_id}
-    update_persisted_obj(arena, object_id,
+    update_persisted_obj(scene, object_id,
                          parent_id + " adopted", data=data)
 
 
-def delete_obj(arena: Scene, object_id):
-    update_persisted_obj(arena, object_id, "Deleted", action="delete")
+def delete_obj(scene: Scene, object_id):
+    update_persisted_obj(scene, object_id, "Deleted", action="delete")
 
 
 def rgb2hex(rgb):

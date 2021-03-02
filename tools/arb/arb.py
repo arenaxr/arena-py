@@ -53,8 +53,6 @@ def init_args():
         '-r', '--realm', type=str, help='ARENA realm name', default=REALM)
     parser.add_argument(
         '-m', '--models', type=str, help='JSON GLTF manifest')
-    parser.add_argument('-d', '--demo', default=False,
-                        action='store_true', help='Demo mode.')
     args = parser.parse_args()
     print(args)
     SCENE = args.scene
@@ -88,8 +86,7 @@ def handle_panel_event(event, dropdown=False):
     if owner != camname:
         return None, None, None  # only owner may activate
     objid = event.object_id
-    if event.type == EVT_MOUSEENTER or \
-            event.type == EVT_MOUSELEAVE:
+    if event.type == EVT_MOUSEENTER or event.type == EVT_MOUSELEAVE:
         if event.type == EVT_MOUSEENTER:
             hover = True
         elif event.type == EVT_MOUSELEAVE:
@@ -251,7 +248,7 @@ def update_dropdown(camname, objid, mode, options, row, evt_handler):
             else:
                 bcolor = arblib.CLR_SELECT
             dbutton = arblib.Button(
-                camname, mode, (i % maxwidth) + drop_button_offset, row,
+                scene, camname, mode, (i % maxwidth) + drop_button_offset, row,
                 label=option, parent=followname, color=bcolor, drop=option, evt_handler=evt_handler)
             USERS[camname].dbuttons[dbutton.button.object_id] = dbutton
             if (i + 1) % maxwidth == 0:  # next row
@@ -916,21 +913,31 @@ def make_wall(camname):
 
 
 def scene_callback(msg):
+    print(msg)
     # This is the MQTT message evt_handler function for the scene
-    json_msg = msg  # json.loads(msg)
-    if "action" not in json_msg or "data" not in json_msg or "object_id" not in json_msg:
-        return
+    json_msg = msg  # json.dumps(msg)
+    # if "action" not in json_msg or "data" not in json_msg or "object_id" not in json_msg:
+    #     return
+    object_id = action = msg_type = object_type = None
+    if "object_id" in json_msg:
+        object_id = json_msg["object_id"]
+    if "action" in json_msg:
+        action = json_msg["action"]
+    if "type" in json_msg:
+        msg_type = json_msg["type"]
+    if "data" in json_msg and "object_type" in json_msg["data"]:
+        object_type = json_msg["data"]["object_type"]
 
-    if json_msg["action"] == "create" and json_msg["data"]["object_type"] == "camera":
+    if object_type == "camera":
         # camera updates define users present
-        camname = json_msg["object_id"]
+        camname = object_id
         if camname not in USERS:
             USERS[camname] = arblib.User(scene, camname, panel_callback)
 
         # save camera's attitude in the world
-        USERS[camname].location = (json_msg["data"]["location"]["x"],
-                                   json_msg["data"]["location"]["y"],
-                                   json_msg["data"]["location"]["z"])
+        USERS[camname].location = (json_msg["data"]["position"]["x"],
+                                   json_msg["data"]["position"]["y"],
+                                   json_msg["data"]["position"]["z"])
         USERS[camname].rotation = (json_msg["data"]["rotation"]["x"],
                                    json_msg["data"]["rotation"]["y"],
                                    json_msg["data"]["rotation"]["z"],
@@ -946,63 +953,62 @@ def scene_callback(msg):
             px = arblib.PANEL_RADIUS * -math.cos(ty)
             py = arblib.PANEL_RADIUS * math.sin(tx)
             pz = arblib.PANEL_RADIUS * math.sin(ty)
-            USERS[camname].follow.location(location=(px, py, pz))
+            USERS[camname].follow.update_attributes(location=(px, py, pz))
         # else: # TODO: panel lock location drop is inaccurate
             # users[camname].lockx = rx + arblib.LOCK_XOFF
             # users[camname].locky = -(ry * math.pi) - arblib.LOCK_YOFF
 
     # mouse event
-    elif json_msg["action"] == "clientEvent":
-        # print(json_msg["object_id"] + "  " +
-        #      json_msg["action"] + "  " + json_msg["type"])
-        objid = json_msg["object_id"]
+    elif action == "clientEvent":
+        # print(object_id + "  " +
+        #      action + "  " + msg_type)
         # camera updates define users present
         camname = json_msg["data"]["source"]
         if camname not in USERS:
             USERS[camname] = arblib.User(scene, camname, panel_callback)
 
         # show objects with events
-        if json_msg["type"] == "mouseenter":
+        if msg_type == "mouseenter":
             if USERS[camname].redpill:
-                show_redpill_obj(camname, objid)
+                show_redpill_obj(camname, object_id)
             else:
-                USERS[camname].set_textstatus(objid)
-        elif json_msg["type"] == "mouseleave":
+                USERS[camname].set_textstatus(object_id)
+        elif msg_type == "mouseleave":
             USERS[camname].set_textstatus("")
 
         # handle click
-        elif json_msg["type"] == "mousedown":
+        elif msg_type == "mousedown":
             # clicked on persisted object to modify
             update_controls(USERS[camname].target_id)
-            USERS[camname].target_id = objid  # always update
+            USERS[camname].target_id = object_id  # always update
             if USERS[camname].mode == Mode.DELETE:
-                arblib.delete_obj(scene, objid)
+                arblib.delete_obj(scene, object_id)
             elif USERS[camname].mode == Mode.MOVE:
-                do_move_select(camname, objid)
+                do_move_select(camname, object_id)
             elif USERS[camname].mode == Mode.NUDGE:
-                do_nudge_select(camname, objid)
+                do_nudge_select(camname, object_id)
             elif USERS[camname].mode == Mode.SCALE:
-                do_scale_select(camname, objid)
+                do_scale_select(camname, object_id)
             elif USERS[camname].mode == Mode.STRETCH:
-                do_stretch_select(camname, objid)
+                do_stretch_select(camname, object_id)
             elif USERS[camname].mode == Mode.ROTATE:
-                do_rotate_select(camname, objid)
+                do_rotate_select(camname, object_id)
             elif USERS[camname].mode == Mode.COLOR:
-                arblib.color_obj(scene, objid,
+                arblib.color_obj(scene, object_id,
                                  USERS[camname].target_style)
             elif USERS[camname].mode == Mode.OCCLUDE:
-                arblib.occlude_obj(scene, objid,
+                arblib.occlude_obj(scene, object_id,
                                    USERS[camname].target_style)
             elif USERS[camname].mode == Mode.RENAME or USERS[camname].mode == Mode.PARENT:
                 if len(USERS[camname].typetext) > 0:  # edits already made
                     new_id = USERS[camname].typetext
                     USERS[camname].typetext = ""
                     if USERS[camname].mode == Mode.PARENT:
-                        arblib.parent_obj(scene, objid, new_id)
+                        arblib.parent_obj(scene, object_id, new_id)
                     else:
-                        do_rename(camname, objid, new_id)
+                        do_rename(camname, object_id, new_id)
                 else:  # no edits yet, load previous name to change
-                    USERS[camname].typetext = objid
+                    USERS[camname].typetext = object_id
                 USERS[camname].set_textright(USERS[camname].typetext)
 
 
@@ -1015,7 +1021,7 @@ if PORT:
 if NAMESPACE:
     kwargs["namespace"] = NAMESPACE
 scene = Scene(
-    debug=True, # TODO: remove debug
+    debug=True,  # TODO: remove debug
     host=BROKER,
     realm=REALM,
     scene=SCENE,

@@ -139,7 +139,7 @@ def handle_clickline_event(event, mode):
     return (obj, direction, move)
 
 
-def panel_callback(event=None):
+def panel_callback(_scene, event, msg):
     camname, objid, drop = handle_panel_event(event)
     if not camname or not objid:
         return
@@ -264,7 +264,7 @@ def update_dropdown(camname, objid, mode, options, row, callback):
         USERS[camname].target_style = options[0]
 
 
-def model_callback(event=None):
+def model_callback(_scene, event, msg):
     camname, objid, drop = handle_panel_event(event, dropdown=True)
     if not camname or not drop:
         return
@@ -280,7 +280,7 @@ def model_callback(event=None):
     USERS[camname].target_style = model
 
 
-def shape_callback(event=None):
+def shape_callback(_scene, event, msg):
     camname, objid, drop = handle_panel_event(event, dropdown=True)
     if not camname or not drop:
         return
@@ -291,7 +291,7 @@ def shape_callback(event=None):
     USERS[camname].target_style = shape
 
 
-def color_callback(event=None):
+def color_callback(_scene, event, msg):
     camname, objid, drop = handle_panel_event(event, dropdown=True)
     if not camname or not objid:
         return
@@ -301,7 +301,7 @@ def color_callback(event=None):
     USERS[camname].target_style = hcolor
 
 
-def gen_callback(event=None):
+def gen_callback(_scene, event, msg):
     camname, objid, drop = handle_panel_event(event, dropdown=True)
     if not camname or not drop:
         return
@@ -310,7 +310,7 @@ def gen_callback(event=None):
     USERS[camname].target_style = style
 
 
-def rename_callback(event=None):
+def rename_callback(_scene, event, msg):
     camname, objid, drop = handle_panel_event(event, dropdown=True)
     if not camname or not drop:
         return
@@ -660,7 +660,7 @@ def meters_increment(meters_style):
         return 1.0
 
 
-def nudgeline_callback(event=None):
+def nudgeline_callback(_scene, event, msg):
     obj, direction, move = handle_clickline_event(event, Mode.NUDGE)
     if not obj and not direction:
         return
@@ -684,7 +684,7 @@ def nudgeline_callback(event=None):
     do_nudge_select(event.data.source, obj.object_id, position=nudged)
 
 
-def scaleline_callback(event=None):
+def scaleline_callback(_scene, event, msg):
     obj, direction, move = handle_clickline_event(event, Mode.SCALE)
     if not obj and not direction:
         return
@@ -703,7 +703,7 @@ def scaleline_callback(event=None):
     do_scale_select(event.data.source, obj.object_id, scale=scaled)
 
 
-def stretchline_callback(event=None):
+def stretchline_callback(_scene, event, msg):
     obj, direction, move = handle_clickline_event(event, Mode.STRETCH)
     if not obj and not direction and not move:
         return
@@ -736,7 +736,7 @@ def stretchline_callback(event=None):
     do_stretch_select(event.data.source, obj.object_id, scale=scaled)
 
 
-def rotateline_callback(event=None):
+def rotateline_callback(_scene, event, msg):
     obj, direction, move = handle_clickline_event(event, Mode.ROTATE)
     if not obj and not direction:
         return
@@ -789,7 +789,7 @@ def create_obj(camname, clipboard, position):
     print("Created " + new_obj.object_id)
 
 
-def clipboard_callback(event=None):
+def clipboard_callback(_scene, event, msg):
     camname = handle_clip_event(event)
     if not camname:
         return
@@ -800,7 +800,7 @@ def clipboard_callback(event=None):
         do_move_relocate(camname, position)
 
 
-def wall_callback(event=None):
+def wall_callback(_scene, event, msg):
     camname = handle_clip_event(event)
     if not camname:
         return
@@ -900,7 +900,7 @@ def make_wall(camname):
     # TODO: push wall front side flush with markers (position-(wall/2))
 
 
-def scene_callback(msg):
+def scene_callback(_scene, event, msg):
     # This is the MQTT message callback function for the scene
     object_id = action = msg_type = object_type = None
     if "object_id" in msg:

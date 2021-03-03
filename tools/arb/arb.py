@@ -196,8 +196,8 @@ def panel_callback(_scene, event, msg):
         url = MANIFEST[idx]['url_gltf']
         sca = MANIFEST[idx]['scale']
         USERS[camname].set_clipboard(
-            callback=clipboard_callback, object_type=GLTF()[
-                'data']['object_type'],
+            # TODO: update with .type class
+            callback=clipboard_callback, object_type="gltf_model",
             scale=(sca, sca, sca), url=url)
     elif mode == Mode.COLOR:
         update_dropdown(camname, objid, mode,
@@ -213,8 +213,7 @@ def panel_callback(_scene, event, msg):
         USERS[camname].set_textright(USERS[camname].typetext)
     elif mode == Mode.WALL:
         USERS[camname].set_clipboard(
-            object_type=Circle()[
-                'data']['object_type'], callback=wall_callback,
+            object_type="circle", callback=wall_callback,  # TODO: update with .type class
             scale=(0.005, 0.005, 0.005))
         USERS[camname].set_textright("Start: tap flush corner.")
     elif mode == Mode.NUDGE:
@@ -273,8 +272,8 @@ def model_callback(_scene, event, msg):
     url = MANIFEST[idx]['url_gltf']
     sca = MANIFEST[idx]['scale']
     USERS[camname].set_clipboard(
-        callback=clipboard_callback, object_type=GLTF()[
-            'data']['object_type'],
+        # TODO: update with .type class['object_type']
+        callback=clipboard_callback, object_type="gltf_model",
         scale=(sca, sca, sca), url=url)
     USERS[camname].set_textright(model)
     USERS[camname].target_style = model
@@ -453,7 +452,7 @@ def do_stretch_select(camname, objid, scale=None):
     if not scale:
         obj = scene.get_persisted_obj(objid)
         # scale too unpredictable
-        if obj.data.object_type == GLTF()['data']['object_type']:
+        if obj.data.object_type == "gltf_model":  # TODO: update with .type class
             return
         if obj.data.rotation != (0, 0, 0, 1):  # scale too unpredictable
             return

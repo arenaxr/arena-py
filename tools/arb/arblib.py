@@ -82,20 +82,20 @@ METERS = ["mm", "cm", "dm", "m"]
 DEGREES = ["1", "5", "10", "45", "90"]
 COLORS = ["ffffff", "ff0000", "ffa500", "ffff00", "00ff00",
           "0000ff", "4b0082", "800080", "a52a2a", "000000"]
-SHAPES = [Sphere()['data']['object_type'],
-          Box()['data']['object_type'],
-          Cone()['data']['object_type'],
-          Cylinder()['data']['object_type'],
-          Dodecahedron()['data']['object_type'],
-          Icosahedron()['data']['object_type'],
-          Octahedron()['data']['object_type'],
-          Tetrahedron()['data']['object_type'],
-          Torus()['data']['object_type'],
-          TorusKnot()['data']['object_type'],
-          Circle()['data']['object_type'],
-          Plane()['data']['object_type'],
-          Ring()['data']['object_type'],
-          Triangle()['data']['object_type']]
+SHAPES = ["sphere",  # TODO: update with .type class
+          "box",
+          "cone",
+          "cylinder",
+          "dodecahedron",
+          "icosahedron",
+          "octahedron",
+          "tetrahedron",
+          "torus",
+          "torusKnot",
+          "circle",
+          "plane",
+          "ring",
+          "triangle"]
 DEF_MANIFEST = [{  # default model, if none loaded
     "name": "duck",
     "url_gltf": "models/Duck.glb",
@@ -229,7 +229,7 @@ class User:
 
     def set_clipboard(self,
                       callback=None,
-                      object_type=Sphere()['data']['object_type'],
+                      object_type="sphere",  # TODO: update with .type class
                       scale=(0.05, 0.05, 0.05),
                       position=(0, 0, -CLIP_RADIUS),
                       color=(255, 255, 255),
@@ -292,9 +292,9 @@ class Button:
             obj_name = camname + "_button_" + mode.value
         else:
             obj_name = camname + "_button_" + mode.value + "_" + drop
-        shape = Box()['data']['object_type']
+        shape = "box"  # TODO: update with .type class
         if btype == ButtonType.TOGGLE:
-            shape = Cylinder()['data']['object_type']
+            shape = "cylinder"
             scale = (scale[0] / 2, scale[1], scale[2] / 2)
         self.button = Object(  # cube is main button
             object_id=obj_name,

@@ -135,10 +135,7 @@ def handle_clickline_event(event, mode):
         return None, None, None
     if USERS[event.data.source].mode != mode:
         return None, None, None
-    pobjs = scene.get_persisted_obj(object_id)
-    if not pobjs:
-        return None, None, None
-    obj = arblib.ObjectPersistence(pobjs[0])
+    obj = scene.get_persisted_obj(object_id)
     return (obj, direction, move)
 
 
@@ -384,11 +381,8 @@ def show_redpill_scene(enabled):
 def do_rename(camname, old_id, new_id):
     if new_id == old_id:
         return
-    pobjs = scene.get_persisted_obj(old_id)
-    if not pobjs:
-        return
-    data = json.dumps(pobjs[0]["attributes"])
-    scene.add_object(Object(object_id=new_id, persist=True, data=data))
+    obj = scene.get_persisted_obj(old_id)
+    scene.add_object(Object(object_id=new_id, persist=True, data=obj.data))
     USERS[camname].target_id = new_id
     print("Duplicating " + old_id + " to " + new_id)
     arblib.delete_obj(scene, old_id)
@@ -396,27 +390,21 @@ def do_rename(camname, old_id, new_id):
 
 def show_redpill_obj(camname, object_id):
     # any scene changes must not persist
-    pobjs = scene.get_persisted_obj(object_id)
-    if not pobjs:
-        return
-    obj = arblib.ObjectPersistence(pobjs[0])
+    obj = scene.get_persisted_obj(object_id)
     # enable mouse enter/leave pos/rot/scale
-    USERS[camname].set_textstatus(object_id + ' p' + str(obj.position) +
-                                  ' r' + str(obj.rotation) + ' s' + str(obj.scale))
+    USERS[camname].set_textstatus(object_id + ' p' + str(data.position) +
+                                  ' r' + str(obj.data.rotation) + ' s' + str(obj.data.scale))
 
 
 def do_move_select(camname, object_id):
-    pobjs = scene.get_persisted_obj(object_id)
-    if not pobjs:
-        return
-    obj = arblib.ObjectPersistence(pobjs[0])
+    obj = scene.get_persisted_obj(object_id)
     USERS[camname].target_id = object_id
     USERS[camname].set_clipboard(
         callback=clipboard_callback,
         object_type=obj.data.object_type,
-        scale=obj.scale,
-        color=obj.color,
-        url=obj.url,
+        scale=obj.data.scale,
+        color=obj.data.material.color,
+        url=obj.data.url,
     )
 
 
@@ -433,11 +421,8 @@ def do_nudge_select(camname, objid, position=None):
     delim = "_"+Mode.NUDGE.value+"_"
     callback = nudgeline_callback
     if not position:
-        pobjs = scene.get_persisted_obj(objid)
-        if not pobjs:
-            return
-        obj = arblib.ObjectPersistence(pobjs[0])
-        position = obj.position
+        obj = scene.get_persisted_obj(objid)
+        position = obj.data.position
     # nudge object + or - on 3 axis
     make_clickline("x", 1, objid, position, delim, color, callback)
     make_clickline("y", 1, objid, position, delim, color, callback)
@@ -452,12 +437,9 @@ def do_scale_select(camname, objid, scale=None):
     delim = "_"+Mode.SCALE.value+"_"
     callback = scaleline_callback
     if not scale:
-        pobjs = scene.get_persisted_obj(objid)
-        if not pobjs:
-            return
-        obj = arblib.ObjectPersistence(pobjs[0])
-        position = obj.position
-        scale = obj.scale
+        obj = scene.get_persisted_obj(objid)
+        position = obj.data.position
+        scale = obj.data.scale
         # scale entire object + or - on all axis
         make_clickline("x", 1, objid, position, delim, color, callback)
         make_followspot(objid, position, delim, color)
@@ -470,17 +452,14 @@ def do_stretch_select(camname, objid, scale=None):
     delim = "_"+Mode.STRETCH.value+"_"
     callback = stretchline_callback
     if not scale:
-        pobjs = scene.get_persisted_obj(objid)
-        if not pobjs:
-            return
-        obj = arblib.ObjectPersistence(pobjs[0])
+        obj = scene.get_persisted_obj(objid)
         # scale too unpredictable
         if obj.data.object_type == GLTF()['data']['object_type']:
             return
-        if obj.rotation != (0, 0, 0, 1):  # scale too unpredictable
+        if obj.data.rotation != (0, 0, 0, 1):  # scale too unpredictable
             return
-        position = obj.position
-        scale = obj.scale
+        position = obj.data.position
+        scale = obj.data.scale
         # scale and reposition on one of 6 sides
         make_clickline("x", 1, objid, position, delim, color, callback)
         make_clickline("x", -1, objid, position, delim, color, callback)
@@ -498,12 +477,9 @@ def do_rotate_select(camname, objid, rotation=None):
     delim = "_"+Mode.ROTATE.value+"_"
     callback = rotateline_callback
     if not rotation:
-        pobjs = scene.get_persisted_obj(objid)
-        if not pobjs:
-            return
-        obj = arblib.ObjectPersistence(pobjs[0])
-        position = obj.position
-        rotation = obj.rotation
+        obj = scene.get_persisted_obj(objid)
+        position = obj.data.position
+        rotation = obj.data.rotation
         # rotate object + or - on 3 axis, plus show original axis as after
         # effect
         make_clickline("x", 1, objid, position, delim, color, callback, True)
@@ -688,7 +664,7 @@ def nudgeline_callback(event=None):
     obj, direction, move = handle_clickline_event(event, Mode.NUDGE)
     if not obj and not direction:
         return
-    nudged = loc = obj.position
+    nudged = loc = obj.data.position
     inc = meters_increment(USERS[event.data.source].target_style)
     if direction == "xp":
         nudged = (incr_pos(loc[0], inc), loc[1], loc[2])
@@ -703,7 +679,7 @@ def nudgeline_callback(event=None):
     elif direction == "zn":
         nudged = (loc[0], loc[1], incr_neg(loc[2], inc))
     arblib.move_obj(scene, obj.object_id, nudged)
-    print(str(obj.position) + " to " + str(nudged))
+    print(str(obj.data.position) + " to " + str(nudged))
     # always redraw nudgelines
     do_nudge_select(event.data.source, obj.object_id, position=nudged)
 
@@ -712,7 +688,7 @@ def scaleline_callback(event=None):
     obj, direction, move = handle_clickline_event(event, Mode.SCALE)
     if not obj and not direction:
         return
-    scaled = sca = obj.scale
+    scaled = sca = obj.data.scale
     inc = meters_increment(USERS[event.data.source].target_style)
     if direction == "xp":
         scaled = (incr_pos(sca[0], inc), incr_pos(
@@ -723,7 +699,7 @@ def scaleline_callback(event=None):
     if scaled[0] <= 0 or scaled[1] <= 0 or scaled[2] <= 0:
         return
     arblib.scale_obj(scene, obj.object_id, scaled)
-    print(str(obj.scale) + " to " + str(scaled))
+    print(str(obj.data.scale) + " to " + str(scaled))
     do_scale_select(event.data.source, obj.object_id, scale=scaled)
 
 
@@ -731,8 +707,8 @@ def stretchline_callback(event=None):
     obj, direction, move = handle_clickline_event(event, Mode.STRETCH)
     if not obj and not direction and not move:
         return
-    scaled = sca = obj.scale
-    moved = loc = obj.position
+    scaled = sca = obj.data.scale
+    moved = loc = obj.data.position
     inc = meters_increment(USERS[event.data.source].target_style)
     if direction == "xp":
         scaled = (incr_pos(sca[0], inc), sca[1], sca[2])
@@ -756,7 +732,7 @@ def stretchline_callback(event=None):
         return
     arblib.stretch_obj(scene, obj.object_id,
                        scale=scaled, position=moved)
-    print(str(obj.scale) + " to " + str(scaled))
+    print(str(obj.data.scale) + " to " + str(scaled))
     do_stretch_select(event.data.source, obj.object_id, scale=scaled)
 
 
@@ -764,7 +740,7 @@ def rotateline_callback(event=None):
     obj, direction, move = handle_clickline_event(event, Mode.ROTATE)
     if not obj and not direction:
         return
-    rotated = rot = obj.rotation
+    rotated = rot = obj.data.rotation
     inc = float(USERS[event.data.source].target_style)
     rot = arblib.rotation_quat2euler(rot)
     rot = (round(rot[0]), round(rot[1]), round(rot[2]))
@@ -784,7 +760,7 @@ def rotateline_callback(event=None):
         return
     rotated = arblib.rotation_euler2quat(rotated)
     arblib.rotate_obj(scene, obj.object_id, rotated)
-    print(str(obj.rotation) + " to " + str(rotated))
+    print(str(obj.data.rotation) + " to " + str(rotated))
     do_rotate_select(event.data.source, obj.object_id, rotation=rotated)
 
 

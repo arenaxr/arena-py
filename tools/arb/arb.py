@@ -355,11 +355,10 @@ def show_redpill_scene(enabled):
                 material=Material(color=hcolor)))
         else:
             arblib.delete_obj(scene, name)
-    pobjs = scene.get_persisted_scene_option()
-    for pobj in pobjs:
-        obj = arblib.ObjectPersistence(pobj)
+    objs = scene.get_persisted_objs()
+    for obj in objs:
         # show occluded objects
-        if obj.transparent_occlude:
+        if obj.data.material and "colorWrite" in obj.data.material and not obj.data.material.colorWrite:
             name = "redpill_" + obj.object_id
             if enabled:
                 scene.add_object(Object(
@@ -781,7 +780,8 @@ def create_obj(camname, clipboard, position):
         position=position,
         rotation=(0, 0, 0, 1),  # undo clipboard rotation for visibility
         scale=clipboard.data.scale,
-        material=Material(color=clipboard.data.material.color, transparent=False),
+        material=Material(color=clipboard.data.material.color,
+                          transparent=False),
         url=clipboard.data.url,
         clickable=True)
     scene.add_object(new_obj)
@@ -911,7 +911,8 @@ def scene_callback(_scene, event, msg):
         msg_type = msg["type"]
     if "data" in msg and "object_type" in msg["data"]:
         object_type = msg["data"]["object_type"]
-    print(f'{object_type} {action} {msg_type} {object_id}') # TODO: remove debug
+    # TODO: remove debug
+    print(f'{object_type} {action} {msg_type} {object_id}')
 
     if object_type == "camera":
         # camera updates define users present

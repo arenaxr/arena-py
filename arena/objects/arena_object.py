@@ -108,6 +108,10 @@ class Object(BaseObject):
     def clear_animations(self):
         self.animations = []
 
+    @property
+    def clickable(self):
+        return "click_listener" in self.data or "clickable" in self.data
+
     def json_preprocess(self, **kwargs):
         # kwargs are for additional param to add to json, like "action":"create"
         json_payload = { k:v for k,v in vars(self).items() if k != "evt_handler" and \

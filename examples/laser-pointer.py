@@ -24,8 +24,10 @@ def click(scene, evt, msg):
 def main():
     objs = scene.get_persisted_objs()
     for obj_id,obj in objs.items():
-        obj.update_attributes(clickable=True)
-        obj.update_attributes(evt_handler=click, scale=(1,1,1))
-        scene.update_object(obj)
+        # obj.update_attributes(clickable=True)
+        if obj.clickable:
+            print(obj)
+            obj.update_attributes(evt_handler=click)
+            scene.update_object(obj)
 
 scene.run_tasks()

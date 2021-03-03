@@ -4,13 +4,13 @@
 
 from arena import *
 
-def new_obj_callback(obj):
+def new_obj_callback(scene, obj, msg):
     print("new", obj, obj.data.position)
 
-def on_msg_callback(obj):
+def on_msg_callback(scene, obj, msg):
     print("msg", obj, obj.data.position)
 
-def delete_obj_callback(obj):
+def delete_obj_callback(scene, obj, msg):
     print("delete", obj, obj.object_id)
 
 scene = Scene(

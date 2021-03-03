@@ -5,6 +5,7 @@ import random
 import json
 import paho.mqtt.client as mqtt
 from datetime import datetime
+from inspect import signature
 
 from .attributes import *
 from .objects import *
@@ -23,7 +24,7 @@ class Scene(object):
     def __init__(
                 self,
                 debug = False,
-                network_loop_interval = 50,  # run mqtt client network loop every 50ms
+                network_loop_interval = 20,  # run mqtt client network loop every 20ms
                 network_latency_interval = 10000,  # run network latency update every 10s
                 on_msg_callback = None,
                 new_obj_callback = None,
@@ -75,8 +76,8 @@ class Scene(object):
         self.mqttc_id = "pyClient-" + self.generate_client_id()
 
         # set up scene variables
-        self.namespace_scene =  f"{self.namespace}/{self.scene}"
-        self.root_topic = f"{self.realm}/s/{self.namespace_scene}"
+        self.namespaced_scene =  f"{self.namespace}/{self.scene}"
+        self.root_topic = f"{self.realm}/s/{self.namespaced_scene}"
         self.scene_topic = f"{self.root_topic}/#"   # main topic for entire scene
         self.latency_topic = "$NETWORK/latency"     # network graph latency update
         self.ignore_topic = f"{self.root_topic}/{self.mqttc_id}/#" # ignore own messages
@@ -88,7 +89,7 @@ class Scene(object):
         # do scene auth
         if not (os.environ.get("ARENA_USERNAME") and os.environ.get("ARENA_PASSWORD")):
             data = auth.authenticate_scene(self.host, self.realm,
-                                           self.namespace_scene, username, self.debug)
+                                           self.namespaced_scene, username, self.debug)
             if 'username' in data and 'token' in data:
                 username = data["username"]
                 password = data["token"]
@@ -102,7 +103,7 @@ class Scene(object):
         self.user_join_callback = user_join_callback
         self.user_left_callback = user_left_callback
 
-        self.unspecified_objs_ids = set() # objects that exist in the scene,
+        self.unspecified_object_ids = set() # objects that exist in the scene,
                                           # but this scene instance does not
                                           # have a reference to
         self.users = {} # dict of all users
@@ -255,42 +256,38 @@ class Scene(object):
 
         # update object attributes, if possible
         if "object_id" in payload:
-            object_id = payload["object_id"]
-            data = {}
-            object_type = None
-            event = None
+            # parese payload
+            object_id = payload.get("object_id", None)
+            action = payload.get("action", None)
 
-            # parse object_type
-            if "data" in payload:
-                data = payload["data"]
-                if "object_type" in data:
-                    object_type = data["object_type"]
+            data = payload.get("data", {})
+            object_type = data.get("object_type", None)
 
-            # parse action and react accordingly
-            if "action" in payload:
-                action = payload["action"]
-                if action == "clientEvent":
-                    event = Event(**payload)
-                elif action == "delete":
-                    if "camera" in object_id: # object is a camera
-                        if self.user_left_callback:
-                            if object_id in self.users:
-                                self.user_left_callback(self.users[object_id])
-                    elif self.delete_obj_callback:
-                        self.delete_obj_callback(obj)
-                    return # dont do anything else if action == delete
-
-            # parse payload and handle object callbacks
+            # create/get object from object_id
             if object_id in self.all_objects:
                 obj = self.all_objects[object_id]
-                if not event: # update object if not an event
-                    obj.update_attributes(**payload)
-                elif obj.evt_handler:
-                    obj.evt_handler(event)
-                    return
             else:
-                # [TODO]: check object_type
-                obj = Object(**payload)
+                ObjClass = OBJECT_TYPE_MAP.get(object_type, Object)
+                obj = ObjClass(**payload)
+
+            # react to action accordingly
+            if action:
+                if action == "clientEvent":
+                    event = Event(**payload)
+                    if obj.evt_handler:
+                        self.callback_wrapper(obj.evt_handler, event, payload)
+                    return
+
+                elif action == "delete":
+                    if "camera" in object_id: # object is a camera
+                        if object_id in self.users and self.user_left_callback:
+                            self.callback_wrapper(self.user_left_callback, self.users[object_id], payload)
+                    elif self.delete_obj_callback:
+                        self.callback_wrapper(self.delete_obj_callback, obj, payload)
+                    return
+
+                else: # create/update
+                    obj.update_attributes(**payload)
 
             # run user_join_callback when user is found
             if object_type and object_type == "camera":
@@ -299,17 +296,25 @@ class Scene(object):
                         self.users[object_id] = obj
                     else:
                         self.users[object_id] = Camera(**payload)
+
                     if self.user_join_callback:
-                        self.user_join_callback(self.users[object_id])
+                        self.callback_wrapper(self.user_join_callback, self.users[object_id], payload)
 
-            # if it is an object the lib has not seen before, call new object callback
-            elif object_id not in self.unspecified_objs_ids and self.new_obj_callback:
-                self.new_obj_callback(obj)
-                self.unspecified_objs_ids.add(object_id)
+            # if its an object the lib has not seen before, call new object callback
+            elif object_id not in self.unspecified_object_ids and self.new_obj_callback:
+                self.callback_wrapper(self.new_obj_callback, obj, payload)
+                self.unspecified_object_ids.add(object_id)
 
-            # call new message callback if not an event
-            if not event and self.on_msg_callback:
-                self.on_msg_callback(obj)
+            # call new message callback for all messages
+            if self.on_msg_callback:
+                self.callback_wrapper(self.on_msg_callback, obj, payload)
+
+    def callback_wrapper(self, func, arg, src):
+        if len(signature(func).parameters) != 3:
+            print("[DEPRECATED]", "Callbacks and handlers now take 3 arguments: (scene, obj/evt, msg)!")
+            func(arg)
+        else:
+            func(self, arg, src)
 
     def generate_custom_event(self, evt, action="clientEvent"):
         """Publishes an custom event. Could be user or library defined"""
@@ -461,7 +466,7 @@ class Scene(object):
         return payload
 
     def get_persisted_obj(self, object_id):
-        """Returns a dictionary for a persisted object. [TODO] check object_type"""
+        """Returns a dictionary for a persisted object."""
         obj = None
         if object_id in self.all_objects:
             obj = self.all_objects[object_id]
@@ -469,20 +474,53 @@ class Scene(object):
         else:
             # pass token to persist
             data = auth.urlopen(
-                url=f'https://{self.host}/persist/{self.namespace_scene}/{object_id}', creds=True)
+                url=f'https://{self.host}/persist/{self.namespaced_scene}/{object_id}', creds=True)
             output = json.loads(data)
             if len(output) > 0:
                 output = output[0]
-                obj = Object(object_id=output["object_id"], data=output["attributes"])
+                if "data" in output:
+                    object_type = output["data"].get("object_type", None)
+
+                ObjClass = OBJECT_TYPE_MAP.get(object_type, Object)
+                object_id = output["object_id"]
+                data = output["attributes"]
+                obj = ObjClass(object_id=object_id, data=data)
                 obj.persist = True
+
         if self.debug: print("[get_persisted_obj]", obj)
         return obj
+
+    def get_persisted_objs(self):
+        """Returns a dictionary of persisted objects. [TODO] check object_type"""
+        objs = {}
+        # pass token to persist
+        data = auth.urlopen(
+            url=f'https://{self.host}/persist/{self.namespaced_scene}', creds=True)
+        output = json.loads(data)
+        for obj in output:
+            if obj["type"] == "object" or obj["type"] == "entity":
+                object_id = obj["object_id"]
+                data = obj["attributes"]
+
+                if object_id in self.all_objects:
+                    persisted_obj = self.all_objects[object_id]
+                    persisted_obj.persist = True
+                else:
+                    object_type = data.get("object_type", None)
+                    ObjClass = OBJECT_TYPE_MAP.get(object_type, Object)
+                    persisted_obj = ObjClass(object_id=object_id, data=data)
+                    persisted_obj.persist = True
+
+                objs[object_id] = persisted_obj
+
+        if self.debug: print("[get_persisted_objs]", objs)
+        return objs
 
     def get_persisted_scene_option(self):
         """Returns a dictionary for scene-options. [TODO] wrap the output as a BaseObject"""
         # pass token to persist
         data = auth.urlopen(
-            url=f'https://{self.host}/persist/{self.namespace_scene}', creds=True)
+            url=f'https://{self.host}/persist/{self.namespaced_scene}?type=scene-options', creds=True)
         output = json.loads(data)
         if self.debug: print("[get_persisted_scene_option]", output)
         return output

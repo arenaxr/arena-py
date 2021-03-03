@@ -3,7 +3,7 @@
 ## Event Handlers
 See [events.md](events.md)
 ```python
-def mouse_handler(evt):
+def mouse_handler(scene, evt, msg):
     print(evt.type)
     # do amazing stuff here
 
@@ -36,7 +36,7 @@ async def func():
     box = Box(object_id="my_box", position=Position(0,4,-2), scale=Scale(2,2,2))
     arena.add_object(box)
 
-    def mouse_handler(evt):
+    def mouse_handler(scene, evt, msg):
         if evt.type == "mousedown":
             box.data.position.x += 0.5
             arena.update_object(box)

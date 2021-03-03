@@ -22,3 +22,32 @@ from .thickline import ThickLine
 from .torus import Torus
 from .torus_knot import TorusKnot
 from .triangle import Triangle
+
+OBJECT_TYPE_MAP = {
+    "box": Box,
+    "cube": Box,
+    "camera": Camera,
+    "circle": Circle,
+    "cone": Cone,
+    "cylinder": Cylinder,
+    "dodecahedron": Dodecahedron,
+    "gltf-model": GLTF,
+    "icosahedron": Icosahedron,
+    "image": Image,
+    "landmarks": Landmarks,
+    "light": Light,
+    "line": Line,
+    "object": Object,
+    "entity": Object,
+    "octahedron": Octahedron,
+    "particle": Particle,
+    "plane": Plane,
+    "ring": Ring,
+    "sphere": Sphere,
+    "tetrahedron": Tetrahedron,
+    "text": Text,
+    "thickline": ThickLine,
+    "torus": Torus,
+    "torusKnot": TorusKnot,
+    "triangle": Triangle,
+}

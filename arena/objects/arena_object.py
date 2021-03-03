@@ -42,7 +42,9 @@ class Object(BaseObject):
             kwargs["object_type"] = "entity"
 
         if "color" in kwargs:
-            print("[DEPRECATED]", "Color must now be specified in material=Material(color=Color(...))!")
+            if kwargs["object_type"] != "text" and kwargs["object_type"] != "thickline":
+                print("[DEPRECATED]",
+                    "Color must be specified in material=Material(color=Color(...))! (Does not hold for Text and Thicklines)")
 
         # print warning if object is being created with the same id as an existing object
         if Object.exists(object_id):

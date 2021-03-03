@@ -281,7 +281,7 @@ class Scene(object):
                         self.callback_wrapper(obj.evt_handler, event, payload)
 
                 elif action == "delete":
-                    if "camera" in object_id: # object is a camera
+                    if Camera.object_type in object_id: # object is a camera
                         if object_id in self.users and self.user_left_callback:
                             self.callback_wrapper(self.user_left_callback, self.users[object_id], payload)
                     elif self.delete_obj_callback:
@@ -299,7 +299,7 @@ class Scene(object):
                     self.callback_wrapper(self.on_msg_callback, event, payload)
 
             # run user_join_callback when user is found
-            if object_type and object_type == "camera":
+            if object_type and object_type == Camera.object_type:
                 if object_id not in self.users:
                     if object_id in self.all_objects:
                         self.users[object_id] = obj
@@ -355,7 +355,7 @@ class Scene(object):
             object_id = cam
         evt = Event(object_id=object_id,
                     type="camera-override",
-                    object_type="camera",
+                    object_type=Camera.object_type,
                     **kwargs)
         return self.generate_custom_event(evt, action="update")
 
@@ -492,7 +492,6 @@ class Scene(object):
                 obj = ObjClass(object_id=object_id, data=data)
                 obj.persist = True
 
-        if self.debug: print("[get_persisted_obj]", obj)
         return obj
 
     def get_persisted_objs(self):
@@ -503,7 +502,7 @@ class Scene(object):
             url=f'https://{self.host}/persist/{self.namespaced_scene}', creds=True)
         output = json.loads(data)
         for obj in output:
-            if obj["type"] == "object" or obj["type"] == "entity":
+            if obj["type"] == Object.object_type or obj["type"] == Object.type:
                 object_id = obj["object_id"]
                 data = obj["attributes"]
 
@@ -518,7 +517,6 @@ class Scene(object):
 
                 objs[object_id] = persisted_obj
 
-        if self.debug: print("[get_persisted_objs]", objs)
         return objs
 
     def get_persisted_scene_option(self):
@@ -527,7 +525,6 @@ class Scene(object):
         data = auth.urlopen(
             url=f'https://{self.host}/persist/{self.namespaced_scene}?type=scene-options', creds=True)
         output = json.loads(data)
-        if self.debug: print("[get_persisted_scene_option]", output)
         return output
 
     def message_callback_add(self, sub, callback):

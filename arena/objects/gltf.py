@@ -6,9 +6,11 @@ class GLTF(Object):
     """
     Class for GLTF Model in the ARENA.
     """
+    object_type = "gltf-model"
+
     def __init__(self, url="", **kwargs):
         self.morphs = {}
-        super().__init__(object_type="gltf-model", url=url, **kwargs)
+        super().__init__(object_type=GLTF.object_type, url=url, **kwargs)
 
     def update_morph(self, morph):
         if isinstance(morph, (list,tuple)):

@@ -159,11 +159,10 @@ def main():
         if ticks == 480:
             close_mouth()
 
-            def box_made(msg):
-                print(msg)
+            def box_made(scene, obj, msg):
                 global box_ready
-                if "object_id" in msg:
-                    box_ready = (msg["object_id"] == "my_box")
+                if "object_id" in obj:
+                    box_ready = (obj.object_id == "my_box")
 
             arena.new_obj_callback = box_made
 

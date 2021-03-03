@@ -3,8 +3,10 @@ from ..attributes import Attribute, Position
 
 class ThickLine(Object):
     """
-    Class for Thickline in the ARENA.
+    Class for ThickLine in the ARENA.
     """
+    object_type = "thickline"
+
     def __init__(self, path=[Position(0,0,0), Position(10,10,10), Position(10,-10,10)], lineWidth=1, **kwargs):
         # path for thickline is a string, ie (1,2,3) -> "1 2 3"
         path_str = ""
@@ -19,4 +21,4 @@ class ThickLine(Object):
                 p = Position(**p).to_str()
             path_str += p + ","
         path_str = path_str.rstrip(",")
-        super().__init__(object_type="thickline", path=path_str, lineWidth=lineWidth, **kwargs)
+        super().__init__(object_type=ThickLine.object_type, path=path_str, lineWidth=lineWidth, **kwargs)

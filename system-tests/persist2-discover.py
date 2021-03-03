@@ -14,7 +14,7 @@ from arena import *
 
 
 def on_msg_callback(scene, obj, msg):
-    if "event_type" in obj and obj.event_type == "mousedown":
+    if isinstance(obj, Event) and obj.type == "mousedown":
         print(f"Program 2 mousedown event: {obj.object_id}")
         obj = scene.get_persisted_obj(obj.object_id)
         print(f"Program 2 persisted color: {obj.data.material.color}")

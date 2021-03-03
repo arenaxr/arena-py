@@ -50,6 +50,7 @@ specify both to bypass auth.
 - `Arena` class renamed to `Scene`, but using `Arena` is still allowed. Updated examples to reflect this.
 - Tiny bug fix with `update_objects`.
 
+[0.1.18]: https://github.com/conix-center/ARENA-py/tree/120b675928e7c8f215f3910e4157890944d0b2e8
 [0.1.17]: https://github.com/conix-center/ARENA-py/tree/0a7897c89bd4a08c03c0c626601e4686cacc368c
 [0.1.16]: https://github.com/conix-center/ARENA-py/tree/8e42dac35a9de7a6b610a1b6663606d1adf1a17e
 [0.1.15]: https://github.com/conix-center/ARENA-py/tree/e8182f476ebdb9c2878e16cefea9671a6f5c49f6

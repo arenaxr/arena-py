@@ -1,7 +1,7 @@
 from arena import *
 import random
 
-scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="test", network_loop_interval=10)
+scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="test")
 
 def click(scene, evt, msg):
     if evt.type == "mousedown":
@@ -11,11 +11,11 @@ def click(scene, evt, msg):
         start.y=start.y-.1
         start.x=start.x-.1
         start.z=start.z-.1
-        line = ThickLine(path=(start, end), color=(255, 0, 0), lineWidth=5, ttl=1)
+        line = ThickLine(path=(start,end), color=(255,0,0), lineWidth=5, ttl=1)
         scene.add_object(line)
         ball = Sphere(
             position=end,
-            scale = (0.05,0.05,0.05),
+            scale = (0.06,0.06,0.06),
             material=Material(color=(255,0,0)),
             ttl=1)
         scene.add_object(ball)

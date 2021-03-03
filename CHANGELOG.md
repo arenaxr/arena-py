@@ -2,9 +2,17 @@
 
 ARENA-py notable changes. Started 2021-19-2.
 
+## [unreleased] - 2021-2-3
+### Added
+- `on_msg_callback` receives __all__ messages, including duplicates from other callbacks.
+- Add `object_type` class variable to every Object child.
+
+### Changed
+- Library calls `get_persisted_objs` on connect to cache persisted objects.
+
 ## [0.1.18] - 2021-2-3
 ### Added
-- use `scene.get_persisted_objs()` to get all persisted objects in a scene.
+- Use `scene.get_persisted_objs()` to get all persisted objects in a scene.
 
 ### Changed
 - Improved message parsing and Object creation whenever a message arrives.

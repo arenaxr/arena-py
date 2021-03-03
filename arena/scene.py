@@ -225,6 +225,7 @@ class Scene(object):
             # listen to all messages in scene
             self.mqttc.subscribe(self.scene_topic)
             self.mqttc.message_callback_add(self.scene_topic, self.process_message)
+            self.get_persisted_objs()
 
             print("Connected!")
             print("=====")
@@ -263,6 +264,8 @@ class Scene(object):
             data = payload.get("data", {})
             object_type = data.get("object_type", None)
 
+            event = None
+
             # create/get object from object_id
             if object_id in self.all_objects:
                 obj = self.all_objects[object_id]
@@ -276,7 +279,6 @@ class Scene(object):
                     event = Event(**payload)
                     if obj.evt_handler:
                         self.callback_wrapper(obj.evt_handler, event, payload)
-                        return
 
                 elif action == "delete":
                     if "camera" in object_id: # object is a camera
@@ -288,6 +290,13 @@ class Scene(object):
 
                 else: # create/update
                     obj.update_attributes(**payload)
+
+            # call new message callback for all messages
+            if self.on_msg_callback:
+                if not event:
+                    self.callback_wrapper(self.on_msg_callback, obj, payload)
+                else:
+                    self.callback_wrapper(self.on_msg_callback, event, payload)
 
             # run user_join_callback when user is found
             if object_type and object_type == "camera":
@@ -304,10 +313,6 @@ class Scene(object):
             elif object_id not in self.unspecified_object_ids and self.new_obj_callback:
                 self.callback_wrapper(self.new_obj_callback, obj, payload)
                 self.unspecified_object_ids.add(object_id)
-
-            # call new message callback for all messages
-            if self.on_msg_callback:
-                self.callback_wrapper(self.on_msg_callback, obj, payload)
 
     def callback_wrapper(self, func, arg, src):
         if len(signature(func).parameters) != 3:
@@ -468,18 +473,18 @@ class Scene(object):
     def get_persisted_obj(self, object_id):
         """Returns a dictionary for a persisted object."""
         obj = None
-        # if object_id in self.all_objects:
-        #     obj = self.all_objects[object_id]
-        #     obj.persist = True
-        # else:
-        # pass token to persist
-        data = auth.urlopen(
-            url=f'https://{self.host}/persist/{self.namespaced_scene}/{object_id}', creds=True)
-        output = json.loads(data)
-        if len(output) > 0:
-            output = output[0]
-            if "attributes" in output:
-                object_type = output["attributes"].get("object_type", None)
+        if object_id in self.all_objects:
+            obj = self.all_objects[object_id]
+            obj.persist = True
+        else:
+            # pass token to persist
+            data = auth.urlopen(
+                url=f'https://{self.host}/persist/{self.namespaced_scene}/{object_id}', creds=True)
+            output = json.loads(data)
+            if len(output) > 0:
+                output = output[0]
+                if "data" in output:
+                    object_type = output["data"].get("object_type", None)
 
                 ObjClass = OBJECT_TYPE_MAP.get(object_type, Object)
                 object_id = output["object_id"]
@@ -502,14 +507,14 @@ class Scene(object):
                 object_id = obj["object_id"]
                 data = obj["attributes"]
 
-                # if object_id in self.all_objects:
-                #     persisted_obj = self.all_objects[object_id]
-                #     persisted_obj.persist = True
-                # else:
-                object_type = data.get("object_type", None)
-                ObjClass = OBJECT_TYPE_MAP.get(object_type, Object)
-                persisted_obj = ObjClass(object_id=object_id, data=data)
-                persisted_obj.persist = True
+                if object_id in self.all_objects:
+                    persisted_obj = self.all_objects[object_id]
+                    persisted_obj.persist = True
+                else:
+                    object_type = data.get("object_type", None)
+                    ObjClass = OBJECT_TYPE_MAP.get(object_type, Object)
+                    persisted_obj = ObjClass(object_id=object_id, data=data)
+                    persisted_obj.persist = True
 
                 objs[object_id] = persisted_obj
 

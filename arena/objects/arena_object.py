@@ -9,6 +9,8 @@ class Object(BaseObject):
     Object class. Defines a generic object in the ARENA.
     """
 
+    type = "object"
+    object_type = "entity"
     all_objects = {} # dict of all objects created so far
 
     def __init__(self, evt_handler=None, update_handler=None, **kwargs):
@@ -39,7 +41,7 @@ class Object(BaseObject):
 
         # default "object_type" to entity
         if "object_type" not in kwargs:
-            kwargs["object_type"] = "entity"
+            kwargs["object_type"] = Object.object_type
 
         if "color" in kwargs:
             if kwargs["object_type"] != "text" and kwargs["object_type"] != "thickline":
@@ -56,7 +58,7 @@ class Object(BaseObject):
         data = Data(**data)
         super().__init__(
                 object_id=object_id,
-                type="object",
+                type=Object.type,
                 persist=persist,
                 data=data
             )

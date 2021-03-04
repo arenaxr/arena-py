@@ -128,7 +128,7 @@ class Scene(object):
         self.run_forever(self.network_latency_update, interval_ms=network_latency_interval)
 
         if "port" in kwargs:
-            self.mqttc.connect(self.host, port)
+            self.mqttc.connect(self.host, kwargs["port"])
         else:
             self.mqttc.connect(self.host)
 

@@ -75,6 +75,7 @@ class PhysicsSystem:
             scene="physics",
             user_join_callback=self.new_user_handler,
             user_left_callback=self.left_user_handler,
+            threaded=True
         )
         self.user_cams = {}
 

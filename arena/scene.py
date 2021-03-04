@@ -116,7 +116,7 @@ class Scene(object):
         self.mqtt_connect_evt.clear()
 
         # add mqtt client loop to list of tasks if async mode
-        if kwargs.get("async"):
+        if not kwargs.get("threaded", False):
             self.network_loop_interval = network_loop_interval
             self.network_loop = PersistentWorker(
                                 func=self.run_network_loop,
@@ -133,7 +133,7 @@ class Scene(object):
         else:
             self.mqttc.connect(self.host)
 
-        if not kwargs.get("async", False):
+        if kwargs.get("threaded", False):
             self.mqttc.loop_start()
 
         # set paho mqtt callbacks

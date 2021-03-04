@@ -82,20 +82,20 @@ METERS = ["mm", "cm", "dm", "m"]
 DEGREES = ["1", "5", "10", "45", "90"]
 COLORS = ["ffffff", "ff0000", "ffa500", "ffff00", "00ff00",
           "0000ff", "4b0082", "800080", "a52a2a", "000000"]
-SHAPES = ["sphere",  # TODO: update with .type class
-          "box",
-          "cone",
-          "cylinder",
-          "dodecahedron",
-          "icosahedron",
-          "octahedron",
-          "tetrahedron",
-          "torus",
-          "torusKnot",
-          "circle",
-          "plane",
-          "ring",
-          "triangle"]
+SHAPES = [Sphere.object_type,
+          Box.object_type,
+          Cone.object_type,
+          Cylinder.object_type,
+          Dodecahedron.object_type,
+          Icosahedron.object_type,
+          Octahedron.object_type,
+          Tetrahedron.object_type,
+          Torus.object_type,
+          TorusKnot.object_type,
+          Circle.object_type,
+          Plane.object_type,
+          Ring.object_type,
+          Triangle.object_type]
 DEF_MANIFEST = [{  # default model, if none loaded
     "name": "duck",
     "url_gltf": "models/Duck.glb",
@@ -229,7 +229,7 @@ class User:
 
     def set_clipboard(self,
                       callback=None,
-                      object_type="sphere",  # TODO: update with .type class
+                      object_type=Sphere.object_type,
                       scale=(0.05, 0.05, 0.05),
                       position=(0, 0, -CLIP_RADIUS),
                       color=(255, 255, 255),
@@ -292,9 +292,9 @@ class Button:
             obj_name = camname + "_button_" + mode.value
         else:
             obj_name = camname + "_button_" + mode.value + "_" + drop
-        shape = "box"  # TODO: update with .type class
+        shape = Box.object_type
         if btype == ButtonType.TOGGLE:
-            shape = "cylinder"
+            shape = Cylinder.object_type
             scale = (scale[0] / 2, scale[1], scale[2] / 2)
         self.button = Object(  # cube is main button
             object_id=obj_name,

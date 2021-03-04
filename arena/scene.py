@@ -115,14 +115,15 @@ class Scene(object):
         self.mqtt_connect_evt = asyncio.Event()
         self.mqtt_connect_evt.clear()
 
-        # add mqtt client loop to list of tasks
-        self.network_loop_interval = network_loop_interval
-        self.network_loop = PersistentWorker(
+        # add mqtt client loop to list of tasks if async mode
+        if kwargs.get("async"):
+            self.network_loop_interval = network_loop_interval
+            self.network_loop = PersistentWorker(
                                 func=self.run_network_loop,
                                 event=None,
                                 interval=self.network_loop_interval
                             )
-        self.task_manager.add_task(self.network_loop)
+            self.task_manager.add_task(self.network_loop)
 
         # run network latency update task every 10 secs
         self.run_forever(self.network_latency_update, interval_ms=network_latency_interval)
@@ -131,6 +132,9 @@ class Scene(object):
             self.mqttc.connect(self.host, kwargs["port"])
         else:
             self.mqttc.connect(self.host)
+
+        if not kwargs.get("async", False):
+            self.mqttc.loop_start()
 
         # set paho mqtt callbacks
         self.mqttc.on_connect = self.on_connect

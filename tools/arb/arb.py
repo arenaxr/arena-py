@@ -479,7 +479,7 @@ def do_rotate_select(camname, objid, rotation=None):
         make_clickline("y", 1, objid, position, delim, color, callback, True)
         make_clickline("z", 1, objid, position, delim, color, callback, True)
         make_followspot(objid, position, delim, color)
-    rote = arblib.rotation_quat2euler(rotation)
+    rote = arblib.rotation_quat2euler((rotation.x, rotation.y, rotation.z, rotation.w))
     euler = (round(rote[0], 1), round(rote[1], 1), round(rote[2], 1))
     USERS[camname].set_textright(
         USERS[camname].target_style + "d r" + str(euler))
@@ -742,7 +742,7 @@ def rotateline_callback(_scene, event, msg):
         return
     rotated = rot = obj.data.rotation
     inc = float(USERS[event.data.source].target_style)
-    rot = arblib.rotation_quat2euler(rot)
+    rot = arblib.rotation_quat2euler((rot.x, rot.y, rot.z, rot.w))
     rot = (round(rot[0]), round(rot[1]), round(rot[2]))
     if direction == "xp":
         rotated = (incr_pos(rot[0], inc), rot[1], rot[2])
@@ -759,6 +759,7 @@ def rotateline_callback(_scene, event, msg):
     if abs(rotated[0]) > 180 or abs(rotated[1]) > 180 or abs(rotated[2]) > 180:
         return
     rotated = arblib.rotation_euler2quat(rotated)
+    rotated = Rotation(x=rotated[0], y=rotated[1], z=rotated[2], w=rotated[3])
     arblib.rotate_obj(scene, obj.object_id, rotated)
     print(str(obj.data.rotation) + " to " + str(rotated))
     do_rotate_select(event.data.source, obj.object_id, rotation=rotated)

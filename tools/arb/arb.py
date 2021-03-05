@@ -16,7 +16,8 @@ import math
 import random
 import statistics
 
-from arena import GLTF, Box, Circle, Cone, Line, Material, Object, Scene
+from arena import (GLTF, Box, Circle, Cone, Line, Material, Object, Position,
+                   Rotation, Scale, Scene)
 
 import arblib
 from arblib import (EVT_MOUSEDOWN, EVT_MOUSEENTER, EVT_MOUSELEAVE, ButtonType,
@@ -420,7 +421,7 @@ def do_nudge_select(camname, objid, position=None):
     make_clickline("y", 1, objid, position, delim, color, callback)
     make_clickline("z", 1, objid, position, delim, color, callback)
     make_followspot(objid, position, delim, color)
-    pos = (round(position[0], 3), round(position[1], 3), round(position[2], 3))
+    pos = (round(position.x, 3), round(position.y, 3), round(position.z, 3))
     USERS[camname].set_textright(USERS[camname].target_style + " p" + str(pos))
 
 
@@ -435,7 +436,7 @@ def do_scale_select(camname, objid, scale=None):
         # scale entire object + or - on all axis
         make_clickline("x", 1, objid, position, delim, color, callback)
         make_followspot(objid, position, delim, color)
-    sca = (round(scale[0], 3), round(scale[1], 3), round(scale[2], 3))
+    sca = (round(scale.x, 3), round(scale.y, 3), round(scale.z, 3))
     USERS[camname].set_textright(USERS[camname].target_style + " s" + str(sca))
 
 
@@ -460,7 +461,7 @@ def do_stretch_select(camname, objid, scale=None):
         make_clickline("z", 1, objid, position, delim, color, callback)
         make_clickline("z", -1, objid, position, delim, color, callback)
         make_followspot(objid, position, delim, color)
-    sca = (round(scale[0], 3), round(scale[1], 3), round(scale[2], 3))
+    sca = (round(scale.x, 3), round(scale.y, 3), round(scale.z, 3))
     USERS[camname].set_textright(USERS[camname].target_style + " s" + str(sca))
 
 
@@ -490,7 +491,7 @@ def make_followspot(object_id, position, delim, color):
         object_id=name,
         scale=(0.1, 0.1, 0.1),
         ttl=arblib.TTL_TEMP,
-        position=(position[0], arblib.FLOOR_Y, position[2]),
+        position=(position.x, arblib.FLOOR_Y, position.z),
         rotation=(-0.7, 0, 0, 0.7),
         material=Material(
             color=color,
@@ -504,10 +505,10 @@ def make_followspot(object_id, position, delim, color):
 def regline(object_id, axis, direction, delim, suffix, start,
             end, line_width, color=(255, 255, 255), parent=""):
     if parent:
-        end = ((end[0] - start[0]) * 10,
-               (end[1] - start[1]) * 10,
-               (end[2] - start[2]) * 10)
-        start = (0, 0, 0)
+        end = Position(x=(end.x - start.x) * 10,
+               y=(end.y - start.y) * 10,
+               z=(end.z - start.z) * 10)
+        start = Position(x=0, y=0, z=0)
     name = (object_id + delim + axis + direction + "_" + suffix)
     CONTROLS[object_id][name] = Line(
         object_id=name,
@@ -522,25 +523,25 @@ def regline(object_id, axis, direction, delim, suffix, start,
 def cubeline(object_id, axis, direction, delim, suffix, start,
              end, line_width, color=(255, 255, 255), parent=""):
     if parent:
-        end = ((end[0] - start[0]) * 10,
-               (end[1] - start[1]) * 10,
-               (end[2] - start[2]) * 10)
-        start = (0, 0, 0)
-    if start[1] == end[1] and start[2] == end[2]:
-        scale = (abs(start[0] - end[0]), line_width, line_width)
-    elif start[0] == end[0] and start[2] == end[2]:
-        scale = (line_width, abs(start[1] - end[1]), line_width)
-    elif start[0] == end[0] and start[1] == end[1]:
-        scale = (line_width, line_width, abs(start[2] - end[2]))
+        end = Position(x= (end.x - start.x) * 10,
+               y= (end.y - start.y) * 10,
+               z= (end.z - start.z) * 10)
+        start = Position(x= 0, y= 0, z= 0)
+    if start.y == end.y and start.z == end.z:
+        scale = Scale(x=abs(start.x - end.x), y=line_width, z=line_width)
+    elif start.x == end.x and start.z == end.z:
+        scale = Scale(x=line_width, y=abs(start.y - end.y), z=line_width)
+    elif start.x == end.x and start.y == end.y:
+        scale = Scale(x=line_width, y=line_width, z=abs(start.z - end.z))
     name = (object_id + delim + axis + direction + "_" + suffix)
     CONTROLS[object_id][name] = Box(
         object_id=name,
         ttl=arblib.TTL_TEMP,
         parent=parent,
         scale=scale,
-        position=(statistics.median([start[0], end[0]]),
-                  statistics.median([start[1], end[1]]),
-                  statistics.median([start[2], end[2]])),
+        position=(statistics.median([start.x, end.x]),
+                  statistics.median([start.y, end.y]),
+                  statistics.median([start.z, end.z])),
         material=Material(
             color=color,
             transparent=True,
@@ -553,17 +554,17 @@ def cubeline(object_id, axis, direction, delim, suffix, start,
 def dir_clickers(object_id, axis, direction, delim, position,
                  color, cones, callback, parent=""):
     if parent:
-        position = (position[0] * 10, position[1] * 10, position[2] * 10)
+        position = Position(x=position.x * 10, y=position.y * 10, z=position.z * 10)
     loc = position
     npos = 0.1
     if direction == "p":
         npos = -0.1
     if axis == "x":
-        loc = (position[0] + npos, position[1], position[2])
+        loc = Position(x=position.x + npos, y=position.y, z=position.z)
     elif axis == "y":
-        loc = (position[0], position[1] + npos, position[2])
+        loc = Position(x=position.x, y=position.y + npos, z=position.z)
     elif axis == "z":
-        loc = (position[0], position[1], position[2] + npos)
+        loc = Position(x=position.x, y=position.y, z=position.z + npos)
     name = (object_id + delim + axis + "p_" + direction)
     CONTROLS[object_id][name] = Cone(   # click object positive
         object_id=name,
@@ -606,7 +607,7 @@ def make_clickline(axis, linelen, objid, start, delim,
         endy = linelen * arblib.CLICKLINE_LEN
     elif axis == "z":
         endz = linelen * arblib.CLICKLINE_LEN
-    end = (start[0] + endx, start[1] + endy, start[2] + endz)
+    end = Position(x=start.x + endx, y=start.y + endy, z=start.z + endz)
     cubeline(  # reference line
         object_id=objid, axis=axis, direction=direction, delim=delim,
         suffix="line", color=color, start=start, end=end, line_width=0.005,
@@ -659,17 +660,17 @@ def nudgeline_callback(_scene, event, msg):
     nudged = loc = obj.data.position
     inc = meters_increment(USERS[event.data.source].target_style)
     if direction == "xp":
-        nudged = (incr_pos(loc[0], inc), loc[1], loc[2])
+        nudged = Position(x=incr_pos(loc.x, inc), y=loc.y, z=loc.z)
     elif direction == "xn":
-        nudged = (incr_neg(loc[0], inc), loc[1], loc[2])
+        nudged = Position(x=incr_neg(loc.x, inc), y=loc.y, z=loc.z)
     elif direction == "yp":
-        nudged = (loc[0], incr_pos(loc[1], inc), loc[2])
+        nudged = Position(x=loc.x, y=incr_pos(loc.y, inc), z=loc.z)
     elif direction == "yn":
-        nudged = (loc[0], incr_neg(loc[1], inc), loc[2])
+        nudged = Position(x=loc.x, y=incr_neg(loc.y, inc), z=loc.z)
     elif direction == "zp":
-        nudged = (loc[0], loc[1], incr_pos(loc[2], inc))
+        nudged = Position(x=loc.x, y=loc.y, z=incr_pos(loc.z, inc))
     elif direction == "zn":
-        nudged = (loc[0], loc[1], incr_neg(loc[2], inc))
+        nudged = Position(x=loc.x, y=loc.y, z=incr_neg(loc.z, inc))
     arblib.move_obj(scene, obj.object_id, nudged)
     print(str(obj.data.position) + " to " + str(nudged))
     # always redraw nudgelines
@@ -683,12 +684,12 @@ def scaleline_callback(_scene, event, msg):
     scaled = sca = obj.data.scale
     inc = meters_increment(USERS[event.data.source].target_style)
     if direction == "xp":
-        scaled = (incr_pos(sca[0], inc), incr_pos(
-            sca[1], inc), incr_pos(sca[2], inc))
+        scaled = Scale(x=incr_pos(sca.x, inc), y=incr_pos(
+            sca.y, inc), z=incr_pos(sca.z, inc))
     elif direction == "xn":
-        scaled = (incr_neg(sca[0], inc), incr_neg(
-            sca[1], inc), incr_neg(sca[2], inc))
-    if scaled[0] <= 0 or scaled[1] <= 0 or scaled[2] <= 0:
+        scaled = Scale(x=incr_neg(sca.x, inc), y=incr_neg(
+            sca.y, inc), z=incr_neg(sca.z, inc))
+    if scaled.x <= 0 or scaled.y <= 0 or scaled.z <= 0:
         return
     arblib.scale_obj(scene, obj.object_id, scaled)
     print(str(obj.data.scale) + " to " + str(scaled))
@@ -703,24 +704,24 @@ def stretchline_callback(_scene, event, msg):
     moved = loc = obj.data.position
     inc = meters_increment(USERS[event.data.source].target_style)
     if direction == "xp":
-        scaled = (incr_pos(sca[0], inc), sca[1], sca[2])
-        moved = (recenter(scaled[0], sca[0], loc[0], move), loc[1], loc[2])
+        scaled = Scale(x=incr_pos(sca.x, inc), y=sca.y, z=sca.z)
+        moved = Position(x=recenter(scaled.x, sca.x, loc.x, move), y=loc.y, z=loc.z)
     elif direction == "xn":
-        scaled = (incr_neg(sca[0], inc), sca[1], sca[2])
-        moved = (recenter(scaled[0], sca[0], loc[0], move), loc[1], loc[2])
+        scaled = Scale(x=incr_neg(sca.x, inc), y=sca.y, z=sca.z)
+        moved = Position(x=recenter(scaled.x, sca.x, loc.x, move), y=loc.y, z=loc.z)
     elif direction == "yp":
-        scaled = (sca[0], incr_pos(sca[1], inc), sca[2])
-        moved = (loc[0], recenter(scaled[1], sca[1], loc[1], move), loc[2])
+        scaled = Scale(x=sca.x, y=incr_pos(sca.y, inc), z=sca.z)
+        moved = Position(x=loc.x, y=recenter(scaled.y, sca.y, loc.y, move), z=loc.z)
     elif direction == "yn":
-        scaled = (sca[0], incr_neg(sca[1], inc), sca[2])
-        moved = (loc[0], recenter(scaled[1], sca[1], loc[1], move), loc[2])
+        scaled = Scale(x=sca.x, y=incr_neg(sca.y, inc), z=sca.z)
+        moved = Position(x=loc.x, y=recenter(scaled.y, sca.y, loc.y, move), z=loc.z)
     elif direction == "zp":
-        scaled = (sca[0], sca[1], incr_pos(sca[2], inc))
-        moved = (loc[0], loc[1], recenter(scaled[2], sca[2], loc[2], move))
+        scaled = Scale(x=sca.x, y=sca.y, z=incr_pos(sca.z, inc))
+        moved = Position(x=loc.x, y=loc.y, z=recenter(scaled.z, sca.z, loc.z, move))
     elif direction == "zn":
-        scaled = (sca[0], sca[1], incr_neg(sca[2], inc))
-        moved = (loc[0], loc[1], recenter(scaled[2], sca[2], loc[2], move))
-    if scaled[0] <= 0 or scaled[1] <= 0 or scaled[2] <= 0:
+        scaled = Scale(x=sca.x, y=sca.y, z=incr_neg(sca.z, inc))
+        moved = Position(x=loc.x, y=loc.y, z=recenter(scaled.z, sca.z, loc.z, move))
+    if scaled.x <= 0 or scaled.y <= 0 or scaled.z <= 0:
         return
     arblib.stretch_obj(scene, obj.object_id,
                        scale=scaled, position=moved)
@@ -833,39 +834,39 @@ def make_wall(camname):
     eloc = USERS[camname].wloc_end
     srot = USERS[camname].wrot_start
     erot = USERS[camname].wrot_end
-    print("S POS " + str((sloc[0], sloc[1], sloc[2])))
-    print("E POS " + str((eloc[0], eloc[1], eloc[2])))
+    print("S POS " + str((sloc.x, sloc.y, sloc.z)))
+    print("E POS " + str((eloc.x, eloc.y, eloc.z)))
     # center point (blue)
-    locx = (statistics.median([sloc[0], eloc[0]]))
-    locy = (statistics.median([sloc[1], eloc[1]]))
-    locz = (statistics.median([sloc[2], eloc[2]]))
+    locx = statistics.median([sloc.x, eloc.x])
+    locy = statistics.median([sloc.y, eloc.y])
+    locz = statistics.median([sloc.z, eloc.z])
     arblib.temp_loc_marker((locx, locy, locz), (0, 0, 255))
     print("wall position " + str((locx, locy, locz)))
     # rotation
-    print("S ROT " + str((srot[0], srot[1], srot[2], srot[3])))
-    print("E ROT " + str((erot[0], erot[1], erot[2], erot[3])))
-    rotx = arblib.probable_quat(srot[0])
-    roty = arblib.probable_quat(srot[1])
-    rotz = arblib.probable_quat(srot[2])
-    rotw = arblib.probable_quat(srot[3])
+    print("S ROT " + str((srot.x, srot.y, srot.z, srot.w)))
+    print("E ROT " + str((erot.x, erot.y, erot.z, erot.w)))
+    rotx = arblib.probable_quat(srot.x)
+    roty = arblib.probable_quat(srot.y)
+    rotz = arblib.probable_quat(srot.z)
+    rotw = arblib.probable_quat(srot.w)
     rot = (rotx, roty, rotz, rotw)
     arblib.temp_rot_marker((locx, locy, locz), rot)
     print("wall rotation " + str(rot))
     # which axis to use for wall? use camera gaze
     # TODO: rotation still off
     if rot in arblib.GAZES[0]:
-        height = abs(sloc[1] - eloc[1])
-        width = abs(sloc[0] - eloc[0])
+        height = abs(sloc.y - eloc.y)
+        width = abs(sloc.x - eloc.x)
     elif rot in arblib.GAZES[1]:
-        height = abs(sloc[1] - eloc[1])
-        width = abs(sloc[2] - eloc[2])
+        height = abs(sloc.y - eloc.y)
+        width = abs(sloc.z - eloc.z)
     elif rot in arblib.GAZES[2]:
-        height = abs(sloc[2] - eloc[2])
-        width = abs(sloc[0] - eloc[0])
+        height = abs(sloc.z - eloc.z)
+        width = abs(sloc.x - eloc.x)
     else:
         # TODO: (placeholder) add direction and hypotenuse
-        height = abs(sloc[1] - eloc[1])
-        width = abs(sloc[0] - eloc[0])
+        height = abs(sloc.y - eloc.y)
+        width = abs(sloc.x - eloc.x)
         print("Non-axis parallel rotation: " + str(rot))
     # scale
     scax = width
@@ -914,13 +915,8 @@ def scene_callback(_scene, event, msg):
             USERS[camname] = arblib.User(scene, camname, panel_callback)
 
         # save camera's attitude in the world
-        USERS[camname].position = (msg["data"]["position"]["x"],
-                                   msg["data"]["position"]["y"],
-                                   msg["data"]["position"]["z"])
-        USERS[camname].rotation = (msg["data"]["rotation"]["x"],
-                                   msg["data"]["rotation"]["y"],
-                                   msg["data"]["rotation"]["z"],
-                                   msg["data"]["rotation"]["w"])
+        USERS[camname].position = msg["data"]["position"]
+        USERS[camname].rotation = msg["data"]["rotation"]
 
         rx = msg["data"]["rotation"]["x"]
         ry = msg["data"]["rotation"]["y"]
@@ -1007,3 +1003,16 @@ scene = Scene(
     on_msg_callback=scene_callback,
     kwargs=kwargs)
 scene.run_tasks()
+
+
+def actual(attribute, obj_data):
+    if attribute in obj_data:
+        return obj_data[attribute]
+    elif attribute == "position":
+        return Position(x= 0, y= 0, z= 0)
+    elif attribute == "rotation":
+        return Rotation(x= 0, y= 0, z= 0, w= 1)
+    elif attribute == "scale":
+        return Scale(x= 1, y= 1, z= 1)
+
+    return None

@@ -10,9 +10,8 @@ import re
 
 import webcolors
 from arena import (Box, Circle, Cone, Cylinder, Dodecahedron, Icosahedron,
-                   Light, Material, Object, Octahedron, Physics, Plane, Ring,
-                   Scene, Sphere, Tetrahedron, Text, Torus, TorusKnot,
-                   Triangle)
+                   Light, Material, Object, Octahedron, Plane, Ring, Scene,
+                   Sphere, Tetrahedron, Text, Torus, TorusKnot, Triangle)
 from scipy.spatial.transform import Rotation
 
 CLICKLINE_LEN = 1  # meters

@@ -2,13 +2,14 @@
 
 ARENA-py notable changes. Started 2021-19-2.
 
-## [unreleased] - 2021-2-3
+## [0.1.19] - 2021-2-3
 ### Added
 - `on_msg_callback` receives __all__ messages, including duplicates from other callbacks.
-- Add `object_type` class variable to every Object child.
+- Object children now have the class variable `object_type` which is the name of the object_type for the class.
 
 ### Changed
 - Library calls `get_persisted_objs` on connect to cache persisted objects.
+- Object instances now all have `clickable` property which checks if the Object is clickable.
 
 ## [0.1.18] - 2021-2-3
 ### Added

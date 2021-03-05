@@ -483,12 +483,12 @@ class Scene(object):
             output = json.loads(data)
             if len(output) > 0:
                 output = output[0]
-                if "data" in output:
-                    object_type = output["data"].get("object_type", None)
 
-                ObjClass = OBJECT_TYPE_MAP.get(object_type, Object)
                 object_id = output["object_id"]
                 data = output["attributes"]
+                object_type = data.get("object_type", None)
+
+                ObjClass = OBJECT_TYPE_MAP.get(object_type, Object)
                 obj = ObjClass(object_id=object_id, data=data)
                 obj.persist = True
 

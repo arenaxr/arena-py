@@ -336,7 +336,7 @@ def show_redpill_scene(enabled):
                 object_id=name,
                 start=(-glen, y, z),
                 end=(glen, y, z),
-                color=hcolor))
+                material=Material(color=hcolor)))
         else:
             arblib.delete_obj(scene, name)
     for x in range(-glen, glen + 1):
@@ -346,11 +346,12 @@ def show_redpill_scene(enabled):
                 object_id=name,
                 start=(x, y, -glen),
                 end=(x, y, glen),
-                color=hcolor))
+                material=Material(color=hcolor)))
         else:
             arblib.delete_obj(scene, name)
     objs = scene.get_persisted_objs()
-    for obj in objs:
+    for object_id in objs:
+        obj = objs[object_id]
         # show occluded objects
         if obj.data.material and "colorWrite" in obj.data.material and not obj.data.material.colorWrite:
             name = "redpill_" + obj.object_id
@@ -512,7 +513,7 @@ def regline(object_id, axis, direction, delim, suffix, start,
     name = (object_id + delim + axis + direction + "_" + suffix)
     CONTROLS[object_id][name] = Line(
         object_id=name,
-        color=color,
+        material=Material(color=color),
         ttl=arblib.TTL_TEMP,
         parent=parent,
         start=start,

@@ -185,7 +185,7 @@ class User:
             [Mode.PARENT, 2, 0, True, ButtonType.ACTION],
             # bottom row
             [Mode.WALL, -2, -1, True, ButtonType.ACTION],
-            [Mode.OCCLUDE, -1, -1, True, ButtonType.ACTION],
+            [Mode.OCCLUDE, -1, -1, False, ButtonType.ACTION], #TODO fix
             [Mode.RENAME, 0, -1, True, ButtonType.ACTION],
             [Mode.COLOR, 1, -1, True, ButtonType.ACTION],
             [Mode.LAMP, 2, -1, True, ButtonType.TOGGLE],

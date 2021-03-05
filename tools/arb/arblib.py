@@ -203,7 +203,7 @@ class User:
             parent=self.camname,
             text=text,
             position=position,
-            material=Material(color=CLR_HUDTEXT),
+            color=CLR_HUDTEXT,
             scale=(0.1, 0.1, 0.1),
         )
         self.scene.add_object(text)
@@ -325,7 +325,7 @@ class Button:
             position=(0, -0.1, 0),  # position inside to prevent ray events
             rotation=(-0.7, 0, 0, 0.7),
             scale=scale,
-            material=Material(color=self.colortxt),
+            color=self.colortxt,
         )
         scene.add_object(self.text)
 
@@ -392,7 +392,7 @@ def update_persisted_obj(scene: Scene, object_id, label,
         "object_id": object_id,
         "action": action,
     }
-    if action == "update":
+    if action == "update" and object_id in scene.all_objects:
         msg["type"] = "object"
         msg["persist"] = persist
         msg["ttl"] = ttl

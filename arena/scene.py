@@ -279,6 +279,7 @@ class Scene(object):
                     event = Event(**payload)
                     if obj.evt_handler:
                         self.callback_wrapper(obj.evt_handler, event, payload)
+                        return
 
                 elif action == "delete":
                     if Camera.object_type in object_id: # object is a camera

@@ -424,43 +424,22 @@ def color_obj(scene: Scene, object_id, hcolor):
 
 
 def stretch_obj(scene: Scene, object_id, scale, position):
-    data = {"scale": {
-        "x": scale[0],
-        "y": scale[1],
-        "z": scale[2]
-    }, "position": {
-        "x": position[0],
-        "y": position[1],
-        "z": position[2]
-    }}
+    data = {"scale": scale, "position": position}
     update_persisted_obj(scene, object_id, "Stretched", data=data)
 
 
 def scale_obj(scene: Scene, object_id, scale):
-    data = {"scale": {
-        "x": scale[0],
-        "y": scale[1],
-        "z": scale[2]
-    }}
+    data = {"scale": scale}
     update_persisted_obj(scene, object_id, "Scaled", data=data)
 
 
 def move_obj(scene: Scene, object_id, position):
-    data = {"position": {
-        "x": position[0],
-        "y": position[1],
-        "z": position[2]
-    }}
+    data = {"position": position}
     update_persisted_obj(scene, object_id, "locationed", data=data)
 
 
 def rotate_obj(scene: Scene, object_id, rotation):
-    data = {"rotation": {
-        "x": rotation[0],
-        "y": rotation[1],
-        "z": rotation[2],
-        "w": rotation[3]
-    }}
+    data = {"rotation": rotation}
     update_persisted_obj(scene, object_id, "Rotated", data=data)
 
 

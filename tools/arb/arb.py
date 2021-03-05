@@ -942,8 +942,7 @@ def scene_callback(_scene, event, msg):
 
     # mouse event
     elif action == "clientEvent":
-        # print(object_id + "  " +
-        #      action + "  " + msg_type)
+        object_id = msg["object_id"]
         # camera updates define users present
         camname = msg["data"]["source"]
         if camname not in USERS:

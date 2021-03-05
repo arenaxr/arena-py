@@ -104,7 +104,6 @@ class PhysicsSystem:
         :param _payload:
         :return:
         """
-        print("new user")
         d = obj.data
         new_sphere = p.loadURDF(
             "sphere2.urdf", [d.position.x, d.position.z, d.position.y]
@@ -123,9 +122,8 @@ class PhysicsSystem:
         }
 
     def left_user_handler(self, _scene, obj, _payload):
-        print("left user")
         if self.user_cams.get(obj.object_id):
-            self.user_cams.pop(obj.object_id)
+            p.removeBody(self.user_cams.pop(obj.object_id)["phys_id"])
 
     async def sync_world(self):
         while True:

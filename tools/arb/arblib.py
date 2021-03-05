@@ -101,6 +101,10 @@ DEF_MANIFEST = [{  # default model, if none loaded
     "url_gltf": "models/Duck.glb",
     "scale": 0.1
 }]
+EVT_MOUSEENTER = "mouseenter"
+EVT_MOUSELEAVE = "mouseleave"
+EVT_MOUSEDOWN = "mousedown"
+EVT_MOUSEUP = "mouseup"
 
 
 class Mode(enum.Enum):
@@ -393,7 +397,9 @@ def update_persisted_obj(scene: Scene, object_id, label,
         msg["persist"] = persist
         msg["ttl"] = ttl
         msg["data"] = data
-    scene._publish(obj=msg, action=action)
+        scene.update_object(scene.all_objects[object_id], data=data)
+    else:
+        scene._publish(obj=msg, action=action)
     print(label + " " + object_id)
 
 

@@ -19,7 +19,8 @@ import statistics
 from arena import GLTF, Box, Circle, Cone, Line, Material, Object, Scene
 
 import arblib
-from arblib import ButtonType, Mode
+from arblib import (EVT_MOUSEDOWN, EVT_MOUSEENTER, EVT_MOUSELEAVE, ButtonType,
+                    Mode)
 
 BROKER = "arena.andrew.cmu.edu"
 PORT = None
@@ -31,11 +32,6 @@ MODELS = []
 USERS = {}  # dictionary of user instances
 CONTROLS = {}  # dictionary of active controls
 scene = None  # the global scene connection object
-
-EVT_MOUSEENTER = "mouseenter"
-EVT_MOUSELEAVE = "mouseleave"
-EVT_MOUSEDOWN = "mousedown"
-EVT_MOUSEUP = "mouseup"
 
 
 def init_args():
@@ -388,7 +384,7 @@ def show_redpill_obj(camname, object_id):
     # any scene changes must not persist
     obj = scene.get_persisted_obj(object_id)
     # enable mouse enter/leave pos/rot/scale
-    USERS[camname].set_textstatus(object_id + ' p' + str(data.position) +
+    USERS[camname].set_textstatus(object_id + ' p' + str(obj.data.position) +
                                   ' r' + str(obj.data.rotation) + ' s' + str(obj.data.scale))
 
 
@@ -399,7 +395,7 @@ def do_move_select(camname, object_id):
         callback=clipboard_callback,
         object_type=obj.data.object_type,
         scale=obj.data.scale,
-        color=obj.data.material.color,
+        material=obj.data.material,
         url=obj.data.url,
     )
 
@@ -951,16 +947,16 @@ def scene_callback(_scene, event, msg):
             USERS[camname] = arblib.User(scene, camname, panel_callback)
 
         # show objects with events
-        if msg_type == "mouseenter":
+        if msg_type == EVT_MOUSEENTER:
             if USERS[camname].redpill:
                 show_redpill_obj(camname, object_id)
             else:
                 USERS[camname].set_textstatus(object_id)
-        elif msg_type == "mouseleave":
+        elif msg_type == EVT_MOUSELEAVE:
             USERS[camname].set_textstatus("")
 
         # handle click
-        elif msg_type == "mousedown":
+        elif msg_type == EVT_MOUSEDOWN:
             # clicked on persisted object to modify
             update_controls(USERS[camname].target_id)
             USERS[camname].target_id = object_id  # always update

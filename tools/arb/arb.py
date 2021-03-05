@@ -506,8 +506,8 @@ def regline(object_id, axis, direction, delim, suffix, start,
             end, line_width, color=(255, 255, 255), parent=""):
     if parent:
         end = Position(x=(end.x - start.x) * 10,
-               y=(end.y - start.y) * 10,
-               z=(end.z - start.z) * 10)
+                       y=(end.y - start.y) * 10,
+                       z=(end.z - start.z) * 10)
         start = Position(x=0, y=0, z=0)
     name = (object_id + delim + axis + direction + "_" + suffix)
     CONTROLS[object_id][name] = Line(
@@ -523,10 +523,10 @@ def regline(object_id, axis, direction, delim, suffix, start,
 def cubeline(object_id, axis, direction, delim, suffix, start,
              end, line_width, color=(255, 255, 255), parent=""):
     if parent:
-        end = Position(x= (end.x - start.x) * 10,
-               y= (end.y - start.y) * 10,
-               z= (end.z - start.z) * 10)
-        start = Position(x= 0, y= 0, z= 0)
+        end = Position(x=(end.x - start.x) * 10,
+                       y=(end.y - start.y) * 10,
+                       z=(end.z - start.z) * 10)
+        start = Position(x=0, y=0, z=0)
     if start.y == end.y and start.z == end.z:
         scale = Scale(x=abs(start.x - end.x), y=line_width, z=line_width)
     elif start.x == end.x and start.z == end.z:
@@ -554,7 +554,8 @@ def cubeline(object_id, axis, direction, delim, suffix, start,
 def dir_clickers(object_id, axis, direction, delim, position,
                  color, cones, callback, parent=""):
     if parent:
-        position = Position(x=position.x * 10, y=position.y * 10, z=position.z * 10)
+        position = Position(x=position.x * 10,
+                            y=position.y * 10, z=position.z * 10)
     loc = position
     npos = 0.1
     if direction == "p":
@@ -705,22 +706,28 @@ def stretchline_callback(_scene, event, msg):
     inc = meters_increment(USERS[event.data.source].target_style)
     if direction == "xp":
         scaled = Scale(x=incr_pos(sca.x, inc), y=sca.y, z=sca.z)
-        moved = Position(x=recenter(scaled.x, sca.x, loc.x, move), y=loc.y, z=loc.z)
+        moved = Position(x=recenter(
+            scaled.x, sca.x, loc.x, move), y=loc.y, z=loc.z)
     elif direction == "xn":
         scaled = Scale(x=incr_neg(sca.x, inc), y=sca.y, z=sca.z)
-        moved = Position(x=recenter(scaled.x, sca.x, loc.x, move), y=loc.y, z=loc.z)
+        moved = Position(x=recenter(
+            scaled.x, sca.x, loc.x, move), y=loc.y, z=loc.z)
     elif direction == "yp":
         scaled = Scale(x=sca.x, y=incr_pos(sca.y, inc), z=sca.z)
-        moved = Position(x=loc.x, y=recenter(scaled.y, sca.y, loc.y, move), z=loc.z)
+        moved = Position(x=loc.x, y=recenter(
+            scaled.y, sca.y, loc.y, move), z=loc.z)
     elif direction == "yn":
         scaled = Scale(x=sca.x, y=incr_neg(sca.y, inc), z=sca.z)
-        moved = Position(x=loc.x, y=recenter(scaled.y, sca.y, loc.y, move), z=loc.z)
+        moved = Position(x=loc.x, y=recenter(
+            scaled.y, sca.y, loc.y, move), z=loc.z)
     elif direction == "zp":
         scaled = Scale(x=sca.x, y=sca.y, z=incr_pos(sca.z, inc))
-        moved = Position(x=loc.x, y=loc.y, z=recenter(scaled.z, sca.z, loc.z, move))
+        moved = Position(x=loc.x, y=loc.y, z=recenter(
+            scaled.z, sca.z, loc.z, move))
     elif direction == "zn":
         scaled = Scale(x=sca.x, y=sca.y, z=incr_neg(sca.z, inc))
-        moved = Position(x=loc.x, y=loc.y, z=recenter(scaled.z, sca.z, loc.z, move))
+        moved = Position(x=loc.x, y=loc.y, z=recenter(
+            scaled.z, sca.z, loc.z, move))
     if scaled.x <= 0 or scaled.y <= 0 or scaled.z <= 0:
         return
     arblib.stretch_obj(scene, obj.object_id,
@@ -1009,10 +1016,10 @@ def actual(attribute, obj_data):
     if attribute in obj_data:
         return obj_data[attribute]
     elif attribute == "position":
-        return Position(x= 0, y= 0, z= 0)
+        return Position(x=0, y=0, z=0)
     elif attribute == "rotation":
-        return Rotation(x= 0, y= 0, z= 0, w= 1)
+        return Rotation(x=0, y=0, z=0, w=1)
     elif attribute == "scale":
-        return Scale(x= 1, y= 1, z= 1)
+        return Scale(x=1, y=1, z=1)
 
     return None

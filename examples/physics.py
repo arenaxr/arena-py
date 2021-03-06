@@ -111,7 +111,7 @@ class PhysicsSystem:
         p.changeDynamics(
             new_sphere,
             -1,
-            restitution=2,
+            restitution=0.99,
             mass=0,
             lateralFriction=1,
             localInertiaDiagonal=(0, 0, 0),
@@ -220,8 +220,8 @@ class SoccerBall:
             clickable=True,
             evt_handler=self.click_handler,
             persist=True,
-            # dynamic_body={"type":"dynamic", "mass":1, "shape":"sphere", "linearDamping":0.03,
-            #              "angularDamping":0.03, "sphereRadius": 2.5}
+            dynamic_body={"type":"dynamic", "mass":1,  "linearDamping":0.03,
+                          "angularDamping":0.03, "shape": "sphere"}
         )
 
     def click_handler(self, _scene, evt, _msg):

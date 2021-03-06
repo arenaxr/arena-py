@@ -75,7 +75,7 @@ class PhysicsSystem:
             scene="physics",
             user_join_callback=self.new_user_handler,
             user_left_callback=self.left_user_handler,
-            threaded=True
+            threaded=True,
         )
         self.user_cams = {}
 
@@ -213,19 +213,19 @@ class SoccerBall:
         self.ball_id = ball_id
 
         b = p.loadURDF(
-            "soccerball.urdf", start_pos, self.start_orientation, globalScaling=1.5
+            "soccerball.urdf", start_pos, self.start_orientation, globalScaling=2.5
         )
         p.changeDynamics(b, -1, restitution=0.99)
         self.arena_object = GLTF(
             url="https://xr.andrew.cmu.edu/models/soccerball.gltf",
             position=swap_yz(start_pos),
-            scale=(1.5, 1.5, 1.5),
+            scale=(2.5, 2.5, 2.5),
             object_id=f"ball_{ball_id}",
             clickable=True,
             evt_handler=self.click_handler,
             persist=True,
             # dynamic_body={"type":"dynamic", "mass":1, "shape":"sphere", "linearDamping":0.03,
-            #              "angularDamping":0.03, "sphereRadius": 1.5}
+            #              "angularDamping":0.03, "sphereRadius": 2.5}
         )
 
     def click_handler(self, _scene, evt, _msg):

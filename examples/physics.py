@@ -80,12 +80,12 @@ class PhysicsSystem:
         self.user_cams = {}
 
     def start(self):
-        plane_id = p.loadURDF("plane.urdf", 0, 0, 0.3)
-        p.changeDynamics(plane_id, -1, restitution=0.99)
+        plane_id = p.loadURDF("plane.urdf", 0, 0, -0.01)
+        p.changeDynamics(plane_id, -1, restitution=0.99, mass=0)
         self.scene.add_object(
             Box(
-                position=[0, 0.15, 0],
-                scale=[120, 0.3, 80],
+                position=[0, 0.01, 0],
+                scale=[120, 0.01, 80],
                 object_id="grass",
                 persist=True,
                 material=Material(color=(49, 114, 41)),

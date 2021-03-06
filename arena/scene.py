@@ -339,6 +339,14 @@ class Scene(object):
                     **kwargs)
         return self.generate_custom_event(evt, action="clientEvent")
 
+    def generate_physics_event(self, obj, event_type="object", **kwargs):
+        """Publishes a physics event"""
+        evt = Event(object_id=obj.object_id,
+                    action="physicsEvent",
+                    type=event_type,
+                    **kwargs)
+        return self.generate_custom_event(evt, action="physicsEvent")
+
     def manipulate_camera(self, cam, **kwargs):
         """Publishes a camera manipulation event"""
         if kwargs["position"] is not None:

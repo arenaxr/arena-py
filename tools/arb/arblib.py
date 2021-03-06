@@ -185,7 +185,7 @@ class User:
             [Mode.PARENT, 2, 0, True, ButtonType.ACTION],
             # bottom row
             [Mode.WALL, -2, -1, True, ButtonType.ACTION],
-            [Mode.OCCLUDE, -1, -1, False, ButtonType.ACTION], #TODO fix
+            [Mode.OCCLUDE, -1, -1, False, ButtonType.ACTION],  # TODO fix
             [Mode.RENAME, 0, -1, True, ButtonType.ACTION],
             [Mode.COLOR, 1, -1, True, ButtonType.ACTION],
             [Mode.LAMP, 2, -1, True, ButtonType.TOGGLE],
@@ -198,7 +198,7 @@ class User:
 
     def make_hudtext(self, label, position, text):
         text = Text(
-            object_id=(label + "_" + self.camname),
+            object_id=f"{label}_{self.camname}",
             parent=self.camname,
             text=text,
             position=position,
@@ -259,9 +259,9 @@ class User:
         self.scene.add_object(self.cliptarget)
 
     def del_clipboard(self):
-        if self.cliptarget:
+        if self.cliptarget and self.cliptarget.object_id in self.scene.all_objects:
             self.scene.delete_object(self.cliptarget)
-        if self.clipboard:
+        if self.clipboard and self.clipboard.object_id in self.scene.all_objects:
             self.scene.delete_object(self.clipboard)
 
 
@@ -285,16 +285,16 @@ class Button:
             self.colorbut = CLR_BUTTON_DISABLED
         self.colortxt = CLR_BUTTON_TEXT
         if len(label) > 8:  # easier to read
-            self.label = label[:6] + "..."
+            self.label = f"{label[:6]}..."
         else:
             self.label = label
         self.mode = mode
         self.dropdown = drop
         self.active = False
         if drop is None:
-            obj_name = camname + "_button_" + mode.value
+            obj_name = f"{camname}_button_{mode.value}"
         else:
-            obj_name = camname + "_button_" + mode.value + "_" + drop
+            obj_name = f"{camname}_button_{mode.value}_{drop}"
         shape = Box.object_type
         if btype == ButtonType.TOGGLE:
             shape = Cylinder.object_type
@@ -318,7 +318,7 @@ class Button:
         if btype == ButtonType.TOGGLE:
             scale = (scale[0] * 2, scale[1] * 2, scale[2])
         self.text = Text(  # text child of button
-            object_id=(self.button.object_id + "_text"),
+            object_id=f"{self.button.object_id}_text",
             parent=self.button.object_id,
             text=self.label,
             position=(0, -0.1, 0),  # position inside to prevent ray events
@@ -392,14 +392,14 @@ def update_persisted_obj(scene: Scene, object_id, label,
         "action": action,
     }
     if action == "update" and object_id in scene.all_objects:
-        msg["type"] = "object"
-        msg["persist"] = persist
-        msg["ttl"] = ttl
-        msg["data"] = data
-        scene.update_object(scene.all_objects[object_id], data=data)
+        scene.update_object(
+            scene.all_objects[object_id],
+            persist=persist,
+            ttl=ttl,
+            data=data)
     else:
         scene._publish(obj=msg, action=action)
-    print(label + " " + object_id)
+    print(f"{label} {object_id}")
 
 
 def opaque_obj(scene: Scene, object_id, opacity):
@@ -417,9 +417,7 @@ def occlude_obj(scene: Scene, object_id, occlude):
 
 
 def color_obj(scene: Scene, object_id, hcolor):
-    # NOTE: "color" updates base color, NOT reflected live.
-    # "material":{"color"} updates raw color, IS reflected live.
-    data = {"color": "#" + hcolor, "material": {"color": "#" + hcolor}}
+    data = {"material": {"color": "#" + hcolor}}
     update_persisted_obj(scene, object_id, "Colored", data=data)
 
 
@@ -435,7 +433,7 @@ def scale_obj(scene: Scene, object_id, scale):
 
 def move_obj(scene: Scene, object_id, position):
     data = {"position": position}
-    update_persisted_obj(scene, object_id, "locationed", data=data)
+    update_persisted_obj(scene, object_id, "Relocated", data=data)
 
 
 def rotate_obj(scene: Scene, object_id, rotation):
@@ -446,7 +444,7 @@ def rotate_obj(scene: Scene, object_id, rotation):
 def parent_obj(scene: Scene, object_id, parent_id):
     data = {"parent": parent_id}
     update_persisted_obj(scene, object_id,
-                         parent_id + " adopted", data=data)
+                         f"{parent_id} adopted", data=data)
 
 
 def delete_obj(scene: Scene, object_id):

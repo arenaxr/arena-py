@@ -78,8 +78,7 @@ def handle_panel_event(event, dropdown=False):
     drop = None
     obj = event.object_id.split("_")
     camname = event.data.source
-    owner = obj[0] + "_" + obj[1] + "_" + \
-        obj[2]  # callback owner in object_id
+    owner = f"{obj[0]}_{obj[1]}_{obj[2]}"  # callback owner in object_id
     if owner != camname:
         return None, None, None  # only owner may activate
     objid = event.object_id
@@ -104,8 +103,7 @@ def handle_clip_event(event):
     # naming order: camera_number_name_object
     obj = event.object_id.split("_")
     camname = event.data.source
-    owner = obj[0] + "_" + obj[1] + "_" + \
-        obj[2]  # callback owner in object_id
+    owner = f"{obj[0]}_{obj[1]}_{obj[2]}"  # callback owner in object_id
     if owner != camname:
         return None  # only owner may activate
     if event.type != EVT_MOUSEDOWN:
@@ -158,7 +156,7 @@ def panel_callback(_scene, event, msg):
             mode = Mode.NONE
         else:
             # if button goes on, last button must go off
-            prev_objid = camname + "_button_" + USERS[camname].mode.value
+            prev_objid = f"{camname}_button_{USERS[camname].mode.value}"
             if prev_objid in USERS[camname].panel:
                 USERS[camname].panel[prev_objid].set_active(False)
             USERS[camname].panel[objid].set_active(True)
@@ -315,7 +313,7 @@ def rename_callback(_scene, event, msg):
         if len(USERS[camname].typetext) > 0:
             USERS[camname].typetext = USERS[camname].typetext[:-1]
     elif key == 'underline':
-        USERS[camname].typetext = USERS[camname].typetext + '_'
+        USERS[camname].typetext = f"{USERS[camname].typetext}_"
     elif key == 'apriltag':  # special prefix, replace text with 'apriltag_'
         USERS[camname].typetext = 'apriltag_'
     else:
@@ -378,7 +376,7 @@ def do_rename(camname, old_id, new_id):
     obj = scene.get_persisted_obj(old_id)
     scene.add_object(Object(object_id=new_id, persist=True, data=obj.data))
     USERS[camname].target_id = new_id
-    print("Duplicating " + old_id + " to " + new_id)
+    print(f"Duplicating {old_id} to {new_id}")
     arblib.delete_obj(scene, old_id)
 
 
@@ -386,8 +384,8 @@ def show_redpill_obj(camname, object_id):
     # any scene changes must not persist
     obj = scene.get_persisted_obj(object_id)
     # enable mouse enter/leave pos/rot/scale
-    USERS[camname].set_textstatus(object_id + ' p' + str(obj.data.position) +
-                                  ' r' + str(obj.data.rotation) + ' s' + str(obj.data.scale))
+    USERS[camname].set_textstatus(
+        f"{object_id} p{str(obj.data.position)} r{str(obj.data.rotation)} s{str(obj.data.scale)}")
 
 
 def do_move_select(camname, object_id):
@@ -397,7 +395,7 @@ def do_move_select(camname, object_id):
         callback=clipboard_callback,
         object_type=obj.data.object_type,
         scale=obj.data.scale,
-        material=obj.data.material,
+        color=obj.data.material.color,
         url=obj.data.url,
     )
 
@@ -423,7 +421,7 @@ def do_nudge_select(camname, objid, position=None):
     make_clickline("z", 1, objid, position, delim, color, callback)
     make_followspot(objid, position, delim, color)
     pos = (round(position.x, 3), round(position.y, 3), round(position.z, 3))
-    USERS[camname].set_textright(USERS[camname].target_style + " p" + str(pos))
+    USERS[camname].set_textright(f"{USERS[camname].target_style} p{str(pos)}")
 
 
 def do_scale_select(camname, objid, scale=None):
@@ -438,7 +436,7 @@ def do_scale_select(camname, objid, scale=None):
         make_clickline("x", 1, objid, position, delim, color, callback)
         make_followspot(objid, position, delim, color)
     sca = (round(scale.x, 3), round(scale.y, 3), round(scale.z, 3))
-    USERS[camname].set_textright(USERS[camname].target_style + " s" + str(sca))
+    USERS[camname].set_textright(f"{USERS[camname].target_style} s{str(sca)}")
 
 
 def do_stretch_select(camname, objid, scale=None):
@@ -450,8 +448,9 @@ def do_stretch_select(camname, objid, scale=None):
         # scale too unpredictable
         if obj.data.object_type == GLTF.object_type:
             return
-        if obj.data.rotation != (0, 0, 0, 1):  # scale too unpredictable
-            return
+        # scale too unpredictable
+        # if obj.data.rotation.quaternion != Rotation(x=0, y=0, z=0, w=1).quaternion:
+        #     return
         position = obj.data.position
         scale = obj.data.scale
         # scale and reposition on one of 6 sides
@@ -463,7 +462,7 @@ def do_stretch_select(camname, objid, scale=None):
         make_clickline("z", -1, objid, position, delim, color, callback)
         make_followspot(objid, position, delim, color)
     sca = (round(scale.x, 3), round(scale.y, 3), round(scale.z, 3))
-    USERS[camname].set_textright(USERS[camname].target_style + " s" + str(sca))
+    USERS[camname].set_textright(f"{USERS[camname].target_style} s{str(sca)}")
 
 
 def do_rotate_select(camname, objid, rotation=None):
@@ -480,14 +479,15 @@ def do_rotate_select(camname, objid, rotation=None):
         make_clickline("y", 1, objid, position, delim, color, callback, True)
         make_clickline("z", 1, objid, position, delim, color, callback, True)
         make_followspot(objid, position, delim, color)
-    rote = arblib.rotation_quat2euler((rotation.x, rotation.y, rotation.z, rotation.w))
+    rote = arblib.rotation_quat2euler(
+        (rotation.x, rotation.y, rotation.z, rotation.w))
     euler = (round(rote[0], 1), round(rote[1], 1), round(rote[2], 1))
     USERS[camname].set_textright(
-        USERS[camname].target_style + "d r" + str(euler))
+        f"{USERS[camname].target_style}d r{str(euler)}")
 
 
 def make_followspot(object_id, position, delim, color):
-    name = (object_id + delim + "spot")
+    name = f"{object_id}{delim}spot"
     CONTROLS[object_id][name] = Circle(  # follow spot on ground
         object_id=name,
         scale=(0.1, 0.1, 0.1),
@@ -510,7 +510,7 @@ def regline(object_id, axis, direction, delim, suffix, start,
                        y=(end.y - start.y) * 10,
                        z=(end.z - start.z) * 10)
         start = Position(x=0, y=0, z=0)
-    name = (object_id + delim + axis + direction + "_" + suffix)
+    name = f"{object_id}{delim}{axis}{direction}_{suffix}"
     CONTROLS[object_id][name] = Line(
         object_id=name,
         material=Material(color=color),
@@ -534,7 +534,7 @@ def cubeline(object_id, axis, direction, delim, suffix, start,
         scale = Scale(x=line_width, y=abs(start.y - end.y), z=line_width)
     elif start.x == end.x and start.y == end.y:
         scale = Scale(x=line_width, y=line_width, z=abs(start.z - end.z))
-    name = (object_id + delim + axis + direction + "_" + suffix)
+    name = f"{object_id}{delim}{axis}{direction}_{suffix}"
     CONTROLS[object_id][name] = Box(
         object_id=name,
         ttl=arblib.TTL_TEMP,
@@ -567,7 +567,7 @@ def dir_clickers(object_id, axis, direction, delim, position,
         loc = Position(x=position.x, y=position.y + npos, z=position.z)
     elif axis == "z":
         loc = Position(x=position.x, y=position.y, z=position.z + npos)
-    name = (object_id + delim + axis + "p_" + direction)
+    name = f"{object_id}{delim}{axis}p_{direction}"
     CONTROLS[object_id][name] = Cone(   # click object positive
         object_id=name,
         clickable=True,
@@ -580,7 +580,7 @@ def dir_clickers(object_id, axis, direction, delim, position,
         parent=parent,
         evt_handler=callback)
     scene.add_object(CONTROLS[object_id][name])
-    name = (object_id + delim + axis + "n_" + direction)
+    name = f"{object_id}{delim}{axis}n_{direction}"
     CONTROLS[object_id][name] = Cone(  # click object negative
         object_id=name,
         clickable=True,
@@ -674,7 +674,7 @@ def nudgeline_callback(_scene, event, msg):
     elif direction == "zn":
         nudged = Position(x=loc.x, y=loc.y, z=incr_neg(loc.z, inc))
     arblib.move_obj(scene, obj.object_id, nudged)
-    print(str(obj.data.position) + " to " + str(nudged))
+    print(f"{str(obj.data.position)} to {str(nudged)}")
     # always redraw nudgelines
     do_nudge_select(event.data.source, obj.object_id, position=nudged)
 
@@ -694,7 +694,7 @@ def scaleline_callback(_scene, event, msg):
     if scaled.x <= 0 or scaled.y <= 0 or scaled.z <= 0:
         return
     arblib.scale_obj(scene, obj.object_id, scaled)
-    print(str(obj.data.scale) + " to " + str(scaled))
+    print(f"{str(obj.data.scale)} to {str(scaled)}")
     do_scale_select(event.data.source, obj.object_id, scale=scaled)
 
 
@@ -733,7 +733,7 @@ def stretchline_callback(_scene, event, msg):
         return
     arblib.stretch_obj(scene, obj.object_id,
                        scale=scaled, position=moved)
-    print(str(obj.data.scale) + " to " + str(scaled))
+    print(f"{str(obj.data.scale)} to {str(scaled)}")
     do_stretch_select(event.data.source, obj.object_id, scale=scaled)
 
 
@@ -762,7 +762,7 @@ def rotateline_callback(_scene, event, msg):
     rotated = arblib.rotation_euler2quat(rotated)
     rotated = Rotation(x=rotated[0], y=rotated[1], z=rotated[2], w=rotated[3])
     arblib.rotate_obj(scene, obj.object_id, rotated)
-    print(str(obj.data.rotation) + " to " + str(rotated))
+    print(f"{str(obj.data.rotation)} to {str(rotated)}")
     do_rotate_select(event.data.source, obj.object_id, rotation=rotated)
 
 
@@ -778,7 +778,7 @@ def create_obj(camname, clipboard, position):
     # make a copy of static object in place
     new_obj = Object(
         persist=True,
-        object_id=clipboard.data.object_type + "_" + randstr,
+        object_id=f"{clipboard.data.object_type}_{randstr}",
         object_type=clipboard.data.object_type,
         position=position,
         rotation=(0, 0, 0, 1),  # undo clipboard rotation for visibility

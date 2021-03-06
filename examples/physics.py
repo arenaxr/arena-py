@@ -162,36 +162,32 @@ class SoccerGame(PhysicsSystem):
 
     async def step_game_async(self):
         j = 0
-        # colliding = False
-        push_update = False
-        # ball_pos, ball_rot = None, None
-        velocity = None
+        prev_collisions = set()
+        collisions = set()
+        push_updates = set()
         while True:
-            # if push_update:
-            #    lin_v, ang_v = p.getBaseVelocity(ball)
-            #    ball_pos, ball_rot = p.getBasePositionAndOrientation(ball)
-            #    velocity = {
-            #        "linear": swap_yz(lin_v, round_decimals=3),
-            #        "angular": swap_yz(ang_v, round_decimals=3),
-            #    }
             p.stepSimulation()
-            # collisions = p.getContactPoints(ball)
-            # if len(collisions):
-            #    pass
-            #    colliding = True
-            # else:
-            #    push_update = colliding
-            #    colliding = False
+            for ball_id in self.balls.keys():
+                if len(p.getContactPoints(ball_id)):
+                    collisions.add(ball_id)
+            for prev_ball_id in prev_collisions:
+                if prev_ball_id not in collisions:
+                    push_updates.add(prev_ball_id)
+            prev_collisions = collisions.copy()
+            collisions.clear()
             if j % (self.physics_rate // self.mqtt_push_rate) == 0:
-                if push_update and velocity is not None:
-                    pass
-                    # print("velocity update", velocity)
-                    # scene.update_object(arena_ball, position=swap_yz(ball_pos),
-                    #                    rotation=swap_rot(ball_rot), velocity=velocity)
-                    # push_update = False
-                    # velocity = False
-                else:
-                    # pass
+                for update_ball_id in push_updates:
+                    lin_v, ang_v = p.getBaseVelocity(update_ball_id)
+                    ball_pos, ball_rot = p.getBasePositionAndOrientation(update_ball_id)
+                    self.scene.generate_physics_event(
+                        obj=self.balls[update_ball_id].arena_object,
+                        position=swap_yz(ball_pos, round_decimals=3),
+                        rotation=swap_yz(ball_rot, round_decimals=3),
+                        linear_velocity=swap_yz(lin_v, round_decimals=3),
+                        angular_velocity=swap_yz(ang_v, round_decimals=3),
+                    )
+                push_updates.clear()
+                if False:  # Send primitive positional updates
                     for b, b_obj in self.balls.items():
                         ball_pos, ball_rot = p.getBasePositionAndOrientation(b)
                         self.scene.update_object(

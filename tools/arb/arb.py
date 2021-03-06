@@ -16,8 +16,8 @@ import math
 import random
 import statistics
 
-from arena import (GLTF, Box, Circle, Cone, Line, Material, Object, Position,
-                   Rotation, Scale, Scene)
+from arena import (GLTF, Box, Circle, Color, Cone, Line, Material, Object,
+                   Position, Rotation, Scale, Scene)
 
 import arblib
 from arblib import (EVT_MOUSEDOWN, EVT_MOUSEENTER, EVT_MOUSELEAVE, ButtonType,
@@ -113,7 +113,7 @@ def handle_clip_event(event):
 
 def handle_clickline_event(event, mode):
     # naming order: objectname_clicktype_axis_direction
-    click_id = event.object_id.split("_"+mode.value+"_")
+    click_id = event.object_id.split(f"_{mode.value}_")
     object_id = click_id[0]
     direction = (click_id[1])[0: 2]
     move = (click_id[1])[1: 4]
@@ -192,7 +192,7 @@ def panel_callback(_scene, event, msg):
         sca = MANIFEST[idx]['scale']
         USERS[camname].set_clipboard(
             callback=clipboard_callback, object_type=GLTF.object_type,
-            scale=(sca, sca, sca), url=url)
+            scale=Scale(sca, sca, sca), url=url)
     elif mode == Mode.COLOR:
         update_dropdown(camname, objid, mode,
                         arblib.COLORS, -2, color_callback)
@@ -208,7 +208,7 @@ def panel_callback(_scene, event, msg):
     elif mode == Mode.WALL:
         USERS[camname].set_clipboard(
             object_type=Circle.object_type, callback=wall_callback,
-            scale=(0.005, 0.005, 0.005))
+            scale=Scale(0.005, 0.005, 0.005))
         USERS[camname].set_textright("Start: tap flush corner.")
     elif mode == Mode.NUDGE:
         update_dropdown(camname, objid, mode, arblib.METERS, 2, gen_callback)
@@ -236,7 +236,7 @@ def update_dropdown(camname, objid, mode, options, row, callback):
         drop_button_offset = -math.floor(maxwidth / 2)
         for i, option in enumerate(options):
             if mode is Mode.COLOR:
-                bcolor = arblib.arena_color2rgb(option)
+                bcolor = Color(option)
             else:
                 bcolor = arblib.CLR_SELECT
             dbutton = arblib.Button(
@@ -250,7 +250,7 @@ def update_dropdown(camname, objid, mode, options, row, callback):
                     row += 1
         # make default selection
         if mode is Mode.COLOR:
-            rcolor = arblib.arena_color2rgb(options[0])
+            rcolor = Color(options[0])
         else:
             rcolor = arblib.CLR_HUDTEXT
         USERS[camname].set_textright(options[0], color=rcolor)
@@ -267,7 +267,7 @@ def model_callback(_scene, event, msg):
     sca = MANIFEST[idx]['scale']
     USERS[camname].set_clipboard(
         callback=clipboard_callback, object_type=GLTF.object_type,
-        scale=(sca, sca, sca), url=url)
+        scale=Scale(sca, sca, sca), url=url)
     USERS[camname].set_textright(model)
     USERS[camname].target_style = model
 
@@ -288,7 +288,7 @@ def color_callback(_scene, event, msg):
     if not camname or not objid:
         return
     hcolor = drop
-    color = arblib.arena_color2rgb(hcolor)
+    color = Color(hcolor)
     USERS[camname].set_textright(hcolor, color=color)
     USERS[camname].target_style = hcolor
 
@@ -326,15 +326,14 @@ def show_redpill_scene(enabled):
     # show gridlines
     glen = arblib.GRIDLEN
     y = arblib.FLOOR_Y
-    hcolor = arblib.rgb2hex(arblib.CLR_GRID)
     for z in range(-glen, glen + 1):
         name = "grid_z" + str(z)
         if enabled:
             scene.add_object(Line(
                 object_id=name,
-                start=(-glen, y, z),
-                end=(glen, y, z),
-                material=Material(color=hcolor)))
+                start=Position(-glen, y, z),
+                end=Position(glen, y, z),
+                material=Material(color=arblib.CLR_GRID)))
         else:
             arblib.delete_obj(scene, name)
     for x in range(-glen, glen + 1):
@@ -342,9 +341,9 @@ def show_redpill_scene(enabled):
         if enabled:
             scene.add_object(Line(
                 object_id=name,
-                start=(x, y, -glen),
-                end=(x, y, glen),
-                material=Material(color=hcolor)))
+                start=Position(x, y, -glen),
+                end=Position(x, y, glen),
+                material=Material(color=arblib.CLR_GRID)))
         else:
             arblib.delete_obj(scene, name)
     objs = scene.get_persisted_objs()
@@ -410,7 +409,7 @@ def update_controls(objid):
 
 def do_nudge_select(camname, objid, position=None):
     color = arblib.CLR_NUDGE
-    delim = "_"+Mode.NUDGE.value+"_"
+    delim = f"_{Mode.NUDGE.value}_"
     callback = nudgeline_callback
     if not position:
         obj = scene.get_persisted_obj(objid)
@@ -420,13 +419,14 @@ def do_nudge_select(camname, objid, position=None):
     make_clickline("y", 1, objid, position, delim, color, callback)
     make_clickline("z", 1, objid, position, delim, color, callback)
     make_followspot(objid, position, delim, color)
-    pos = (round(position.x, 3), round(position.y, 3), round(position.z, 3))
+    pos = Position(round(position.x, 3), round(
+        position.y, 3), round(position.z, 3))
     USERS[camname].set_textright(f"{USERS[camname].target_style} p{str(pos)}")
 
 
 def do_scale_select(camname, objid, scale=None):
     color = arblib.CLR_SCALE
-    delim = "_"+Mode.SCALE.value+"_"
+    delim = f"_{Mode.SCALE.value}_"
     callback = scaleline_callback
     if not scale:
         obj = scene.get_persisted_obj(objid)
@@ -435,13 +435,13 @@ def do_scale_select(camname, objid, scale=None):
         # scale entire object + or - on all axis
         make_clickline("x", 1, objid, position, delim, color, callback)
         make_followspot(objid, position, delim, color)
-    sca = (round(scale.x, 3), round(scale.y, 3), round(scale.z, 3))
+    sca = Scale(round(scale.x, 3), round(scale.y, 3), round(scale.z, 3))
     USERS[camname].set_textright(f"{USERS[camname].target_style} s{str(sca)}")
 
 
 def do_stretch_select(camname, objid, scale=None):
     color = arblib.CLR_STRETCH
-    delim = "_"+Mode.STRETCH.value+"_"
+    delim = f"_{Mode.STRETCH.value}_"
     callback = stretchline_callback
     if not scale:
         obj = scene.get_persisted_obj(objid)
@@ -461,13 +461,13 @@ def do_stretch_select(camname, objid, scale=None):
         make_clickline("z", 1, objid, position, delim, color, callback)
         make_clickline("z", -1, objid, position, delim, color, callback)
         make_followspot(objid, position, delim, color)
-    sca = (round(scale.x, 3), round(scale.y, 3), round(scale.z, 3))
+    sca = Scale(round(scale.x, 3), round(scale.y, 3), round(scale.z, 3))
     USERS[camname].set_textright(f"{USERS[camname].target_style} s{str(sca)}")
 
 
 def do_rotate_select(camname, objid, rotation=None):
     color = arblib.CLR_ROTATE
-    delim = "_"+Mode.ROTATE.value+"_"
+    delim = f"_{Mode.ROTATE.value}_"
     callback = rotateline_callback
     if not rotation:
         obj = scene.get_persisted_obj(objid)
@@ -490,10 +490,10 @@ def make_followspot(object_id, position, delim, color):
     name = f"{object_id}{delim}spot"
     CONTROLS[object_id][name] = Circle(  # follow spot on ground
         object_id=name,
-        scale=(0.1, 0.1, 0.1),
+        scale=Scale(0.1, 0.1, 0.1),
         ttl=arblib.TTL_TEMP,
-        position=(position.x, arblib.FLOOR_Y, position.z),
-        rotation=(-0.7, 0, 0, 0.7),
+        position=Position(position.x, arblib.FLOOR_Y, position.z),
+        rotation=Rotation(-0.7, 0, 0, 0.7),
         material=Material(
             color=color,
             transparent=True,
@@ -504,7 +504,7 @@ def make_followspot(object_id, position, delim, color):
 
 
 def regline(object_id, axis, direction, delim, suffix, start,
-            end, line_width, color=(255, 255, 255), parent=""):
+            end, line_width, color=Color(255, 255, 255), parent=""):
     if parent:
         end = Position(x=(end.x - start.x) * 10,
                        y=(end.y - start.y) * 10,
@@ -540,9 +540,9 @@ def cubeline(object_id, axis, direction, delim, suffix, start,
         ttl=arblib.TTL_TEMP,
         parent=parent,
         scale=scale,
-        position=(statistics.median([start.x, end.x]),
-                  statistics.median([start.y, end.y]),
-                  statistics.median([start.z, end.z])),
+        position=Position(statistics.median([start.x, end.x]),
+                          statistics.median([start.y, end.y]),
+                          statistics.median([start.z, end.z])),
         material=Material(
             color=color,
             transparent=True,
@@ -573,7 +573,7 @@ def dir_clickers(object_id, axis, direction, delim, position,
         clickable=True,
         position=position,
         rotation=cones[axis + direction][0],
-        scale=(0.05, 0.09, 0.05),
+        scale=Scale(0.05, 0.09, 0.05),
         material=Material(color=color, transparent=True,
                           opacity=arblib.OPC_CLINE),
         ttl=arblib.TTL_TEMP,
@@ -586,7 +586,7 @@ def dir_clickers(object_id, axis, direction, delim, position,
         clickable=True,
         position=loc,
         rotation=cones[axis + direction][1],
-        scale=(0.05, 0.09, 0.05),
+        scale=Scale(0.05, 0.09, 0.05),
         material=Material(color=color, transparent=True,
                           opacity=arblib.OPC_CLINE),
         ttl=arblib.TTL_TEMP,
@@ -781,7 +781,8 @@ def create_obj(camname, clipboard, position):
         object_id=f"{clipboard.data.object_type}_{randstr}",
         object_type=clipboard.data.object_type,
         position=position,
-        rotation=(0, 0, 0, 1),  # undo clipboard rotation for visibility
+        # undo clipboard rotation for visibility
+        rotation=Rotation(0, 0, 0, 1),
         scale=clipboard.data.scale,
         material=Material(color=clipboard.data.material.color,
                           transparent=False),
@@ -821,7 +822,7 @@ def do_wall_start(camname):
     # start (red)
     USERS[camname].wloc_start = USERS[camname].position
     USERS[camname].wrot_start = USERS[camname].rotation
-    arblib.temp_loc_marker(USERS[camname].wloc_start, (255, 0, 0))
+    arblib.temp_loc_marker(USERS[camname].wloc_start, Color(255, 0, 0))
     arblib.temp_rot_marker(USERS[camname].wloc_start,
                            USERS[camname].wrot_start)
 
@@ -830,7 +831,7 @@ def do_wall_end(camname):
     # end (green)
     USERS[camname].wloc_end = USERS[camname].position
     USERS[camname].wrot_end = USERS[camname].rotation
-    arblib.temp_loc_marker(USERS[camname].wloc_end, (0, 255, 0))
+    arblib.temp_loc_marker(USERS[camname].wloc_end, Color(0, 255, 0))
     arblib.temp_rot_marker(USERS[camname].wloc_end, USERS[camname].wrot_end)
 
 
@@ -849,7 +850,7 @@ def make_wall(camname):
     locx = statistics.median([sloc.x, eloc.x])
     locy = statistics.median([sloc.y, eloc.y])
     locz = statistics.median([sloc.z, eloc.z])
-    arblib.temp_loc_marker((locx, locy, locz), (0, 0, 255))
+    arblib.temp_loc_marker((locx, locy, locz), Color(0, 0, 255))
     print("wall position " + str((locx, locy, locz)))
     # rotation
     print("S ROT " + str((srot.x, srot.y, srot.z, srot.w)))
@@ -858,7 +859,7 @@ def make_wall(camname):
     roty = arblib.probable_quat(srot.y)
     rotz = arblib.probable_quat(srot.z)
     rotw = arblib.probable_quat(srot.w)
-    rot = (rotx, roty, rotz, rotw)
+    rot = Rotation(rotx, roty, rotz, rotw)
     arblib.temp_rot_marker((locx, locy, locz), rot)
     print("wall rotation " + str(rot))
     # which axis to use for wall? use camera gaze
@@ -888,10 +889,10 @@ def make_wall(camname):
         persist=True,
         clickable=True,
         object_id="wall_" + randstr,
-        position=(locx, locy, locz),
-        rotation=(rotx, roty, rotz, rotw),
-        scale=(scax, scay, scaz),
-        material=Material(color=(200, 200, 200),
+        position=Position(locx, locy, locz),
+        rotation=Rotation(rotx, roty, rotz, rotw),
+        scale=Scale(scax, scay, scaz),
+        material=Material(color=Color(200, 200, 200),
                           transparent=True, opacity=0.5),
     )
     scene.add_object(new_wall)
@@ -937,7 +938,8 @@ def scene_callback(_scene, event, msg):
             px = arblib.PANEL_RADIUS * -math.cos(ty)
             py = arblib.PANEL_RADIUS * math.sin(tx)
             pz = arblib.PANEL_RADIUS * math.sin(ty)
-            scene.update_object(USERS[camname].follow, position=(px, py, pz))
+            scene.update_object(USERS[camname].follow,
+                                position=Position(px, py, pz))
         # else: # TODO: panel lock position drop is inaccurate
             # users[camname].lockx = rx + arblib.LOCK_XOFF
             # users[camname].locky = -(ry * math.pi) - arblib.LOCK_YOFF

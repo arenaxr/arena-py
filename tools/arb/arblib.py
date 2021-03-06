@@ -6,32 +6,31 @@
 # pylint: disable=missing-docstring
 
 import enum
-import re
 
-import webcolors
-from arena import (Box, Circle, Cone, Cylinder, Dodecahedron, Icosahedron,
-                   Light, Material, Object, Octahedron, Plane, Ring, Scene,
-                   Sphere, Tetrahedron, Text, Torus, TorusKnot, Triangle)
-from scipy.spatial.transform import Rotation
+import scipy
+from arena import (Box, Circle, Color, Cone, Cylinder, Dodecahedron,
+                   Icosahedron, Light, Material, Object, Octahedron, Plane,
+                   Position, Ring, Rotation, Scale, Scene, Sphere, Tetrahedron,
+                   Text, Torus, TorusKnot, Triangle)
 
 CLICKLINE_LEN = 1  # meters
-CLICKLINE_SCL = (1, 1, 1)  # meters
+CLICKLINE_SCL = Scale(1, 1, 1)  # meters
 FLOOR_Y = 0  # meters
 GRIDLEN = 20  # meters
 PANEL_RADIUS = 1  # meters
 CLIP_RADIUS = PANEL_RADIUS + 0.25  # meters
 LOCK_XOFF = 0  # quaternion vector
 LOCK_YOFF = 0.7  # quaternion vector
-CLR_HUDTEXT = (128, 128, 128)  # gray
-CLR_NUDGE = (255, 255, 0)  # yellow
-CLR_SCALE = (0, 0, 255)  # blue
-CLR_STRETCH = (255, 0, 0)  # red
-CLR_ROTATE = (255, 165, 0)  # orange
-CLR_SELECT = (255, 255, 0)  # yellow
-CLR_GRID = (0, 255, 0)  # green
-CLR_BUTTON = (200, 200, 200)  # white-ish
-CLR_BUTTON_DISABLED = (128, 128, 128)  # gray
-CLR_BUTTON_TEXT = (0, 0, 0)  # black
+CLR_HUDTEXT = Color(128, 128, 128)  # gray
+CLR_NUDGE = Color(255, 255, 0)  # yellow
+CLR_SCALE = Color(0, 0, 255)  # blue
+CLR_STRETCH = Color(255, 0, 0)  # red
+CLR_ROTATE = Color(255, 165, 0)  # orange
+CLR_SELECT = Color(255, 255, 0)  # yellow
+CLR_GRID = Color(0, 255, 0)  # green
+CLR_BUTTON = Color(200, 200, 200)  # white-ish
+CLR_BUTTON_DISABLED = Color(128, 128, 128)  # gray
+CLR_BUTTON_TEXT = Color(0, 0, 0)  # black
 OPC_BUTTON = 0.1  # % opacity
 OPC_BUTTON_HOVER = 0.25  # % opacity
 OPC_CLINE = 0.1  # % opacity
@@ -148,21 +147,21 @@ class User:
 
         # set HUD to each user
         self.hudtext_left = self.make_hudtext(
-            "hudTextLeft", (-0.15, 0.15, -0.5), str(self.mode))
+            "hudTextLeft", Position(-0.15, 0.15, -0.5), str(self.mode))
         self.hudtext_right = self.make_hudtext(
-            "hudTextRight", (0.1, 0.15, -0.5), "")
+            "hudTextRight", Position(0.1, 0.15, -0.5), "")
         self.hudtext_status = self.make_hudtext(
-            "hudTextStatus", (0.02, -0.15, -0.5), "")  # workaround x=0 bad?
+            "hudTextStatus", Position(0.02, -0.15, -0.5), "")  # workaround x=0 bad?
 
         # AR Control Panel
         self.follow_lock = False
         self.follow = Box(
-            object_id=("follow_" + camname),
+            object_id=f"follow_{camname}",
             parent=camname,
             material=Material(transparent=True, opacity=0),
-            position=(0, 0, -PANEL_RADIUS * 0.1),
-            scale=(0.1, 0.01, 0.1),
-            rotation=(0.7, 0, 0, 0.7),
+            position=Position(0, 0, -PANEL_RADIUS * 0.1),
+            scale=Scale(0.1, 0.01, 0.1),
+            rotation=Rotation(0.7, 0, 0, 0.7),
         )
         self.scene.add_object(self.follow)
         self.redpill = False
@@ -203,7 +202,7 @@ class User:
             text=text,
             position=position,
             color=CLR_HUDTEXT,
-            scale=(0.1, 0.1, 0.1),
+            scale=Scale(0.1, 0.1, 0.1),
         )
         self.scene.add_object(text)
         return text
@@ -221,9 +220,9 @@ class User:
     def set_lamp(self, enabled):
         if enabled:
             self.lamp = Light(
-                object_id=self.camname+"_lamp",
+                object_id=f"{self.camname}_lamp",
                 parent=self.camname,
-                material=Material(color=(144, 144, 173)),
+                material=Material(color=Color(144, 144, 173)),
                 type="point",
                 intensity=0.75)
             self.scene.add_object(self.lamp)
@@ -233,12 +232,12 @@ class User:
     def set_clipboard(self,
                       callback=None,
                       object_type=Sphere.object_type,
-                      scale=(0.05, 0.05, 0.05),
-                      position=(0, 0, -CLIP_RADIUS),
-                      color=(255, 255, 255),
+                      scale=Scale(0.05, 0.05, 0.05),
+                      position=Position(0, 0, -CLIP_RADIUS),
+                      color=Color(255, 255, 255),
                       url=""):
         self.clipboard = Object(  # show item to be created
-            object_id=(self.camname+"_clipboard"),
+            object_id=f"{self.camname}_clipboard",
             object_type=object_type,
             position=position,
             parent=self.camname,
@@ -249,10 +248,10 @@ class User:
             evt_handler=callback)
         self.scene.add_object(self.clipboard)
         self.cliptarget = Circle(  # add helper target object to find true origin
-            object_id=(self.camname+"_cliptarget"),
+            object_id=f"{self.camname}_cliptarget",
             position=position,
             parent=self.camname,
-            scale=(0.005, 0.005, 0.005),
+            scale=Scale(0.005, 0.005, 0.005),
             material=Material(transparent=True, opacity=0.4),
             clickable=True,
             evt_handler=callback)
@@ -274,9 +273,9 @@ class Button:
             label = mode.value
         if parent is None:
             parent = camname
-            scale = (0.1, 0.1, 0.01)
+            scale = Scale(0.1, 0.1, 0.01)
         else:
-            scale = (1, 1, 1)
+            scale = Scale(1, 1, 1)
         self.type = btype
         self.enabled = enable
         if enable:
@@ -298,7 +297,7 @@ class Button:
         shape = Box.object_type
         if btype == ButtonType.TOGGLE:
             shape = Cylinder.object_type
-            scale = (scale[0] / 2, scale[1], scale[2] / 2)
+            scale = Scale(scale.x / 2, scale.y, scale.z / 2)
         self.button = Object(  # cube is main button
             object_id=obj_name,
             object_type=shape,
@@ -308,21 +307,22 @@ class Button:
                 transparent=True,
                 opacity=OPC_BUTTON,
                 shader="flat"),
-            position=(x * 1.1, PANEL_RADIUS, y * -1.1),
+            position=Position(x * 1.1, PANEL_RADIUS, y * -1.1),
             scale=scale,
             clickable=True,
             evt_handler=callback,
         )
         scene.add_object(self.button)
-        scale = (1, 1, 1)
+        scale = Scale(1, 1, 1)
         if btype == ButtonType.TOGGLE:
-            scale = (scale[0] * 2, scale[1] * 2, scale[2])
+            scale = Scale(scale.x * 2, scale.y * 2, scale.z)
         self.text = Text(  # text child of button
             object_id=f"{self.button.object_id}_text",
             parent=self.button.object_id,
             text=self.label,
-            position=(0, -0.1, 0),  # position inside to prevent ray events
-            rotation=(-0.7, 0, 0, 0.7),
+            # position inside to prevent ray events
+            position=Position(0, -0.1, 0),
+            rotation=Rotation(-0.7, 0, 0, 0.7),
             scale=scale,
             color=self.colortxt,
         )
@@ -360,29 +360,29 @@ def init_origin(scene: Scene):
     scene.add_object(Cone(  # 370mm x 370mm # 750mm
         object_id="arb-origin",
         material=Material(
-            color=(255, 114, 33),
+            color=Color(255, 114, 33),
             transparent=True,
             opacity=0.5,
             shader="flat"),
-        position=(0, size[1] / 2, 0),
-        scale=(size[0] / 2, size[1], size[2] / 2)))
+        position=Position(0, size[1] / 2, 0),
+        scale=Scale(size[0] / 2, size[1], size[2] / 2)))
     scene.add_object(Cone(
         object_id="arb-origin-hole",
         material=Material(
             colorWrite=False,
         ),
         # render-order="0",  # TODO: resolve render-order
-        position=(0, size[1] - (size[1] / 2 / 15), 0),
-        scale=(size[0] / 15, size[1] / 10, size[2] / 15)))
+        position=Position(0, size[1] - (size[1] / 2 / 15), 0),
+        scale=Scale(size[0] / 15, size[1] / 10, size[2] / 15)))
     scene.add_object(Box(
         object_id="arb-origin-base",
         material=Material(
-            color=(0, 0, 0),
+            color=Color(0, 0, 0),
             transparent=True,
             opacity=0.5,
             shader="flat"),
-        position=(0, size[1] / 20, 0),
-        scale=(size[0], size[1] / 10, size[2])))
+        position=Position(0, size[1] / 20, 0),
+        scale=Scale(size[0], size[1] / 10, size[2])))
 
 
 def update_persisted_obj(scene: Scene, object_id, label,
@@ -451,38 +451,26 @@ def delete_obj(scene: Scene, object_id):
     update_persisted_obj(scene, object_id, "Deleted", action="delete")
 
 
-def rgb2hex(rgb):
-    return "#{:02x}{:02x}{:02x}".format(rgb[0], rgb[1], rgb[2])
-
-
-def arena_color2rgb(color):
-    color = color.lstrip('#')
-    hexcolor = re.search(r'^(?:[0-9a-fA-F]{3}){1,2}$', color)
-    if not hexcolor:
-        wcrgb = webcolors.name_to_rgb(color)
-        return (wcrgb.red, wcrgb.green, wcrgb.blue)
-    return tuple(int(color[c:c + 2], 16) for c in (0, 2, 4))
-
-
 def temp_loc_marker(position, color):
     return Sphere(ttl=120,
                   material=Material(
                       color=color, transparent=True, opacity=0.5),
-                  position=position, scale=(0.02, 0.02, 0.02), clickable=True)
+                  position=position, scale=Scale(0.02, 0.02, 0.02), clickable=True)
 
 
 def temp_rot_marker(position, rotation):
     return Box(ttl=120, rotation=rotation,
-               position=position, scale=(0.02, 0.01, 0.15), clickable=True)
+               position=position, scale=Scale(0.02, 0.01, 0.15), clickable=True)
 
 
 def rotation_quat2euler(quat):
-    rotq = Rotation.from_quat(list(quat))
+    rotq = scipy.spatial.transform.Rotation.from_quat(list(quat))
     return tuple(rotq.as_euler('xyz', degrees=True))
 
 
 def rotation_euler2quat(euler):
-    rote = Rotation.from_euler('xyz', list(euler), degrees=True)
+    rote = scipy.spatial.transform.Rotation.from_euler(
+        'xyz', list(euler), degrees=True)
     return tuple(rote.as_quat())
 
 

@@ -1,8 +1,10 @@
 import os
 import sys
-import asyncio
-import random
 import json
+import random
+import socket
+import asyncio
+
 import paho.mqtt.client as mqtt
 from datetime import datetime
 from inspect import signature
@@ -24,7 +26,7 @@ class Scene(object):
     def __init__(
                 self,
                 debug = False,
-                network_loop_interval = 20,  # run mqtt client network loop every 20ms
+                network_loop_interval = 0,  # throttle mqtt client network loop
                 network_latency_interval = 10000,  # run network latency update every 10s
                 on_msg_callback = None,
                 new_obj_callback = None,
@@ -88,8 +90,11 @@ class Scene(object):
 
         # do scene auth
         if not (os.environ.get("ARENA_USERNAME") and os.environ.get("ARENA_PASSWORD")):
-            data = auth.authenticate_scene(self.host, self.realm,
-                                           self.namespaced_scene, username, self.debug)
+            data = auth.authenticate_scene(
+                            self.host, self.realm,
+                            self.namespaced_scene, username,
+                            self.debug
+                        )
             if 'username' in data and 'token' in data:
                 username = data["username"]
                 password = data["token"]
@@ -111,30 +116,36 @@ class Scene(object):
 
         self.task_manager = EventLoop(self.disconnect)
 
+        aioh = AsyncioMQTTHelper(self.task_manager, self.mqttc)
+
         # have all tasks wait until mqtt client is connected before starting
         self.mqtt_connect_evt = asyncio.Event()
         self.mqtt_connect_evt.clear()
 
-        # add mqtt client loop to list of tasks
+        # set paho mqtt callbacks
+        self.mqttc.on_connect = self.on_connect
+        self.mqttc.on_disconnect = self.on_disconnect
+
         self.network_loop_interval = network_loop_interval
-        self.network_loop = PersistentWorker(
-                                func=self.run_network_loop,
-                                event=None,
-                                interval=self.network_loop_interval
-                            )
-        self.task_manager.add_task(self.network_loop)
+
+        # add mqtt message loop to tasks
+        self.run_async(self.main_loop)
+
+        # add main message processing + callbacks loop to tasks
+        self.run_async(self.process_message)
 
         # run network latency update task every 10 secs
         self.run_forever(self.network_latency_update, interval_ms=network_latency_interval)
 
+        self.got_message = None
+        self.msg_queue = asyncio.Queue()
+
+        # connect to mqtt broker
         if "port" in kwargs:
-            self.mqttc.connect(self.host, port)
+            self.mqttc.connect(self.host, kwargs["port"])
         else:
             self.mqttc.connect(self.host)
-
-        # set paho mqtt callbacks
-        self.mqttc.on_connect = self.on_connect
-        self.mqttc.on_disconnect = self.on_disconnect
+        self.mqttc.socket().setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
 
         print(f"Loading: https://{self.host}/{self.namespace}/{self.scene}, realm={self.realm}")
 
@@ -142,12 +153,18 @@ class Scene(object):
         """Returns a random 6 digit id"""
         return str(random.randrange(100000, 999999))
 
-    def run_network_loop(self):
-        """Main Paho MQTT client network loop"""
-        self.mqttc.loop()
+    async def main_loop(self):
+        """Wait for messages from on_message and queues them for later use"""
+        while True:
+            self.got_message = self.task_manager.create_future()
+            await self.sleep(self.network_loop_interval)
+            msg = await self.got_message
+            await self.msg_queue.put(msg)
+            self.got_message = None
 
     def network_latency_update(self):
         """Update client latency in $NETWORK/latency"""
+        # publish empty message with QoS of 2 to update latency
         self.mqttc.publish(self.latency_topic, "", qos=2)
 
     def run_once(self, func=None, **kwargs):
@@ -223,8 +240,8 @@ class Scene(object):
             self.mqtt_connect_evt.set()
 
             # listen to all messages in scene
-            self.mqttc.subscribe(self.scene_topic)
-            self.mqttc.message_callback_add(self.scene_topic, self.process_message)
+            client.subscribe(self.scene_topic)
+            client.message_callback_add(self.scene_topic, self.on_message)
             self.get_persisted_objs()
 
             print("Connected!")
@@ -232,9 +249,101 @@ class Scene(object):
         else:
             print(f"Connection error! Result code: {rc}")
 
-    def disconnect(self):
-        """Disconnects Paho MQTT client"""
-        self.mqttc.disconnect()
+    def on_message(self, client, userdata, msg):
+        # ignore own messages
+        if mqtt.topic_matches_sub(self.ignore_topic, msg.topic):
+            return
+
+        if self.got_message:
+            self.got_message.set_result(msg)
+
+    async def process_message(self):
+        """Main message processing function"""
+        while True:
+            msg = await self.msg_queue.get()
+
+            # extract payload
+            try:
+                payload_str = msg.payload.decode("utf-8", "ignore")
+                payload = json.loads(payload_str)
+            except:
+                return
+
+            # update object attributes, if possible
+            if "object_id" in payload:
+                # parese payload
+                object_id = payload.get("object_id", None)
+                action = payload.get("action", None)
+
+                data = payload.get("data", {})
+                object_type = data.get("object_type", None)
+
+                event = None
+
+                # create/get object from object_id
+                if object_id in self.all_objects:
+                    obj = self.all_objects[object_id]
+                else:
+                    ObjClass = OBJECT_TYPE_MAP.get(object_type, Object)
+                    obj = ObjClass(**payload)
+
+                # react to action accordingly
+                if action:
+                    if action == "clientEvent":
+                        event = Event(**payload)
+                        if obj.evt_handler:
+                            self.callback_wrapper(obj.evt_handler, event, payload)
+                            return
+
+                    elif action == "delete":
+                        if Camera.object_type in object_id: # object is a camera
+                            if object_id in self.users and self.user_left_callback:
+                                self.callback_wrapper(
+                                        self.user_left_callback,
+                                        self.users[object_id],
+                                        payload
+                                    )
+                        elif self.delete_obj_callback:
+                            self.callback_wrapper(self.delete_obj_callback, obj, payload)
+                        return
+
+                    else: # create/update
+                        obj.update_attributes(**payload)
+
+                # call new message callback for all messages
+                if self.on_msg_callback:
+                    if not event:
+                        self.callback_wrapper(self.on_msg_callback, obj, payload)
+                    else:
+                        self.callback_wrapper(self.on_msg_callback, event, payload)
+
+                # run user_join_callback when user is found
+                if object_type and object_type == Camera.object_type:
+                    if object_id not in self.users:
+                        if object_id in self.all_objects:
+                            self.users[object_id] = obj
+                        else:
+                            self.users[object_id] = Camera(**payload)
+
+                        if self.user_join_callback:
+                            self.callback_wrapper(
+                                    self.user_join_callback,
+                                    self.users[object_id],
+                                    payload
+                                )
+
+                # if its an object the lib has not seen before, call new object callback
+                elif object_id not in self.unspecified_object_ids and self.new_obj_callback:
+                    self.callback_wrapper(self.new_obj_callback, obj, payload)
+                    self.unspecified_object_ids.add(object_id)
+
+    def callback_wrapper(self, func, arg, src):
+        """Checks for number of arguments for callback"""
+        if len(signature(func).parameters) != 3:
+            print("[DEPRECATED]", "Callbacks and handlers now take 3 arguments: (scene, obj/evt, msg)!")
+            func(arg)
+        else:
+            func(self, arg, src)
 
     def on_disconnect(self, client, userdata, rc):
         """Paho MQTT client on_disconnect callback"""
@@ -243,84 +352,9 @@ class Scene(object):
         else:
             print(f"Disconnect error! Result code: {rc}")
 
-    def process_message(self, client, userdata, msg):
-        """Main message processing function"""
-        if mqtt.topic_matches_sub(self.ignore_topic, msg.topic):
-            return
-
-        # extract payload
-        try:
-            payload_str = msg.payload.decode("utf-8", "ignore")
-            payload = json.loads(payload_str)
-        except:
-            return
-
-        # update object attributes, if possible
-        if "object_id" in payload:
-            # parese payload
-            object_id = payload.get("object_id", None)
-            action = payload.get("action", None)
-
-            data = payload.get("data", {})
-            object_type = data.get("object_type", None)
-
-            event = None
-
-            # create/get object from object_id
-            if object_id in self.all_objects:
-                obj = self.all_objects[object_id]
-            else:
-                ObjClass = OBJECT_TYPE_MAP.get(object_type, Object)
-                obj = ObjClass(**payload)
-
-            # react to action accordingly
-            if action:
-                if action == "clientEvent":
-                    event = Event(**payload)
-                    if obj.evt_handler:
-                        self.callback_wrapper(obj.evt_handler, event, payload)
-                        return
-
-                elif action == "delete":
-                    if Camera.object_type in object_id: # object is a camera
-                        if object_id in self.users and self.user_left_callback:
-                            self.callback_wrapper(self.user_left_callback, self.users[object_id], payload)
-                    elif self.delete_obj_callback:
-                        self.callback_wrapper(self.delete_obj_callback, obj, payload)
-                    return
-
-                else: # create/update
-                    obj.update_attributes(**payload)
-
-            # call new message callback for all messages
-            if self.on_msg_callback:
-                if not event:
-                    self.callback_wrapper(self.on_msg_callback, obj, payload)
-                else:
-                    self.callback_wrapper(self.on_msg_callback, event, payload)
-
-            # run user_join_callback when user is found
-            if object_type and object_type == Camera.object_type:
-                if object_id not in self.users:
-                    if object_id in self.all_objects:
-                        self.users[object_id] = obj
-                    else:
-                        self.users[object_id] = Camera(**payload)
-
-                    if self.user_join_callback:
-                        self.callback_wrapper(self.user_join_callback, self.users[object_id], payload)
-
-            # if its an object the lib has not seen before, call new object callback
-            elif object_id not in self.unspecified_object_ids and self.new_obj_callback:
-                self.callback_wrapper(self.new_obj_callback, obj, payload)
-                self.unspecified_object_ids.add(object_id)
-
-    def callback_wrapper(self, func, arg, src):
-        if len(signature(func).parameters) != 3:
-            print("[DEPRECATED]", "Callbacks and handlers now take 3 arguments: (scene, obj/evt, msg)!")
-            func(arg)
-        else:
-            func(self, arg, src)
+    def disconnect(self):
+        """Disconnects Paho MQTT client"""
+        self.mqttc.disconnect()
 
     def generate_custom_event(self, evt, action="clientEvent"):
         """Publishes an custom event. Could be user or library defined"""
@@ -380,6 +414,7 @@ class Scene(object):
         return self.generate_custom_event(evt, action="update")
 
     def add_landmark(self, obj, label):
+        """Adds a landmark to the scene"""
         if isinstance(obj, Object):
             landmark_id = obj.object_id
         else:
@@ -430,6 +465,7 @@ class Scene(object):
         return self._publish(payload, "delete")
 
     def run_animations(self, obj):
+        """Runs all dispatched animations"""
         if obj.animations:
             payload = {
                 "object_id": obj.object_id,
@@ -454,6 +490,7 @@ class Scene(object):
         """Publishes to mqtt broker with "action":action"""
         topic = f"{self.root_topic}/{self.mqttc_id}/{obj['object_id']}"
         d = datetime.now().isoformat()[:-3]+"Z"
+
         if action == "delete":
             payload = obj
             payload["action"] = "delete"
@@ -478,9 +515,9 @@ class Scene(object):
             obj = self.all_objects[object_id]
             obj.persist = True
         else:
+            persist_url = f'https://{self.host}/persist/{self.namespaced_scene}/{object_id}'
             # pass token to persist
-            data = auth.urlopen(
-                url=f'https://{self.host}/persist/{self.namespaced_scene}/{object_id}', creds=True)
+            data = auth.urlopen(url=persist_url, creds=True)
             output = json.loads(data)
             if len(output) > 0:
                 output = output[0]
@@ -522,9 +559,9 @@ class Scene(object):
 
     def get_persisted_scene_option(self):
         """Returns a dictionary for scene-options. [TODO] wrap the output as a BaseObject"""
+        scene_opts_url = f'https://{self.host}/persist/{self.namespaced_scene}?type=scene-options'
         # pass token to persist
-        data = auth.urlopen(
-            url=f'https://{self.host}/persist/{self.namespaced_scene}?type=scene-options', creds=True)
+        data = auth.urlopen(url=scene_opts_url, creds=True )
         output = json.loads(data)
         return output
 

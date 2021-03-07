@@ -5,7 +5,7 @@ scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="test")
 
 def click(scene, evt, msg):
     if evt.type == "mousedown":
-        print( "Click!" )
+        # print("Click!")
         start = evt.data.clickPos
         end = evt.data.position
         start.y=start.y-.1
@@ -26,8 +26,8 @@ def main():
     for obj_id,obj in objs.items():
         # obj.update_attributes(clickable=True)
         if obj.clickable:
-            print(obj)
             obj.update_attributes(evt_handler=click)
             scene.update_object(obj)
+            print(obj)
 
 scene.run_tasks()

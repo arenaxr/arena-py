@@ -5,6 +5,9 @@
 from arena import *
 
 
+LINE_COLOR = "#abcdef"
+
+
 class CameraState(Object):
     def __init__(self):
         self.camera = None
@@ -30,18 +33,17 @@ class CameraState(Object):
 lines = []
 cam_state = CameraState()
 
-def new_obj_callback(msg):
-    if "camera" in msg["object_id"]:
-        cam = Camera(**msg)
-        cam_state.add_cam(cam)
+def user_join_callback(scene, cam, msg):
+    print(cam)
+    cam_state.add_cam(cam)
 
 arena = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
-arena.new_obj_callback = new_obj_callback
+arena.user_join_callback = user_join_callback
 
 
 def line_follow():
     if cam_state.displacement >= 0.5:
-        line = ThickLine(path=(cam_state.prev_pos, cam_state.curr_pos), lineWidth=5, material=Material(color="#abcdef"))
+        line = ThickLine(color=LINE_COLOR, path=(cam_state.prev_pos, cam_state.curr_pos), lineWidth=5)
         arena.add_object(line)
 
         lines.append(line)

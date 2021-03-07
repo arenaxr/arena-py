@@ -10,6 +10,7 @@ ARENA-py notable changes. Started 2021-19-2.
 ### Changed
 - Library calls `get_persisted_objs` on connect to cache persisted objects.
 - Object instances now all have `clickable` property which checks if the Object is clickable.
+- Improved event loop using more advanced asyncio for mqtt client loop and message processing.
 
 ## [0.1.18] - 2021-2-3
 ### Added

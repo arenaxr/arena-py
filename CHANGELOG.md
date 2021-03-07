@@ -2,6 +2,10 @@
 
 ARENA-py notable changes. Started 2021-19-2.
 
+## [0.1.20] - 2021-7-3
+### Changed
+- Event loop bug fixes
+
 ## [0.1.19] - 2021-2-3
 ### Added
 - `on_msg_callback` receives __all__ messages, including duplicates from other callbacks.
@@ -60,6 +64,7 @@ specify both to bypass auth.
 - `Arena` class renamed to `Scene`, but using `Arena` is still allowed. Updated examples to reflect this.
 - Tiny bug fix with `update_objects`.
 
+[0.1.19]: https://github.com/conix-center/ARENA-py/tree/985111ab1e146c95b177338141760fafc909c1a0
 [0.1.18]: https://github.com/conix-center/ARENA-py/tree/120b675928e7c8f215f3910e4157890944d0b2e8
 [0.1.17]: https://github.com/conix-center/ARENA-py/tree/0a7897c89bd4a08c03c0c626601e4686cacc368c
 [0.1.16]: https://github.com/conix-center/ARENA-py/tree/8e42dac35a9de7a6b610a1b6663606d1adf1a17e

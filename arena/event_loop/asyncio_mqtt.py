@@ -23,7 +23,7 @@ class AsyncioMQTTHelper:
                                 func=self.misc_loop,
                                 event=None,
                             )
-        self.misc = self.event_loop.add_task(self.misc_loop())
+        self.misc = self.loop.create_task(self.misc_loop())
 
     def on_socket_close(self, client, userdata, sock):
         self.loop.remove_reader(sock)

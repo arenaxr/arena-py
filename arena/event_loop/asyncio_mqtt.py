@@ -29,7 +29,7 @@ class AsyncioMQTTHelper:
 
     def on_socket_close(self, client, userdata, sock):
         self.loop.remove_reader(sock)
-        self.misc.cancel()
+        # self.misc.cancel()
 
     def on_socket_register_write(self, client, userdata, sock):
         def cb():

@@ -2,7 +2,7 @@
 
 ARENA-py notable changes. Started 2021-19-2.
 
-## [0.1.20] - 2021-7-3
+## [0.1.21] - 2021-7-3
 ### Changed
 - Event loop bug fixes
 

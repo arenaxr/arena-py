@@ -6,7 +6,9 @@ from .async_worker import AsyncWorker
 class AsyncioMQTTHelper:
     """Adapted from: https://github.com/eclipse/paho.mqtt.python/blob/master/examples/loop_asyncio.py"""
     def __init__(self, event_loop, client):
-        self.loop = event_loop.loop
+        self.event_loop = event_loop
+        self.loop = self.event_loop.loop
+
         self.client = client
 
         self.client.on_socket_open = self.on_socket_open
@@ -23,7 +25,7 @@ class AsyncioMQTTHelper:
                                 func=self.misc_loop,
                                 event=None,
                             )
-        self.misc = self.loop.create_task(self.misc_loop())
+        self.misc = self.event_loop.add_task(self.misc_loop_worker)
 
     def on_socket_close(self, client, userdata, sock):
         self.loop.remove_reader(sock)

@@ -252,7 +252,8 @@ class User:
             position=position,
             parent=self.camname,
             scale=Scale(0.005, 0.005, 0.005),
-            material=Material(transparent=True, opacity=0.4),
+            material=Material(color=Color(255, 255, 255),
+                              transparent=True, opacity=0.4),
             clickable=True,
             evt_handler=callback)
         self.scene.add_object(self.cliptarget)
@@ -371,7 +372,7 @@ def init_origin(scene: Scene):
         material=Material(
             colorWrite=False,
         ),
-        # render-order="0",  # TODO: resolve render-order
+        # render-order="0",  # TODO: resolve occlusion
         position=Position(0, size[1] - (size[1] / 2 / 15), 0),
         scale=Scale(size[0] / 15, size[1] / 10, size[2] / 15)))
     scene.add_object(Box(
@@ -385,81 +386,65 @@ def init_origin(scene: Scene):
         scale=Scale(size[0], size[1] / 10, size[2])))
 
 
-def update_persisted_obj(scene: Scene, object_id, label,
-                         action="update", data=None, persist="true", ttl=None):
-    msg = {
-        "object_id": object_id,
-        "action": action,
-    }
-    if action == "update" and object_id in scene.all_objects:
-        scene.update_object(
-            scene.all_objects[object_id],
-            persist=persist,
-            ttl=ttl,
-            data=data)
-    else:
-        scene._publish(obj=msg, action=action)
-    print(f"{label} {object_id}")
-
-
 def opaque_obj(scene: Scene, object_id, opacity):
-    data = {"material": {"transparent": True, "opacity": opacity}}
-    update_persisted_obj(scene, object_id, "Opaqued", data=data)
+    scene.update_object(scene.all_objects[object_id],
+                        material=Material(transparent=True, opacity=opacity))
+    print(f"Opaqued {object_id}")
 
 
 def occlude_obj(scene: Scene, object_id, occlude):
     # NOTE: transparency does not allow occlusion so remove transparency here.
-    data = {"material": {"colorWrite": occlude == BOOLS[1],
-                         "transparent": False,
-                         "opacity": 1},
-            "render-order": "0"}
-    update_persisted_obj(scene, object_id, "Occluded", data=data)
+    scene.update_object(scene.all_objects[object_id],
+                        material=Material(colorWrite=(occlude == BOOLS[1]),
+                                          transparent=False, opacity=1),
+                        # render-order="0",  # TODO: resolve occlusion
+                        )
+    print(f"Occluded {object_id}")
 
 
-def color_obj(scene: Scene, object_id, hcolor):
-    data = {"material": {"color": "#" + hcolor}}
-    update_persisted_obj(scene, object_id, "Colored", data=data)
+def color_obj(scene: Scene, object_id, color):
+    scene.update_object(scene.all_objects[object_id], color=color)
+    print(f"Colored {object_id}")
 
 
 def stretch_obj(scene: Scene, object_id, scale, position):
-    data = {"scale": scale, "position": position}
-    update_persisted_obj(scene, object_id, "Stretched", data=data)
+    scene.update_object(
+        scene.all_objects[object_id], scale=scale, position=position)
+    print(f"Stretched {object_id}")
 
 
 def scale_obj(scene: Scene, object_id, scale):
-    data = {"scale": scale}
-    update_persisted_obj(scene, object_id, "Scaled", data=data)
+    scene.update_object(scene.all_objects[object_id], scale=scale)
+    print(f"Scaled {object_id}")
 
 
 def move_obj(scene: Scene, object_id, position):
-    data = {"position": position}
-    update_persisted_obj(scene, object_id, "Relocated", data=data)
+    scene.update_object(scene.all_objects[object_id], position=position)
+    print(f"Relocated {object_id}")
 
 
 def rotate_obj(scene: Scene, object_id, rotation):
-    data = {"rotation": rotation}
-    update_persisted_obj(scene, object_id, "Rotated", data=data)
+    scene.update_object(scene.all_objects[object_id], rotation=rotation)
+    print(f"Rotated {object_id}")
 
 
 def parent_obj(scene: Scene, object_id, parent_id):
-    data = {"parent": parent_id}
-    update_persisted_obj(scene, object_id,
-                         f"{parent_id} adopted", data=data)
+    scene.update_object(scene.all_objects[object_id], parent=parent_id)
+    print(f"{parent_id} adopted {object_id}")
 
 
 def delete_obj(scene: Scene, object_id):
-    update_persisted_obj(scene, object_id, "Deleted", action="delete")
+    scene.delete_object(scene.all_objects[object_id])
+    print(f"Deleted {object_id}")
 
 
 def temp_loc_marker(position, color):
-    return Sphere(ttl=120,
-                  material=Material(
-                      color=color, transparent=True, opacity=0.5),
+    return Sphere(ttl=120, material=Material(color=color, transparent=True, opacity=0.5),
                   position=position, scale=Scale(0.02, 0.02, 0.02), clickable=True)
 
 
 def temp_rot_marker(position, rotation):
-    return Box(ttl=120, rotation=rotation,
+    return Box(ttl=120, rotation=rotation, material=Material(color=Color(0, 0, 0)),
                position=position, scale=Scale(0.02, 0.01, 0.15), clickable=True)
 
 

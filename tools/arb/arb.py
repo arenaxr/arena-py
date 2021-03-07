@@ -373,7 +373,8 @@ def do_rename(camname, old_id, new_id):
     if new_id == old_id:
         return
     obj = scene.get_persisted_obj(old_id)
-    scene.add_object(Object(object_id=new_id, persist=obj.persist, data=obj.data))
+    scene.add_object(
+        Object(object_id=new_id, persist=obj.persist, data=obj.data))
     if new_id in scene.all_objects:
         USERS[camname].target_id = new_id
         print(f"Duplicating {old_id} to {new_id}")
@@ -845,62 +846,63 @@ def make_wall(camname):
     eloc = USERS[camname].wloc_end
     srot = USERS[camname].wrot_start
     erot = USERS[camname].wrot_end
-    print("S POS " + str((sloc.x, sloc.y, sloc.z)))
-    print("E POS " + str((eloc.x, eloc.y, eloc.z)))
+    print(f"S POS {str(sloc)}")
+    print(f"E POS {str(eloc)}")
     # center point (blue)
     locx = statistics.median([sloc.x, eloc.x])
     locy = statistics.median([sloc.y, eloc.y])
     locz = statistics.median([sloc.z, eloc.z])
-    arblib.temp_loc_marker((locx, locy, locz), Color(0, 0, 255))
-    print("wall position " + str((locx, locy, locz)))
+    pos = Position(locx, locy, locz)
+    arblib.temp_loc_marker(pos, Color(0, 0, 255))
+    print(f"wall position {str(pos)}")
     # rotation
-    print("S ROT " + str((srot.x, srot.y, srot.z, srot.w)))
-    print("E ROT " + str((erot.x, erot.y, erot.z, erot.w)))
+    print(f"S ROT {str(srot)}")
+    print(f"E ROT {str(erot)}")
     rotx = arblib.probable_quat(srot.x)
     roty = arblib.probable_quat(srot.y)
     rotz = arblib.probable_quat(srot.z)
     rotw = arblib.probable_quat(srot.w)
     rot = Rotation(rotx, roty, rotz, rotw)
-    arblib.temp_rot_marker((locx, locy, locz), rot)
-    print("wall rotation " + str(rot))
+    gaze = (rotx, roty, rotz, rotw)
+    arblib.temp_rot_marker(pos, rot)
+    print(f"wall rotation {str(rot)}")
     # which axis to use for wall? use camera gaze
     # TODO: rotation still off
-    if rot in arblib.GAZES[0]:
+    if gaze in arblib.GAZES[0]:
         height = abs(sloc.y - eloc.y)
         width = abs(sloc.x - eloc.x)
-    elif rot in arblib.GAZES[1]:
+    elif gaze in arblib.GAZES[1]:
         height = abs(sloc.y - eloc.y)
         width = abs(sloc.z - eloc.z)
-    elif rot in arblib.GAZES[2]:
+    elif gaze in arblib.GAZES[2]:
         height = abs(sloc.z - eloc.z)
         width = abs(sloc.x - eloc.x)
     else:
         # TODO: (placeholder) add direction and hypotenuse
         height = abs(sloc.y - eloc.y)
         width = abs(sloc.x - eloc.x)
-        print("Non-axis parallel rotation: " + str(rot))
+        print(f"Non-axis parallel rotation: {str(rot)}")
     # scale
     scax = width
     scay = height
     scaz = arblib.WALL_WIDTH
-    print("wall scale " + str((scax, scay, scaz)))
+    sca = Scale(scax, scay, scaz)
+    print(f"wall scale {str(sca)}")
     # make wall
     randstr = str(random.randrange(0, 1000000))
     new_wall = Box(
         persist=True,
         clickable=True,
-        object_id="wall_" + randstr,
-        position=Position(locx, locy, locz),
-        rotation=Rotation(rotx, roty, rotz, rotw),
-        scale=Scale(scax, scay, scaz),
+        object_id=f"wall_{randstr}",
+        position=pos,
+        rotation=rot,
+        scale=sca,
         material=Material(color=Color(200, 200, 200),
                           transparent=True, opacity=0.5),
     )
     scene.add_object(new_wall)
     USERS[camname].target_id = new_wall.object_id
-    print("Created " + new_wall.object_id +
-          " r" + str((rotx, roty, rotz, rotw)) +
-          " s" + str((scax, scay, scaz)))
+    print(f"Created {new_wall.object_id} r{str(rot)} s{str(sca)}")
     # TODO: remove wall opacity in final wall feature
     # TODO: push wall front side flush with markers (position-(wall/2))
 
@@ -926,8 +928,13 @@ def scene_callback(_scene, event, msg):
             USERS[camname] = arblib.User(scene, camname, panel_callback)
 
         # save camera's attitude in the world
-        USERS[camname].position = msg["data"]["position"]
-        USERS[camname].rotation = msg["data"]["rotation"]
+        USERS[camname].location = Position(msg["data"]["position"]["x"],
+                                           msg["data"]["position"]["y"],
+                                           msg["data"]["position"]["z"])
+        USERS[camname].rotation = Rotation(msg["data"]["rotation"]["x"],
+                                           msg["data"]["rotation"]["y"],
+                                           msg["data"]["rotation"]["z"],
+                                           msg["data"]["rotation"]["w"])
 
         rx = msg["data"]["rotation"]["x"]
         ry = msg["data"]["rotation"]["y"]
@@ -981,7 +988,7 @@ def scene_callback(_scene, event, msg):
                 do_rotate_select(camname, object_id)
             elif USERS[camname].mode == Mode.COLOR:
                 arblib.color_obj(scene, object_id,
-                                 USERS[camname].target_style)
+                                 Color(USERS[camname].target_style))
             elif USERS[camname].mode == Mode.OCCLUDE:
                 arblib.occlude_obj(scene, object_id,
                                    USERS[camname].target_style)
@@ -1014,16 +1021,3 @@ scene = Scene(
     on_msg_callback=scene_callback,
     kwargs=kwargs)
 scene.run_tasks()
-
-
-def actual(attribute, obj_data):
-    if attribute in obj_data:
-        return obj_data[attribute]
-    elif attribute == "position":
-        return Position(x=0, y=0, z=0)
-    elif attribute == "rotation":
-        return Rotation(x=0, y=0, z=0, w=1)
-    elif attribute == "scale":
-        return Scale(x=1, y=1, z=1)
-
-    return None

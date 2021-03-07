@@ -4,7 +4,11 @@ ARENA-py notable changes. Started 2021-19-2.
 
 ## [0.1.21] - 2021-7-3
 ### Changed
-- Event loop bug fixes
+- Async MQTT loop cancellation bug fixes.
+
+## [0.1.20] - 2021-7-3
+### Changed
+- Event loop bug fixes.
 
 ## [0.1.19] - 2021-2-3
 ### Added
@@ -14,7 +18,7 @@ ARENA-py notable changes. Started 2021-19-2.
 ### Changed
 - Library calls `get_persisted_objs` on connect to cache persisted objects.
 - Object instances now all have `clickable` property which checks if the Object is clickable.
-- Improved event loop using more advanced asyncio for mqtt client loop and message processing.
+- Improved event loop using more advanced asyncio for MQTT client loop and message processing.
 
 ## [0.1.18] - 2021-2-3
 ### Added
@@ -64,6 +68,8 @@ specify both to bypass auth.
 - `Arena` class renamed to `Scene`, but using `Arena` is still allowed. Updated examples to reflect this.
 - Tiny bug fix with `update_objects`.
 
+[0.1.21]: https://github.com/conix-center/ARENA-py/tree/c5e561285ddd6135aa03974ab8b686ba74299520
+[0.1.20]: https://github.com/conix-center/ARENA-py/tree/a8a2d11ea6718740e0fdaf299d1297ebd37c632f
 [0.1.19]: https://github.com/conix-center/ARENA-py/tree/985111ab1e146c95b177338141760fafc909c1a0
 [0.1.18]: https://github.com/conix-center/ARENA-py/tree/120b675928e7c8f215f3910e4157890944d0b2e8
 [0.1.17]: https://github.com/conix-center/ARENA-py/tree/0a7897c89bd4a08c03c0c626601e4686cacc368c

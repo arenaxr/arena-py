@@ -211,9 +211,7 @@ def panel_callback(_scene, event, msg):
         USERS[camname].typetext = ""
         USERS[camname].set_textright(USERS[camname].typetext)
     elif mode == Mode.WALL:
-        USERS[camname].set_clipboard(
-            object_type=Circle.object_type, callback=wall_callback,
-            scale=Scale(0.005, 0.005, 0.005))
+        USERS[camname].set_clipboard(callback=wall_callback)
         USERS[camname].set_textright("Start: tap flush corner.")
     elif mode == Mode.NUDGE:
         update_dropdown(camname, objid, mode, arblib.METERS, 2, gen_callback)
@@ -397,12 +395,21 @@ def show_redpill_obj(camname, object_id):
 def do_move_select(camname, object_id):
     obj = scene.get_persisted_obj(object_id)
     USERS[camname].target_id = object_id
+    object_type = scale = color = url = None
+    if obj.data.object_type:
+        object_type = obj.data.object_type
+    if obj.data.scale:
+        scale = obj.data.scale
+    if obj.data.material and obj.data.material.color:
+        color = obj.data.material.color
+    if obj.data.url:
+        url = obj.data.url
     USERS[camname].set_clipboard(
         callback=clipboard_callback,
-        object_type=obj.data.object_type,
-        scale=obj.data.scale,
-        color=obj.data.material.color,
-        url=obj.data.url,
+        object_type=object_type,
+        scale=scale,
+        color=color,
+        url=url,
     )
 
 
@@ -452,12 +459,12 @@ def do_stretch_select(camname, objid, scale=None):
     callback = stretchline_callback
     if not scale:
         obj = scene.get_persisted_obj(objid)
-        # scale too unpredictable
+        # TODO: scale too unpredictable, modify
         if obj.data.object_type == GLTF.object_type:
             return
-        # scale too unpredictable
-        # if obj.data.rotation.quaternion != Rotation(x=0, y=0, z=0, w=1).quaternion:
-        #     return
+        # TODO: scale too unpredictable, modify
+        if obj.data.rotation.quaternion.__dict__ != Rotation(x=0, y=0, z=0, w=1).quaternion.__dict__:
+            return
         position = obj.data.position
         scale = obj.data.scale
         # scale and reposition on one of 6 sides
@@ -511,7 +518,7 @@ def make_followspot(object_id, position, delim, color):
 
 
 def regline(object_id, axis, direction, delim, suffix, start,
-            end, line_width, color=Color(255, 255, 255), parent=""):
+            end, line_width, color=Color(255, 255, 255), parent=None):
     if parent:
         end = Position(x=(end.x - start.x) * 10,
                        y=(end.y - start.y) * 10,
@@ -529,7 +536,7 @@ def regline(object_id, axis, direction, delim, suffix, start,
 
 
 def boxline(object_id, axis, direction, delim, suffix, start,
-            end, line_width, color=(255, 255, 255), parent=""):
+            end, line_width, color=(255, 255, 255), parent=None):
     if parent:
         end = Position(x=(end.x - start.x) * 10,
                        y=(end.y - start.y) * 10,
@@ -560,7 +567,7 @@ def boxline(object_id, axis, direction, delim, suffix, start,
 
 
 def dir_clickers(object_id, axis, direction, delim, position,
-                 color, cones, callback, parent=""):
+                 color, cones, callback, parent=None):
     if parent:
         position = Position(x=position.x * 10,
                             y=position.y * 10, z=position.z * 10)

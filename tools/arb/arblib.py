@@ -211,8 +211,7 @@ class User:
         self.scene.update_object(self.hudtext_left, text=str(mode))
 
     def set_textright(self, text, color=CLR_HUDTEXT):
-        self.scene.update_object(self.hudtext_right, text=text,
-                                 material=Material(color=color))
+        self.scene.update_object(self.hudtext_right, text=text, color=color)
 
     def set_textstatus(self, text):
         self.scene.update_object(self.hudtext_status, text=text)
@@ -231,22 +230,23 @@ class User:
 
     def set_clipboard(self,
                       callback=None,
-                      object_type=Sphere.object_type,
+                      object_type=None,
                       scale=Scale(0.05, 0.05, 0.05),
                       position=Position(0, 0, -CLIP_RADIUS),
                       color=Color(255, 255, 255),
-                      url=""):
-        self.clipboard = Object(  # show item to be created
-            object_id=f"{self.camname}_clipboard",
-            object_type=object_type,
-            position=position,
-            parent=self.camname,
-            scale=scale,
-            material=Material(color=color, transparent=True, opacity=0.4),
-            url=url,
-            clickable=True,
-            evt_handler=callback)
-        self.scene.add_object(self.clipboard)
+                      url=None):
+        if object_type:
+            self.clipboard = Object(  # show item to be created
+                object_id=f"{self.camname}_clipboard",
+                object_type=object_type,
+                position=position,
+                parent=self.camname,
+                scale=scale,
+                material=Material(color=color, transparent=True, opacity=0.4),
+                url=url,
+                clickable=True,
+                evt_handler=callback)
+            self.scene.add_object(self.clipboard)
         self.cliptarget = Circle(  # add helper target object to find true origin
             object_id=f"{self.camname}_cliptarget",
             position=position,
@@ -403,7 +403,8 @@ def occlude_obj(scene: Scene, object_id, occlude):
 
 
 def color_obj(scene: Scene, object_id, color):
-    scene.update_object(scene.all_objects[object_id], color=color)
+    scene.update_object(
+        scene.all_objects[object_id], material=Material(color=color))
     print(f"Colored {object_id}")
 
 

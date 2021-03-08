@@ -26,9 +26,13 @@ class EventLoop(object):
     def shutdown_wrapper(self, *args):
         asyncio.ensure_future(self._shutdown())
 
+    def create_future(self):
+        return self.loop.create_future()
+
     def run(self):
         # cancellation of Future ensures all tasks (even if not completed) are cancelled
         self.future = asyncio.gather(*self.tasks)
+
         for s in self.signals:
             if os.name == 'nt': # Windows has add_signal_handler unimplemented
                 signal.signal(s, self.shutdown_wrapper)

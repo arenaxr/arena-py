@@ -378,8 +378,7 @@ def do_rename(camname, old_id, new_id):
     if new_id == old_id:
         return
     obj = scene.get_persisted_obj(old_id)
-    scene.add_object(
-        Object(object_id=new_id, persist=obj.persist, data=json.dumps(obj.data)))
+    scene.add_object(Object(object_id=new_id, persist=obj.persist, **obj.data.__dict__))
     if new_id in scene.all_objects:
         USERS[camname].target_id = new_id
         print(f"Duplicating {old_id} to {new_id}")

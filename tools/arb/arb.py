@@ -32,11 +32,12 @@ MANIFEST = arblib.DEF_MANIFEST
 MODELS = []
 USERS = {}  # dictionary of user instances
 CONTROLS = {}  # dictionary of active controls
+DEBUG = False
 scene = None  # the global scene connection object
 
 
 def init_args():
-    global BROKER, PORT, REALM, NAMESPACE, SCENE, MODELS, MANIFEST
+    global BROKER, PORT, REALM, NAMESPACE, SCENE, MODELS, MANIFEST, DEBUG
     parser = argparse.ArgumentParser(description='ARENA AR Builder.')
     parser.add_argument(
         'scene', type=str, help='ARENA scene name')
@@ -50,9 +51,13 @@ def init_args():
         '-r', '--realm', type=str, help='ARENA realm name', default=REALM)
     parser.add_argument(
         '-m', '--models', type=str, help='JSON GLTF manifest')
+    parser.add_argument(
+        '-d', '--debug', action='store_true', help='Debug mode.', default=False)
     args = parser.parse_args()
     print(args)
     SCENE = args.scene
+    if args.debug:
+        DEBUG = True
     if args.broker is not None:
         BROKER = args.broker
     if args.port is not None:
@@ -374,7 +379,7 @@ def do_rename(camname, old_id, new_id):
         return
     obj = scene.get_persisted_obj(old_id)
     scene.add_object(
-        Object(object_id=new_id, persist=obj.persist, data=obj.data))
+        Object(object_id=new_id, persist=obj.persist, data=json.dumps(obj.data)))
     if new_id in scene.all_objects:
         USERS[camname].target_id = new_id
         print(f"Duplicating {old_id} to {new_id}")
@@ -523,8 +528,8 @@ def regline(object_id, axis, direction, delim, suffix, start,
     scene.add_object(CONTROLS[object_id][name])
 
 
-def cubeline(object_id, axis, direction, delim, suffix, start,
-             end, line_width, color=(255, 255, 255), parent=""):
+def boxline(object_id, axis, direction, delim, suffix, start,
+            end, line_width, color=(255, 255, 255), parent=""):
     if parent:
         end = Position(x=(end.x - start.x) * 10,
                        y=(end.y - start.y) * 10,
@@ -612,12 +617,12 @@ def make_clickline(axis, linelen, objid, start, delim,
     elif axis == "z":
         endz = linelen * arblib.CLICKLINE_LEN
     end = Position(x=start.x + endx, y=start.y + endy, z=start.z + endz)
-    cubeline(  # reference line
+    boxline(  # reference line
         object_id=objid, axis=axis, direction=direction, delim=delim,
         suffix="line", color=color, start=start, end=end, line_width=0.005,
         parent=parent)
     if ghost:
-        cubeline(  # ghostline aligns to parent rotation
+        boxline(  # ghostline aligns to parent rotation
             object_id=objid, axis=axis, direction=direction, delim=delim,
             suffix="ghost", start=start, end=end, line_width=0.005, parent=objid)
     if ghost:
@@ -1013,11 +1018,12 @@ if PORT:
     kwargs["port"] = PORT
 if NAMESPACE:
     kwargs["namespace"] = NAMESPACE
+if DEBUG:
+    kwargs["debug"] = DEBUG
 scene = Scene(
-    debug=True,  # TODO: remove debug
     host=BROKER,
     realm=REALM,
     scene=SCENE,
     on_msg_callback=scene_callback,
-    kwargs=kwargs)
+    **kwargs)
 scene.run_tasks()

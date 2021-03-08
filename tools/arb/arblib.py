@@ -184,7 +184,7 @@ class User:
             [Mode.PARENT, 2, 0, True, ButtonType.ACTION],
             # bottom row
             [Mode.WALL, -2, -1, True, ButtonType.ACTION],
-            [Mode.OCCLUDE, -1, -1, False, ButtonType.ACTION],  # TODO fix
+            [Mode.OCCLUDE, -1, -1, False, ButtonType.ACTION],  # TODO fix occlude
             [Mode.RENAME, 0, -1, True, ButtonType.ACTION],
             [Mode.COLOR, 1, -1, True, ButtonType.ACTION],
             [Mode.LAMP, 2, -1, True, ButtonType.TOGGLE],
@@ -299,7 +299,7 @@ class Button:
         if btype == ButtonType.TOGGLE:
             shape = Cylinder.object_type
             scale = Scale(scale.x / 2, scale.y, scale.z / 2)
-        self.button = Object(  # cube is main button
+        self.button = Object(  # box is main button
             object_id=obj_name,
             object_type=shape,
             parent=parent,
@@ -444,7 +444,7 @@ def temp_loc_marker(position, color):
 
 
 def temp_rot_marker(position, rotation):
-    return Box(ttl=120, rotation=rotation, material=Material(color=Color(0, 0, 0)),
+    return Box(ttl=120, rotation=rotation, material=Material(color=Color(255, 255, 255)),
                position=position, scale=Scale(0.02, 0.01, 0.15), clickable=True)
 
 

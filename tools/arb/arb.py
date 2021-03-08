@@ -378,7 +378,8 @@ def do_rename(camname, old_id, new_id):
     if new_id == old_id:
         return
     obj = scene.get_persisted_obj(old_id)
-    scene.add_object(Object(object_id=new_id, persist=obj.persist, **obj.data.__dict__))
+    scene.add_object(
+        Object(object_id=new_id, persist=obj.persist, **obj.data.__dict__))
     if new_id in scene.all_objects:
         USERS[camname].target_id = new_id
         print(f"Duplicating {old_id} to {new_id}")
@@ -633,8 +634,8 @@ def make_clickline(axis, linelen, objid, start, delim,
         color=color, cones=cones, callback=callback, parent=parent)
 
 
-def do_move_relocate(camname, newlocation):
-    arblib.move_obj(scene, USERS[camname].target_id, newlocation)
+def do_move_relocate(camname, newposition):
+    arblib.move_obj(scene, USERS[camname].target_id, newposition)
     USERS[camname].del_clipboard()
 
 
@@ -828,17 +829,20 @@ def do_wall_start(camname):
     # start (red)
     USERS[camname].wloc_start = USERS[camname].position
     USERS[camname].wrot_start = USERS[camname].rotation
-    arblib.temp_loc_marker(USERS[camname].wloc_start, Color(255, 0, 0))
-    arblib.temp_rot_marker(USERS[camname].wloc_start,
-                           USERS[camname].wrot_start)
+    scene.add_object(arblib.temp_loc_marker(
+        USERS[camname].wloc_start, Color(255, 0, 0)))
+    scene.add_object(arblib.temp_rot_marker(USERS[camname].wloc_start,
+                                            USERS[camname].wrot_start))
 
 
 def do_wall_end(camname):
     # end (green)
     USERS[camname].wloc_end = USERS[camname].position
     USERS[camname].wrot_end = USERS[camname].rotation
-    arblib.temp_loc_marker(USERS[camname].wloc_end, Color(0, 255, 0))
-    arblib.temp_rot_marker(USERS[camname].wloc_end, USERS[camname].wrot_end)
+    scene.add_object(arblib.temp_loc_marker(
+        USERS[camname].wloc_end, Color(0, 255, 0)))
+    scene.add_object(arblib.temp_rot_marker(
+        USERS[camname].wloc_end, USERS[camname].wrot_end))
 
 
 def make_wall(camname):
@@ -857,7 +861,7 @@ def make_wall(camname):
     locy = statistics.median([sloc.y, eloc.y])
     locz = statistics.median([sloc.z, eloc.z])
     pos = Position(locx, locy, locz)
-    arblib.temp_loc_marker(pos, Color(0, 0, 255))
+    scene.add_object(arblib.temp_loc_marker(pos, Color(0, 0, 255)))
     print(f"wall position {str(pos)}")
     # rotation
     print(f"S ROT {str(srot)}")
@@ -868,7 +872,7 @@ def make_wall(camname):
     rotw = arblib.probable_quat(srot.w)
     rot = Rotation(rotx, roty, rotz, rotw)
     gaze = (rotx, roty, rotz, rotw)
-    arblib.temp_rot_marker(pos, rot)
+    scene.add_object(arblib.temp_rot_marker(pos, rot))
     print(f"wall rotation {str(rot)}")
     # which axis to use for wall? use camera gaze
     # TODO: rotation still off
@@ -922,8 +926,7 @@ def scene_callback(_scene, event, msg):
         msg_type = msg["type"]
     if "data" in msg and "object_type" in msg["data"]:
         object_type = msg["data"]["object_type"]
-    # TODO: remove debug
-    print(f'{object_type} {action} {msg_type} {object_id}')
+    # print(f'{object_type} {action} {msg_type} {object_id}')
 
     if object_type == "camera":
         # camera updates define users present
@@ -932,7 +935,7 @@ def scene_callback(_scene, event, msg):
             USERS[camname] = arblib.User(scene, camname, panel_callback)
 
         # save camera's attitude in the world
-        USERS[camname].location = Position(msg["data"]["position"]["x"],
+        USERS[camname].position = Position(msg["data"]["position"]["x"],
                                            msg["data"]["position"]["y"],
                                            msg["data"]["position"]["z"])
         USERS[camname].rotation = Rotation(msg["data"]["rotation"]["x"],

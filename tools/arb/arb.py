@@ -336,7 +336,7 @@ def show_redpill_scene(enabled):
                 object_id=name,
                 start=Position(-glen, y, z),
                 end=Position(glen, y, z),
-                color=arblib.CLR_GRID))
+                material=Material(color=arblib.CLR_GRID)))
         else:
             arblib.delete_obj(scene, name)
     for x in range(-glen, glen + 1):
@@ -346,7 +346,7 @@ def show_redpill_scene(enabled):
                 object_id=name,
                 start=Position(x, y, -glen),
                 end=Position(x, y, glen),
-                color=arblib.CLR_GRID))
+                material=Material(color=arblib.CLR_GRID)))
         else:
             arblib.delete_obj(scene, name)
     objs = scene.get_persisted_objs()
@@ -527,7 +527,7 @@ def regline(object_id, axis, direction, delim, suffix, start,
     name = f"{object_id}{delim}{axis}{direction}_{suffix}"
     CONTROLS[object_id][name] = Line(
         object_id=name,
-        color=color,
+        material=Material(color=color),
         ttl=arblib.TTL_TEMP,
         parent=parent,
         start=start,

@@ -353,19 +353,32 @@ def show_redpill_scene(enabled):
     for object_id in objs:
         obj = objs[object_id]
         # show occluded objects
-        if obj.data.material and "colorWrite" in obj.data.material and not obj.data.material.colorWrite:
+        if "material-extras" in obj.data and "transparentOccluder" in obj.data["material-extras"]:
             name = "redpill_" + obj.object_id
             if enabled:
+                object_type = position = rotation = scale = url = color = None
+                if "object_type" in obj.data:
+                    object_type = obj.data.object_type
+                if "position" in obj.data:
+                    position = obj.data.position
+                if "rotation" in obj.data:
+                    rotation = obj.data.rotation
+                if "scale" in obj.data:
+                    scale = obj.data.scale
+                if "url" in obj.data:
+                    url = obj.data.url
+                if "material" in obj.data and "color" in obj.data.material:
+                    color = obj.data.material.color
                 scene.add_object(Object(
                     object_id=name,
-                    object_type=obj.data.object_type,
-                    position=obj.data.position,
-                    rotation=obj.data.rotation,
-                    scale=obj.data.scale,
+                    object_type=object_type,
+                    position=position,
+                    rotation=rotation,
+                    scale=scale,
                     clickable=True,
-                    url=obj.data.url,
+                    url=url,
                     material=Material(
-                        color=obj.data.material.color, transparent=True, opacity=0.5),
+                        color=color, transparent=True, opacity=0.5),
                 ))
                 print("Wrapping occlusion " + name)
             else:

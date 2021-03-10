@@ -184,7 +184,7 @@ class User:
             [Mode.PARENT, 2, 0, True, ButtonType.ACTION],
             # bottom row
             [Mode.WALL, -2, -1, True, ButtonType.ACTION],
-            [Mode.OCCLUDE, -1, -1, False, ButtonType.ACTION],  # TODO fix occlude
+            [Mode.OCCLUDE, -1, -1, True, ButtonType.ACTION],
             [Mode.RENAME, 0, -1, True, ButtonType.ACTION],
             [Mode.COLOR, 1, -1, True, ButtonType.ACTION],
             [Mode.LAMP, 2, -1, True, ButtonType.TOGGLE],
@@ -369,10 +369,7 @@ def init_origin(scene: Scene):
         scale=Scale(size[0] / 2, size[1], size[2] / 2)))
     scene.add_object(Cone(
         object_id="arb-origin-hole",
-        material=Material(
-            colorWrite=False,
-        ),
-        # render-order="0",  # TODO: resolve occlusion
+        **{"material-extras": {"transparentOccluder": True}},
         position=Position(0, size[1] - (size[1] / 2 / 15), 0),
         scale=Scale(size[0] / 15, size[1] / 10, size[2] / 15)))
     scene.add_object(Box(
@@ -395,10 +392,8 @@ def opaque_obj(scene: Scene, object_id, opacity):
 def occlude_obj(scene: Scene, object_id, occlude):
     # NOTE: transparency does not allow occlusion so remove transparency here.
     scene.update_object(scene.all_objects[object_id],
-                        material=Material(colorWrite=(occlude == BOOLS[1]),
-                                          transparent=False, opacity=1),
-                        # render-order="0",  # TODO: resolve occlusion
-                        )
+                        **{"material-extras": {"transparentOccluder": (occlude != BOOLS[1])}},
+                        material=Material(transparent=False, opacity=1))
     print(f"Occluded {object_id}")
 
 

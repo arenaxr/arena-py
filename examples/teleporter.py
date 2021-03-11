@@ -47,16 +47,7 @@ class Teleporter(Object):
         self.scene.add_object(self.dest_text)
 
 
-users = []
-
-
-def user_join_callback(scene, cam, msg):
-    global users
-    users += [cam]
-
-
 scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
-scene.user_join_callback = user_join_callback
 
 teleporter = Teleporter(
                     scene=scene,
@@ -66,9 +57,7 @@ teleporter = Teleporter(
 
 @scene.run_forever(interval_ms=UPDATE_INTERVAL)
 def teleporter_handler():
-    global users
-
-    for user in users:
+    for user_id,user in scene.users.items():
         if user.data.position.distance_to(teleporter.pos_src) <= TELEPORT_THRES:
             print("teleport!")
             scene.manipulate_camera(

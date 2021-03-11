@@ -336,7 +336,7 @@ def show_redpill_scene(enabled):
                 object_id=name,
                 start=Position(-glen, y, z),
                 end=Position(glen, y, z),
-                material=Material(color=arblib.CLR_GRID)))
+                color=arblib.CLR_GRID))
         else:
             arblib.delete_obj(scene, name)
     for x in range(-glen, glen + 1):
@@ -346,26 +346,39 @@ def show_redpill_scene(enabled):
                 object_id=name,
                 start=Position(x, y, -glen),
                 end=Position(x, y, glen),
-                material=Material(color=arblib.CLR_GRID)))
+                color=arblib.CLR_GRID))
         else:
             arblib.delete_obj(scene, name)
     objs = scene.get_persisted_objs()
     for object_id in objs:
         obj = objs[object_id]
         # show occluded objects
-        if obj.data.material and "colorWrite" in obj.data.material and not obj.data.material.colorWrite:
+        if "material-extras" in obj.data and "transparentOccluder" in obj.data["material-extras"]:
             name = "redpill_" + obj.object_id
             if enabled:
+                object_type = position = rotation = scale = url = color = None
+                if "object_type" in obj.data:
+                    object_type = obj.data.object_type
+                if "position" in obj.data:
+                    position = obj.data.position
+                if "rotation" in obj.data:
+                    rotation = obj.data.rotation
+                if "scale" in obj.data:
+                    scale = obj.data.scale
+                if "url" in obj.data:
+                    url = obj.data.url
+                if "material" in obj.data and "color" in obj.data.material:
+                    color = obj.data.material.color
                 scene.add_object(Object(
                     object_id=name,
-                    object_type=obj.data.object_type,
-                    position=obj.data.position,
-                    rotation=obj.data.rotation,
-                    scale=obj.data.scale,
+                    object_type=object_type,
+                    position=position,
+                    rotation=rotation,
+                    scale=scale,
                     clickable=True,
-                    url=obj.data.url,
+                    url=url,
                     material=Material(
-                        color=obj.data.material.color, transparent=True, opacity=0.5),
+                        color=color, transparent=True, opacity=0.5),
                 ))
                 print("Wrapping occlusion " + name)
             else:
@@ -527,7 +540,7 @@ def regline(object_id, axis, direction, delim, suffix, start,
     name = f"{object_id}{delim}{axis}{direction}_{suffix}"
     CONTROLS[object_id][name] = Line(
         object_id=name,
-        material=Material(color=color),
+        color=color,
         ttl=arblib.TTL_TEMP,
         parent=parent,
         start=start,

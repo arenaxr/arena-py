@@ -384,54 +384,63 @@ def init_origin(scene: Scene):
 
 
 def opaque_obj(scene: Scene, object_id, opacity):
-    scene.update_object(scene.all_objects[object_id],
-                        material=Material(transparent=True, opacity=opacity))
-    print(f"Opaqued {object_id}")
+    if object_id in scene.all_objects:
+        scene.update_object(scene.all_objects[object_id],
+                            material=Material(transparent=True, opacity=opacity))
+        print(f"Opaqued {object_id}")
 
 
 def occlude_obj(scene: Scene, object_id, occlude):
-    # NOTE: transparency does not allow occlusion so remove transparency here.
-    scene.update_object(scene.all_objects[object_id],
-                        **{"material-extras": {"transparentOccluder": (occlude != BOOLS[1])}},
-                        material=Material(transparent=False, opacity=1))
-    print(f"Occluded {object_id}")
+    if object_id in scene.all_objects:
+        # NOTE: transparency does not allow occlusion so remove transparency here.
+        scene.update_object(scene.all_objects[object_id],
+                            **{"material-extras": {"transparentOccluder": (occlude != BOOLS[1])}},
+                            material=Material(transparent=False, opacity=1))
+        print(f"Occluded {object_id}")
 
 
 def color_obj(scene: Scene, object_id, color):
-    scene.update_object(
-        scene.all_objects[object_id], material=Material(color=color))
-    print(f"Colored {object_id}")
+    if object_id in scene.all_objects:
+        scene.update_object(
+            scene.all_objects[object_id], material=Material(color=color))
+        print(f"Colored {object_id}")
 
 
 def stretch_obj(scene: Scene, object_id, scale, position):
-    scene.update_object(
-        scene.all_objects[object_id], scale=scale, position=position)
-    print(f"Stretched {object_id}")
+    if object_id in scene.all_objects:
+        scene.update_object(
+            scene.all_objects[object_id], scale=scale, position=position)
+        print(f"Stretched {object_id}")
 
 
 def scale_obj(scene: Scene, object_id, scale):
-    scene.update_object(scene.all_objects[object_id], scale=scale)
-    print(f"Scaled {object_id}")
+    if object_id in scene.all_objects:
+        scene.update_object(scene.all_objects[object_id], scale=scale)
+        print(f"Scaled {object_id}")
 
 
 def move_obj(scene: Scene, object_id, position):
-    scene.update_object(scene.all_objects[object_id], position=position)
-    print(f"Relocated {object_id}")
+    if object_id in scene.all_objects:
+        scene.update_object(scene.all_objects[object_id], position=position)
+        print(f"Relocated {object_id}")
 
 
 def rotate_obj(scene: Scene, object_id, rotation):
-    scene.update_object(scene.all_objects[object_id], rotation=rotation)
-    print(f"Rotated {object_id}")
+    if object_id in scene.all_objects:
+        scene.update_object(scene.all_objects[object_id], rotation=rotation)
+        print(f"Rotated {object_id}")
 
 
 def parent_obj(scene: Scene, object_id, parent_id):
-    scene.update_object(scene.all_objects[object_id], parent=parent_id)
-    print(f"{parent_id} adopted {object_id}")
+    if object_id in scene.all_objects:
+        scene.update_object(scene.all_objects[object_id], parent=parent_id)
+        print(f"{parent_id} adopted {object_id}")
 
 
 def delete_obj(scene: Scene, object_id):
-    scene.delete_object(scene.all_objects[object_id])
-    print(f"Deleted {object_id}")
+    if object_id in scene.all_objects:
+        scene.delete_object(scene.all_objects[object_id])
+        print(f"Deleted {object_id}")
 
 
 def temp_loc_marker(position, color):

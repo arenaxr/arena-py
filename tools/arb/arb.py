@@ -356,7 +356,11 @@ def show_redpill_scene(enabled):
         if "material-extras" in obj.data and "transparentOccluder" in obj.data["material-extras"]:
             name = "redpill_" + obj.object_id
             if enabled:
-                object_type = position = rotation = scale = url = color = None
+                object_type = url =  None
+                position = Position()
+                rotation = Rotation()
+                scale = Scale()
+                color = Color()
                 if "object_type" in obj.data:
                     object_type = obj.data.object_type
                 if "position" in obj.data:
@@ -401,21 +405,32 @@ def show_redpill_obj(camname, object_id):
     # any scene changes must not persist
     obj = scene.get_persisted_obj(object_id)
     # enable mouse enter/leave pos/rot/scale
+    position = Position()
+    rotation = Rotation()
+    scale = Scale()
+    if "position" in obj.data:
+        position = obj.data.position
+    if "rotation" in obj.data:
+        rotation = obj.data.rotation
+    if "scale" in obj.data:
+        scale = obj.data.scale
     USERS[camname].set_textstatus(
-        f"{object_id} p{str(obj.data.position)} r{str(obj.data.rotation)} s{str(obj.data.scale)}") # FIXME AttributeError: 'Data' object has no attribute 'rotation'
+        f"{object_id} p{str(position)} r{str(rotation)} s{str(scale)}")
 
 
 def do_move_select(camname, object_id):
     obj = scene.get_persisted_obj(object_id)
     USERS[camname].target_id = object_id
-    object_type = scale = color = url = None
-    if obj.data.object_type:
+    object_type = url = None
+    scale = Scale()
+    color = Color()
+    if "object_type" in obj.data:
         object_type = obj.data.object_type
-    if obj.data.scale:
+    if "scale" in obj.data:
         scale = obj.data.scale
-    if obj.data.material and obj.data.material.color:
+    if "material" in obj.data and "color" in obj.data.material:
         color = obj.data.material.color
-    if obj.data.url: # FIXME AttributeError: 'Data' object has no attribute 'url'
+    if "url" in obj.data:
         url = obj.data.url
     USERS[camname].set_clipboard(
         callback=clipboard_callback,
@@ -440,7 +455,9 @@ def do_nudge_select(camname, objid, position=None):
     callback = nudgeline_callback
     if not position:
         obj = scene.get_persisted_obj(objid)
-        position = obj.data.position
+        position = Position()
+        if "position" in obj.data:
+            position = obj.data.position
     # nudge object + or - on 3 axis
     make_clickline("x", 1, objid, position, delim, color, callback)
     make_clickline("y", 1, objid, position, delim, color, callback)
@@ -457,8 +474,12 @@ def do_scale_select(camname, objid, scale=None):
     callback = scaleline_callback
     if not scale:
         obj = scene.get_persisted_obj(objid)
-        position = obj.data.position
-        scale = obj.data.scale
+        position = Position()
+        scale = Scale()
+        if "position" in obj.data:
+            position = obj.data.position
+        if "scale" in obj.data:
+            scale = obj.data.scale
         # scale entire object + or - on all axis
         make_clickline("x", 1, objid, position, delim, color, callback)
         make_followspot(objid, position, delim, color)
@@ -472,14 +493,21 @@ def do_stretch_select(camname, objid, scale=None):
     callback = stretchline_callback
     if not scale:
         obj = scene.get_persisted_obj(objid)
+        position = Position()
+        if "position" in obj.data:
+            position = obj.data.position
+        rotation = Rotation()
+        if "rotation" in obj.data:
+            rotation = obj.data.rotation
+        scale = Scale()
+        if "scale" in obj.data:
+            scale = obj.data.scale
         # TODO: scale too unpredictable, modify
         if obj.data.object_type == GLTF.object_type:
             return
         # TODO: scale too unpredictable, modify
-        if obj.data.rotation.quaternion.__dict__ != Rotation(x=0, y=0, z=0, w=1).quaternion.__dict__:
+        if rotation.quaternion.__dict__ != Rotation(x=0, y=0, z=0, w=1).quaternion.__dict__:
             return
-        position = obj.data.position
-        scale = obj.data.scale
         # scale and reposition on one of 6 sides
         make_clickline("x", 1, objid, position, delim, color, callback)
         make_clickline("x", -1, objid, position, delim, color, callback)
@@ -498,8 +526,12 @@ def do_rotate_select(camname, objid, rotation=None):
     callback = rotateline_callback
     if not rotation:
         obj = scene.get_persisted_obj(objid)
-        position = obj.data.position
-        rotation = obj.data.rotation # FIXME AttributeError: 'Data' object has no attribute 'rotation'
+        position = Position()
+        rotation = Rotation()
+        if "position" in obj.data:
+            position = obj.data.position
+        if "rotation" in obj.data:
+            rotation = obj.data.rotation
         # rotate object + or - on 3 axis, plus show original axis as after
         # effect
         make_clickline("x", 1, objid, position, delim, color, callback, True)

@@ -402,7 +402,7 @@ def show_redpill_obj(camname, object_id):
     obj = scene.get_persisted_obj(object_id)
     # enable mouse enter/leave pos/rot/scale
     USERS[camname].set_textstatus(
-        f"{object_id} p{str(obj.data.position)} r{str(obj.data.rotation)} s{str(obj.data.scale)}")
+        f"{object_id} p{str(obj.data.position)} r{str(obj.data.rotation)} s{str(obj.data.scale)}") # FIXME AttributeError: 'Data' object has no attribute 'rotation'
 
 
 def do_move_select(camname, object_id):
@@ -415,7 +415,7 @@ def do_move_select(camname, object_id):
         scale = obj.data.scale
     if obj.data.material and obj.data.material.color:
         color = obj.data.material.color
-    if obj.data.url:
+    if obj.data.url: # FIXME AttributeError: 'Data' object has no attribute 'url'
         url = obj.data.url
     USERS[camname].set_clipboard(
         callback=clipboard_callback,
@@ -499,7 +499,7 @@ def do_rotate_select(camname, objid, rotation=None):
     if not rotation:
         obj = scene.get_persisted_obj(objid)
         position = obj.data.position
-        rotation = obj.data.rotation
+        rotation = obj.data.rotation # FIXME AttributeError: 'Data' object has no attribute 'rotation'
         # rotate object + or - on 3 axis, plus show original axis as after
         # effect
         make_clickline("x", 1, objid, position, delim, color, callback, True)

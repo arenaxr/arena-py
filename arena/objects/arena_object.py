@@ -139,7 +139,7 @@ class Object(BaseObject):
                 json_data["material"] = vars(v).copy()
                 if "color" in v:
                     color = v["color"]
-                    json_data["material"]["color"] = color.hex
+                    json_data["material"]["color"] = color.hex # FIXME AttributeError: 'NoneType' object has no attribute 'hex'
 
             # rotation should be in quaternions
             elif "rotation" == k:

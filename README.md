@@ -18,7 +18,8 @@ cd examples
 python hello.py
 ```
 If running the above command yields 
-```ModuleNotFoundError: No module named ‘arena' 
+``` 
+ModuleNotFoundError: No module named ‘arena' 
 ```
 Try running: 
 ```

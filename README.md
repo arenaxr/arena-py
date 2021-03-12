@@ -17,17 +17,6 @@ Run the `hello.py` example:
 cd examples
 python hello.py
 ```
-If running the above command yields 
-```ModuleNotFoundError: No module named ‘arena' 
-```
-Try running: 
-```
-python3.8 -m pip list
-```
-If arena-py is not in the output then follow the instructions [here](https://pypi.org/project/certifi/) and run:
-```
-pip3.8 install arena-py
-```
 
 `hello.py`
 ```python

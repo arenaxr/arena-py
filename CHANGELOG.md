@@ -2,6 +2,11 @@
 
 ARENA-py notable changes. Started 2021-19-2.
 
+## [0.1.22] - 2021-13-3
+### Changed
+- Remove `Color` in `Material` deprecation.
+- Fix undeclared variable `password` bug.
+
 ## [0.1.21] - 2021-7-3
 ### Changed
 - Async MQTT loop cancellation bug fixes.
@@ -68,6 +73,7 @@ specify both to bypass auth.
 - `Arena` class renamed to `Scene`, but using `Arena` is still allowed. Updated examples to reflect this.
 - Tiny bug fix with `update_objects`.
 
+[0.1.22]: https://github.com/conix-center/ARENA-py/tree/ed54a9d33b0be93d6cc51ed2db7cd5de0248735d
 [0.1.21]: https://github.com/conix-center/ARENA-py/tree/c5e561285ddd6135aa03974ab8b686ba74299520
 [0.1.20]: https://github.com/conix-center/ARENA-py/tree/a8a2d11ea6718740e0fdaf299d1297ebd37c632f
 [0.1.19]: https://github.com/conix-center/ARENA-py/tree/985111ab1e146c95b177338141760fafc909c1a0

@@ -6,61 +6,63 @@ import random
 from arena import *
 
 
+USER_HEIGHT = 1.6
+UPDATE_INTERVAL = 100
+TELEPORT_THRES = 1.0
+
+
 def rando():
-    return float(random.randint(-100000, 100000)) / 1000
+    return float(random.randint(-100000, 100000)) / 5000
 
 
 class Teleporter(Object):
-    def __init__(self, scene, pos1: Position, pos2: Position):
+    def __init__(self, scene, pos_src: Position, pos_dest: Position):
         self.scene = scene
-        self.pos1 = pos1
-        self.pos2 = pos2
-        self.pos1.y = 1.6
-        self.pos2.y = 1.6
-        self.teleporter1 = Cylinder(
+
+        self.pos_src = pos_src
+        self.pos_dest = pos_dest
+        self.pos_src.y = USER_HEIGHT
+        self.pos_dest.y = USER_HEIGHT
+
+        # create objects
+        self.teleporter_src = Cylinder(
                                 object_id="teleporter1",
                                 scale=(1,2.5,1),
                                 material=Material(color=(255,255,0), transparent=True, opacity=0.5),
-                                position=self.pos1
+                                position=self.pos_src
                             )
-        self.teleporter2 = Cylinder(
+        self.teleporter_dest = Cylinder(
                                 object_id="teleporter2",
                                 scale=(1,2.5,1),
                                 material=Material(color=(255,0,255), transparent=True, opacity=0.5),
-                                position=self.pos2
+                                position=self.pos_dest
                             )
-        self.tp1_text = Text(text="Teleporter source", position=(0,1,0), parent=self.teleporter1)
-        self.tp2_text = Text(text="Teleporter destination", position=(0,1,0), parent=self.teleporter2)
+        self.src_text = Text(text="Teleporter source", position=(0,1,0), parent=self.teleporter_src)
+        self.dest_text = Text(text="Teleporter destination", position=(0,1,0), parent=self.teleporter_dest)
 
-        self.scene.add_object(self.teleporter1)
-        self.scene.add_object(self.teleporter2)
-        self.scene.add_object(self.tp1_text)
-        self.scene.add_object(self.tp2_text)
-
-
-users = []
-
-
-def user_join_callback(scene, cam, msg):
-    global users
-    users += [cam]
+        # add objects to scene
+        self.scene.add_object(self.teleporter_src)
+        self.scene.add_object(self.teleporter_dest)
+        self.scene.add_object(self.src_text)
+        self.scene.add_object(self.dest_text)
 
 
 scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
-scene.user_join_callback = user_join_callback
 
-teleporter = Teleporter(scene, Position(rando(),0.1,rando()), Position(rando(),0.1,rando()))
+teleporter = Teleporter(
+                    scene=scene,
+                    pos_src=Position(rando(),USER_HEIGHT,rando()),
+                    pos_dest=Position(rando(),USER_HEIGHT,rando())
+                )
 
-@scene.run_forever(interval_ms=100)
+@scene.run_forever(interval_ms=UPDATE_INTERVAL)
 def teleporter_handler():
-    global users
-
-    for user in users:
-        if user.data.position.distance_to(teleporter.pos1) <= 1.0:
+    for user_id,user in scene.users.items():
+        if user.data.position.distance_to(teleporter.pos_src) <= TELEPORT_THRES:
             print("teleport!")
             scene.manipulate_camera(
                 user,
-                position=teleporter.pos2,
+                position=teleporter.pos_dest,
             )
 
 scene.run_tasks()

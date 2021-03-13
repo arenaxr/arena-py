@@ -43,11 +43,6 @@ class Object(BaseObject):
         if "object_type" not in kwargs:
             kwargs["object_type"] = Object.object_type
 
-        if "color" in kwargs:
-            if kwargs["object_type"] != "text" and kwargs["object_type"] != "thickline":
-                print("[DEPRECATED]",
-                    "Color must be specified in material=Material(color=Color(...))! (Does not hold for Text and Thicklines)")
-
         # print warning if object is being created with the same id as an existing object
         if Object.exists(object_id):
             print("[WARNING]", f"An object with object_id of {object_id} was already created. The previous object will be overwritten.")

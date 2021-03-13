@@ -63,11 +63,14 @@ class Scene(object):
 
         print("=====")
         # do user auth
+        username = None
+        password = None
         if os.environ.get("ARENA_USERNAME") and os.environ.get("ARENA_PASSWORD"):
             username = os.environ["ARENA_USERNAME"]
             password = os.environ["ARENA_PASSWORD"]
         else:
             username = auth.authenticate_user(self.host, debug=self.debug)
+
         if os.environ.get("NAMESPACE"):
             self.namespace = os.environ["NAMESPACE"]
         elif "namespace" not in kwargs:
@@ -89,7 +92,7 @@ class Scene(object):
         )
 
         # do scene auth
-        if not (os.environ.get("ARENA_USERNAME") and os.environ.get("ARENA_PASSWORD")):
+        if username is None or password is None:
             data = auth.authenticate_scene(
                             self.host, self.realm,
                             self.namespaced_scene, username,

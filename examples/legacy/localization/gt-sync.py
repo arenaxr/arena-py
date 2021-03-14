@@ -222,9 +222,9 @@ def main():
             users[user.client_id] = SyncUser(user)
             print("Go to URL: https://xr.andrew.cmu.edu/?networkedTagSolver=true&scene=" + scene + "&fixedCamera=" + user.arenaname)
 
-    arena.add_topic(TOPIC_DETECT, on_tag_detect)
-    arena.add_topic(TOPIC_VIO, on_vio)
-    arena.add_topic(TOPIC_UWB, on_uwb)
+    scene.add_topic(TOPIC_DETECT, on_tag_detect)
+    scene.add_topic(TOPIC_VIO, on_vio)
+    scene.add_topic(TOPIC_UWB, on_uwb)
     arena.handle_events()
 
 

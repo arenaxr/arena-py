@@ -2,7 +2,7 @@
 #
 from arena import *
 
-arena = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
+scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
 
 print("Three clickable URL boxs targetted to different windows" )
 
@@ -28,11 +28,11 @@ sametab = Box(
 )
 
 
-@arena.run_once
+@scene.run_once
 def add_objs():
-    arena.add_object(popup)
-    arena.add_object(newtab)
-    arena.add_object(sametab)
+    scene.add_object(popup)
+    scene.add_object(newtab)
+    scene.add_object(sametab)
 
 
-arena.run_tasks()
+scene.run_tasks()

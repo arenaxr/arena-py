@@ -19,23 +19,23 @@ def secondary_callback(msg):
 
 
 # subscribe to objects
-arena = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example", on_msg_callback=objects_callback)
+scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example", on_msg_callback=objects_callback)
 
-@arena.run_async
+@scene.run_async
 async def test():
     # subscribe to secondary (in this case the network graph!)
-    arena.add_topic(TOPIC, secondary_callback)
+    scene.add_topic(TOPIC, secondary_callback)
     print(f"Subscribed to {TOPIC}")
     print()
 
     # sleep for 5 seconds
-    await arena.sleep(5000)
+    await scene.sleep(5000)
 
     # unsubscribe to secondary
-    arena.remove_topic(TOPIC)
+    scene.remove_topic(TOPIC)
     print()
     print(f"Unsubscribed to {TOPIC}")
     print()
 
 # our main event loop
-arena.run_tasks()
+scene.run_tasks()

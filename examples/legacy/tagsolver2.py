@@ -11,7 +11,7 @@ HOST = "oz.andrew.cmu.edu"
 TOPIC = "a"
 
 # fmt: off
- 
+
 TAGS = {  # Local cache, TBD how it's invalidated or refreshed from MongoDB
     0: [[1, 0, 0, 0],
         [0, 0, 1, 0],
@@ -90,7 +90,7 @@ def on_tag_detect(msg):
                     rotation = {
                         ref_tag_rotq[0],
                         ref_tag_rotq[1],
-                        ref_tag_rotq[2],                        
+                        ref_tag_rotq[2],
                         ref_tag_rotq[3]
                         }
                     )
@@ -107,7 +107,7 @@ def on_tag_detect(msg):
             rig_rotq = Rotation.from_matrix(rig_pose[0:3, 0:3]).as_quat()
 
             RIGS[client_id] = rig_pose
-            arena.updateRig(
+            scene.updateRig(
                 client_id,
                 (rig_pos[0],
                  rig_pos[1],
@@ -124,6 +124,6 @@ def on_tag_detect(msg):
         #        'rotation': { 'x': new_rotq[0],'y': new_rotq[1],'z': new_rotq[2],'w': new_rotq[3]}
         #    }
         # }
-                     
+
 arena.init(HOST, "realm", TOPIC, on_tag_detect)
 arena.handle_events()

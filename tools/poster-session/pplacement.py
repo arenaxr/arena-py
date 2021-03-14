@@ -47,7 +47,7 @@ def make_wall(name_suffix, position, rotation, wall_data):
         rotation=rotation,
         material=Material(transparent=True)
     )
-    arena.add_object(root)
+    scene.add_object(root)
 
     # back wall
     wall = Box(object_id=wall_name,
@@ -59,7 +59,7 @@ def make_wall(name_suffix, position, rotation, wall_data):
         depth=1,
         color=wall_color
     )
-    arena.add_object(wall)
+    scene.add_object(wall)
 
     # image on the wall
     img = Image(object_id=img_name,
@@ -69,7 +69,7 @@ def make_wall(name_suffix, position, rotation, wall_data):
         scale=Scale(7.2,4.05,1),
         url=wall_data['imgURL']
     )
-    arena.add_object(img)
+    scene.add_object(img)
 
     # button to video
     videolink = Image(
@@ -82,7 +82,7 @@ def make_wall(name_suffix, position, rotation, wall_data):
         clickable=True,
         goto_url=GotoUrl(dest='popup', on='mousedown', url=wall_data['videoURL'])
     );
-    arena.add_object(videolink)
+    scene.add_object(videolink)
 
     # button to presentation slides
     slideslink = Image(
@@ -95,7 +95,7 @@ def make_wall(name_suffix, position, rotation, wall_data):
         clickable=True,
         goto_url=GotoUrl(dest='popup', on='mousedown', url=wall_data['presentationURL'])
     );
-    arena.add_object(slideslink)
+    scene.add_object(slideslink)
 
     # title
     lbltitle = Text(
@@ -108,7 +108,7 @@ def make_wall(name_suffix, position, rotation, wall_data):
         font=text_font,
         width=5
     )
-    arena.add_object(lbltitle)
+    scene.add_object(lbltitle)
 
     # authors
     lbl = Text(
@@ -121,7 +121,7 @@ def make_wall(name_suffix, position, rotation, wall_data):
         font=text_font,
         width=4
     )
-    arena.add_object(lbl)
+    scene.add_object(lbl)
 
     # title, back
     lbltitleb = Text(
@@ -135,7 +135,7 @@ def make_wall(name_suffix, position, rotation, wall_data):
         font=text_font,
         width=8
     )
-    arena.add_object(lbltitleb)
+    scene.add_object(lbltitleb)
 
 def make_walls():
     # remove old file
@@ -176,8 +176,8 @@ def make_walls():
 if __name__ == '__main__':
 
     # init the ARENA library
-    arena = Scene(host='arena.andrew.cmu.edu', realm='realm', scene=theme)
+    scene = Scene(host='arena.andrew.cmu.edu', realm='realm', scene=theme)
 
     # add and start tasks
-    arena.run_once(make_walls)
-    arena.run_tasks()
+    scene.run_once(make_walls)
+    scene.run_tasks()

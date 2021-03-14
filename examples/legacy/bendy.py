@@ -152,7 +152,7 @@ signal.signal(signal.SIGINT, signal_handler)
 messages = []
 counter = 0
 while True:
-    obj = arena.updateBone(
+    obj = scene.updateBone(
         object_id="izzy",
         rotation=(randrot(),randrot(),randrot(),1),
         bone_id = bones[random.randint(0,len(bones)-1)]

@@ -19,16 +19,16 @@ See [ARENA Documentation: Python](https://conix-center.github.io/ARENA/content/p
 from arena import *
 
 # create library
-arena = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
+scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
 
-@arena.run_once # make this function a task that runs once at startup
+@scene.run_once # make this function a task that runs once at startup
 def main():
     # make a box
     box = Box(object_id="myBox", position=(0,3,-3), scale=(2,2,2))
 
     # add the box to ARENA
-    arena.add_object(box)
+    scene.add_object(box)
 
 # start tasks
-arena.run_tasks()
+scene.run_tasks()
 ```

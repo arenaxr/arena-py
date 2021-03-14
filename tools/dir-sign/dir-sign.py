@@ -18,11 +18,11 @@ title_text_font_width = 5
 link_text_font_width = 4
 
 
-arena = Scene(host="arena.andrew.cmu.edu",realm="realm",scene="example")
+scene = Scene(host="arena.andrew.cmu.edu",realm="realm",scene="example")
 
 print( "Starting up")
 
-@arena.run_once
+@scene.run_once
 def draw_signs():
     if os.environ.get('JSONCFG') is not None:
         JFILE = os.environ["JSONCFG"]
@@ -46,7 +46,7 @@ def draw_signs():
                     material=Material(transparent=True),
                     persist=persist
                 )
-                arena.add_object(root)
+                scene.add_object(root)
 
                 titleText = Text(
                     object_id=root_name+"_title",
@@ -58,7 +58,7 @@ def draw_signs():
                     persist=persist,
                     parent=root_name
                 )
-                arena.add_object(titleText)
+                scene.add_object(titleText)
 
                 entry=0
                 for key2 in value:
@@ -82,7 +82,7 @@ def draw_signs():
                             persist=persist,
                             parent=root_name
                         )
-                        arena.add_object(linkBox)
+                        scene.add_object(linkBox)
 
                         linkText = Text(
                             object_id=root_name+"_text_" + str(entry),
@@ -95,7 +95,7 @@ def draw_signs():
                             parent=root_name,
                             persist=persist
                         )
-                        arena.add_object(linkText)
+                        scene.add_object(linkText)
 
                         entry+=1
 
@@ -111,7 +111,7 @@ def draw_signs():
                     persist=persist,
                     parent=root_name
                     )
-                arena.add_object(signFrame)
+                scene.add_object(signFrame)
 
                 sign_position=value["position"]
                 sign_rotation=value["rotation"]
@@ -123,12 +123,12 @@ def draw_signs():
                 root.update_attributes(rotation=sign_rotation)
                 root.update_attributes(scale=sign_scale)
 
-                arena.update_object(root)
+                scene.update_object(root)
                 cnt+=1
     else:
         print( "Need to add environmental variable to point to jason file")
         print( "export JSONCFG=directory_cfg.json")
 
-    arena.stop_tasks()
+    scene.stop_tasks()
 
-arena.run_tasks()
+scene.run_tasks()

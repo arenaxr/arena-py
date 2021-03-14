@@ -26,7 +26,7 @@ arena = Scene()
 ```
 You can also pass host, realm, and scene as arguments, if you don't want to use enviornmental variables. These *must* be keyword arguments:
 ```python
-arena = Scene(host=[host], realm=[realm], scene=[scene])
+scene = Scene(host=[host], realm=[realm], scene=[scene])
 ```
 Note: ARENA-py will always favor environmental variables over arguments.
 
@@ -49,14 +49,14 @@ Position and Scale are what we call "Attributes". See [attributes.md](attributes
 
 ## Adding our object to the ARENA
 ```python
-arena.add_object(box)
+scene.add_object(box)
 ```
 
 ## Start the event loop
 Now, outside of main, we will write:
 ```python
-arena.run_once(main)
-arena.run_tasks()
+scene.run_once(main)
+scene.run_tasks()
 ```
 
 Now, go into the scene to see your box!
@@ -66,15 +66,15 @@ Now, go into the scene to see your box!
 from arena import *
 
 # setup library
-arena = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
+scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
 
 def main():
     # make a box
     box = Box(object_id="my_box", position=Position(0,4,-2), scale=Scale(2,2,2))
     # add the box
-    arena.add_object(box)
+    scene.add_object(box)
 
 # add and start tasks
-arena.run_once(main)
-arena.run_tasks()
+scene.run_once(main)
+scene.run_tasks()
 ```

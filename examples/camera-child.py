@@ -3,7 +3,7 @@
 '''
 from arena import Arena, Circle
 
-arena = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
+scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
 
 def new_obj_callback(msg):
     if "camera" in msg["object_id"]:
@@ -18,12 +18,12 @@ def new_obj_callback(msg):
             scale=(0.05, 0.05, 0.05),
             ttl=5
         )
-        arena.add_object(circle1)
-        arena.add_object(circle2)
+        scene.add_object(circle1)
+        scene.add_object(circle2)
 
 arena.new_obj_callback = new_obj_callback
 
 print("Go to URL: https://arena.andrew.cmu.edu/example")
 
 # our main event loop
-arena.run_tasks()
+scene.run_tasks()

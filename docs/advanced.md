@@ -3,7 +3,8 @@
 ## User management
 An ARENA-py Scene keep tracks of all incoming and outgoing users. Users are stored as camera objects. Get a list of all users in a scene like so:
 ```python
-scene.get_user_list() # returns [Camera(object_id="camera_1234556789_Edward"), Camera(object_id="camera_987654321_Ed"), ...]
+scene.get_user_list()
+# returns [Camera(object_id="camera_1234556789_Edward"), Camera(object_id="camera_987654321_Ed"), ...]
 ```
 
 Scenes also have special user callbacks. user_join_callback is called whenever a user is found by the library:
@@ -17,15 +18,16 @@ scene.user_join_callback = user_join_callback
 ```
 
 ## Printing objects/looking at JSON
-All objects are printed as JSON/python dicts. So to make sure your JSON is formatted correctly,
+All objects are printed as JSON/python dictionaries. So to make sure your JSON is formatted correctly,
 ```python
 print(cam) # will print as a dict
-print(arena.update_object(box, position=Position(1,1,1))) # will print what was published as a dict
+print(scene.update_object(box, position=Position(1,1,1))) # will print what was published as a dict
 ```
 
 ## Objects get automatically updated
-You can leverage the fact that Objects in ARENA-py get automtically updated to do some cool things! Lets make a camera tracer program that traces the movement of users in a scene.
+You can leverage the fact that Objects in ARENA-py get automatically updated to do some cool things! Lets make a camera tracer program that traces the movement of users in a scene.
 
+## Camera Tracer
 Lets start by creating a helper class that stores the camera and the previous position of the camera:
 ```python
 class CameraState(Object):
@@ -65,7 +67,7 @@ def user_join_callback(scene, cam, msg):
 ```
 
 ## Object Time to Live (TTL)
-The `ttl` attribute of an object can set the amount of time (in seconds) that an object will stay in the scene until it is deleted.
+The `ttl` attribute of an object can set the amount of time (in seconds) that an object will stay in the scene until it is automatically deleted by the browser client.
 ```python
 line = ThickLine(
         color="#123456",
@@ -74,6 +76,7 @@ line = ThickLine(
     )
 ```
 
+## Camera Tracer
 Lastly, lets have a loop that checks if a camera has displaced a certain distance, then draw a line that lasts for 3 seconds if it did:
 ```python
 MIN_DISPLACEMENT = 0.5

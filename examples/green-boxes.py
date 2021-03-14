@@ -3,7 +3,7 @@ import random
 import time
 import sys
 
-arena = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
+scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
 
 color = (0, 255, 0)
 
@@ -11,7 +11,7 @@ color = (0, 255, 0)
 
 x = 1
 
-@arena.run_forever(interval_ms=500)
+@scene.run_forever(interval_ms=500)
 def make_boxs():
     global x
 
@@ -23,9 +23,9 @@ def make_boxs():
             position=position,
             material=Material(color=color)
         )
-    arena.add_object(box)
+    scene.add_object(box)
     x = x + 1
 
     print("object " + str(x-1) + " at " + str(position))
 
-arena.run_tasks()
+scene.run_tasks()

@@ -65,7 +65,7 @@ Rjoe = (0,0,0)
 # SPEED: moves every so often
 S = 10*1000
 
-@arena.run_forever(interval_ms=S)
+@scene.run_forever(interval_ms=S)
 def main():
     global old, joe, Rold, Rjoe
 
@@ -73,7 +73,7 @@ def main():
     Rjoe = randrot(Rold)
 
     # add animation
-    arena.update_object(rig,
+    scene.update_object(rig,
         animation=Animation(
             property="position",
             start=(old[0], old[1], old[2]),
@@ -94,4 +94,4 @@ def main():
     old=(joe[0],joe[1],joe[2])
     Rold=(Rjoe[0],Rjoe[1],Rjoe[2])
 
-arena.run_tasks()
+scene.run_tasks()

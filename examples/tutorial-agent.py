@@ -120,7 +120,7 @@ def main():
             scene.update_object(speech)
 
         if ticks == 270:
-            code += [f"scene = Scene(host=\"{arena.host}\", realm=\"{arena.realm}\", namespace=\"{arena.namespace}\", scene\"{arena.scene}\")"]
+            code += [f"scene = Scene(host=\"{scene.host}\", realm=\"{scene.realm}\", namespace=\"{scene.namespace}\", scene\"{scene.scene}\")"]
             update_code()
 
         if ticks == 300:
@@ -164,14 +164,14 @@ def main():
                 if "object_id" in obj:
                     box_ready = (obj.object_id == "my_box")
 
-            arena.new_obj_callback = box_made
+            scene.new_obj_callback = box_made
 
     if box_ready:
         talk()
         speech.data.text = "Congrats, you did it!"
         scene.update_object(speech)
         scene.update_object(avatar, sound=Sound(positional=True, poolSize=1, autoplay=True, src="store/users/wiselab/audio/september.mp3"))
-        arena.delete_object(instructions)
+        scene.delete_object(instructions)
         box_ready = False
 
     ticks += 1

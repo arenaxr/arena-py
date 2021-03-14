@@ -20,7 +20,7 @@ box.update_attributes(click_listener=None)
 
 ## Deleting Objects
 ```python
-arena.delete_object(box)
+scene.delete_object(box)
 ```
 
 # Appendix
@@ -48,7 +48,7 @@ async def func():
     await scene.sleep(10000)
 
     # delete box
-    arena.delete_object(box)
+    scene.delete_object(box)
 
 # start tasks
 scene.run_tasks()

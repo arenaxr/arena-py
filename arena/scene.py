@@ -335,18 +335,18 @@ class Scene(object):
                                     payload
                                 )
 
-                # if its an object the lib has not seen before, call new object callback
+                # if its an object the library has not seen before, call new object callback
                 elif object_id not in self.unspecified_object_ids and self.new_obj_callback:
                     self.callback_wrapper(self.new_obj_callback, obj, payload)
                     self.unspecified_object_ids.add(object_id)
 
-    def callback_wrapper(self, func, arg, src):
+    def callback_wrapper(self, func, arg, msg):
         """Checks for number of arguments for callback"""
         if len(signature(func).parameters) != 3:
             print("[DEPRECATED]", "Callbacks and handlers now take 3 arguments: (scene, obj/evt, msg)!")
             func(arg)
         else:
-            func(self, arg, src)
+            func(self, arg, msg)
 
     def on_disconnect(self, client, userdata, rc):
         """Paho MQTT client on_disconnect callback"""
@@ -575,6 +575,10 @@ class Scene(object):
     def message_callback_remove(self, sub):
         """Unsubscribes to topic and removes filter for callback"""
         self.mqttc.message_callback_remove(sub)
+
+    def get_user_list(self):
+        """Returns a list of users"""
+        return self.users.values()
 
 class Arena(Scene):
     """

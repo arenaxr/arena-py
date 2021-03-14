@@ -12,7 +12,7 @@ TELEPORT_THRES = 1.0
 
 
 def rando():
-    return float(random.randint(-100000, 100000)) / 5000
+    return float(random.randint(-100000, 100000)) / 3000
 
 
 class Teleporter(Object):
@@ -37,8 +37,8 @@ class Teleporter(Object):
                                 material=Material(color=(255,0,255), transparent=True, opacity=0.5),
                                 position=self.pos_dest
                             )
-        self.src_text = Text(text="Teleporter source", position=(0,1,0), parent=self.teleporter_src)
-        self.dest_text = Text(text="Teleporter destination", position=(0,1,0), parent=self.teleporter_dest)
+        self.src_text = Text(text="Teleporter source", position=(0,0.8,0), parent=self.teleporter_src)
+        self.dest_text = Text(text="Teleporter destination", position=(0,0.8,0), parent=self.teleporter_dest)
 
         # add objects to scene
         self.scene.add_object(self.teleporter_src)
@@ -57,9 +57,9 @@ teleporter = Teleporter(
 
 @scene.run_forever(interval_ms=UPDATE_INTERVAL)
 def teleporter_handler():
-    for user_id,user in scene.users.items():
+    for user in scene.get_user_list():
         if user.data.position.distance_to(teleporter.pos_src) <= TELEPORT_THRES:
-            print("teleport!")
+            print("teleported!")
             scene.manipulate_camera(
                 user,
                 position=teleporter.pos_dest,

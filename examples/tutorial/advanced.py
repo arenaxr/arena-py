@@ -1,50 +1,57 @@
 from arena import *
 import random
 
-# setup library
-arena = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
+MIN_DISPLACEMENT = 0.5
+LINE_TTL = 5
 
-# create avatar/3d head
-model_url = "/store/users/wiselab/models/FaceCapHeadGeneric/FaceCapHeadGeneric.gltf"
-avatar = GLTF(object_id="my_avatar", url=model_url, position=Position(0,1.75,-1.5), scale=Scale(5,5,5))
-arena.add_object(avatar)
+class CameraState(Object):
+    def __init__(self, camera):
+        self.camera = camera
+        self.prev_pos = None
+        self.line_color = Color(
+                random.randint(0,255),
+                random.randint(0,255),
+                random.randint(0,255)
+            )
 
-def create_rand_morph():
-    morph = {
-        "gltf-morph__0": {
-            "morphtarget": "shapes.jawOpen",
-            "value": str(random.randint(0,100)/100)
-        },
-        "gltf-morph__5": {
-            "morphtarget": "shapes.eyeBlink_L",
-            "value": str(random.randint(0,100)/100)
-        },
-        "gltf-morph__6": {
-            "morphtarget": "shapes.eyeBlink_R",
-            "value": str(random.randint(0,100)/100)
-        },
-        "gltf-morph__7": {
-            "morphtarget": "shapes.browOuterUp_L",
-            "value": str(random.randint(0,100)/100)
-        },
-        "gltf-morph__8": {
-            "morphtarget": "shapes.browOuterUp_R",
-            "value": str(random.randint(0,100)/100)
-        },
-        "gltf-morph__9": {
-            "morphtarget": "shapes.mouthPucker",
-            "value": str(random.randint(0,100)/100)
-        }
-    }
-    return morph
+    @property
+    def curr_pos(self):
+        # camera position is not static, it is constantly changing and will be updated in real-time
+        return self.camera.data.position
 
-@arena.run_forever # default is 1000ms
-def update_face():
-    # attributes can be updated with any arbitrary dictionary!
-    msg = arena.update_object(avatar, **create_rand_morph())
-    # you can print the outputs for debugging
-    print(msg)
-    print()
+    @property
+    def displacement(self):
+        if self.prev_pos:
+            # Position attributes have a distance_to method that returns the distance to another Position
+            return self.prev_pos.distance_to(self.curr_pos)
+        else:
+            return 0
 
-# start tasks
-arena.run_tasks()
+cam_states = []
+
+# called whenever a user is found by the library
+def user_join_callback(scene, cam, msg):
+    global cam_states
+
+    cam_state = CameraState(cam)
+    cam_states += [cam_state]
+
+scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
+scene.user_join_callback = user_join_callback
+
+@scene.run_forever(interval_ms=200)
+def line_follow():
+    for cam_state in cam_states:
+        if cam_state.displacement >= MIN_DISPLACEMENT:
+            line = ThickLine(
+                    color=cam_state.line_color,
+                    path=(cam_state.prev_pos, cam_state.curr_pos),
+                    lineWidth=3,
+                    ttl=LINE_TTL
+                )
+            scene.add_object(line)
+
+        # the camera's position gets automatically updated by arena-py!
+        cam_state.prev_pos = cam_state.curr_pos
+
+scene.run_tasks()

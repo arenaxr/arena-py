@@ -747,13 +747,15 @@ def do_move_relocate(camname, newposition):
 
 def incr_pos(coord, incr):
     div = round(coord / incr)
-    res = (math.ceil(div) * incr) + incr
+    #res = (math.ceil(div) * incr) + incr
+    res = coord + incr
     return float('{0:g}'.format(res))
 
 
 def incr_neg(coord, incr):
     div = round(coord / incr)
-    res = (math.floor(div) * incr) - incr
+    #res = (math.floor(div) * incr) - incr
+    res = coord - incr
     return float('{0:g}'.format(res))
 
 
@@ -770,9 +772,9 @@ def meters_increment(meters_style):
 
 def nudgeline_callback(_scene, event, msg):
     obj, direction, move, val = handle_clickline_event(event, Mode.NUDGE)
-    print(f"{obj.object_id} {direction} {move} {val}")
     if not obj and not direction:
         return
+    print(f"{obj.object_id} {direction} {move} {val}")
     nudged = loc = obj.data.position
     if val == 0:
         inc = meters_increment(USERS[event.data.source].target_style)

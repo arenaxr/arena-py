@@ -118,16 +118,16 @@ def handle_clip_event(event):
 
 def handle_clickline_event(event, mode):
     camname = event.data.source
-    # naming order: objectname_clicktype_axis_direction
+    # naming order: object-name_mode_axis-move_direction
     if USERS[camname].target_control_id and event.type.startswith("twofinger"):
         ctrl_object_id = USERS[camname].target_control_id
     else:
         ctrl_object_id = event.object_id
     click_id = ctrl_object_id.split(f"_{mode.value}_")
     object_id = click_id[0]
-    print(f"{ctrl_object_id} {event.type} {event.type}")
-    direction = (click_id[1])[0: 2]
-    move = (click_id[1])[1: 4]
+    print(f"{ctrl_object_id} {event.type} g:{USERS[camname].gesturing} {USERS[camname].target_control_id}")
+    direction = (click_id[1])[0:2]
+    move = (click_id[1])[1:4]
     if event.type == EVT_MOUSEENTER:
         scene.update_object(
             CONTROLS[object_id][ctrl_object_id],
@@ -135,30 +135,34 @@ def handle_clickline_event(event, mode):
         # set controller target
         USERS[camname].target_control_id = ctrl_object_id
     elif event.type == EVT_MOUSELEAVE:
-        scene.update_object(
-            CONTROLS[object_id][ctrl_object_id],
-            material=Material(transparent=True, opacity=arblib.OPC_CLINE))
-        USERS[camname].target_control_id = None  # release controller target
+        if not USERS[camname].gesturing:
+            scene.update_object(
+                CONTROLS[object_id][ctrl_object_id],
+                material=Material(transparent=True, opacity=arblib.OPC_CLINE))
+            # release controller target
+            USERS[camname].target_control_id = None
 
     # handle gestures
     elif event.type == "twofingerstart":
-        # start hold down event for clicker
+        # start hold down event for both clickers
+        USERS[camname].gesturing = True
         scene.update_object(
-            CONTROLS[object_id][ctrl_object_id],
+            CONTROLS[object_id][f"{object_id}_{mode.value}_{(click_id[1])[0:1]}p{(click_id[1])[2:4]}"],
             material=Material(transparent=True, opacity=arblib.OPC_CLINE_HOVER))
         scene.update_object(
-            CONTROLS[object_id][ctrl_object_id],
+            CONTROLS[object_id][f"{object_id}_{mode.value}_{(click_id[1])[0:1]}n{(click_id[1])[2:4]}"],
             material=Material(transparent=True, opacity=arblib.OPC_CLINE_HOVER))
-        return None, None, None
-    elif event.type == "twofingersend":
-        # release hold down event for clicker
+    elif event.type == "twofingerend":
+        # release hold down event for both clickers
         scene.update_object(
-            CONTROLS[object_id][ctrl_object_id],
+            CONTROLS[object_id][f"{object_id}_{mode.value}_{(click_id[1])[0:1]}p{(click_id[1])[2:4]}"],
             material=Material(transparent=True, opacity=arblib.OPC_CLINE))
         scene.update_object(
-            CONTROLS[object_id][ctrl_object_id],
+            CONTROLS[object_id][f"{object_id}_{mode.value}_{(click_id[1])[0:1]}n{(click_id[1])[2:4]}"],
             material=Material(transparent=True, opacity=arblib.OPC_CLINE))
-        return None, None, None
+        # release controller target
+        USERS[camname].target_control_id = None
+        USERS[camname].gesturing = False
     # elif event.type == "twofingermove":
     #     # send movement for clicker
     #     handle_clickline_gesture(event)

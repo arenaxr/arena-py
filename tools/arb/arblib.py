@@ -137,6 +137,7 @@ class User:
         self.mode = Mode.NONE
         self.clipboard = self.cliptarget = None
         self.target_id = self.target_control_id = self.position = self.rotation = None
+        self.gesturing = False
         self.target_style = self.typetext = ""
         self.locky = LOCK_YOFF
         self.lockx = LOCK_XOFF

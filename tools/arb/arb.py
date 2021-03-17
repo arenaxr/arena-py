@@ -117,23 +117,56 @@ def handle_clip_event(event):
 
 
 def handle_clickline_event(event, mode):
+    camname = event.data.source
     # naming order: objectname_clicktype_axis_direction
-    click_id = event.object_id.split(f"_{mode.value}_")
+    if USERS[camname].target_control_id and event.type.startswith("twofinger"):
+        ctrl_object_id = USERS[camname].target_control_id
+    else:
+        ctrl_object_id = event.object_id
+    click_id = ctrl_object_id.split(f"_{mode.value}_")
     object_id = click_id[0]
+    print(f"{ctrl_object_id} {event.type} {event.type}")
     direction = (click_id[1])[0: 2]
     move = (click_id[1])[1: 4]
     if event.type == EVT_MOUSEENTER:
         scene.update_object(
-            CONTROLS[object_id][event.object_id],
+            CONTROLS[object_id][ctrl_object_id],
             material=Material(transparent=True, opacity=arblib.OPC_CLINE_HOVER))
+        # set controller target
+        USERS[camname].target_control_id = ctrl_object_id
     elif event.type == EVT_MOUSELEAVE:
         scene.update_object(
-            CONTROLS[object_id][event.object_id],
+            CONTROLS[object_id][ctrl_object_id],
             material=Material(transparent=True, opacity=arblib.OPC_CLINE))
+        USERS[camname].target_control_id = None  # release controller target
+
+    # handle gestures
+    elif event.type == "twofingerstart":
+        # start hold down event for clicker
+        scene.update_object(
+            CONTROLS[object_id][ctrl_object_id],
+            material=Material(transparent=True, opacity=arblib.OPC_CLINE_HOVER))
+        scene.update_object(
+            CONTROLS[object_id][ctrl_object_id],
+            material=Material(transparent=True, opacity=arblib.OPC_CLINE_HOVER))
+        return None, None, None
+    elif event.type == "twofingersend":
+        # release hold down event for clicker
+        scene.update_object(
+            CONTROLS[object_id][ctrl_object_id],
+            material=Material(transparent=True, opacity=arblib.OPC_CLINE))
+        scene.update_object(
+            CONTROLS[object_id][ctrl_object_id],
+            material=Material(transparent=True, opacity=arblib.OPC_CLINE))
+        return None, None, None
+    # elif event.type == "twofingermove":
+    #     # send movement for clicker
+    #     handle_clickline_gesture(event)
+
     # allow any user to change an object
     if event.type != EVT_MOUSEDOWN:
         return None, None, None
-    if USERS[event.data.source].mode != mode:
+    if USERS[camname].mode != mode:
         return None, None, None
     obj = scene.get_persisted_obj(object_id)
     return (obj, direction, move)
@@ -356,7 +389,7 @@ def show_redpill_scene(enabled):
         if "material-extras" in obj.data and "transparentOccluder" in obj.data["material-extras"]:
             name = "redpill_" + obj.object_id
             if enabled:
-                object_type = url =  None
+                object_type = url = None
                 position = Position()
                 rotation = Rotation()
                 scale = Scale()
@@ -465,7 +498,8 @@ def do_nudge_select(camname, objid, position=None):
     make_followspot(objid, position, delim, color)
     pos = Position(round(position.x, 3), round(
         position.y, 3), round(position.z, 3))
-    USERS[camname].set_textright(f"{USERS[camname].target_style} p{str(pos)}")
+    USERS[camname].set_textright(
+        f"{USERS[camname].target_style} p({pos.x},{pos.y},{pos.z})")
 
 
 def do_scale_select(camname, objid, scale=None):
@@ -484,7 +518,8 @@ def do_scale_select(camname, objid, scale=None):
         make_clickline("x", 1, objid, position, delim, color, callback)
         make_followspot(objid, position, delim, color)
     sca = Scale(round(scale.x, 3), round(scale.y, 3), round(scale.z, 3))
-    USERS[camname].set_textright(f"{USERS[camname].target_style} s{str(sca)}")
+    USERS[camname].set_textright(
+        f"{USERS[camname].target_style} s({sca.x},{sca.y},{sca.z})")
 
 
 def do_stretch_select(camname, objid, scale=None):
@@ -517,7 +552,8 @@ def do_stretch_select(camname, objid, scale=None):
         make_clickline("z", -1, objid, position, delim, color, callback)
         make_followspot(objid, position, delim, color)
     sca = Scale(round(scale.x, 3), round(scale.y, 3), round(scale.z, 3))
-    USERS[camname].set_textright(f"{USERS[camname].target_style} s{str(sca)}")
+    USERS[camname].set_textright(
+        f"{USERS[camname].target_style} s({sca.x},{sca.y},{sca.z})")
 
 
 def do_rotate_select(camname, objid, rotation=None):
@@ -542,7 +578,7 @@ def do_rotate_select(camname, objid, rotation=None):
         (rotation.x, rotation.y, rotation.z, rotation.w))
     euler = (round(rote[0], 1), round(rote[1], 1), round(rote[2], 1))
     USERS[camname].set_textright(
-        f"{USERS[camname].target_style}d r{str(euler)}")
+        f"{USERS[camname].target_style}d r({euler[0]},{euler[1]},{euler[2]})")
 
 
 def make_followspot(object_id, position, delim, color):
@@ -1062,6 +1098,17 @@ def scene_callback(_scene, event, msg):
                 else:  # no edits yet, load previous name to change
                     USERS[camname].typetext = object_id
                 USERS[camname].set_textright(USERS[camname].typetext)
+
+        # handle gestures
+        elif msg_type == "twofingerstart" or msg_type == "twofingermove" or msg_type == "twofingerend":
+            if USERS[camname].mode == Mode.NUDGE:
+                nudgeline_callback(_scene, event, msg)
+            elif USERS[camname].mode == Mode.ROTATE:
+                rotateline_callback(_scene, event, msg)
+            elif USERS[camname].mode == Mode.SCALE:
+                scaleline_callback(_scene, event, msg)
+            elif USERS[camname].mode == Mode.STRETCH:
+                stretchline_callback(_scene, event, msg)
 
 
 # parse args and wait for events

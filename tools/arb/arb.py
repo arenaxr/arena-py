@@ -174,11 +174,11 @@ def handle_clickline_event(event, mode):
             obj = scene.get_persisted_obj(object_id)
             val = event.data.positionStart.x - event.data.position.x
             if val >= 0:
-                move = f"{(click_id[1])[0:1]}p"
-                direction = f"p{(click_id[1])[2:4]}"
+                direction = f"{(click_id[1])[0:1]}p"
+                move = f"p{(click_id[1])[2:4]}"
             else:
-                move = f"{(click_id[1])[0:1]}n"
-                direction = f"n{(click_id[1])[2:4]}"
+                direction = f"{(click_id[1])[0:1]}n"
+                move = f"n{(click_id[1])[2:4]}"
             return (obj, direction, move, abs(val))
 
     # allow any user to change an object
@@ -774,12 +774,12 @@ def nudgeline_callback(_scene, event, msg):
     obj, direction, move, val = handle_clickline_event(event, Mode.NUDGE)
     if not obj and not direction:
         return
-    print(f"{obj.object_id} {direction} {move} {val}")
     nudged = loc = obj.data.position
     if val == 0:
         inc = meters_increment(USERS[event.data.source].target_style)
     else:
         inc = val
+    print(f"{obj.object_id} {direction} {move} {loc.x} {val}")
     if direction == "xp":
         nudged = Position(x=incr_pos(loc.x, inc), y=loc.y, z=loc.z)
     elif direction == "xn":

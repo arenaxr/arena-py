@@ -779,7 +779,6 @@ def nudgeline_callback(_scene, event, msg):
         inc = meters_increment(USERS[event.data.source].target_style)
     else:
         inc = val
-    print(f"{obj.object_id} {direction} {move} {loc.x} {val}")
     if direction == "xp":
         nudged = Position(x=incr_pos(loc.x, inc), y=loc.y, z=loc.z)
     elif direction == "xn":

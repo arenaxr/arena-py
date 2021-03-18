@@ -128,16 +128,18 @@ def handle_clickline_event(event, mode):
     object_id = click_id[0]
     print(
         f"{ctrl_object_id} {event.type} g:{USERS[camname].gesturing} {USERS[camname].target_control_id}")
-    # if (event.object_id == "my-camera"):
-    #     return None, None, None, val
+    # my-camera twofingerstart g:False None
+    if not USERS[camname].target_control_id and not USERS[camname].gesturing and event.object_id == "my-camera":
+        return None, None, None, val
     direction = (click_id[1])[0:2]
     move = (click_id[1])[1:4]
     if event.type == EVT_MOUSEENTER:
-        scene.update_object(
-            CONTROLS[object_id][ctrl_object_id],
-            material=Material(transparent=True, opacity=arblib.OPC_CLINE_HOVER))
-        # set controller target
-        USERS[camname].target_control_id = ctrl_object_id
+        if not USERS[camname].gesturing:
+            scene.update_object(
+                CONTROLS[object_id][ctrl_object_id],
+                material=Material(transparent=True, opacity=arblib.OPC_CLINE_HOVER))
+            # set controller target
+            USERS[camname].target_control_id = ctrl_object_id
     elif event.type == EVT_MOUSELEAVE:
         if not USERS[camname].gesturing:
             scene.update_object(
@@ -747,15 +749,13 @@ def do_move_relocate(camname, newposition):
 
 def incr_pos(coord, incr):
     div = round(coord / incr)
-    #res = (math.ceil(div) * incr) + incr
-    res = coord + incr
+    res = (math.ceil(div) * incr) + incr
     return float('{0:g}'.format(res))
 
 
 def incr_neg(coord, incr):
     div = round(coord / incr)
-    #res = (math.floor(div) * incr) - incr
-    res = coord - incr
+    res = (math.floor(div) * incr) - incr
     return float('{0:g}'.format(res))
 
 
@@ -803,7 +803,10 @@ def scaleline_callback(_scene, event, msg):
     if not obj and not direction:
         return
     scaled = sca = obj.data.scale
-    inc = meters_increment(USERS[event.data.source].target_style)
+    if val == 0:
+        inc = meters_increment(USERS[event.data.source].target_style)
+    else:
+        inc = val
     if direction == "xp":
         scaled = Scale(x=incr_pos(sca.x, inc), y=incr_pos(
             sca.y, inc), z=incr_pos(sca.z, inc))
@@ -823,7 +826,10 @@ def stretchline_callback(_scene, event, msg):
         return
     scaled = sca = obj.data.scale
     moved = loc = obj.data.position
-    inc = meters_increment(USERS[event.data.source].target_style)
+    if val == 0:
+        inc = meters_increment(USERS[event.data.source].target_style)
+    else:
+        inc = val
     if direction == "xp":
         scaled = Scale(x=incr_pos(sca.x, inc), y=sca.y, z=sca.z)
         moved = Position(x=recenter(
@@ -861,7 +867,10 @@ def rotateline_callback(_scene, event, msg):
     if not obj and not direction:
         return
     rotated = rot = obj.data.rotation
-    inc = float(USERS[event.data.source].target_style)
+    if val == 0:
+        inc = float(USERS[event.data.source].target_style)
+    else:
+        inc = val * 180
     rot = arblib.rotation_quat2euler((rot.x, rot.y, rot.z, rot.w))
     rot = (round(rot[0]), round(rot[1]), round(rot[2]))
     if direction == "xp":

@@ -1143,6 +1143,14 @@ def scene_callback(_scene, event, msg):
                 stretchline_callback(_scene, event, msg)
 
 
+def end_program_callback(_scene):
+    for camname in USERS:
+        USERS[camname].delete()
+    for objid in CONTROLS:
+        for ctrl in CONTROLS[objid]:
+            _scene.delete_object(CONTROLS[objid][ctrl])
+
+
 # parse args and wait for events
 init_args()
 random.seed()
@@ -1158,5 +1166,6 @@ scene = Scene(
     realm=REALM,
     scene=SCENE,
     on_msg_callback=scene_callback,
+    end_program_callback=end_program_callback,
     **kwargs)
 scene.run_tasks()

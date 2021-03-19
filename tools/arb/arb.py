@@ -1067,6 +1067,9 @@ def scene_callback(_scene, event, msg):
 def end_program_callback(_scene):
     for camname in USERS:
         USERS[camname].delete()
+    for objid in CONTROLS:
+        for ctrl in CONTROLS[objid]:
+            _scene.delete_object(CONTROLS[objid][ctrl])
 
 
 # parse args and wait for events

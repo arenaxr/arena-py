@@ -33,6 +33,7 @@ class Scene(object):
                 user_join_callback = None,
                 user_left_callback = None,
                 delete_obj_callback = None,
+                end_program_callback = None,
                 **kwargs
             ):
         if os.environ.get("MQTTH"):
@@ -110,6 +111,7 @@ class Scene(object):
         self.delete_obj_callback = delete_obj_callback
         self.user_join_callback = user_join_callback
         self.user_left_callback = user_left_callback
+        self.end_program_callback = end_program_callback
 
         self.unspecified_object_ids = set() # objects that exist in the scene,
                                           # but this scene instance does not
@@ -357,6 +359,7 @@ class Scene(object):
 
     def disconnect(self):
         """Disconnects Paho MQTT client"""
+        self.end_program_callback(self)
         self.mqttc.disconnect()
 
     def generate_custom_event(self, evt, action="clientEvent"):

@@ -174,7 +174,19 @@ def handle_clickline_event(event, mode):
         # send movement for clickers
         if USERS[camname].gesturing:
             obj = scene.get_persisted_obj(object_id)
-            val = event.data.positionStart.x - event.data.position.x
+            # determine direction of 2d gesture in 3d
+            if click_id[1][0] == "y":
+                val = event.data.positionStart.y - event.data.position.y
+            elif click_id[1][0] == "x":
+                if event.data.clickPos.z > obj.data.position.z:
+                    val = event.data.positionStart.x - event.data.position.x
+                else:
+                    val = event.data.positionStart.x + event.data.position.x
+            else:  # click_id[1][0] == "z":
+                if event.data.clickPos.x < obj.data.position.x:
+                    val = event.data.positionStart.x - event.data.position.x
+                else:
+                    val = event.data.positionStart.x + event.data.position.x
             if val >= 0:
                 direction = f"{(click_id[1])[0:1]}p"
                 move = f"p{(click_id[1])[2:4]}"

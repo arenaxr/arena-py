@@ -359,7 +359,8 @@ class Scene(object):
 
     def disconnect(self):
         """Disconnects Paho MQTT client"""
-        self.end_program_callback(self)
+        if self.end_program_callback:
+            self.end_program_callback(self)
         self.mqttc.disconnect()
 
     def generate_custom_event(self, evt, action="clientEvent"):

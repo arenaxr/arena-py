@@ -264,6 +264,13 @@ class User:
         if self.clipboard and self.clipboard.object_id in self.scene.all_objects:
             self.scene.delete_object(self.clipboard)
 
+    def delete(self):
+        self.del_clipboard()
+        self.scene.delete_object(self.hudtext_left)
+        self.scene.delete_object(self.hudtext_right)
+        self.scene.delete_object(self.hudtext_status)
+        self.scene.delete_object(self.follow)
+
 
 class Button:
     def __init__(self, scene: Scene, camname, mode, x=0, y=0, label="", parent=None,

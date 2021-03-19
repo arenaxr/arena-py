@@ -356,7 +356,7 @@ def show_redpill_scene(enabled):
         if "material-extras" in obj.data and "transparentOccluder" in obj.data["material-extras"]:
             name = "redpill_" + obj.object_id
             if enabled:
-                object_type = url =  None
+                object_type = url = None
                 position = Position()
                 rotation = Rotation()
                 scale = Scale()
@@ -1064,6 +1064,11 @@ def scene_callback(_scene, event, msg):
                 USERS[camname].set_textright(USERS[camname].typetext)
 
 
+def end_program_callback(_scene):
+    for camname in USERS:
+        USERS[camname].delete()
+
+
 # parse args and wait for events
 init_args()
 random.seed()
@@ -1079,5 +1084,6 @@ scene = Scene(
     realm=REALM,
     scene=SCENE,
     on_msg_callback=scene_callback,
+    end_program_callback=end_program_callback,
     **kwargs)
 scene.run_tasks()

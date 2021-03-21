@@ -83,8 +83,11 @@ class Scene(object):
 
         # set up scene variables
         self.namespaced_scene =  f"{self.namespace}/{self.scene}"
+
         self.root_topic = f"{self.realm}/s/{self.namespaced_scene}"
         self.scene_topic = f"{self.root_topic}/#"   # main topic for entire scene
+        self.persist_url = f"https://{self.host}/persist/{self.namespaced_scene}"
+
         self.latency_topic = "$NETWORK/latency"     # network graph latency update
         self.ignore_topic = f"{self.root_topic}/{self.mqttc_id}/#" # ignore own messages
 
@@ -140,7 +143,8 @@ class Scene(object):
         self.run_async(self.process_message)
 
         # run network latency update task every 10 secs
-        self.run_forever(self.network_latency_update, interval_ms=network_latency_interval)
+        self.run_forever(self.network_latency_update,
+                         interval_ms=network_latency_interval)
 
         self.got_message = None
         self.msg_queue = asyncio.Queue()
@@ -247,6 +251,9 @@ class Scene(object):
             # listen to all messages in scene
             client.subscribe(self.scene_topic)
             client.message_callback_add(self.scene_topic, self.on_message)
+
+            # create arena-py Objects from persist server
+            # no need to return anything here
             self.get_persisted_objs()
 
             print("Connected!")
@@ -434,7 +441,7 @@ class Scene(object):
 
     @property
     def all_objects(self):
-        """Returns all objects created by the user"""
+        """Returns all the objects in a scene"""
         return Object.all_objects
 
     def add_object(self, obj):
@@ -522,9 +529,8 @@ class Scene(object):
             obj = self.all_objects[object_id]
             obj.persist = True
         else:
-            persist_url = f'https://{self.host}/persist/{self.namespaced_scene}/{object_id}'
             # pass token to persist
-            data = auth.urlopen(url=persist_url, creds=True)
+            data = auth.urlopen(url=f"{self.persist_url}/{object_id}", creds=True)
             output = json.loads(data)
             if len(output) > 0:
                 output = output[0]
@@ -543,8 +549,7 @@ class Scene(object):
         """Returns a dictionary of persisted objects. [TODO] check object_type"""
         objs = {}
         # pass token to persist
-        data = auth.urlopen(
-            url=f'https://{self.host}/persist/{self.namespaced_scene}', creds=True)
+        data = auth.urlopen(url=self.persist_url, creds=True)
         output = json.loads(data)
         for obj in output:
             if obj["type"] == Object.object_type or obj["type"] == Object.type:
@@ -566,7 +571,7 @@ class Scene(object):
 
     def get_persisted_scene_option(self):
         """Returns a dictionary for scene-options. [TODO] wrap the output as a BaseObject"""
-        scene_opts_url = f'https://{self.host}/persist/{self.namespaced_scene}?type=scene-options'
+        scene_opts_url = f"{self.persist_url}?type=scene-options"
         # pass token to persist
         data = auth.urlopen(url=scene_opts_url, creds=True )
         output = json.loads(data)

@@ -2,6 +2,9 @@
 
 ARENA-py notable changes. Started 2021-19-2.
 
+## [Unreleased] - 2021-21-3
+- Add `end_program_callback`.
+
 ## [0.1.22] - 2021-13-3
 ### Changed
 - Remove `Color` in `Material` deprecation.

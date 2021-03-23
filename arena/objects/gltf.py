@@ -4,7 +4,7 @@ from ..attributes import Morph
 
 class GLTF(Object):
     """
-    Class for GLTF Model in the ARENA.
+    Class for GLTF Models in the ARENA.
     """
     object_type = "gltf-model"
 
@@ -36,3 +36,8 @@ class GLTF(Object):
     def json_postprocess(self, json_payload, json_data):
         for i,morph in enumerate(self.morphs.values()):
             json_data[f"gltf-morph__{i}"] = vars(morph)
+
+class Model(GLTF):
+    """
+    Another name for GLTF.
+    """

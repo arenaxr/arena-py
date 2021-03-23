@@ -19,14 +19,12 @@ from . import auth
 
 class Scene(object):
     """
-    Main ARENA client for ARENA-py.
+    Gives access to an ARENA scene.
     Wrapper around Paho MQTT client and EventLoop.
-    Can create and execute various user-defined functions.
+    Can create and execute various user-defined functions/tasks.
     """
     def __init__(
                 self,
-                debug = False,
-                network_loop_interval = 0,  # throttle mqtt client network loop
                 network_latency_interval = 10000,  # run network latency update every 10s
                 on_msg_callback = None,
                 new_obj_callback = None,
@@ -34,6 +32,7 @@ class Scene(object):
                 user_left_callback = None,
                 delete_obj_callback = None,
                 end_program_callback = None,
+                debug = False,
                 **kwargs
             ):
         if os.environ.get("MQTTH"):
@@ -134,19 +133,16 @@ class Scene(object):
         self.mqttc.on_connect = self.on_connect
         self.mqttc.on_disconnect = self.on_disconnect
 
-        self.network_loop_interval = network_loop_interval
-
         # add mqtt message loop to tasks
         self.run_async(self.main_loop)
 
         # add main message processing + callbacks loop to tasks
         self.run_async(self.process_message)
 
-        # run network latency update task every 10 secs
+        # update network latency every network_latency_interval secs
         self.run_forever(self.network_latency_update,
                          interval_ms=network_latency_interval)
 
-        self.got_message = None
         self.msg_queue = asyncio.Queue()
 
         # connect to mqtt broker
@@ -163,13 +159,9 @@ class Scene(object):
         return str(random.randrange(100000, 999999))
 
     async def main_loop(self):
-        """Wait for messages from on_message and queues them for later use"""
+        """Block main thread"""
         while True:
-            self.got_message = self.task_manager.create_future()
-            await self.sleep(self.network_loop_interval)
-            msg = await self.got_message
-            await self.msg_queue.put(msg)
-            self.got_message = None
+            await self.sleep(0)
 
     def network_latency_update(self):
         """Update client latency in $NETWORK/latency"""
@@ -252,7 +244,7 @@ class Scene(object):
             client.subscribe(self.scene_topic)
             client.message_callback_add(self.scene_topic, self.on_message)
 
-            # create arena-py Objects from persist server
+            # create ARENA-py Objects from persist server
             # no need to return anything here
             self.get_persisted_objs()
 
@@ -266,8 +258,7 @@ class Scene(object):
         if mqtt.topic_matches_sub(self.ignore_topic, msg.topic):
             return
 
-        if self.got_message:
-            self.got_message.set_result(msg)
+        self.msg_queue.put_nowait(msg)
 
     async def process_message(self):
         """Main message processing function"""

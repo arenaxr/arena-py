@@ -11,7 +11,7 @@ scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="test")
 
 
 music_on = False
-def evt_handler(msg):
+def evt_handler(scene, event, msg):
     global music_on
 
     print("clicked", music_on)

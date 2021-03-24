@@ -133,9 +133,6 @@ class Scene(object):
         self.mqttc.on_connect = self.on_connect
         self.mqttc.on_disconnect = self.on_disconnect
 
-        # add mqtt message loop to tasks
-        self.run_async(self.main_loop)
-
         # add main message processing + callbacks loop to tasks
         self.run_async(self.process_message)
 
@@ -157,11 +154,6 @@ class Scene(object):
     def generate_client_id(self):
         """Returns a random 6 digit id"""
         return str(random.randrange(100000, 999999))
-
-    async def main_loop(self):
-        """Block main thread"""
-        while True:
-            await self.sleep(0)
 
     def network_latency_update(self):
         """Update client latency in $NETWORK/latency"""

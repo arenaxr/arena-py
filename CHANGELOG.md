@@ -2,6 +2,13 @@
 
 ARENA-py notable changes. Started 2021-19-2.
 
+## [Unreleased] - 2021-21-3
+### Changed
+- Queue all incoming MQTT messages for processing and remove network_loop_interval.
+
+### Added
+- Add `end_program_callback`, which is called whenever client disconnects.
+
 ## [0.1.22] - 2021-13-3
 ### Changed
 - Remove `Color` in `Material` deprecation.

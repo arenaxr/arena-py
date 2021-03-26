@@ -2,7 +2,7 @@
 
 ARENA-py notable changes. Started 2021-19-2.
 
-## [Unreleased] - 2021-21-3
+## [0.1.23] - 2021-21-3
 ### Changed
 - Queue all incoming MQTT messages for processing and remove network_loop_interval.
 

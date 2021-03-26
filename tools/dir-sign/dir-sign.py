@@ -126,9 +126,9 @@ def draw_signs():
                 scene.update_object(root)
                 cnt+=1
     else:
-        print( "Need to add environmental variable to point to jason file")
+        print( "Need to add environmental variable to point to json file")
         print( "export JSONCFG=directory_cfg.json")
 
-    scene.stop_tasks()
+    # scene.stop_tasks()
 
 scene.run_tasks()

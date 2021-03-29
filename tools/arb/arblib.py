@@ -13,7 +13,8 @@ from arena import (Box, Circle, Color, Cone, Cylinder, Dodecahedron,
                    Position, Ring, Rotation, Scale, Scene, Sphere, Tetrahedron,
                    Text, Torus, TorusKnot, Triangle)
 
-CLICKLINE_LEN = 1  # meters
+CLICKLINE_LEN_OBJ = 0.5  # meters
+CLICKLINE_LEN_MOD = 1  # meters
 CLICKLINE_SCL = Scale(1, 1, 1)  # meters
 FLOOR_Y = 0  # meters
 GRIDLEN = 20  # meters

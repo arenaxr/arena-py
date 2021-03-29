@@ -362,21 +362,22 @@ def show_redpill_scene(enabled):
         if "material-extras" in obj.data and "transparentOccluder" in obj.data["material-extras"]:
             name = "redpill_" + obj.object_id
             if enabled:
-                object_type = url = None
-                position = Position()
-                rotation = Rotation()
-                scale = Scale()
-                color = Color()
+                object_type = "box"
                 if "object_type" in obj.data:
                     object_type = obj.data.object_type
+                position = Position()
                 if "position" in obj.data:
                     position = obj.data.position
+                rotation = Rotation()
                 if "rotation" in obj.data:
                     rotation = obj.data.rotation
+                scale = Scale()
                 if "scale" in obj.data:
                     scale = obj.data.scale
+                url = None
                 if "url" in obj.data:
                     url = obj.data.url
+                color = Color()
                 if "material" in obj.data and "color" in obj.data.material:
                     color = obj.data.material.color
                 scene.add_object(Object(
@@ -427,15 +428,16 @@ def show_redpill_obj(camname, object_id):
 def do_move_select(camname, object_id):
     obj = scene.get_persisted_obj(object_id)
     USERS[camname].target_id = object_id
-    object_type = url = None
-    scale = Scale()
-    color = Color()
+    object_type = "box"
     if "object_type" in obj.data:
         object_type = obj.data.object_type
+    scale = Scale()
     if "scale" in obj.data:
         scale = obj.data.scale
+    color = Color()
     if "material" in obj.data and "color" in obj.data.material:
         color = obj.data.material.color
+    url = None
     if "url" in obj.data:
         url = obj.data.url
     USERS[camname].set_clipboard(
@@ -459,46 +461,53 @@ def do_nudge_select(camname, objid, position=None):
     color = arblib.CLR_NUDGE
     delim = f"_{Mode.NUDGE.value}_"
     callback = nudgeline_callback
+    obj = scene.get_persisted_obj(objid)
     if not position:
-        obj = scene.get_persisted_obj(objid)
         position = Position()
         if "position" in obj.data:
             position = obj.data.position
+    xl, yl, zl = get_clicklines_len(obj)
     # nudge object + or - on 3 axis
-    make_clickline("x", 1, objid, position, delim, color, callback)
-    make_clickline("y", 1, objid, position, delim, color, callback)
-    make_clickline("z", 1, objid, position, delim, color, callback)
+    make_clickline("x", xl, objid, position, delim, color, callback)
+    make_clickline("y", yl, objid, position, delim, color, callback)
+    make_clickline("z", zl, objid, position, delim, color, callback)
     make_followspot(objid, position, delim, color)
     pos = Position(round(position.x, 3), round(
         position.y, 3), round(position.z, 3))
-    USERS[camname].set_textright(f"{USERS[camname].target_style} p{str(pos)}")
+    USERS[camname].set_textright(
+        f"{USERS[camname].target_style} p({pos.x},{pos.y},{pos.z})")
 
 
 def do_scale_select(camname, objid, scale=None):
     color = arblib.CLR_SCALE
     delim = f"_{Mode.SCALE.value}_"
     callback = scaleline_callback
+    obj = scene.get_persisted_obj(objid)
     if not scale:
-        obj = scene.get_persisted_obj(objid)
         position = Position()
-        scale = Scale()
         if "position" in obj.data:
             position = obj.data.position
+        scale = Scale()
         if "scale" in obj.data:
             scale = obj.data.scale
+        xl, yl, zl = get_clicklines_len(obj)
         # scale entire object + or - on all axis
-        make_clickline("x", 1, objid, position, delim, color, callback)
+        make_clickline("x", xl, objid, position, delim, color, callback)
         make_followspot(objid, position, delim, color)
     sca = Scale(round(scale.x, 3), round(scale.y, 3), round(scale.z, 3))
-    USERS[camname].set_textright(f"{USERS[camname].target_style} s{str(sca)}")
+    USERS[camname].set_textright(
+        f"{USERS[camname].target_style} s({sca.x},{sca.y},{sca.z})")
 
 
 def do_stretch_select(camname, objid, scale=None):
     color = arblib.CLR_STRETCH
     delim = f"_{Mode.STRETCH.value}_"
     callback = stretchline_callback
+    obj = scene.get_persisted_obj(objid)
     if not scale:
-        obj = scene.get_persisted_obj(objid)
+        object_type = "box"
+        if "object_type" in obj.data:
+            object_type = obj.data.object_type
         position = Position()
         if "position" in obj.data:
             position = obj.data.position
@@ -509,46 +518,69 @@ def do_stretch_select(camname, objid, scale=None):
         if "scale" in obj.data:
             scale = obj.data.scale
         # TODO: scale too unpredictable, modify
-        if obj.data.object_type == GLTF.object_type:
+        if object_type == GLTF.object_type:
             return
         # TODO: scale too unpredictable, modify
         if rotation.quaternion.__dict__ != Rotation(x=0, y=0, z=0, w=1).quaternion.__dict__:
             return
+        xl, yl, zl = get_clicklines_len(obj)
         # scale and reposition on one of 6 sides
-        make_clickline("x", 1, objid, position, delim, color, callback)
-        make_clickline("x", -1, objid, position, delim, color, callback)
-        make_clickline("y", 1, objid, position, delim, color, callback)
-        make_clickline("y", -1, objid, position, delim, color, callback)
-        make_clickline("z", 1, objid, position, delim, color, callback)
-        make_clickline("z", -1, objid, position, delim, color, callback)
+        make_clickline("x", xl, objid, position, delim, color, callback)
+        make_clickline("x", -xl, objid, position, delim, color, callback)
+        make_clickline("y", yl, objid, position, delim, color, callback)
+        make_clickline("y", -yl, objid, position, delim, color, callback)
+        make_clickline("z", zl, objid, position, delim, color, callback)
+        make_clickline("z", -zl, objid, position, delim, color, callback)
         make_followspot(objid, position, delim, color)
     sca = Scale(round(scale.x, 3), round(scale.y, 3), round(scale.z, 3))
-    USERS[camname].set_textright(f"{USERS[camname].target_style} s{str(sca)}")
+    USERS[camname].set_textright(
+        f"{USERS[camname].target_style} s({sca.x},{sca.y},{sca.z})")
 
 
 def do_rotate_select(camname, objid, rotation=None):
     color = arblib.CLR_ROTATE
     delim = f"_{Mode.ROTATE.value}_"
     callback = rotateline_callback
+    obj = scene.get_persisted_obj(objid)
     if not rotation:
-        obj = scene.get_persisted_obj(objid)
         position = Position()
-        rotation = Rotation()
         if "position" in obj.data:
             position = obj.data.position
+        rotation = Rotation()
         if "rotation" in obj.data:
             rotation = obj.data.rotation
+        xl, yl, zl = get_clicklines_len(obj)
         # rotate object + or - on 3 axis, plus show original axis as after
         # effect
-        make_clickline("x", 1, objid, position, delim, color, callback, True)
-        make_clickline("y", 1, objid, position, delim, color, callback, True)
-        make_clickline("z", 1, objid, position, delim, color, callback, True)
+        make_clickline("x", xl, objid, position, delim, color, callback, True)
+        make_clickline("y", yl, objid, position, delim, color, callback, True)
+        make_clickline("z", zl, objid, position, delim, color, callback, True)
         make_followspot(objid, position, delim, color)
     rote = arblib.rotation_quat2euler(
         (rotation.x, rotation.y, rotation.z, rotation.w))
     euler = (round(rote[0], 1), round(rote[1], 1), round(rote[2], 1))
     USERS[camname].set_textright(
-        f"{USERS[camname].target_style}d r{str(euler)}")
+        f"{USERS[camname].target_style}d r({euler[0]},{euler[1]},{euler[2]})")
+
+
+def get_clicklines_len(obj):
+    object_type = "box"
+    if "object_type" in obj.data:
+        object_type = obj.data.object_type
+    scale = Scale()
+    if "scale" in obj.data:
+        scale = obj.data.scale
+    if object_type == "gltf-model":
+        # TODO: if we can get the gltf size (not scale), we can make accurate clicklines
+        scale = Scale(1, 1, 1)
+        line_extension = arblib.CLICKLINE_LEN_MOD
+    else:
+        line_extension = arblib.CLICKLINE_LEN_OBJ
+    xl = (scale.x/2) + line_extension
+    yl = (scale.y/2) + line_extension
+    zl = (scale.z/2) + line_extension
+    print(xl, yl, zl)
+    return xl, yl, zl
 
 
 def make_followspot(object_id, position, delim, color):
@@ -669,11 +701,11 @@ def make_clickline(axis, linelen, objid, start, delim,
     if linelen < 0:
         direction = "n"
     if axis == "x":
-        endx = linelen * arblib.CLICKLINE_LEN
+        endx = linelen
     elif axis == "y":
-        endy = linelen * arblib.CLICKLINE_LEN
+        endy = linelen
     elif axis == "z":
-        endz = linelen * arblib.CLICKLINE_LEN
+        endz = linelen
     end = Position(x=start.x + endx, y=start.y + endy, z=start.z + endz)
     boxline(  # reference line
         object_id=objid, axis=axis, direction=direction, delim=delim,

@@ -146,6 +146,15 @@ class User:
         init_origin(self.scene)
 
         # set HUD to each user
+        self.hud = Box(
+            object_id=f"hud_{camname}",
+            parent=camname,
+            material=Material(transparent=True, opacity=0),
+            position=Position(0, 0, 0),
+            scale=Scale(1, 1, 1),
+            rotation=Rotation(0, 0, 0, 1),
+        )
+        self.scene.add_object(self.hud)
         self.hudtext_left = self.make_hudtext(
             "hudTextLeft", Position(-0.15, 0.15, -0.5), str(self.mode))
         self.hudtext_right = self.make_hudtext(
@@ -166,7 +175,6 @@ class User:
         self.scene.add_object(self.follow)
         self.redpill = False
         self.panel = {}  # button dictionary
-        followname = self.follow.object_id
         self.dbuttons = {}
         buttons = [
             # top row
@@ -192,13 +200,13 @@ class User:
         for but in buttons:
             pbutton = Button(
                 scene, camname, but[0], but[1], but[2], enable=but[3], btype=but[4],
-                parent=followname, callback=panel_callback)
+                parent=self.follow.object_id, callback=panel_callback)
             self.panel[pbutton.button.object_id] = pbutton
 
     def make_hudtext(self, label, position, text):
         text = Text(
             object_id=f"{label}_{self.camname}",
-            parent=self.camname,
+            parent=self.hud.object_id,
             text=text,
             position=position,
             color=CLR_HUDTEXT,
@@ -220,7 +228,7 @@ class User:
         if enabled:
             self.lamp = Light(
                 object_id=f"{self.camname}_lamp",
-                parent=self.camname,
+                parent=self.hud.object_id,
                 material=Material(color=Color(144, 144, 173)),
                 type="point",
                 intensity=0.75)
@@ -240,7 +248,7 @@ class User:
                 object_id=f"{self.camname}_clipboard",
                 object_type=object_type,
                 position=position,
-                parent=self.camname,
+                parent=self.hud.object_id,
                 scale=scale,
                 material=Material(color=color, transparent=True, opacity=0.4),
                 url=url,
@@ -250,7 +258,7 @@ class User:
         self.cliptarget = Circle(  # add helper target object to find true origin
             object_id=f"{self.camname}_cliptarget",
             position=position,
-            parent=self.camname,
+            parent=self.hud.object_id,
             scale=Scale(0.005, 0.005, 0.005),
             material=Material(color=Color(255, 255, 255),
                               transparent=True, opacity=0.4),
@@ -265,10 +273,7 @@ class User:
             self.scene.delete_object(self.clipboard)
 
     def delete(self):
-        self.del_clipboard()
-        self.scene.delete_object(self.hudtext_left)
-        self.scene.delete_object(self.hudtext_right)
-        self.scene.delete_object(self.hudtext_status)
+        self.scene.delete_object(self.hud)
         self.scene.delete_object(self.follow)
 
 

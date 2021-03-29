@@ -369,6 +369,7 @@ class Button:
 
 def init_origin(scene: Scene):
     """Origin object, construction cone, so user knows ARB is running."""
+    # TODO: migrate to shared-scene setting
     size = [0.2, 0.4, 0.2]
     scene.add_object(Cone(  # 370mm x 370mm # 750mm
         object_id="arb-origin",

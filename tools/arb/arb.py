@@ -17,7 +17,7 @@ import random
 import statistics
 
 from arena import (GLTF, Box, Circle, Color, Cone, Line, Material, Object,
-                   Position, Rotation, Scale, Scene)
+                   Position, Rotation, Scale, Scene, ThickLine)
 
 import arblib
 from arblib import (EVT_MOUSEDOWN, EVT_MOUSEENTER, EVT_MOUSELEAVE, ButtonType,
@@ -180,6 +180,7 @@ def panel_callback(_scene, event, msg):
         USERS[camname].follow_lock = active
         # TODO: after lock ensure original ray keeps lock button in reticle
     elif mode == Mode.REDPILL:
+        # TODO: migrate to shared-scene setting
         USERS[camname].redpill = active
         show_redpill_scene(active)
     elif mode == Mode.LAMP:
@@ -327,28 +328,33 @@ def rename_callback(_scene, event, msg):
 def show_redpill_scene(enabled):
     # any scene changes must not persist
     # show gridlines
+    name = "grid_redpill"
+    path = []
     glen = arblib.GRIDLEN
     y = arblib.FLOOR_Y
     for z in range(-glen, glen + 1):
-        name = "grid_z" + str(z)
-        if enabled:
-            scene.add_object(Line(
-                object_id=name,
-                start=Position(-glen, y, z),
-                end=Position(glen, y, z),
-                color=arblib.CLR_GRID))
+        if (z % 2) == 0:
+            path.append(Position(-glen, y, z))
+            path.append(Position(glen, y, z))
         else:
-            arblib.delete_obj(scene, name)
+            path.append(Position(glen, y, z))
+            path.append(Position(-glen, y, z))
     for x in range(-glen, glen + 1):
-        name = "grid_x" + str(x)
-        if enabled:
-            scene.add_object(Line(
-                object_id=name,
-                start=Position(x, y, -glen),
-                end=Position(x, y, glen),
-                color=arblib.CLR_GRID))
+        if (x % 2) == 0:
+            path.append(Position(x, y, glen))
+            path.append(Position(x, y, -glen))
         else:
-            arblib.delete_obj(scene, name)
+            path.append(Position(x, y, -glen))
+            path.append(Position(x, y, glen))
+
+    if enabled:
+        scene.add_object(ThickLine(
+            object_id=name,
+            path=path,
+            color=arblib.CLR_GRID))
+    else:
+        arblib.delete_obj(scene, name)
+
     objs = scene.get_persisted_objs()
     for object_id in objs:
         obj = objs[object_id]
@@ -1070,6 +1076,7 @@ def end_program_callback(_scene):
     for objid in CONTROLS:
         for ctrl in CONTROLS[objid]:
             _scene.delete_object(CONTROLS[objid][ctrl])
+    show_redpill_scene(False)
 
 
 # parse args and wait for events

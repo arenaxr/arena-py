@@ -474,7 +474,7 @@ def do_nudge_select(camname, objid, position=None):
     make_clickline("x", xl, objid, position, delim, color, callback, move=True)
     make_clickline("y", yl, objid, position, delim, color, callback, move=True)
     make_clickline("z", zl, objid, position, delim, color, callback, move=True)
-    make_followspot(objid, position, delim, color, move=True)
+    # TODO: restore make_followspot(objid, position, delim, color, move=True)
     pos = Position(round(position.x, 3), round(
         position.y, 3), round(position.z, 3))
     USERS[camname].set_textright(
@@ -496,7 +496,7 @@ def do_scale_select(camname, objid, scale=None):
     xl, yl, zl = get_clicklines_len(obj)
     # scale entire object + or - on all axis
     make_clickline("x", xl, objid, position, delim, color, callback, move=True)
-    make_followspot(objid, position, delim, color)
+    # TODO: restore make_followspot(objid, position, delim, color)
     sca = Scale(round(scale.x, 3), round(scale.y, 3), round(scale.z, 3))
     USERS[camname].set_textright(
         f"{USERS[camname].target_style} s({sca.x},{sca.y},{sca.z})")
@@ -537,7 +537,7 @@ def do_stretch_select(camname, objid, scale=None):
     make_clickline("z", zl, objid, position, delim, color, callback, move=True)
     make_clickline("z", -zl, objid, position, delim,
                    color, callback, move=True)
-    make_followspot(objid, position, delim, color)
+    # TODO: restore make_followspot(objid, position, delim, color)
     sca = Scale(round(scale.x, 3), round(scale.y, 3), round(scale.z, 3))
     USERS[camname].set_textright(
         f"{USERS[camname].target_style} s({sca.x},{sca.y},{sca.z})")
@@ -561,9 +561,13 @@ def do_rotate_select(camname, objid, rotation=None):
     make_clickline("x", xl, objid, position, delim, color, callback, True)
     make_clickline("y", yl, objid, position, delim, color, callback, True)
     make_clickline("z", zl, objid, position, delim, color, callback, True)
-    make_followspot(objid, position, delim, color)
-    rote = arblib.rotation_quat2euler(
-        (rotation.x, rotation.y, rotation.z, rotation.w))
+    # TODO: restore make_followspot(objid, position, delim, color)
+    try:
+        rote = arblib.rotation_quat2euler(
+            (rotation.x, rotation.y, rotation.z, rotation.w))
+    except ValueError as error:
+        print(f"Rotation error: {error}")
+        return
     euler = (round(rote[0], 1), round(rote[1], 1), round(rote[2], 1))
     USERS[camname].set_textright(
         f"{USERS[camname].target_style}d r({euler[0]},{euler[1]},{euler[2]})")
@@ -589,7 +593,7 @@ def get_clicklines_len(obj):
     return xl, yl, zl
 
 
-def make_followspot(object_id, position, delim, color, move=False):
+def make_followspot(object_id, position, delim, color, parent=None, move=False):
     name = f"{object_id}{delim}spot"
     if name not in CONTROLS[object_id]:
         CONTROLS[object_id][name] = Circle(  # follow spot on ground
@@ -598,6 +602,7 @@ def make_followspot(object_id, position, delim, color, move=False):
             # TODO: restore ttl=arblib.TTL_TEMP,
             position=Position(position.x, arblib.FLOOR_Y, position.z),
             rotation=Rotation(-0.7, 0, 0, 0.7),
+            parent=parent,
             material=Material(
                 color=color,
                 transparent=True,
@@ -747,6 +752,24 @@ def make_clickline(axis, linelen, objid, start, delim,
         color=color, cones=cones, callback=callback, move=move, parent=parent)
 
 
+def make_clickroot(objid, position, delim, move=False):
+    if objid not in CONTROLS.keys():
+        CONTROLS[objid] = {}
+    name = f"{objid}{delim}clickroot"
+    if name not in CONTROLS[objid]:
+        CONTROLS[objid][name] = Box(
+            object_id=name,
+            material=Material(transparent=True, opacity=0),
+            position=position,
+            scale=Scale(0.1, 0.1, 0.1),
+            rotation=Rotation(0, 0, 0, 1),
+        )
+        scene.add_object(CONTROLS[objid][name])
+    elif move:
+        scene.update_object(CONTROLS[objid][name], position=position)
+    return name
+
+
 def do_move_relocate(camname, newposition):
     arblib.move_obj(scene, USERS[camname].target_id, newposition)
     USERS[camname].del_clipboard()
@@ -777,7 +800,7 @@ def meters_increment(meters_style):
 
 def nudgeline_callback(_scene, event, msg):
     obj, direction, move = handle_clickline_event(event, Mode.NUDGE)
-    if not obj and not direction:
+    if not obj or not direction or "position" not in obj.data:
         return
     nudged = loc = obj.data.position
     inc = meters_increment(USERS[event.data.source].target_style)
@@ -801,7 +824,7 @@ def nudgeline_callback(_scene, event, msg):
 
 def scaleline_callback(_scene, event, msg):
     obj, direction, move = handle_clickline_event(event, Mode.SCALE)
-    if not obj and not direction:
+    if not obj or not direction or "scale" not in obj.data:
         return
     scaled = sca = obj.data.scale
     inc = meters_increment(USERS[event.data.source].target_style)
@@ -820,7 +843,7 @@ def scaleline_callback(_scene, event, msg):
 
 def stretchline_callback(_scene, event, msg):
     obj, direction, move = handle_clickline_event(event, Mode.STRETCH)
-    if not obj and not direction and not move:
+    if not obj or not direction or not move or "scale" not in obj.data or "position" not in obj.data:
         return
     scaled = sca = obj.data.scale
     moved = loc = obj.data.position
@@ -859,11 +882,15 @@ def stretchline_callback(_scene, event, msg):
 
 def rotateline_callback(_scene, event, msg):
     obj, direction, move = handle_clickline_event(event, Mode.ROTATE)
-    if not obj and not direction:
+    if not obj or not direction or "rotation" not in obj.data:
         return
     rotated = rot = obj.data.rotation
     inc = float(USERS[event.data.source].target_style)
-    rot = arblib.rotation_quat2euler((rot.x, rot.y, rot.z, rot.w))
+    try:
+        rot = arblib.rotation_quat2euler((rot.x, rot.y, rot.z, rot.w))
+    except ValueError as error:
+        print(f"Rotation error: {error}")
+        return
     rot = (round(rot[0]), round(rot[1]), round(rot[2]))
     if direction == "xp":
         rotated = (incr_pos(rot[0], inc), rot[1], rot[2])
@@ -879,7 +906,11 @@ def rotateline_callback(_scene, event, msg):
         rotated = (rot[0], rot[1], incr_neg(rot[2], inc))
     if abs(rotated[0]) > 180 or abs(rotated[1]) > 180 or abs(rotated[2]) > 180:
         return
-    rotated = arblib.rotation_euler2quat(rotated)
+    try:
+        rotated = arblib.rotation_euler2quat(rotated)
+    except ValueError as error:
+        print(f"Rotation error: {error}")
+        return
     rotated = Rotation(x=rotated[0], y=rotated[1], z=rotated[2], w=rotated[3])
     arblib.rotate_obj(scene, obj.object_id, rotated)
     print(f"{str(obj.data.rotation)} to {str(rotated)}")
@@ -919,7 +950,7 @@ def clipboard_callback(_scene, event, msg):
         return
     position = event.data.position
     if USERS[camname].mode == Mode.CREATE or USERS[camname].mode == Mode.MODEL:
-        create_obj(camname, USERS[camname].clipboard, position)
+        create_obj(camname, USERS[camname].get_clipboard(), position)
     elif USERS[camname].mode == Mode.MOVE:
         do_move_relocate(camname, position)
 

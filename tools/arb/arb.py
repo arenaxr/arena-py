@@ -564,9 +564,10 @@ def do_rotate_select(camname, objid, rotation=None):
     # rotate object + or - on 3 axis, plus show original axis as after
     # effect
     root = make_clickroot(objid, position, delim)
-    make_clickline("x", xl, objid, position, delim, color, callback, ghost=True, parent=root)
-    make_clickline("y", yl, objid, position, delim, color, callback, ghost=True, parent=root)
-    make_clickline("z", zl, objid, position, delim, color, callback, ghost=True, parent=root)
+    ghost = make_clickroot(objid, position, delim, rotation=rotation, move=True)
+    make_clickline("x", xl, objid, position, delim, color, callback, ghost=ghost, parent=root)
+    make_clickline("y", yl, objid, position, delim, color, callback, ghost=ghost, parent=root)
+    make_clickline("z", zl, objid, position, delim, color, callback, ghost=ghost, parent=root)
     # TODO: restore make_followspot(objid, position, delim, color)
     try:
         rote = arblib.rotation_quat2euler(
@@ -727,7 +728,7 @@ def dir_clickers(object_id, axis, direction, delim, position,
 
 
 def make_clickline(axis, linelen, objid, start, delim,
-                   color, callback, ghost=False, parent=None, move=False):
+                   color, callback, ghost=None, parent=None, move=False):
     if objid not in CONTROLS.keys():
         CONTROLS[objid] = {}
     endx = endy = endz = 0
@@ -750,7 +751,7 @@ def make_clickline(axis, linelen, objid, start, delim,
         boxline(  # ghostline aligns to parent rotation
             object_id=objid, axis=axis, direction=direction, delim=delim,
             suffix="ghost", color=(255,255,255), start=start, end=end, line_width=0.005,
-            move=move, parent=objid)
+            move=move, parent=ghost)
     if ghost:
         cones = arblib.ROTATE_CONES
     else:
@@ -760,21 +761,25 @@ def make_clickline(axis, linelen, objid, start, delim,
         color=color, cones=cones, callback=callback, move=move, parent=parent)
 
 
-def make_clickroot(objid, position, delim, move=False):
+def make_clickroot(objid, position, delim, rotation=None, move=False):
     if objid not in CONTROLS.keys():
         CONTROLS[objid] = {}
     name = f"{objid}{delim}clickroot"
+    if rotation:
+        name += "_rotated"
+    else:
+        rotation=Rotation(0, 0, 0, 1)
     if name not in CONTROLS[objid]:
         CONTROLS[objid][name] = Box(
             object_id=name,
             material=Material(transparent=True, opacity=0),
             position=position,
             scale=Scale(SCL_CLICK, SCL_CLICK, SCL_CLICK),
-            rotation=Rotation(0, 0, 0, 1),
+            rotation=rotation,
         )
         scene.add_object(CONTROLS[objid][name])
     elif move:
-        scene.update_object(CONTROLS[objid][name], position=position)
+        scene.update_object(CONTROLS[objid][name], position=position, rotation=rotation)
     return name
 
 

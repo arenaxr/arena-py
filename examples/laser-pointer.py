@@ -16,7 +16,7 @@ def click(scene, evt, msg):
         ball = Sphere(
             position=end,
             scale = (0.06,0.06,0.06),
-            material=Material(color=(255,0,0)),
+            color=(255,0,0),
             ttl=1)
         scene.add_object(ball)
 

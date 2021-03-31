@@ -21,7 +21,7 @@ def make_boxs():
                 -random.randrange(10))
     box = Box(
             position=position,
-            material=Material(color=color)
+            color=color
         )
     scene.add_object(box)
     x = x + 1

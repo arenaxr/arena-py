@@ -20,7 +20,7 @@ program1 = Scene(host="arena.andrew.cmu.edu",
 @program1.run_once
 def make_box():
     obj = Box(persist=True, clickable=True,
-              material=Material(color=(145, 195, 212)))
+              color=(145, 195, 212))
     program1.add_object(obj)
     print(f"Program 1 persisted object: {obj.object_id}")
     print(f"Program 1 persisted color: {obj.data.material.color}")

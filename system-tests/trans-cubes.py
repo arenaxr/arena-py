@@ -58,7 +58,8 @@ def do(name, randx, randy, randz, scalex, scaley, scalez, color):
             object_id=name,
             position=(randx, randy, randz),
             scale=(scalex, scaley, scalez),
-            material=Material(color=color, transparent=True, opacity=0.5),
+            color=color,
+            material=Material(transparent=True, opacity=0.5),
             animation=Animation(property="rotation", to="0 360 0", loop=5, dur=10000, easing="linear")
         )
     scene.add_object(obj)

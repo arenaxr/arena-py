@@ -28,13 +28,15 @@ class Teleporter(Object):
         self.teleporter_src = Cylinder(
                                 object_id="teleporter1",
                                 scale=(1,2.5,1),
-                                material=Material(color=(255,255,0), transparent=True, opacity=0.5),
+                                color=(255,255,0),
+                                material=Material(transparent=True, opacity=0.5),
                                 position=self.pos_src
                             )
         self.teleporter_dest = Cylinder(
                                 object_id="teleporter2",
                                 scale=(1,2.5,1),
-                                material=Material(color=(255,0,255), transparent=True, opacity=0.5),
+                                color=(255,0,255),
+                                material=Material(transparent=True, opacity=0.5),
                                 position=self.pos_dest
                             )
         self.src_text = Text(text="Teleporter source", position=(0,0.8,0), parent=self.teleporter_src)

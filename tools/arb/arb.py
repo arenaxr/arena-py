@@ -16,8 +16,8 @@ import math
 import random
 import statistics
 
-from arena import (GLTF, Box, Circle, Color, Cone, Line, Material, Object,
-                   Position, Rotation, Scale, Scene, ThickLine)
+from arena import (GLTF, Box, Circle, Color, Cone, Event, Line, Material,
+                   Object, Position, Rotation, Scale, Scene, ThickLine)
 
 import arblib
 from arblib import (EVT_MOUSEDOWN, EVT_MOUSEENTER, EVT_MOUSELEAVE, ButtonType,
@@ -1242,7 +1242,7 @@ def scene_callback(_scene, event, msg):
                     USERS[camname].typetext = object_id
                 USERS[camname].set_textright(USERS[camname].typetext)
 
-        # handle gestures
+        # handle two-finger touch as clickline sliders
         elif msg_type == "twofingerstart" or msg_type == "twofingermove" or msg_type == "twofingerend":
             if USERS[camname].mode == Mode.NUDGE:
                 nudgeline_callback(_scene, event, msg)
@@ -1253,6 +1253,24 @@ def scene_callback(_scene, event, msg):
             elif USERS[camname].mode == Mode.STRETCH:
                 stretchline_callback(_scene, event, msg)
 
+        # handle three-finger touch as toggle for clickline modes
+        elif msg_type == "threefingerstart":
+            if USERS[camname].mode == Mode.NONE:
+                buttonname = Mode.ROTATE
+            elif USERS[camname].mode == Mode.ROTATE:
+                buttonname = Mode.NUDGE
+            elif USERS[camname].mode == Mode.NUDGE:
+                buttonname = Mode.SCALE
+            elif USERS[camname].mode == Mode.SCALE:
+                buttonname = Mode.STRETCH
+            else:
+                buttonname = USERS[camname].mode  # collapse
+            event = Event(  # convert to panel click
+                object_id=f"{camname}_button_{buttonname.value}",
+                action="clientEvent",
+                type=EVT_MOUSEDOWN,
+                data={"source": camname})
+            panel_callback(_scene, event, msg)
 
 def end_program_callback(_scene):
     for camname in USERS:

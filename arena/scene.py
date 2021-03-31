@@ -560,6 +560,14 @@ class Scene(object):
         output = json.loads(data)
         return output
 
+
+    def get_writable_scenes(self):
+        """ Request list of scene names for logged in user account that user has publish permission for.
+        Returns: list of scenes.
+        """
+        return auth.get_writable_scenes(host=self.host, debug=self.debug)
+
+
     def message_callback_add(self, sub, callback):
         """Subscribes to new topic and adds callback"""
         self.mqttc.message_callback_add(sub, callback)

@@ -129,6 +129,19 @@ def authenticate_scene(host, realm, scene, username, debug=False):
     return _mqtt_token
 
 
+def get_writable_scenes(host, debug=False):
+    """ Request list of scene names for logged in user that user has publish permission for.
+    host: The hostname of the ARENA webserver.
+    debug: True to skip SSL verify for localhost tests.
+    Returns: list of scenes.
+    """
+    global debug_toggle
+    global _id_token
+    debug_toggle = debug
+    my_scenes = _get_my_scenes(host, _id_token)
+    return json.loads(my_scenes)
+
+
 def _local_token_check():
     # TODO: remove local check after ARTS supports mqtt_token passing
     # check for local mqtt_token first
@@ -162,6 +175,17 @@ def _get_csrftoken(host):
 def _get_gauthid(host):
     url = f'https://{host}/conf/gauth.json'
     return urlopen(url)
+
+
+def _get_my_scenes(host, id_token):
+    global _csrftoken
+    url = f'https://{host}/user/my_scenes'
+    if not _csrftoken:
+        _csrftoken = _get_csrftoken(host)
+    params = {"id_token": id_token}
+    query_string = parse.urlencode(params)
+    data = query_string.encode("ascii")
+    return urlopen(url, data=data, csrf=_csrftoken)
 
 
 def _get_user_state(host, id_token):

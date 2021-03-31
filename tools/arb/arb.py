@@ -17,7 +17,7 @@ import random
 import statistics
 
 from arena import (GLTF, Box, Circle, Color, Cone, Line, Material, Object,
-                   Position, Rotation, Scale, Scene)
+                   Position, Rotation, Scale, Scene, ThickLine)
 
 import arblib
 from arblib import (EVT_MOUSEDOWN, EVT_MOUSEENTER, EVT_MOUSELEAVE, ButtonType,
@@ -34,6 +34,7 @@ USERS = {}  # dictionary of user instances
 CONTROLS = {}  # dictionary of active controls
 DEBUG = False
 scene = None  # the global scene connection object
+SCL_CLICK = 0.1  # meters
 
 
 def init_args():
@@ -245,6 +246,7 @@ def panel_callback(_scene, event, msg):
         USERS[camname].follow_lock = active
         # TODO: after lock ensure original ray keeps lock button in reticle
     elif mode == Mode.REDPILL:
+        # TODO: migrate to shared-scene setting
         USERS[camname].redpill = active
         show_redpill_scene(active)
     elif mode == Mode.LAMP:
@@ -392,28 +394,33 @@ def rename_callback(_scene, event, msg):
 def show_redpill_scene(enabled):
     # any scene changes must not persist
     # show gridlines
+    name = "grid_redpill"
+    path = []
     glen = arblib.GRIDLEN
     y = arblib.FLOOR_Y
     for z in range(-glen, glen + 1):
-        name = "grid_z" + str(z)
-        if enabled:
-            scene.add_object(Line(
-                object_id=name,
-                start=Position(-glen, y, z),
-                end=Position(glen, y, z),
-                color=arblib.CLR_GRID))
+        if (z % 2) == 0:
+            path.append(Position(-glen, y, z))
+            path.append(Position(glen, y, z))
         else:
-            arblib.delete_obj(scene, name)
+            path.append(Position(glen, y, z))
+            path.append(Position(-glen, y, z))
     for x in range(-glen, glen + 1):
-        name = "grid_x" + str(x)
-        if enabled:
-            scene.add_object(Line(
-                object_id=name,
-                start=Position(x, y, -glen),
-                end=Position(x, y, glen),
-                color=arblib.CLR_GRID))
+        if (x % 2) == 0:
+            path.append(Position(x, y, glen))
+            path.append(Position(x, y, -glen))
         else:
-            arblib.delete_obj(scene, name)
+            path.append(Position(x, y, -glen))
+            path.append(Position(x, y, glen))
+
+    if enabled:
+        scene.add_object(ThickLine(
+            object_id=name,
+            path=path,
+            color=arblib.CLR_GRID))
+    else:
+        arblib.delete_obj(scene, name)
+
     objs = scene.get_persisted_objs()
     for object_id in objs:
         obj = objs[object_id]
@@ -421,21 +428,22 @@ def show_redpill_scene(enabled):
         if "material-extras" in obj.data and "transparentOccluder" in obj.data["material-extras"]:
             name = "redpill_" + obj.object_id
             if enabled:
-                object_type = url = None
-                position = Position()
-                rotation = Rotation()
-                scale = Scale()
-                color = Color()
+                object_type = "box"
                 if "object_type" in obj.data:
                     object_type = obj.data.object_type
+                position = Position()
                 if "position" in obj.data:
                     position = obj.data.position
+                rotation = Rotation()
                 if "rotation" in obj.data:
                     rotation = obj.data.rotation
+                scale = Scale()
                 if "scale" in obj.data:
                     scale = obj.data.scale
+                url = None
                 if "url" in obj.data:
                     url = obj.data.url
+                color = Color()
                 if "material" in obj.data and "color" in obj.data.material:
                     color = obj.data.material.color
                 scene.add_object(Object(
@@ -471,30 +479,34 @@ def show_redpill_obj(camname, object_id):
     obj = scene.get_persisted_obj(object_id)
     # enable mouse enter/leave pos/rot/scale
     position = Position()
-    rotation = Rotation()
-    scale = Scale()
     if "position" in obj.data:
         position = obj.data.position
+    rotation = Rotation()
     if "rotation" in obj.data:
         rotation = obj.data.rotation
+    scale = Scale()
     if "scale" in obj.data:
         scale = obj.data.scale
     USERS[camname].set_textstatus(
-        f"{object_id} p{str(position)} r{str(rotation)} s{str(scale)}")
+        " ".join([f"{object_id}",
+                  f"p({position.x},{position.y},{position.z})",
+                  f"r({rotation.x},{rotation.y},{rotation.z},{rotation.w})",
+                  f"s({scale.x},{scale.y},{scale.z})"]))
 
 
 def do_move_select(camname, object_id):
     obj = scene.get_persisted_obj(object_id)
     USERS[camname].target_id = object_id
-    object_type = url = None
-    scale = Scale()
-    color = Color()
+    object_type = "box"
     if "object_type" in obj.data:
         object_type = obj.data.object_type
+    scale = Scale()
     if "scale" in obj.data:
         scale = obj.data.scale
+    color = Color()
     if "material" in obj.data and "color" in obj.data.material:
         color = obj.data.material.color
+    url = None
     if "url" in obj.data:
         url = obj.data.url
     USERS[camname].set_clipboard(
@@ -518,16 +530,18 @@ def do_nudge_select(camname, objid, position=None):
     color = arblib.CLR_NUDGE
     delim = f"_{Mode.NUDGE.value}_"
     callback = nudgeline_callback
+    obj = scene.get_persisted_obj(objid)
     if not position:
-        obj = scene.get_persisted_obj(objid)
         position = Position()
         if "position" in obj.data:
             position = obj.data.position
+    xl, yl, zl = get_clicklines_len(obj)
     # nudge object + or - on 3 axis
-    make_clickline("x", 1, objid, position, delim, color, callback)
-    make_clickline("y", 1, objid, position, delim, color, callback)
-    make_clickline("z", 1, objid, position, delim, color, callback)
-    make_followspot(objid, position, delim, color)
+    root = make_clickroot(objid, position, delim, move=True)
+    make_clickline("x", xl, objid, position, delim, color, callback, move=True, parent=root)
+    make_clickline("y", yl, objid, position, delim, color, callback, move=True, parent=root)
+    make_clickline("z", zl, objid, position, delim, color, callback, move=True, parent=root)
+    # TODO: restore make_followspot(objid, position, delim, color, move=True)
     pos = Position(round(position.x, 3), round(
         position.y, 3), round(position.z, 3))
     USERS[camname].set_textright(
@@ -538,17 +552,20 @@ def do_scale_select(camname, objid, scale=None):
     color = arblib.CLR_SCALE
     delim = f"_{Mode.SCALE.value}_"
     callback = scaleline_callback
+    obj = scene.get_persisted_obj(objid)
+    position = Position()
+    if "position" in obj.data:
+        position = obj.data.position
     if not scale:
-        obj = scene.get_persisted_obj(objid)
-        position = Position()
         scale = Scale()
-        if "position" in obj.data:
-            position = obj.data.position
         if "scale" in obj.data:
             scale = obj.data.scale
-        # scale entire object + or - on all axis
-        make_clickline("x", 1, objid, position, delim, color, callback)
-        make_followspot(objid, position, delim, color)
+    xl, yl, zl = get_clicklines_len(obj)
+    # scale entire object + or - on all axis
+    root = make_clickroot(objid, position, delim, move=True)
+    make_clickline("x", xl, objid, position, delim, color,
+                   callback, move=True, parent=root)
+    # TODO: restore make_followspot(objid, position, delim, color)
     sca = Scale(round(scale.x, 3), round(scale.y, 3), round(scale.z, 3))
     USERS[camname].set_textright(
         f"{USERS[camname].target_style} s({sca.x},{sca.y},{sca.z})")
@@ -558,11 +575,14 @@ def do_stretch_select(camname, objid, scale=None):
     color = arblib.CLR_STRETCH
     delim = f"_{Mode.STRETCH.value}_"
     callback = stretchline_callback
+    obj = scene.get_persisted_obj(objid)
+    position = Position()
+    if "position" in obj.data:
+        position = obj.data.position
     if not scale:
-        obj = scene.get_persisted_obj(objid)
-        position = Position()
-        if "position" in obj.data:
-            position = obj.data.position
+        object_type = "box"
+        if "object_type" in obj.data:
+            object_type = obj.data.object_type
         rotation = Rotation()
         if "rotation" in obj.data:
             rotation = obj.data.rotation
@@ -570,19 +590,24 @@ def do_stretch_select(camname, objid, scale=None):
         if "scale" in obj.data:
             scale = obj.data.scale
         # TODO: scale too unpredictable, modify
-        if obj.data.object_type == GLTF.object_type:
+        if object_type == GLTF.object_type:
             return
         # TODO: scale too unpredictable, modify
         if rotation.quaternion.__dict__ != Rotation(x=0, y=0, z=0, w=1).quaternion.__dict__:
             return
-        # scale and reposition on one of 6 sides
-        make_clickline("x", 1, objid, position, delim, color, callback)
-        make_clickline("x", -1, objid, position, delim, color, callback)
-        make_clickline("y", 1, objid, position, delim, color, callback)
-        make_clickline("y", -1, objid, position, delim, color, callback)
-        make_clickline("z", 1, objid, position, delim, color, callback)
-        make_clickline("z", -1, objid, position, delim, color, callback)
-        make_followspot(objid, position, delim, color)
+    xl, yl, zl = get_clicklines_len(obj)
+    # scale and reposition on one of 6 sides
+    root = make_clickroot(objid, position, delim, move=True)
+    make_clickline("x", xl, objid, position, delim, color, callback, move=True, parent=root)
+    make_clickline("x", -xl, objid, position, delim,
+                   color, callback, move=True, parent=root)
+    make_clickline("y", yl, objid, position, delim, color, callback, move=True, parent=root)
+    make_clickline("y", -yl, objid, position, delim,
+                   color, callback, move=True, parent=root)
+    make_clickline("z", zl, objid, position, delim, color, callback, move=True, parent=root)
+    make_clickline("z", -zl, objid, position, delim,
+                   color, callback, move=True, parent=root)
+    # TODO: restore make_followspot(objid, position, delim, color)
     sca = Scale(round(scale.x, 3), round(scale.y, 3), round(scale.z, 3))
     USERS[camname].set_textright(
         f"{USERS[camname].target_style} s({sca.x},{sca.y},{sca.z})")
@@ -592,69 +617,101 @@ def do_rotate_select(camname, objid, rotation=None):
     color = arblib.CLR_ROTATE
     delim = f"_{Mode.ROTATE.value}_"
     callback = rotateline_callback
+    obj = scene.get_persisted_obj(objid)
+    position = Position()
+    if "position" in obj.data:
+        position = obj.data.position
     if not rotation:
-        obj = scene.get_persisted_obj(objid)
-        position = Position()
         rotation = Rotation()
-        if "position" in obj.data:
-            position = obj.data.position
         if "rotation" in obj.data:
             rotation = obj.data.rotation
-        # rotate object + or - on 3 axis, plus show original axis as after
-        # effect
-        make_clickline("x", 1, objid, position, delim, color, callback, True)
-        make_clickline("y", 1, objid, position, delim, color, callback, True)
-        make_clickline("z", 1, objid, position, delim, color, callback, True)
-        make_followspot(objid, position, delim, color)
-    rote = arblib.rotation_quat2euler(
-        (rotation.x, rotation.y, rotation.z, rotation.w))
+    xl, yl, zl = get_clicklines_len(obj)
+    # rotate object + or - on 3 axis, plus show original axis as after
+    # effect
+    root = make_clickroot(objid, position, delim)
+    ghost = make_clickroot(objid, position, delim, rotation=rotation, move=True)
+    make_clickline("x", xl, objid, position, delim, color, callback, ghost=ghost, parent=root)
+    make_clickline("y", yl, objid, position, delim, color, callback, ghost=ghost, parent=root)
+    make_clickline("z", zl, objid, position, delim, color, callback, ghost=ghost, parent=root)
+    # TODO: restore make_followspot(objid, position, delim, color)
+    try:
+        rote = arblib.rotation_quat2euler(
+            (rotation.x, rotation.y, rotation.z, rotation.w))
+    except ValueError as error:
+        print(f"Rotation error: {error}")
+        return
     euler = (round(rote[0], 1), round(rote[1], 1), round(rote[2], 1))
     USERS[camname].set_textright(
         f"{USERS[camname].target_style}d r({euler[0]},{euler[1]},{euler[2]})")
 
 
-def make_followspot(object_id, position, delim, color):
+def get_clicklines_len(obj):
+    object_type = "box"
+    if "object_type" in obj.data:
+        object_type = obj.data.object_type
+    scale = Scale()
+    if "scale" in obj.data:
+        scale = obj.data.scale
+    if object_type == "gltf-model":
+        # TODO: if we can get the gltf size (not scale), we can make accurate clicklines
+        scale = Scale(1, 1, 1)
+        line_extension = arblib.CLICKLINE_LEN_MOD
+    else:
+        line_extension = arblib.CLICKLINE_LEN_OBJ
+    xl = scale.x + line_extension
+    yl = scale.y + line_extension
+    zl = scale.z + line_extension
+    print(xl, yl, zl)
+    return xl, yl, zl
+
+
+def make_followspot(object_id, position, delim, color, parent, move=False):
     name = f"{object_id}{delim}spot"
-    CONTROLS[object_id][name] = Circle(  # follow spot on ground
-        object_id=name,
-        scale=Scale(0.1, 0.1, 0.1),
-        ttl=arblib.TTL_TEMP,
-        position=Position(position.x, arblib.FLOOR_Y, position.z),
-        rotation=Rotation(-0.7, 0, 0, 0.7),
-        material=Material(
-            color=color,
-            transparent=True,
-            opacity=0.4,
-            shader="flat"),
-    )
-    scene.add_object(CONTROLS[object_id][name])
+    if name not in CONTROLS[object_id]:
+        CONTROLS[object_id][name] = Circle(  # follow spot on ground
+            object_id=name,
+            scale=Scale(0.1, 0.1, 0.1),
+            # TODO: restore ttl=arblib.TTL_TEMP,
+            position=Position(position.x, arblib.FLOOR_Y, position.z),
+            rotation=Rotation(-0.7, 0, 0, 0.7),
+            parent=parent,
+            material=Material(
+                color=color,
+                transparent=True,
+                opacity=0.4,
+                shader="flat"),
+        )
+        scene.add_object(CONTROLS[object_id][name])
+    elif move:
+        scene.update_object(CONTROLS[object_id][name], position=position)
 
 
 def regline(object_id, axis, direction, delim, suffix, start,
-            end, line_width, color=Color(255, 255, 255), parent=None):
-    if parent:
-        end = Position(x=(end.x - start.x) * 10,
-                       y=(end.y - start.y) * 10,
-                       z=(end.z - start.z) * 10)
-        start = Position(x=0, y=0, z=0)
+            end, line_width, move, color, parent):
+    line_width = line_width/SCL_CLICK
+    end = Position(x=(end.x - start.x)/SCL_CLICK,
+                   y=(end.y - start.y)/SCL_CLICK,
+                   z=(end.z - start.z)/SCL_CLICK)
     name = f"{object_id}{delim}{axis}{direction}_{suffix}"
-    CONTROLS[object_id][name] = Line(
-        object_id=name,
-        color=color,
-        ttl=arblib.TTL_TEMP,
-        parent=parent,
-        start=start,
-        end=end)
-    scene.add_object(CONTROLS[object_id][name])
+    if name not in CONTROLS[object_id]:
+        CONTROLS[object_id][name] = Line(
+            object_id=name,
+            color=color,
+            # TODO: restore ttl=arblib.TTL_TEMP,
+            parent=parent,
+            start=start,
+            end=end)
+        scene.add_object(CONTROLS[object_id][name])
+    elif move:
+        scene.update_object(CONTROLS[object_id][name], start=start, end=end)
 
 
 def boxline(object_id, axis, direction, delim, suffix, start,
-            end, line_width, color=(255, 255, 255), parent=None):
-    if parent:
-        end = Position(x=(end.x - start.x) * 10,
-                       y=(end.y - start.y) * 10,
-                       z=(end.z - start.z) * 10)
-        start = Position(x=0, y=0, z=0)
+            end, line_width, move, color, parent):
+    line_width = line_width/SCL_CLICK
+    end = Position(x=(end.x - start.x)/SCL_CLICK,
+                   y=(end.y - start.y)/SCL_CLICK,
+                   z=(end.z - start.z)/SCL_CLICK)
     if start.y == end.y and start.z == end.z:
         scale = Scale(x=abs(start.x - end.x), y=line_width, z=line_width)
     elif start.x == end.x and start.z == end.z:
@@ -662,68 +719,81 @@ def boxline(object_id, axis, direction, delim, suffix, start,
     elif start.x == end.x and start.y == end.y:
         scale = Scale(x=line_width, y=line_width, z=abs(start.z - end.z))
     name = f"{object_id}{delim}{axis}{direction}_{suffix}"
-    CONTROLS[object_id][name] = Box(
-        object_id=name,
-        ttl=arblib.TTL_TEMP,
-        parent=parent,
-        scale=scale,
-        position=Position(statistics.median([start.x, end.x]),
-                          statistics.median([start.y, end.y]),
-                          statistics.median([start.z, end.z])),
-        material=Material(
-            color=color,
-            transparent=True,
-            opacity=0.4,
-            shader="flat"),
-    )
-    scene.add_object(CONTROLS[object_id][name])
+    position = Position(statistics.median([start.x, end.x]),
+                        statistics.median([start.y, end.y]),
+                        statistics.median([start.z, end.z]))
+    if name not in CONTROLS[object_id]:
+        CONTROLS[object_id][name] = Box(
+            object_id=name,
+            # TODO: restore ttl=arblib.TTL_TEMP,
+            parent=parent,
+            scale=scale,
+            position=position,
+            material=Material(
+                color=color,
+                transparent=True,
+                opacity=0.4,
+                shader="flat"),
+        )
+        scene.add_object(CONTROLS[object_id][name])
+    elif move:
+        scene.update_object(CONTROLS[object_id][name],
+                            position=position, scale=scale)
 
 
 def dir_clickers(object_id, axis, direction, delim, position,
-                 color, cones, callback, parent=None):
-    if parent:
-        position = Position(x=position.x * 10,
-                            y=position.y * 10, z=position.z * 10)
-    loc = position
-    npos = 0.1
+                 color, cones, callback, move, parent):
+    position = Position(x=position.x/SCL_CLICK,
+                        y=position.y/SCL_CLICK,
+                        z=position.z/SCL_CLICK)
+    loc = Position(x=position.x/SCL_CLICK,
+                   y=position.y/SCL_CLICK,
+                   z=position.z/SCL_CLICK)
+    npos = 0.1/SCL_CLICK
     if direction == "p":
-        npos = -0.1
+        npos = -0.1/SCL_CLICK
     if axis == "x":
         loc = Position(x=position.x + npos, y=position.y, z=position.z)
     elif axis == "y":
         loc = Position(x=position.x, y=position.y + npos, z=position.z)
     elif axis == "z":
         loc = Position(x=position.x, y=position.y, z=position.z + npos)
-    name = f"{object_id}{delim}{axis}p_{direction}"
-    CONTROLS[object_id][name] = Cone(   # click object positive
-        object_id=name,
-        clickable=True,
-        position=position,
-        rotation=cones[axis + direction][0],
-        scale=Scale(0.05, 0.09, 0.05),
-        material=Material(color=color, transparent=True,
-                          opacity=arblib.OPC_CLINE),
-        ttl=arblib.TTL_TEMP,
-        parent=parent,
-        evt_handler=callback)
-    scene.add_object(CONTROLS[object_id][name])
-    name = f"{object_id}{delim}{axis}n_{direction}"
-    CONTROLS[object_id][name] = Cone(  # click object negative
-        object_id=name,
-        clickable=True,
-        position=loc,
-        rotation=cones[axis + direction][1],
-        scale=Scale(0.05, 0.09, 0.05),
-        material=Material(color=color, transparent=True,
-                          opacity=arblib.OPC_CLINE),
-        ttl=arblib.TTL_TEMP,
-        parent=parent,
-        evt_handler=callback)
-    scene.add_object(CONTROLS[object_id][name])
+    name_pos = f"{object_id}{delim}{axis}p_{direction}"
+    name_neg = f"{object_id}{delim}{axis}n_{direction}"
+    if name_pos not in CONTROLS[object_id]:
+        CONTROLS[object_id][name_pos] = Cone(   # click object positive
+            object_id=name_pos,
+            clickable=True,
+            position=position,
+            rotation=cones[axis + direction][0],
+            scale=Scale(0.05/SCL_CLICK, 0.09/SCL_CLICK, 0.05/SCL_CLICK),
+            material=Material(color=color, transparent=True,
+                              opacity=arblib.OPC_CLINE),
+            # TODO: restore ttl=arblib.TTL_TEMP,
+            parent=parent,
+            evt_handler=callback)
+        scene.add_object(CONTROLS[object_id][name_pos])
+    elif move:
+        scene.update_object(CONTROLS[object_id][name_pos], position=position)
+    if name_neg not in CONTROLS[object_id]:
+        CONTROLS[object_id][name_neg] = Cone(  # click object negative
+            object_id=name_neg,
+            clickable=True,
+            position=loc,
+            rotation=cones[axis + direction][1],
+            scale=Scale(0.05/SCL_CLICK, 0.09/SCL_CLICK, 0.05/SCL_CLICK),
+            material=Material(color=color, transparent=True,
+                              opacity=arblib.OPC_CLINE),
+            # TODO: restore ttl=arblib.TTL_TEMP,
+            parent=parent,
+            evt_handler=callback)
+        scene.add_object(CONTROLS[object_id][name_neg])
+    elif move:
+        scene.update_object(CONTROLS[object_id][name_neg], position=loc)
 
 
 def make_clickline(axis, linelen, objid, start, delim,
-                   color, callback, ghost=False, parent=None):
+                   color, callback, ghost=None, parent=None, move=False):
     if objid not in CONTROLS.keys():
         CONTROLS[objid] = {}
     endx = endy = endz = 0
@@ -731,27 +801,51 @@ def make_clickline(axis, linelen, objid, start, delim,
     if linelen < 0:
         direction = "n"
     if axis == "x":
-        endx = linelen * arblib.CLICKLINE_LEN
+        endx = linelen
     elif axis == "y":
-        endy = linelen * arblib.CLICKLINE_LEN
+        endy = linelen
     elif axis == "z":
-        endz = linelen * arblib.CLICKLINE_LEN
+        endz = linelen
+    start = Position(0, 0, 0)
     end = Position(x=start.x + endx, y=start.y + endy, z=start.z + endz)
     boxline(  # reference line
         object_id=objid, axis=axis, direction=direction, delim=delim,
-        suffix="line", color=color, start=start, end=end, line_width=0.005,
+        suffix="line", color=color, start=start, end=end, line_width=0.005, move=move,
         parent=parent)
     if ghost:
         boxline(  # ghostline aligns to parent rotation
             object_id=objid, axis=axis, direction=direction, delim=delim,
-            suffix="ghost", start=start, end=end, line_width=0.005, parent=objid)
+            suffix="ghost", color=(255,255,255), start=start, end=end, line_width=0.005,
+            move=move, parent=ghost)
     if ghost:
         cones = arblib.ROTATE_CONES
     else:
         cones = arblib.DIRECT_CONES
     dir_clickers(  # click objects
         object_id=objid, axis=axis, direction=direction, delim=delim, position=end,
-        color=color, cones=cones, callback=callback, parent=parent)
+        color=color, cones=cones, callback=callback, move=move, parent=parent)
+
+
+def make_clickroot(objid, position, delim, rotation=None, move=False):
+    if objid not in CONTROLS.keys():
+        CONTROLS[objid] = {}
+    name = f"{objid}{delim}clickroot"
+    if rotation:
+        name += "_rotated"
+    else:
+        rotation=Rotation(0, 0, 0, 1)
+    if name not in CONTROLS[objid]:
+        CONTROLS[objid][name] = Box(
+            object_id=name,
+            material=Material(transparent=True, opacity=0),
+            position=position,
+            scale=Scale(SCL_CLICK, SCL_CLICK, SCL_CLICK),
+            rotation=rotation,
+        )
+        scene.add_object(CONTROLS[objid][name])
+    elif move:
+        scene.update_object(CONTROLS[objid][name], position=position, rotation=rotation)
+    return name
 
 
 def do_move_relocate(camname, newposition):
@@ -784,7 +878,7 @@ def meters_increment(meters_style):
 
 def nudgeline_callback(_scene, event, msg):
     obj, direction, move, val = handle_clickline_event(event, Mode.NUDGE)
-    if not obj and not direction:
+    if not obj or not direction or "position" not in obj.data:
         return
     nudged = loc = obj.data.position
     if val == 0:
@@ -811,7 +905,7 @@ def nudgeline_callback(_scene, event, msg):
 
 def scaleline_callback(_scene, event, msg):
     obj, direction, move, val = handle_clickline_event(event, Mode.SCALE)
-    if not obj and not direction:
+    if not obj or not direction or "scale" not in obj.data:
         return
     scaled = sca = obj.data.scale
     if val == 0:
@@ -833,7 +927,7 @@ def scaleline_callback(_scene, event, msg):
 
 def stretchline_callback(_scene, event, msg):
     obj, direction, move, val = handle_clickline_event(event, Mode.STRETCH)
-    if not obj and not direction and not move:
+    if not obj or not direction or not move or "scale" not in obj.data or "position" not in obj.data:
         return
     scaled = sca = obj.data.scale
     moved = loc = obj.data.position
@@ -875,14 +969,15 @@ def stretchline_callback(_scene, event, msg):
 
 def rotateline_callback(_scene, event, msg):
     obj, direction, move, val = handle_clickline_event(event, Mode.ROTATE)
-    if not obj and not direction:
+    if not obj or not direction or "rotation" not in obj.data:
         return
     rotated = rot = obj.data.rotation
-    if val == 0:
-        inc = float(USERS[event.data.source].target_style)
-    else:
-        inc = val * 180
-    rot = arblib.rotation_quat2euler((rot.x, rot.y, rot.z, rot.w))
+    inc = float(USERS[event.data.source].target_style)
+    try:
+        rot = arblib.rotation_quat2euler((rot.x, rot.y, rot.z, rot.w))
+    except ValueError as error:
+        print(f"Rotation error: {error}")
+        return
     rot = (round(rot[0]), round(rot[1]), round(rot[2]))
     if direction == "xp":
         rotated = (incr_pos(rot[0], inc), rot[1], rot[2])
@@ -898,7 +993,11 @@ def rotateline_callback(_scene, event, msg):
         rotated = (rot[0], rot[1], incr_neg(rot[2], inc))
     if abs(rotated[0]) > 180 or abs(rotated[1]) > 180 or abs(rotated[2]) > 180:
         return
-    rotated = arblib.rotation_euler2quat(rotated)
+    try:
+        rotated = arblib.rotation_euler2quat(rotated)
+    except ValueError as error:
+        print(f"Rotation error: {error}")
+        return
     rotated = Rotation(x=rotated[0], y=rotated[1], z=rotated[2], w=rotated[3])
     arblib.rotate_obj(scene, obj.object_id, rotated)
     print(f"{str(obj.data.rotation)} to {str(rotated)}")
@@ -938,7 +1037,7 @@ def clipboard_callback(_scene, event, msg):
         return
     position = event.data.position
     if USERS[camname].mode == Mode.CREATE or USERS[camname].mode == Mode.MODEL:
-        create_obj(camname, USERS[camname].clipboard, position)
+        create_obj(camname, USERS[camname].get_clipboard(), position)
     elif USERS[camname].mode == Mode.MOVE:
         do_move_relocate(camname, position)
 
@@ -1158,6 +1257,8 @@ def scene_callback(_scene, event, msg):
 def end_program_callback(_scene):
     for camname in USERS:
         USERS[camname].delete()
+    show_redpill_scene(False)
+    # TODO: remove origin marker
     for objid in CONTROLS:
         for ctrl in CONTROLS[objid]:
             _scene.delete_object(CONTROLS[objid][ctrl])

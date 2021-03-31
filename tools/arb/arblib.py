@@ -13,10 +13,12 @@ from arena import (Box, Circle, Color, Cone, Cylinder, Dodecahedron,
                    Position, Ring, Rotation, Scale, Scene, Sphere, Tetrahedron,
                    Text, Torus, TorusKnot, Triangle)
 
-CLICKLINE_LEN = 1  # meters
+CLICKLINE_LEN_OBJ = 0.5  # meters
+CLICKLINE_LEN_MOD = 1  # meters
 CLICKLINE_SCL = Scale(1, 1, 1)  # meters
-FLOOR_Y = 0  # meters
+FLOOR_Y = 0.1  # meters
 GRIDLEN = 20  # meters
+SCL_HUD = 0.1  # meters
 PANEL_RADIUS = 1  # meters
 CLIP_RADIUS = PANEL_RADIUS + 0.25  # meters
 LOCK_XOFF = 0  # quaternion vector
@@ -147,6 +149,15 @@ class User:
         init_origin(self.scene)
 
         # set HUD to each user
+        self.hud = Box(
+            object_id=f"hud_{camname}",
+            parent=camname,
+            material=Material(transparent=True, opacity=0),
+            position=Position(0, 0, 0),
+            scale=Scale(SCL_HUD, SCL_HUD, SCL_HUD),
+            rotation=Rotation(0, 0, 0, 1),
+        )
+        self.scene.add_object(self.hud)
         self.hudtext_left = self.make_hudtext(
             "hudTextLeft", Position(-0.15, 0.15, -0.5), str(self.mode))
         self.hudtext_right = self.make_hudtext(
@@ -167,7 +178,6 @@ class User:
         self.scene.add_object(self.follow)
         self.redpill = False
         self.panel = {}  # button dictionary
-        followname = self.follow.object_id
         self.dbuttons = {}
         buttons = [
             # top row
@@ -193,17 +203,19 @@ class User:
         for but in buttons:
             pbutton = Button(
                 scene, camname, but[0], but[1], but[2], enable=but[3], btype=but[4],
-                parent=followname, callback=panel_callback)
+                parent=self.follow.object_id, callback=panel_callback)
             self.panel[pbutton.button.object_id] = pbutton
 
     def make_hudtext(self, label, position, text):
         text = Text(
             object_id=f"{label}_{self.camname}",
-            parent=self.camname,
+            parent=self.hud.object_id,
             text=text,
-            position=position,
+            position=Position(position.x/SCL_HUD,
+                              position.y/SCL_HUD,
+                              position.z/SCL_HUD),
             color=CLR_HUDTEXT,
-            scale=Scale(0.1, 0.1, 0.1),
+            scale=Scale(0.1/SCL_HUD, 0.1/SCL_HUD, 0.1/SCL_HUD),
         )
         self.scene.add_object(text)
         return text
@@ -221,7 +233,7 @@ class User:
         if enabled:
             self.lamp = Light(
                 object_id=f"{self.camname}_lamp",
-                parent=self.camname,
+                parent=self.hud.object_id,
                 material=Material(color=Color(144, 144, 173)),
                 type="point",
                 intensity=0.75)
@@ -233,7 +245,7 @@ class User:
                       callback=None,
                       object_type=None,
                       scale=Scale(0.05, 0.05, 0.05),
-                      position=Position(0, 0, -CLIP_RADIUS),
+                      position=Position(0, 0, -CLIP_RADIUS/SCL_HUD),
                       color=Color(255, 255, 255),
                       url=None):
         if object_type:
@@ -241,8 +253,8 @@ class User:
                 object_id=f"{self.camname}_clipboard",
                 object_type=object_type,
                 position=position,
-                parent=self.camname,
-                scale=scale,
+                parent=self.hud.object_id,
+                scale=Scale(scale.x/SCL_HUD, scale.y/SCL_HUD, scale.z/SCL_HUD),
                 material=Material(color=color, transparent=True, opacity=0.4),
                 url=url,
                 clickable=True,
@@ -251,13 +263,21 @@ class User:
         self.cliptarget = Circle(  # add helper target object to find true origin
             object_id=f"{self.camname}_cliptarget",
             position=position,
-            parent=self.camname,
-            scale=Scale(0.005, 0.005, 0.005),
+            parent=self.hud.object_id,
+            scale=Scale(0.005/SCL_HUD, 0.005/SCL_HUD, 0.005/SCL_HUD),
             material=Material(color=Color(255, 255, 255),
                               transparent=True, opacity=0.4),
             clickable=True,
             evt_handler=callback)
         self.scene.add_object(self.cliptarget)
+
+    def get_clipboard(self):
+        obj_actual = self.clipboard
+        obj_actual.data.scale = Scale(
+            self.clipboard.data.scale.x*SCL_HUD,
+            self.clipboard.data.scale.y*SCL_HUD,
+            self.clipboard.data.scale.z*SCL_HUD)
+        return obj_actual
 
     def del_clipboard(self):
         if self.cliptarget and self.cliptarget.object_id in self.scene.all_objects:
@@ -266,10 +286,7 @@ class User:
             self.scene.delete_object(self.clipboard)
 
     def delete(self):
-        self.del_clipboard()
-        self.scene.delete_object(self.hudtext_left)
-        self.scene.delete_object(self.hudtext_right)
-        self.scene.delete_object(self.hudtext_status)
+        self.scene.delete_object(self.hud)
         self.scene.delete_object(self.follow)
 
 
@@ -365,6 +382,7 @@ class Button:
 
 def init_origin(scene: Scene):
     """Origin object, construction cone, so user knows ARB is running."""
+    # TODO: migrate to shared-scene setting
     size = [0.2, 0.4, 0.2]
     scene.add_object(Cone(  # 370mm x 370mm # 750mm
         object_id="arb-origin",

@@ -1,0 +1,80 @@
+# note: command line args override these options
+dryrun: True # a dry run performs object publish with persist=False, so changes are not persisted (import only)
+host: arena.andrew.cmu.edu
+mqtt_port: 8883
+realm: realm
+
+# json array with objects (e.g. from mongodb export; must be .json or .bson file)
+#import_objects_filename: arenaobjects_03_30_2021.json
+import_objects_filename: arenaobjects_03_29_2021.bson
+
+# list of namespaces and scenes to import/export
+namespaces:
+  regex:
+    value: .* # regex for the namespace to be included
+    skip: False # treat regex as indicating that matching namespaces are skipped (default=False)
+  sprng-changeme-0.1.0:
+    regex:
+      value: .* # regex for the scenes to be included
+      skip: True
+  sprng-changeme-2:
+    regex:
+      value: .*
+      skip: True
+  syreal:
+    regex:
+      value: .*
+      skip: True
+  LT:
+    regex:
+      value: .*
+      skip: True
+  public:
+    regex:
+      value: .* # regex for the scenes to be included
+      skip: True # treat regex as indicating that matching scene ids are skipped (default=False)
+
+    # wine-store:
+    # school:
+    #     to:
+    #       scene: school-construction
+    # # lobby:
+    # #  to: # add destination scene name and/or namespace to rename/change namespace
+    # #    scene: lobby # can add destination to:scene (to rename scene) ()
+    # #    namespace: public_test # can add destination to:namespace (to change namespace)
+    # #  parent: imported_lobby_root # objects will be added as children of this object (assumes parent exists )
+    # fireside:
+    #     to:
+    #       namespace: public
+    # meeting:
+    #     to:
+    #       scene: meeting-4
+    # meetup:
+    #     to:
+    #       scene: meeting-outdoor-mozilla
+    # island-sm:
+    #     to:
+    #       scene: island
+    # kingshall:
+    # skatepark:
+    # room6:
+    #     to:
+    #       scene: gallery-1
+    # loft:
+    #     to:
+    #       namespace: public
+    # warehouse80s-10:
+    #     to:
+    #       scene: warehouse-80s
+    #       namespace: public
+    # tepper:
+    #     to:
+    #       scene: cmu-tepper-hall
+    # greatchamber:
+    #     to:
+    #       namespace: public
+    # school:
+    #     to:
+    #       scene: school-construction
+    # theater:
+    # starwars:

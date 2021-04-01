@@ -66,13 +66,17 @@ import_objects_filename: arenaobjects_03_29_2021.bson
 # list of namespaces and scenes to import/export
 namespaces:
   regex:
-    value: .* # regex for the namespaces to be included
-    skip: False # treat regex as indicating that matching namespaces are skipped (default=False)
-  namespace-to-skip:
+    value: .* # regex for the namespaces to be included (if skip=False)
+    skip: False # if True, treat regex as indicating that matching namespaces are skipped (default=False)
+
+  skip-scenes-from-this-namespace: # the regex below shows how to skip all scenes in a namespace
     regex:
       value: .* # regex for the scenes to be imported for this namespace
       skip: True # this indicates that scenes matching the regex will be **skipped**
-  public:
+
+    dont-skip-this-one: # this scene will be imported; scenes listed are always processed (even if they don't match the regex)
+
+  public: # namespaces listed are always processed (even if they don't match the regex)
     lobby:
     	to: # add destination scene name and/or namespace to rename/change namespace
     		scene: lobby # can add destination to:scene (to rename scene) ()

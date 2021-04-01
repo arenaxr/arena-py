@@ -18,8 +18,9 @@ The script accepts an action argument:
 ```
   action                The action to perform: import/export.
 ```
+**Note**: Export is not implemented yet
 
-And the folowing optional arguments:
+And the following optional arguments:
 ```
   -h, --help            show this help message and exit
   -c CONFIGFILE [CONFIGFILE ...], --conf CONFIGFILE [CONFIGFILE ...]
@@ -54,8 +55,6 @@ make export
 And define options in the **config file** (`./config.yaml` by default). The config file looks like this:
 
 ```yaml
-# note: command line args override these options
-action: import # action to perform: **import** to ARENA; **export** from arena
 dryrun: True # a dry run performs object publish with persist=False, so changes are not persisted (import only)
 host: arena.andrew.cmu.edu
 mqtt_port: 8883
@@ -83,3 +82,5 @@ namespaces:
        to:
     		  scene: fireside-imported
 ```
+
+**Note**: Command line args override config file options.

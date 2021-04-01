@@ -88,3 +88,12 @@ namespaces:
 ```
 
 **Note**: Command line args override config file options.
+
+## Permissions
+
+This tool will use the permissions of the ARENA user logged in. Can only import to namespaces/scenes the user has access to. If the user is not logged in, a login prompt (in a browser) will be presented.
+
+To force sign out:
+```
+make signout
+```

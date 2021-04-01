@@ -80,8 +80,8 @@ def periodic():
         print( "Morph Target Close Eye")
 
     if x%7==6:
-        open_eye_morph = [Morph(morphtarget="eyeTop",value=0.0), Morph(morphtarget="eyeBottom",value=0.0)]
-        xr_logo.update_morph(open_eye_morph)
+        open_eye_morphs = [Morph(morphtarget="eyeTop",value=0.0), Morph(morphtarget="eyeBottom",value=0.0)]
+        xr_logo.update_morph(open_eye_morphs)
         scene.update_object(xr_logo)
         print( "Morph Target Open Eye")
 

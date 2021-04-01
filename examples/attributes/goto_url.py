@@ -29,7 +29,7 @@ sametab = Box(
 
 
 @scene.run_once
-def add_objs():
+def make_urls():
     scene.add_object(popup)
     scene.add_object(newtab)
     scene.add_object(sametab)

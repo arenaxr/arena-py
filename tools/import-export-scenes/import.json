@@ -1,0 +1,806 @@
+./.venv/bin/python import.py
+Signing in to the ARENA...
+Using cached Google authentication.
+Authenticated Google account: nampereira@gmail.com
+Using remote-authenticated MQTT token.
+ARENA Username: npereira
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "object_type": "gltf-model",
+        "position": {
+            "x": 0,
+            "y": -2,
+            "z": 0
+        },
+        "rotation": {
+            "w": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        "scale": {
+            "x": 0.05,
+            "y": 0.05,
+            "z": 0.05
+        },
+        "url": "/store/users/wiselab/room_models/lobby/lobby-v2.glb"
+    },
+    "object_id": "lobby-model",
+    "persist": false,
+    "type": "object"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "env-presets": {
+            "active": false,
+            "flatShading": true,
+            "fog": 0,
+            "preset": "default"
+        },
+        "renderer-settings": {
+            "outputEncoding": "sRGBEncoding",
+            "physicallyCorrectLights": false
+        },
+        "scene-options": {
+            "clickableOnlyEvents": true,
+            "maxAVDist": 20,
+            "privateScene": true
+        }
+    },
+    "object_id": "39d71711-9fa7-4d7b-b87c-d7702e7ae426",
+    "persist": false,
+    "type": "scene-options"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "object_type": "gltf-model",
+        "position": {
+            "x": 10,
+            "y": -0.25,
+            "z": 1.2
+        },
+        "rotation": {
+            "w": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        "scale": {
+            "x": 3,
+            "y": 3,
+            "z": 3
+        },
+        "url": "/store/users/wiselab/models/old_tree/scene.gltf"
+    },
+    "object_id": "old-tree",
+    "persist": false,
+    "type": "object"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "channels": [
+            {
+                "mode": "rw",
+                "params": {
+                    "topic": "realm/s/${scene}"
+                },
+                "path": "/ch/${scene}",
+                "type": "pubsub"
+            }
+        ],
+        "env": [
+            "SCENE=${scene}",
+            "MQTTH=${mqtth}",
+            "REALM=realm"
+        ],
+        "filename": "avatar.py",
+        "filetype": "PY",
+        "instantiate": "single",
+        "name": "wiselab/face-avatar"
+    },
+    "object_id": "d13864d6-556f-4fc6-bda0-e5340f1cac82",
+    "persist": false,
+    "type": "program"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "object_type": "image",
+        "position": {
+            "x": 2.5,
+            "y": 1.25,
+            "z": -13.6
+        },
+        "rotation": {
+            "w": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        "scale": {
+            "x": 7,
+            "y": 4,
+            "z": 3
+        },
+        "url": "/store/users/wiselab/images/move-controls.png"
+    },
+    "object_id": "controls_sign_img1",
+    "persist": false,
+    "type": "object"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "channels": [],
+        "env": [
+            "SCENE=${scene}",
+            "MQTTH=${mqtth}",
+            "REALM=realm",
+            "MID=${moduleid}"
+        ],
+        "filename": "arm-demo.py",
+        "filetype": "PY",
+        "instantiate": "single",
+        "name": "wiselab/arm-lobby"
+    },
+    "object_id": "cc0d7c31-6235-4b50-ac8f-5bbc44f785ca",
+    "persist": false,
+    "type": "program"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "animation-mixer": {
+            "clip": "Armature.002|Armature.002Action.001"
+        },
+        "click-listener": "",
+        "color": "#ffffff",
+        "object_type": "gltf-model",
+        "position": {
+            "x": 20,
+            "y": -2,
+            "z": 11
+        },
+        "rotation": {
+            "w": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        "scale": {
+            "x": 0.01,
+            "y": 0.01,
+            "z": 0.01
+        },
+        "url": "/store/users/wiselab/models/factory_robot_arm/scene.gltf"
+    },
+    "object_id": "arm1",
+    "persist": false,
+    "type": "object"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "click-listener": "",
+        "color": "#00ff00",
+        "object_type": "cube",
+        "position": {
+            "x": 18,
+            "y": -2,
+            "z": 11.5
+        },
+        "rotation": {
+            "w": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        "scale": {
+            "x": 0.5,
+            "y": 0.1,
+            "z": 0.5
+        }
+    },
+    "object_id": "start",
+    "persist": false,
+    "type": "object"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "click-listener": "",
+        "color": "#ff0000",
+        "object_type": "cube",
+        "position": {
+            "x": 18,
+            "y": -2,
+            "z": 10.5
+        },
+        "rotation": {
+            "w": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        "scale": {
+            "x": 0.5,
+            "y": 0.1,
+            "z": 0.5
+        }
+    },
+    "object_id": "stop",
+    "persist": false,
+    "type": "object"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "click-listener": true,
+        "color": "#808080",
+        "material": {
+            "side": "front",
+            "src": ""
+        },
+        "object_type": "cube",
+        "position": {
+            "x": 19,
+            "y": 1,
+            "z": -13.6
+        },
+        "rotation": {
+            "w": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        "scale": {
+            "x": 7,
+            "y": 4.5,
+            "z": 0.1
+        },
+        "video-control": {
+            "anyone_clicks": false,
+            "frame_object": "store/users/wiselab/images/conix-video-2.png",
+            "video_loop": false,
+            "video_object": "square_vid1",
+            "video_path": "store/users/wiselab/videos/one-minute-madness-sm.mp4"
+        }
+    },
+    "object_id": "square_vid1",
+    "persist": false,
+    "type": "object"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "click-listener": false,
+        "color": "#ffffff",
+        "goto-url": {
+            "dest": "popup",
+            "on": "mousedown",
+            "url": "https://arena-cdn.conix.io/store/users/conixadmin/review-2020-posters/poster_pdfs/P101638.pdf"
+        },
+        "object_type": "image",
+        "position": {
+            "x": 24,
+            "y": 2,
+            "z": -13.5
+        },
+        "rotation": {
+            "w": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+        },
+        "url": "/store/users/conixadmin/review-2020-posters/ppdf.png"
+    },
+    "object_id": "poster1_pdflink",
+    "persist": false,
+    "type": "object"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "click-listener": false,
+        "color": "#ffffff",
+        "goto-url": {
+            "dest": "popup",
+            "on": "mousedown",
+            "url": "https://youtu.be/zNLL9AbruKQ"
+        },
+        "object_type": "image",
+        "parent": "",
+        "position": {
+            "x": 24,
+            "y": 0.5,
+            "z": -13.5
+        },
+        "rotation": {
+            "w": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+        },
+        "url": "/store/users/conixadmin/review-2020-posters/ltvideo.png"
+    },
+    "object_id": "poster1_videolink",
+    "persist": false,
+    "type": "object"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "color": "#ffffff",
+        "object_type": "image",
+        "position": {
+            "x": 19,
+            "y": 1.25,
+            "z": 14.5
+        },
+        "rotation": {
+            "w": 0,
+            "x": 0,
+            "y": 1,
+            "z": 0
+        },
+        "scale": {
+            "x": 7,
+            "y": 4.5,
+            "z": 1
+        },
+        "url": "/store/users/wiselab/images/app-demo.png"
+    },
+    "object_id": "robot_sign_img1",
+    "persist": false,
+    "type": "object"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "click-listener": false,
+        "color": "#ffffff",
+        "object_type": "image",
+        "position": {
+            "x": 25.1,
+            "y": 1.5,
+            "z": -6
+        },
+        "rotation": {
+            "w": -0.707,
+            "x": 0,
+            "y": 0.707,
+            "z": 0
+        },
+        "scale": {
+            "x": 4.75,
+            "y": 3,
+            "z": 1
+        },
+        "url": "/store/users/wiselab/images/directional-sound.png"
+    },
+    "object_id": "sound_sign_img1",
+    "persist": false,
+    "type": "object"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "click-listener": true,
+        "color": "#0b7913",
+        "object_type": "sphere",
+        "position": {
+            "x": 25.1,
+            "y": 1.5,
+            "z": -3.6
+        },
+        "rotation": {
+            "w": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        "scale": {
+            "x": 0.25,
+            "y": 0.25,
+            "z": 0.25
+        },
+        "sound": {
+            "on": "mousedown",
+            "poolSize": 1,
+            "positional": true,
+            "src": "store/users/wiselab/audio/applause.wav"
+        }
+    },
+    "object_id": "sound_sphere_right",
+    "persist": false,
+    "type": "object"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "click-listener": true,
+        "color": "#0b7913",
+        "object_type": "sphere",
+        "position": {
+            "x": 25.1,
+            "y": 1.5,
+            "z": -8.4
+        },
+        "rotation": {
+            "w": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        "scale": {
+            "x": 0.25,
+            "y": 0.25,
+            "z": 0.25
+        },
+        "sound": {
+            "on": "mousedown",
+            "poolSize": 1,
+            "positional": true,
+            "src": "store/users/wiselab/audio/applause.wav"
+        }
+    },
+    "object_id": "sound_sphere_left",
+    "persist": false,
+    "type": "object"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "landmarks": [
+            {
+                "label": "How to Navigate",
+                "object_id": "navigation-landmark"
+            },
+            {
+                "label": "Video and Poster Demo",
+                "object_id": "video-landmark"
+            },
+            {
+                "label": "Spatial Sound Demo",
+                "object_id": "audio-landmark"
+            },
+            {
+                "label": "Pinata",
+                "object_id": "pinataParent"
+            }
+        ]
+    },
+    "object_id": "af1513e4-27ae-4012-ba7e-d0288df0b42d",
+    "persist": false,
+    "type": "landmarks"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "material": {
+            "opacity": 0,
+            "transparent": true
+        },
+        "object_type": "cube",
+        "position": {
+            "x": 3,
+            "y": 2,
+            "z": -13
+        },
+        "rotation": {
+            "w": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+        }
+    },
+    "object_id": "navigation-landmark",
+    "persist": false,
+    "type": "object"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "material": {
+            "opacity": 0,
+            "transparent": true
+        },
+        "object_type": "cube",
+        "position": {
+            "x": 20,
+            "y": 2,
+            "z": -13
+        },
+        "rotation": {
+            "w": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+        }
+    },
+    "object_id": "video-landmark",
+    "persist": false,
+    "type": "object"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "material": {
+            "opacity": 0,
+            "transparent": true
+        },
+        "object_type": "cube",
+        "position": {
+            "x": 26,
+            "y": 2,
+            "z": -6
+        },
+        "rotation": {
+            "w": -0.707,
+            "x": 0,
+            "y": 0.707,
+            "z": 0
+        },
+        "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+        }
+    },
+    "object_id": "audio-landmark",
+    "persist": false,
+    "type": "object"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "animation": {
+            "dur": 100,
+            "easing": "linear",
+            "property": "position",
+            "to": "20.142590068125777 -1.1 12.633246270696265"
+        },
+        "color": "#ffffff",
+        "material": {
+            "opacity": 0,
+            "transparent": true
+        },
+        "object_type": "cube",
+        "position": {
+            "x": 20.143,
+            "y": -1.1,
+            "z": 12.633
+        },
+        "rotation": {
+            "w": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+        }
+    },
+    "object_id": "pinataParent",
+    "persist": false,
+    "type": "object"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "click-listener": "",
+        "color": "#ffffff",
+        "object_type": "gltf-model",
+        "parent": "pinataParent",
+        "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        "rotation": {
+            "w": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        "scale": {
+            "x": 0.002,
+            "y": 0.002,
+            "z": 0.002
+        },
+        "url": "/store/users/wiselab/models/fortnite_llama/scene.gltf"
+    },
+    "object_id": "pinata-model",
+    "persist": false,
+    "type": "object"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "color": "#6464ff",
+        "object_type": "text",
+        "parent": "pinataParent",
+        "position": {
+            "x": 0,
+            "y": 2,
+            "z": 0
+        },
+        "rotation": {
+            "w": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+        },
+        "text": "Click Me!"
+    },
+    "object_id": "text1",
+    "persist": false,
+    "type": "object"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "channels": [],
+        "env": [
+            "SCENE=${scene}",
+            "MQTTH=${mqtth}",
+            "REALM=realm",
+            "MID=${moduleid}"
+        ],
+        "filename": "mini-pinata.py",
+        "filetype": "PY",
+        "instantiate": "single",
+        "name": "wiselab/mini-Pinata"
+    },
+    "object_id": "2034c5f5-7c6e-4852-98ab-f2144fbf4ac8",
+    "persist": false,
+    "type": "program"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "click-listener": false,
+        "color": "#ffffff",
+        "object_type": "cube",
+        "position": {
+            "x": 2.5,
+            "y": 1.25,
+            "z": 15.25
+        },
+        "rotation": {
+            "w": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        "scale": {
+            "x": 7,
+            "y": 4,
+            "z": 0.25
+        }
+    },
+    "object_id": "screenshare",
+    "persist": false,
+    "type": "object"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "channels": [],
+        "env": [
+            "SCENE=${scene}",
+            "MQTTH=${mqtth}",
+            "REALM=realm"
+        ],
+        "filename": "avatar.py",
+        "filetype": "PY",
+        "instantiate": "single",
+        "name": "wiselab/face-avatar"
+    },
+    "object_id": "831a4e79-0ee6-43b4-8c9b-13f799a198cc",
+    "persist": false,
+    "type": "program"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "object_type": "gltf-model",
+        "position": {
+            "x": 0,
+            "y": 1,
+            "z": 0
+        },
+        "rotation": {
+            "w": 0.707,
+            "x": 0,
+            "y": 0.707,
+            "z": 0
+        },
+        "scale": {
+            "x": 0.2,
+            "y": 0.2,
+            "z": 0.2
+        },
+        "url": "/store/users/wiselab/sky_pano/grand_canyon_yuma_point/scene.gltf"
+    },
+    "object_id": "background-pano",
+    "persist": false,
+    "type": "object"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "color": "#ffffff",
+        "intensity": 1,
+        "object_type": "light",
+        "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+        },
+        "type": "ambient"
+    },
+    "object_id": "main-light",
+    "persist": false,
+    "type": "object"
+}
+publishing: realm/s/public/lobby {
+    "action": "create",
+    "data": {
+        "object_type": "entity",
+        "position": {
+            "x": 2,
+            "y": 1.6,
+            "z": -8
+        },
+        "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+        }
+    },
+    "object_id": "startPosition1",
+    "persist": false,
+    "type": "object"
+}

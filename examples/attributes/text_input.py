@@ -1,10 +1,11 @@
 from arena import *
 
-scene = Scene(host="arena-dev1.conix.io", realm="realm", scene="test")
+scene = Scene(host="arena-dev1.conix.io", realm="realm", scene="example")
 
 def evt_handler(scene, evt, msg):
     if evt.type == "textinput":
-        print(f"{evt.data.writer}'s favorite food is {evt.data.text}!")
+        display_name = scene.all_objects[evt.data.writer].displayName
+        print(f"{display_name}'s favorite food is: {evt.data.text}!")
 
 @scene.run_once
 def make_tex_input_iso():

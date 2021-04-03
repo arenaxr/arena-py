@@ -2,6 +2,10 @@
 
 ARENA-py notable changes. Started 2021-19-2.
 
+## [0.1.25] - 2021-3-4
+### Changed
+- Downgrade numpy and scipy versions.
+
 ## [0.1.24] - 2021-31-3
 ### Changed
 - Bug fix with `ThickLine`.
@@ -88,6 +92,8 @@ specify both to bypass auth.
 - `Arena` class renamed to `Scene`, but using `Arena` is still allowed. Updated examples to reflect this.
 - Tiny bug fix with `update_objects`.
 
+[0.1.24]: https://github.com/conix-center/ARENA-py/tree/619be18bd16178fc40b9e670c313f578789845ea
+[0.1.23]: https://github.com/conix-center/ARENA-py/tree/53c0ac608db99d8df0c0ad775cdc4f67df55558b
 [0.1.23]: https://github.com/conix-center/ARENA-py/tree/53c0ac608db99d8df0c0ad775cdc4f67df55558b
 [0.1.22]: https://github.com/conix-center/ARENA-py/tree/ed54a9d33b0be93d6cc51ed2db7cd5de0248735d
 [0.1.21]: https://github.com/conix-center/ARENA-py/tree/c5e561285ddd6135aa03974ab8b686ba74299520

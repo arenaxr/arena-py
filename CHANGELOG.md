@@ -7,7 +7,8 @@ ARENA-py notable changes. Started 2021-19-2.
 - Bug fix with `ThickLine`.
 
 ### Added
-- Add various example programs for every Attribute and Object.
+- Add various example programs for every attribute and object.
+- Add `TextInput` attribute and example.
 
 ## [0.1.23] - 2021-21-3
 ### Changed
@@ -54,7 +55,7 @@ ARENA-py notable changes. Started 2021-19-2.
 
 ## [0.1.16] - 2021-1-3
 ### Changed
-- Bug fix with turning dictionaries into Material attributes.
+- Bug fix with turning dictionaries into Material as.
 
 ## [0.1.15] - 2021-27-2
 ### Changed

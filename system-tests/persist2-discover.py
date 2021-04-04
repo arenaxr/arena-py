@@ -21,7 +21,7 @@ def on_msg_callback(scene, obj, msg):
 
 
 program2 = Scene(
-    host="arena.andrew.cmu.edu", realm="realm", scene="persist-test",
+    host="arenaxr.org", realm="realm", scene="persist-test",
     on_msg_callback=on_msg_callback,
 )
 

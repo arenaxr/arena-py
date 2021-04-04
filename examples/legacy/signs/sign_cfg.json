@@ -2,23 +2,23 @@
   "sign1": {
     "link1": [
       "Theme 1",
-      "https://arena.andrew.cmu.edu/?scene=theme1",
-      "sametab" 
+      "https://arenaxr.org/?scene=theme1",
+      "sametab"
     ],
     "link2": [
       "Theme 2",
-      "https://arena.andrew.cmu.edu/?scene=theme2",
-      "popup" 
+      "https://arenaxr.org/?scene=theme2",
+      "popup"
     ],
     "link3": [
       "Theme 3",
-      "https://arena.andrew.cmu.edu/?scene=theme3",
-      "newtab" 
+      "https://arenaxr.org/?scene=theme3",
+      "newtab"
     ],
     "position": [
       1,
       0,
-      -5 
+      -5
     ],
     "rotation": [
       0,
@@ -30,23 +30,23 @@
   "sign2": {
     "link1": [
       "Theme 4",
-      "https://arena.andrew.cmu.edu/?scene=theme4",
-      "sametab" 
+      "https://arenaxr.org/?scene=theme4",
+      "sametab"
     ],
     "link2": [
       "Theme 5",
-      "https://arena.andrew.cmu.edu/?scene=theme5",
-      "sametab" 
+      "https://arenaxr.org/?scene=theme5",
+      "sametab"
     ],
     "link3": [
       "Theme 6",
-      "https://arena.andrew.cmu.edu/?scene=theme6",
-      "sametab" 
+      "https://arenaxr.org/?scene=theme6",
+      "sametab"
     ],
     "position": [
       3,
       0,
-      -5 
+      -5
     ],
     "rotation": [
       0,

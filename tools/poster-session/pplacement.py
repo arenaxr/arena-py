@@ -78,7 +78,7 @@ def make_wall(name_suffix, position, rotation, wall_data):
         persist=persist,
         position=Position(4, 3, 0.510),
         scale=Scale(.5, .5, 1),
-        url='https://arena.andrew.cmu.edu/store/users/comsenter/images/button-video.jpg',
+        url='https://arenaxr.org/store/users/comsenter/images/button-video.jpg',
         clickable=True,
         goto_url=GotoUrl(dest='popup', on='mousedown', url=wall_data['videoURL'])
     );
@@ -91,7 +91,7 @@ def make_wall(name_suffix, position, rotation, wall_data):
         persist=persist,
         position=Position(4, 2, 0.510),
         scale=Scale(.5, .5, 1),
-        url='https://arena.andrew.cmu.edu/store/users/comsenter/images/button-slides.jpg',
+        url='https://arenaxr.org/store/users/comsenter/images/button-slides.jpg',
         clickable=True,
         goto_url=GotoUrl(dest='popup', on='mousedown', url=wall_data['presentationURL'])
     );
@@ -176,7 +176,7 @@ def make_walls():
 if __name__ == '__main__':
 
     # init the ARENA library
-    scene = Scene(host='arena.andrew.cmu.edu', realm='realm', scene=theme)
+    scene = Scene(host='arenaxr.org', realm='realm', scene=theme)
 
     # add and start tasks
     scene.run_once(make_walls)

@@ -49,7 +49,7 @@ class Teleporter(Object):
         self.scene.add_object(self.dest_text)
 
 
-scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
+scene = Scene(host="arenaxr.org", realm="realm", scene="example")
 
 teleporter = Teleporter(
                     scene=scene,

@@ -5,13 +5,13 @@ import time
 import arena
 import random
 import os
-import json 
+import json
 
 
 # To run in ARTS, these parameters are passed in as environmental variables.
-# export HOST=arena.andrew.cmu.edu
+# export HOST=arenaxr.org
 # export REALM=realm
-# export MQTTH=arena.andrew.cmu.edu
+# export MQTTH=arenaxr.org
 
 # This function draws a line when a user clicks
 def draw_ray(click_pos, position):
@@ -30,7 +30,7 @@ animateState = False
 
 
 def agent_handler(event=None):
-    global agent1 
+    global agent1
     global agentParent
     print("agent handler callback!")
     if event.event_type == arena.EventType.mouseenter:
@@ -47,7 +47,7 @@ def agent_handler(event=None):
         # Need to add Tweening...
         # agent1.update(data='{"animation": {"property": "position","to": "0 15 20","easing": "linear","dur": 1000}}')
 
-# Pull in the SCENE, MQTT and REALM parameters from environmental variables 
+# Pull in the SCENE, MQTT and REALM parameters from environmental variables
 # TODO: Add commandline overide
 if (os.environ.get('SCENE') is not None) and (os.environ.get('REALM') is not None) and (os.environ.get('MQTTH') is not None):
     SCENE = os.environ["SCENE"]
@@ -63,7 +63,7 @@ arena.init(HOST, REALM, SCENE)
 
 print("starting sign main loop")
 
-# 
+#
 agentParent = arena.Object(
     persist=True,
     objName="agentParent",

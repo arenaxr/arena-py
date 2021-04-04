@@ -1,7 +1,7 @@
 from arena import *
 import random, math
 
-scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
+scene = Scene(host="arenaxr.org", realm="realm", scene="example")
 
 model_url = "/store/users/wiselab/models/FaceCapHeadGeneric/FaceCapHeadGeneric.gltf"
 avatar = GLTF(

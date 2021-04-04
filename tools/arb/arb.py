@@ -23,7 +23,7 @@ import arblib
 from arblib import (EVT_MOUSEDOWN, EVT_MOUSEENTER, EVT_MOUSELEAVE, ButtonType,
                     Mode)
 
-BROKER = "arena.andrew.cmu.edu"
+BROKER = "arenaxr.org"
 PORT = None
 REALM = "realm"
 NAMESPACE = None

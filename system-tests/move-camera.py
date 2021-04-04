@@ -13,7 +13,7 @@ def user_join_callback(camera):
     print(f"User found: {camera.displayName} [object_id={camera.object_id}]")
 
 
-scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="test")
+scene = Scene(host="arenaxr.org", realm="realm", scene="test")
 scene.user_join_callback = user_join_callback
 
 # box = Box(object_id="box")

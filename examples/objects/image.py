@@ -1,6 +1,6 @@
 from arena import *
 
-scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
+scene = Scene(host="arenaxr.org", realm="realm", scene="example")
 
 image_url = "https://raw.githubusercontent.com/conix-center/ARENA-core/master/images/conix-face-white.jpg"
 

@@ -1,6 +1,6 @@
 # note: command line args override these options
 dryrun: True # a dry run performs object publish with persist=False, so changes are not persisted (import only)
-host: arena.andrew.cmu.edu
+host: arenaxr.org
 mqtt_port: 8883
 realm: realm
 

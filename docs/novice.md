@@ -28,7 +28,7 @@ scene.delete_object(box)
 from arena import *
 
 # setup library
-scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
+scene = Scene(host="arenaxr.org", realm="realm", scene="example")
 
 @scene.run_async
 async def func():

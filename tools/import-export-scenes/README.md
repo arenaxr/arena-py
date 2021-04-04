@@ -56,7 +56,7 @@ And define options in the **config file** (`./config.yaml` by default). The conf
 
 ```yaml
 dryrun: True # a dry run performs object publish with persist=False, so changes are not persisted (import only)
-host: arena.andrew.cmu.edu
+host: arenaxr.org
 mqtt_port: 8883
 realm: realm
 

@@ -13,7 +13,7 @@ from arena import *
 # PROGRAM ONE - Create persisted object
 
 
-program1 = Scene(host="arena.andrew.cmu.edu",
+program1 = Scene(host="arenaxr.org",
                  realm="realm", scene="persist-test")
 
 

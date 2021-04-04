@@ -19,7 +19,7 @@ See [ARENA Documentation: Python](https://conix-center.github.io/ARENA/content/p
 from arena import *
 
 # create library
-scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
+scene = Scene(host="arenaxr.org", realm="realm", scene="example")
 
 @scene.run_once # make this function a task that runs once at startup
 def main():

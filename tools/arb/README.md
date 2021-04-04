@@ -12,7 +12,7 @@ Usage: `arb` takes at minimum one argument, the first one, a scene name (`hello`
 ```bash
 python3 tools/arb/arb.py hello
 ```
-(interact with the tool at the website address printed in the console: https://arena.andrew.cmu.edu/[your username]/hello)
+(interact with the tool at the website address printed in the console: https://arenaxr.org/[your username]/hello)
 
 ## Control Panel
 ![AR Builder Panel](arb-panel.png)

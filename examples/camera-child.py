@@ -3,7 +3,7 @@
 '''
 from arena import *
 
-scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
+scene = Scene(host="arenaxr.org", realm="realm", scene="example")
 
 def user_join_callback(scene, cam, msg):
     if "camera" in cam.object_id:
@@ -23,7 +23,7 @@ def user_join_callback(scene, cam, msg):
 
 scene.user_join_callback = user_join_callback
 
-print("Go to URL: https://arena.andrew.cmu.edu/example")
+print("Go to URL: https://arenaxr.org/example")
 
 # our main event loop
 scene.run_tasks()

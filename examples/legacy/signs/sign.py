@@ -6,11 +6,11 @@ import arena
 import random
 import os
 import json
-import sys 
+import sys
 
-# export HOST=arena.andrew.cmu.edu
+# export HOST=arenaxr.org
 # export REALM=realm
-# export MQTTH=arena.andrew.cmu.edu
+# export MQTTH=arenaxr.org
 # export MID=MID_1234
 # Optional:
 # export LINKS = "Link1,https://www.duckduckgo.com,Link 2,https:www.f1.com,Link 3,https://www.eet.com"
@@ -36,7 +36,7 @@ animateState = False
 
 
 def target1_handler(event=None):
-    global target1 
+    global target1
     if event.event_type == arena.EventType.mouseenter:
         target1.update(color=(0,255,0), transparency=arena.Transparency(True, 0.5)  )
     if event.event_type == arena.EventType.mouseleave:
@@ -47,7 +47,7 @@ def target1_handler(event=None):
 
 
 def target2_handler(event=None):
-    global target2 
+    global target2
     if event.event_type == arena.EventType.mouseenter:
         target2.update(color=(0,255,0),transparency=arena.Transparency(True, 0.5)  )
     if event.event_type == arena.EventType.mouseleave:
@@ -58,7 +58,7 @@ def target2_handler(event=None):
 
 
 def target3_handler(event=None):
-    global target3 
+    global target3
     if event.event_type == arena.EventType.mouseenter:
         target3.update(color=(0,255,0),transparency=arena.Transparency(True, 0.5)  )
     if event.event_type == arena.EventType.mouseleave:

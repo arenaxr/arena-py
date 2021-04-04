@@ -10,7 +10,7 @@ def user_join_callback(scene, camera, msg):
 def user_left_callback(scene, camera, msg):
     print(f"User left: {camera.displayName} [object_id={camera.object_id}]")
 
-scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="test")
+scene = Scene(host="arenaxr.org", realm="realm", scene="test")
 scene.user_join_callback = user_join_callback
 scene.user_left_callback = user_left_callback
 

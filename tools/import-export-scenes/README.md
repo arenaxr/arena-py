@@ -78,7 +78,7 @@ namespaces:
 
   public: # namespaces listed are always processed (even if they don't match the regex)
     lobby:
-    	to: # add destination scene name and/or namespace to rename/change namespace
+    	to: # add destination scene name and/or namespace to rename/change scene/namespace
     		scene: lobby # can add destination to:scene (to rename scene) ()
     		namespace: public_test # can add destination to:namespace (to change namespace)
       	parent: imported_lobby_root # objects will be added as children of this object (assumes parent exists )

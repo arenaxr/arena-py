@@ -8,10 +8,10 @@ import arena
 import random
 import os
 import json
-import sys 
+import sys
 import threading
 
-# export MQTTH=arena.andrew.cmu.edu
+# export MQTTH=arenaxr.org
 # export REALM=realm
 # export SCENE=scene
 # export MID=MID_1234
@@ -47,7 +47,7 @@ def object_harvester_thread():
     while True:
         while delete_object_queue:
             obj=delete_object_queue.pop()
-            if type(obj) is not str: 
+            if type(obj) is not str:
                 obj.delete()
         time.sleep(5)
 # start the fun shall we?
@@ -64,7 +64,7 @@ else:
     print( "JSONCFG is optional for setting multiple screens and loications.")
     print( "\nFor bash you can copy paste the following before running:")
     print( "export MID=dir")
-    print( "export MQTTH=arena.andrew.cmu.edu")
+    print( "export MQTTH=arenaxr.org")
     print( "export REALM=realm")
     print( "export SCENE=example")
     print( "export JSONCFG=objects.json")
@@ -85,7 +85,7 @@ if os.environ.get('JSONCFG') is not None:
             print("Loading Object:" + key)
             value = screensData[key]
             print(value)
-            projector_start = arena.Object(                    
+            projector_start = arena.Object(
                     persist=True,
                     objName=key,
                     objType=arena.Shape.gltf_model,
@@ -95,9 +95,9 @@ if os.environ.get('JSONCFG') is not None:
                     rotation=value["rotation"],
                     callback=draw_ray,
                     url=value["url"]
-            ) 
+            )
 
-    
+
 
 y = threading.Thread(target=object_harvester_thread)
 y.start()

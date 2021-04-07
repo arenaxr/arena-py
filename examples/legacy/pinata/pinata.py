@@ -5,10 +5,10 @@ import time
 import arena
 import random
 import os
-import json 
+import json
 import time
 import threading
-import signal 
+import signal
 
 pinata_loc = [ 3, 2, -10]
 NUM_HITS = 10
@@ -18,16 +18,16 @@ hit_counter = NUM_HITS
 AREA_X_START = -100
 AREA_X_STOP = 100
 AREA_Y_START = -100
-AREA_Y_STOP = 100 
+AREA_Y_STOP = 100
 NUM_BOXES = 50
 
 kill_flag = 0
 
 click_objects = [""]
 # To run in ARTS, these parameters are passed in as environmental variables.
-# export HOST=arena.andrew.cmu.edu
+# export HOST=arenaxr.org
 # export REALM=realm
-# export MQTTH=arena.andrew.cmu.edu
+# export MQTTH=arenaxr.org
 
 gravity_enabled = False
 GRAVITY = -25.0
@@ -84,14 +84,14 @@ def game_thread():
     global vi
     global t
     global fire_impulse
-    global gravity_enabled 
-    global kill_flag 
+    global gravity_enabled
+    global kill_flag
 
     #cnt = 0
     while True:
         if kill_flag==1:
             print("Kill Flat!")
-            return 
+            return
         #if gravity_enabled is True:
         #    pinataParent.update(location=(pinata_loc[0],pinata_loc[1],pinata_loc[2]))
         if(fire_impulse>0):
@@ -116,11 +116,11 @@ def game_thread():
             else:
                 boing = arena.Object( location=(pinata_loc[0],pinata_loc[1],pinata_loc[2]),data='{"sound":{"positional":true,"poolSize":8,"src":"store/users/wiselab/audio/boing.wav","autoplay":"true"}}')
                 boing.delete()
-                
+
             t=0.1
             H = 0.0
-            
-            
+
+
 #        pinata_loc[0]=random.uniform(0,10)
 #        pinata_loc[1]=random.uniform(0,10)
 #        pinata_loc[2]=random.uniform(0,10)
@@ -137,7 +137,7 @@ def ray_harvester_thread():
     while True:
         while click_objects:
             line=click_objects.pop()
-            if type(line) is not str: 
+            if type(line) is not str:
                 line.delete()
         time.sleep(2)
 
@@ -164,14 +164,14 @@ animateState = False
 
 
 def pinata_handler(event=None):
-    global pinata1 
-    global text1 
-    global hud 
+    global pinata1
+    global text1
+    global hud
     global vi
     global pinataParent
-    global hit_counter 
+    global hit_counter
     global fire_impulse
-    global gravity_enabled 
+    global gravity_enabled
 
 #    print("pinata hit handler callback!")
 #    if event.event_type == arena.EventType.mouseenter:
@@ -183,7 +183,7 @@ def pinata_handler(event=None):
     if event.event_type == arena.EventType.mousedown:
         # On click, draw a ray
         draw_ray(event.click_pos, event.position)
-        
+
         #pinataParent.update(location=(pinata_loc[0],pinata_loc[1],pinata_loc[2]))
         #pinata_loc[0]=random.uniform(0,10)
         #pinata_loc[1]=random.uniform(0,10)
@@ -191,7 +191,7 @@ def pinata_handler(event=None):
         # Tweening Move...
         #pinataParent.update(data='{"animation": {"property": "position","to": "' + str(pinata_loc[0]) + ' ' + str(pinata_loc[1]) + ' ' + str(pinata_loc[2]) + '","easing": "linear","dur": 250}}')
 
-        
+
         hit_counter = hit_counter - 1
         if hit_counter == NUM_HITS-1:
             gravity_enabled=True
@@ -271,7 +271,7 @@ def signal_handler(sig, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
-# Pull in the SCENE, MQTT and REALM parameters from environmental variables 
+# Pull in the SCENE, MQTT and REALM parameters from environmental variables
 # TODO: Add commandline overide
 if (os.environ.get('SCENE') is not None) and (os.environ.get('REALM') is not None) and (os.environ.get('MQTTH') is not None):
     SCENE = os.environ["SCENE"]
@@ -281,7 +281,7 @@ if (os.environ.get('SCENE') is not None) and (os.environ.get('REALM') is not Non
 else:
     print( "You need to set SCENE, MQTTH and REALM as environmental variables to specify the program target")
     print( "\nFor bash you can copy paste the following before running:")
-    print( "export MQTTH=arena.andrew.cmu.edu")
+    print( "export MQTTH=arenaxr.org")
     print( "export REALM=realm")
     print( "export SCENE=example")
     exit(-1)
@@ -291,7 +291,7 @@ arena.init(HOST, REALM, SCENE)
 
 print("starting sign main loop")
 
-# 
+#
 pinataParent = arena.Object(
     persist=True,
     objName="pinataParent",
@@ -311,7 +311,7 @@ pinata1 = arena.Object(
 		        persist=True,
                 parent="pinataParent",
                 callback=pinata_handler,
-                #data='{"sound":{"positional":true,"poolSize":8,"src":"https://xr.andrew.cmu.edu/audio/boing.wav","on":"mousedown"}}'                
+                #data='{"sound":{"positional":true,"poolSize":8,"src":"https://xr.andrew.cmu.edu/audio/boing.wav","on":"mousedown"}}'
                 )
 
 text1 = arena.Object(

@@ -2,9 +2,25 @@
 
 ARENA-py notable changes. Started 2021-19-2.
 
+## [0.1.26] - 2021-7-4
+### Changed
+- Fix additional numpy and scipy version issues.
+
+## [0.1.25] - 2021-3-4
+### Changed
+- Downgrade numpy and scipy versions.
+
+## [0.1.24] - 2021-31-3
+### Changed
+- Bug fix with `ThickLine`.
+
+### Added
+- Add various example programs for every attribute and object.
+- Add `TextInput` attribute and example.
+
 ## [0.1.23] - 2021-21-3
 ### Changed
-- Queue all incoming MQTT messages for processing and remove network_loop_interval.
+- Queue all incoming MQTT messages for processing and remove `network_loop_interval`.
 
 ### Added
 - Add `end_program_callback`, which is called whenever client disconnects.
@@ -47,7 +63,7 @@ ARENA-py notable changes. Started 2021-19-2.
 
 ## [0.1.16] - 2021-1-3
 ### Changed
-- Bug fix with turning dictionaries into Material attributes.
+- Bug fix with turning dictionaries into Material as.
 
 ## [0.1.15] - 2021-27-2
 ### Changed
@@ -80,6 +96,10 @@ specify both to bypass auth.
 - `Arena` class renamed to `Scene`, but using `Arena` is still allowed. Updated examples to reflect this.
 - Tiny bug fix with `update_objects`.
 
+[0.1.25]: https://github.com/conix-center/ARENA-py/tree/f12c50e990dd645875be3ae31be5840feb8a98aa
+[0.1.24]: https://github.com/conix-center/ARENA-py/tree/619be18bd16178fc40b9e670c313f578789845ea
+[0.1.23]: https://github.com/conix-center/ARENA-py/tree/53c0ac608db99d8df0c0ad775cdc4f67df55558b
+[0.1.23]: https://github.com/conix-center/ARENA-py/tree/53c0ac608db99d8df0c0ad775cdc4f67df55558b
 [0.1.22]: https://github.com/conix-center/ARENA-py/tree/ed54a9d33b0be93d6cc51ed2db7cd5de0248735d
 [0.1.21]: https://github.com/conix-center/ARENA-py/tree/c5e561285ddd6135aa03974ab8b686ba74299520
 [0.1.20]: https://github.com/conix-center/ARENA-py/tree/a8a2d11ea6718740e0fdaf299d1297ebd37c632f

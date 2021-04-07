@@ -1,0 +1,23 @@
+# note: command line args override these options
+dryrun: True # a dry run does not perform publish, just lists objects that would be imported (import only)
+persist: True # persist flag used in published messages
+host: arena.andrew.cmu.edu
+mqtt_port: 8883
+realm: realm
+
+# json array with objects (e.g. from mongodb export; must be .json or .bson file)
+#import_objects_filename: arenaobjects_03_30_2021.json
+import_objects_filename: arenaobjects_03_29_2021.bson
+
+# list of namespaces and scenes to import/export
+# this config will import namespace 'public' to 'public-old'
+namespaces:
+  regex:
+    value: .* # regex for the namespace to be included
+    skip: True # treat regex as indicating that matching namespaces are skipped (default=False)
+  public:
+    regex:
+      value: .* # regex for the scenes to be included (.* will match any scene name)
+      skip: False # treat regex as indicating that matching scene ids are skipped (default=False)
+    to:
+      namespace: public-old

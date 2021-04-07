@@ -12,6 +12,7 @@ from .position import Position
 from .rotation import Rotation
 from .scale import Scale
 from .sound import Sound
+from .text_input import TextInput
 
 # [TODO]: do something with this
 ATTRIBUTE_TYPE_MAP = {

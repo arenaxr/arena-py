@@ -29,7 +29,7 @@ class Landmarks(dict):
             "label": lbl
         })
 
-    def add_object(self, scene, realm='realm', mqtt_host="arena.andrew.cmu.edu", mqtt_port=8883):
+    def add_object(self, scene, realm='realm', mqtt_host="arenaxr.org", mqtt_port=8883):
         # get mqtt credentials
         _user_mqtt_path = f'{str(Path.home())}/.arena_mqtt_auth'
         with open(_user_mqtt_path) as f:
@@ -38,4 +38,5 @@ class Landmarks(dict):
         mqtt_auth = { 'username': mqtt_auth_data['username'], 'password': mqtt_auth_data['token'] }
 
         topic = f'{realm}/s/{mqtt_auth_data["username"]}/{scene}'
+        print(topic, json.dumps(self))
         publish.single( topic, json.dumps(self), hostname=mqtt_host, port=mqtt_port, auth=mqtt_auth)

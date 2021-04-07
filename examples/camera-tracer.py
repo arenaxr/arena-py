@@ -37,7 +37,7 @@ def user_join_callback(scene, cam, msg):
     cam_state = CameraState(cam)
     cam_states += [cam_state]
 
-scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
+scene = Scene(host="arenaxr.org", realm="realm", scene="example")
 scene.user_join_callback = user_join_callback
 
 @scene.run_forever(interval_ms=200)

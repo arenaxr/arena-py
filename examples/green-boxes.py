@@ -3,7 +3,7 @@ import random
 import time
 import sys
 
-scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
+scene = Scene(host="arenaxr.org", realm="realm", scene="example")
 
 color = (0, 255, 0)
 
@@ -21,7 +21,7 @@ def make_boxs():
                 -random.randrange(10))
     box = Box(
             position=position,
-            material=Material(color=color)
+            color=color
         )
     scene.add_object(box)
     x = x + 1

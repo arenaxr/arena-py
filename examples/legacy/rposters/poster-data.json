@@ -23,7 +23,7 @@
     ],
     "gdate": "2022-05-09T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=mefe106ffc97e861d6d31132377ed25c6",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme1",
+    "arenalink": "https://arenaxr.org/?scene=theme1",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -53,8 +53,8 @@
     ],
     "gdate": "",
     "meetlink": "https://src.webex.com/src/j.php?MTID=mefe106ffc97e861d6d31132377ed25c6",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme1",
-    "arenadlink": "https://arena.andrew.cmu.edu/?scene=smartcities",
+    "arenalink": "https://arenaxr.org/?scene=theme1",
+    "arenadlink": "https://arenaxr.org/?scene=smartcities",
     "arenadname": "Smart Cities Demo"
   },
   {
@@ -85,8 +85,8 @@
     ],
     "gdate": "",
     "meetlink": "https://src.webex.com/src/j.php?MTID=mefe106ffc97e861d6d31132377ed25c6",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme1",
-    "arenadlink": "https://arena.andrew.cmu.edu/?scene=drone",
+    "arenalink": "https://arenaxr.org/?scene=theme1",
+    "arenadlink": "https://arenaxr.org/?scene=drone",
     "arenadname": "Drone Demo"
   },
   {
@@ -113,7 +113,7 @@
     ],
     "gdate": "2020-12-31T05:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=mefe106ffc97e861d6d31132377ed25c6",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme1",
+    "arenalink": "https://arenaxr.org/?scene=theme1",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -141,7 +141,7 @@
     ],
     "gdate": "2024-05-01T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m48014712a83df58749a6b5851f6c87fc",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme2",
+    "arenalink": "https://arenaxr.org/?scene=theme2",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -169,7 +169,7 @@
     ],
     "gdate": "2021-12-20T05:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=mf7152147bc8cc5469430f54323fdcd7f",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme2",
+    "arenalink": "https://arenaxr.org/?scene=theme2",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -195,7 +195,7 @@
     "srcprofile": "",
     "gdate": "",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m48014712a83df58749a6b5851f6c87fc",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme2",
+    "arenalink": "https://arenaxr.org/?scene=theme2",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -221,7 +221,7 @@
     "srcprofile": "",
     "gdate": "",
     "meetlink": "https://src.webex.com/src/j.php?MTID=mf7152147bc8cc5469430f54323fdcd7f",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme2",
+    "arenalink": "https://arenaxr.org/?scene=theme2",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -247,7 +247,7 @@
     "srcprofile": "",
     "gdate": "",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m48014712a83df58749a6b5851f6c87fc",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme2",
+    "arenalink": "https://arenaxr.org/?scene=theme2",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -273,7 +273,7 @@
     "srcprofile": "",
     "gdate": "",
     "meetlink": "https://src.webex.com/src/j.php?MTID=mf7152147bc8cc5469430f54323fdcd7f",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme2",
+    "arenalink": "https://arenaxr.org/?scene=theme2",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -301,7 +301,7 @@
     ],
     "gdate": "2021-05-12T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m48014712a83df58749a6b5851f6c87fc",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme2",
+    "arenalink": "https://arenaxr.org/?scene=theme2",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -329,7 +329,7 @@
     ],
     "gdate": "2022-08-15T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m0f6c3a704d64a918eb50430ac4b08729",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme3",
+    "arenalink": "https://arenaxr.org/?scene=theme3",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -357,7 +357,7 @@
     ],
     "gdate": "2023-06-30T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m48b33e6a5e6b1e5ac799ba95d3b51ace",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme3",
+    "arenalink": "https://arenaxr.org/?scene=theme3",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -385,7 +385,7 @@
     ],
     "gdate": "2023-05-19T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m0f6c3a704d64a918eb50430ac4b08729",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme3",
+    "arenalink": "https://arenaxr.org/?scene=theme3",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -413,7 +413,7 @@
     ],
     "gdate": "2021-05-01T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m48b33e6a5e6b1e5ac799ba95d3b51ace",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme3",
+    "arenalink": "https://arenaxr.org/?scene=theme3",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -443,7 +443,7 @@
     ],
     "gdate": "",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m0f6c3a704d64a918eb50430ac4b08729",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme3",
+    "arenalink": "https://arenaxr.org/?scene=theme3",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -471,7 +471,7 @@
     ],
     "gdate": "2020-12-21T05:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m48b33e6a5e6b1e5ac799ba95d3b51ace",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme3",
+    "arenalink": "https://arenaxr.org/?scene=theme3",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -499,7 +499,7 @@
     ],
     "gdate": "2023-05-01T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m0f6c3a704d64a918eb50430ac4b08729",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme3",
+    "arenalink": "https://arenaxr.org/?scene=theme3",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -527,7 +527,7 @@
     ],
     "gdate": "2020-12-01T05:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m48b33e6a5e6b1e5ac799ba95d3b51ace",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme3",
+    "arenalink": "https://arenaxr.org/?scene=theme3",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -555,7 +555,7 @@
     ],
     "gdate": "2023-06-16T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m48b33e6a5e6b1e5ac799ba95d3b51ace",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme3",
+    "arenalink": "https://arenaxr.org/?scene=theme3",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -583,7 +583,7 @@
     ],
     "gdate": "2025-05-01T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m0f6c3a704d64a918eb50430ac4b08729",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme3",
+    "arenalink": "https://arenaxr.org/?scene=theme3",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -611,7 +611,7 @@
     ],
     "gdate": "2020-09-01T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=mfa5854a601ee8a69dd62356acb451a6f",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme4",
+    "arenalink": "https://arenaxr.org/?scene=theme4",
     "arenadlink": "",
     "arenadname": "supplemental video"
   },
@@ -639,7 +639,7 @@
     ],
     "gdate": "2020-09-05T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=mfc95e0301fbb88b594ad3b95f171e591",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme4",
+    "arenalink": "https://arenaxr.org/?scene=theme4",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -667,7 +667,7 @@
     ],
     "gdate": "2023-08-06T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=mfa5854a601ee8a69dd62356acb451a6f",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme4",
+    "arenalink": "https://arenaxr.org/?scene=theme4",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -695,7 +695,7 @@
     ],
     "gdate": "2021-06-11T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=mfc95e0301fbb88b594ad3b95f171e591",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme4",
+    "arenalink": "https://arenaxr.org/?scene=theme4",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -723,7 +723,7 @@
     ],
     "gdate": "2022-03-20T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=mfa5854a601ee8a69dd62356acb451a6f",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme4",
+    "arenalink": "https://arenaxr.org/?scene=theme4",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -751,7 +751,7 @@
     ],
     "gdate": "2024-06-14T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=mfc95e0301fbb88b594ad3b95f171e591",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme4",
+    "arenalink": "https://arenaxr.org/?scene=theme4",
     "arenadlink": "",
     "arenadname": "supplemental video"
   },
@@ -779,7 +779,7 @@
     ],
     "gdate": "2021-02-01T05:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=mfa5854a601ee8a69dd62356acb451a6f",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme4",
+    "arenalink": "https://arenaxr.org/?scene=theme4",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -807,7 +807,7 @@
     ],
     "gdate": "2020-12-01T05:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=mfa5854a601ee8a69dd62356acb451a6f",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme4",
+    "arenalink": "https://arenaxr.org/?scene=theme4",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -835,7 +835,7 @@
     ],
     "gdate": "2023-06-01T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=mfc95e0301fbb88b594ad3b95f171e591",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme4",
+    "arenalink": "https://arenaxr.org/?scene=theme4",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -863,7 +863,7 @@
     ],
     "gdate": "",
     "meetlink": "https://src.webex.com/src/j.php?MTID=mfa5854a601ee8a69dd62356acb451a6f",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme4",
+    "arenalink": "https://arenaxr.org/?scene=theme4",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -891,7 +891,7 @@
     ],
     "gdate": "2023-05-01T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m7f0296c2cd2d3f41e9b263b0fb32898c",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme5",
+    "arenalink": "https://arenaxr.org/?scene=theme5",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -919,7 +919,7 @@
     ],
     "gdate": "2022-06-30T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m919ae213a09d7a36a7e23401892c873e",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme5",
+    "arenalink": "https://arenaxr.org/?scene=theme5",
     "arenadlink": "",
     "arenadname": "supplemental video"
   },
@@ -947,7 +947,7 @@
     ],
     "gdate": "2021-05-11T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m7f0296c2cd2d3f41e9b263b0fb32898c",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme5",
+    "arenalink": "https://arenaxr.org/?scene=theme5",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -975,7 +975,7 @@
     ],
     "gdate": "2023-06-16T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m919ae213a09d7a36a7e23401892c873e",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme5",
+    "arenalink": "https://arenaxr.org/?scene=theme5",
     "arenadlink": "",
     "arenadname": "supplemental video"
   },
@@ -1003,7 +1003,7 @@
     ],
     "gdate": "2023-06-15T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m7f0296c2cd2d3f41e9b263b0fb32898c",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme5",
+    "arenalink": "https://arenaxr.org/?scene=theme5",
     "arenadlink": "",
     "arenadname": "supplemental video"
   },
@@ -1031,7 +1031,7 @@
     ],
     "gdate": "2020-12-14T05:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m7f0296c2cd2d3f41e9b263b0fb32898c",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme5",
+    "arenalink": "https://arenaxr.org/?scene=theme5",
     "arenadlink": "",
     "arenadname": "supplemental video"
   },
@@ -1059,7 +1059,7 @@
     ],
     "gdate": "2023-05-01T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m919ae213a09d7a36a7e23401892c873e",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme5",
+    "arenalink": "https://arenaxr.org/?scene=theme5",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -1087,7 +1087,7 @@
     ],
     "gdate": "2023-05-01T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m919ae213a09d7a36a7e23401892c873e",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme5",
+    "arenalink": "https://arenaxr.org/?scene=theme5",
     "arenadlink": "",
     "arenadname": "supplemental video"
   },
@@ -1115,7 +1115,7 @@
     ],
     "gdate": "",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m919ae213a09d7a36a7e23401892c873e",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme5",
+    "arenalink": "https://arenaxr.org/?scene=theme5",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -1143,7 +1143,7 @@
     ],
     "gdate": "2024-06-16T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m7f0296c2cd2d3f41e9b263b0fb32898c",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme5",
+    "arenalink": "https://arenaxr.org/?scene=theme5",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -1171,7 +1171,7 @@
     ],
     "gdate": "2021-12-20T05:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m11db4b7fa3151049d3cdea20ea7340a6",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme6",
+    "arenalink": "https://arenaxr.org/?scene=theme6",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -1199,7 +1199,7 @@
     ],
     "gdate": "2021-05-20T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m11db4b7fa3151049d3cdea20ea7340a6",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme6",
+    "arenalink": "https://arenaxr.org/?scene=theme6",
     "arenadlink": "",
     "arenadname": "supplemental video"
   },
@@ -1231,7 +1231,7 @@
     ],
     "gdate": "",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m69443d0eb6f0e8dd09cf8fb7c0616fcc",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme6",
+    "arenalink": "https://arenaxr.org/?scene=theme6",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -1257,7 +1257,7 @@
     "srcprofile": "",
     "gdate": "",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m11db4b7fa3151049d3cdea20ea7340a6",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme6",
+    "arenalink": "https://arenaxr.org/?scene=theme6",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -1285,7 +1285,7 @@
     ],
     "gdate": "2024-06-14T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m69443d0eb6f0e8dd09cf8fb7c0616fcc",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme6",
+    "arenalink": "https://arenaxr.org/?scene=theme6",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -1313,7 +1313,7 @@
     ],
     "gdate": "2020-05-22T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m11db4b7fa3151049d3cdea20ea7340a6",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme6",
+    "arenalink": "https://arenaxr.org/?scene=theme6",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -1341,7 +1341,7 @@
     ],
     "gdate": "2020-12-31T05:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m11db4b7fa3151049d3cdea20ea7340a6",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme6",
+    "arenalink": "https://arenaxr.org/?scene=theme6",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -1367,7 +1367,7 @@
     "srcprofile": "",
     "gdate": "",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m69443d0eb6f0e8dd09cf8fb7c0616fcc",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme6",
+    "arenalink": "https://arenaxr.org/?scene=theme6",
     "arenadlink": "",
     "arenadname": ""
   },
@@ -1395,7 +1395,7 @@
     ],
     "gdate": "2020-08-31T04:00:00.000Z",
     "meetlink": "https://src.webex.com/src/j.php?MTID=m69443d0eb6f0e8dd09cf8fb7c0616fcc",
-    "arenalink": "https://arena.andrew.cmu.edu/?scene=theme6",
+    "arenalink": "https://arenaxr.org/?scene=theme6",
     "arenadlink": "",
     "arenadname": ""
   }

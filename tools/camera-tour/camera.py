@@ -7,7 +7,7 @@ from arena import *
 import random
 import sys
 
-HOST = "arena.andrew.cmu.edu"
+HOST = "arenaxr.org"
 SCENE = "test"
 
 if len(sys.argv) > 1:

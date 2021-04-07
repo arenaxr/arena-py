@@ -22,7 +22,7 @@ python hello.py
 ```python
 from arena import *
 
-scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="example")
+scene = Scene(host="arenaxr.org", realm="realm", scene="example")
 
 @scene.run_once
 def make_box():
@@ -62,9 +62,15 @@ python3 -c "from arena import auth; auth.permissions()"
 Changelog can be found [here](CHANGELOG.md).
 
 ## ARENA-py Repository Files
-- [arena/](arena/): The ARENA Python library
-- [examples/](examples/): Canonical examples of ARENA functions from the [documentation](https://conix-center.github.io/ARENA/content/python/)
-- [examples/legacy/](examples/legacy/): **Deprecated** demos for ARENA-py < 0.1.0
-- [examples/legacy/digital-twins/](examples/legacy/digital-twins/): **Deprecated** demo of digital twins of physical spaces for ARENA-py < 0.1.0
-- [system-tests/](system-tests/): Workouts and tests for ARENA-py
-- [tools/](tools/): Reusable tools for any ARENA scene
+- [arena/](arena/): The ARENA Python library.
+
+- [examples/](examples/): Canonical examples of ARENA functions from the [documentation](https://conix-center.github.io/ARENA/content/python/).
+- [examples/objects](examples/objects): Examples on how to create various ARENA-py objects.
+- [examples/attributes](examples/attributes): Examples on how to declare an add various ARENA-py object attributes.
+
+- [examples/legacy/](examples/legacy/): **Deprecated** demos for **ARENA-py < 0.1.0**.
+- [examples/legacy/digital-twins/](examples/legacy/digital-twins/): **Deprecated** demo of digital twins of physical spaces for **ARENA-py < 0.1.0**.
+
+- [system-tests/](system-tests/): Workouts and tests for ARENA-py.
+
+- [tools/](tools/): Reusable tools for any ARENA scene.

@@ -5,7 +5,7 @@
 from arena import *
 import random
 
-scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="test")
+scene = Scene(host="arenaxr.org", realm="realm", scene="test")
 
 
 def rando():
@@ -26,7 +26,7 @@ def make_balls():
         physics=Physics(type="dynamic"),
         impulse=Impulse(position=(1,1,1), force=(1,50,1)),
         position=(rando(), rando(), rando()),
-        material=Material(color=randcolor()),
+        color=randcolor(),
         ttl=60)
 
     scene.add_object(obj)

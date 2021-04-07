@@ -1,19 +1,19 @@
 # screen_mgr.py
 #
 # This program presents control knobs that draw a screenshare object
-# at a particular location in the screen. It also dims the ambient 
+# at a particular location in the screen. It also dims the ambient
 # lighting level to 1 which provides ideal contrast.  Upon clicks
-# a laser annotation appears. 
+# a laser annotation appears.
 
 import time
 import arena
 import random
 import os
 import json
-import sys 
+import sys
 import threading
 
-# export MQTTH=arena.andrew.cmu.edu
+# export MQTTH=arenaxr.org
 # export REALM=realm
 # export SCENE=scene
 # export MID=MID_1234
@@ -25,7 +25,7 @@ delete_object_queue = []
 
 def projector_start(event=None):
     global screens
-    
+
     if event.event_type == arena.EventType.mouseup:
         local_screens = screens.copy()
         print("Start")
@@ -72,7 +72,7 @@ def object_harvester_thread():
     while True:
         while delete_object_queue:
             obj=delete_object_queue.pop()
-            if type(obj) is not str: 
+            if type(obj) is not str:
                 obj.delete()
         time.sleep(5)
 # start the fun shall we?
@@ -89,7 +89,7 @@ else:
     print( "JSONCFG is optional for setting multiple screens and loications.")
     print( "\nFor bash you can copy paste the following before running:")
     print( "export MID=dir")
-    print( "export MQTTH=arena.andrew.cmu.edu")
+    print( "export MQTTH=arenaxr.org")
     print( "export REALM=realm")
     print( "export SCENE=example")
     print( "export JSONCFG=directory_cfg.json")
@@ -111,7 +111,7 @@ if os.environ.get('JSONCFG') is not None:
             value = screensData[key]
             if key == "projector":
                 print("Projector")
-                projector_start = arena.Object(                    
+                projector_start = arena.Object(
                     persist=True,
                     objName="projector_start",
                     objType=arena.Shape.cube,
@@ -121,10 +121,10 @@ if os.environ.get('JSONCFG') is not None:
                     scale=value["scale"],
                     rotation=value["rotation"],
                     callback=projector_start
-                    ) 
+                    )
                 stop_location = value["location"]
                 stop_location[1]=stop_location[1]- value["button_distance"]
-                projector_stop = arena.Object(                    
+                projector_stop = arena.Object(
                     persist=True,
                     objName="projector_stop",
                     objType=arena.Shape.cube,
@@ -134,7 +134,7 @@ if os.environ.get('JSONCFG') is not None:
                     scale=value["scale"],
                     rotation=value["rotation"],
                     callback=projector_stop
-                    ) 
+                    )
 
             else:
                 print("Screen: " + str(cnt))
@@ -151,7 +151,7 @@ if os.environ.get('JSONCFG') is not None:
                     callback=draw_ray
                     ))
                 cnt+=1
-    
+
 
 y = threading.Thread(target=object_harvester_thread)
 y.start()

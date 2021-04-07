@@ -13,7 +13,7 @@ from arena import *
 
 
 avatars = {}
-scene = Scene(host="arena.andrew.cmu.edu", realm="realm", scene="avatar")
+scene = Scene(host="arenaxr.org", realm="realm", scene="avatar")
 
 
 def user_join_callback(scene, camera, msg):

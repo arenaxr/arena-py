@@ -2,6 +2,10 @@
 
 ARENA-py notable changes. Started 2021-19-2.
 
+## [0.1.26] - 2021-7-4
+### Changed
+- Fix additional numpy and scipy version issues.
+
 ## [0.1.25] - 2021-3-4
 ### Changed
 - Downgrade numpy and scipy versions.
@@ -92,6 +96,7 @@ specify both to bypass auth.
 - `Arena` class renamed to `Scene`, but using `Arena` is still allowed. Updated examples to reflect this.
 - Tiny bug fix with `update_objects`.
 
+[0.1.25]: https://github.com/conix-center/ARENA-py/tree/f12c50e990dd645875be3ae31be5840feb8a98aa
 [0.1.24]: https://github.com/conix-center/ARENA-py/tree/619be18bd16178fc40b9e670c313f578789845ea
 [0.1.23]: https://github.com/conix-center/ARENA-py/tree/53c0ac608db99d8df0c0ad775cdc4f67df55558b
 [0.1.23]: https://github.com/conix-center/ARENA-py/tree/53c0ac608db99d8df0c0ad775cdc4f67df55558b

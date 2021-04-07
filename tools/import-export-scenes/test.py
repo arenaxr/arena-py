@@ -1,5 +1,5 @@
 import unittest
-from arena_import import *
+from import_export import *
 class TestImport(unittest.TestCase):
     def test_obj_check_attr_ns_in_ns_list(self):
         obj = { 'namespace': 'public' }

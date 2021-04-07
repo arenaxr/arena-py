@@ -1,8 +1,8 @@
 run: venv
-		$(VENV)/python arena_import.py $(ARGS)
+		$(VENV)/python import_export.py $(ARGS)
 
 import: venv
-		$(VENV)/python arena_import.py import $(ARGS)
+		$(VENV)/python import_export.py import $(ARGS)
 
 test: venv
 		$(VENV)/python test.py

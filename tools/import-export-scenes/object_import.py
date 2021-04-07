@@ -55,7 +55,7 @@ class ARENAObjectImport():
             "type": "arena-message-type"
         }
 
-        persist=False for a dry run
+        persist: set message persist flag
         """
         namespace = json_obj['namespace'];
         scene = json_obj['sceneId'];

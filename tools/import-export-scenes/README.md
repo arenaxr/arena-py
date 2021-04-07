@@ -55,7 +55,8 @@ make export
 And define options in the **config file** (`./config.yaml` by default). The config file looks like this:
 
 ```yaml
-dryrun: True # a dry run performs object publish with persist=False, so changes are not persisted (import only)
+dryrun: False # a dry run does not perform publish, just lists objects that would be imported (default: True; import only)
+persist: True # persist flag used in published messages (default: True)
 host: arenaxr.org
 mqtt_port: 8883
 realm: realm
@@ -66,21 +67,28 @@ import_objects_filename: arenaobjects_03_29_2021.bson
 # list of namespaces and scenes to import/export
 namespaces:
   regex:
-    value: .* # regex for the namespaces to be included (if skip=False)
+    value: .* # regex for the namespaces to be included ('.*' will match any scene name; will include all scenes, if skip=False)
     skip: False # if True, treat regex as indicating that matching namespaces are skipped (default=False)
 
   skip-scenes-from-this-namespace: # the regex below shows how to skip all scenes in a namespace
     regex:
-      value: .* # regex for the scenes to be imported for this namespace
+      value: .* # regex for the scenes to be imported for this namespace (none, if skip=True)
       skip: True # this indicates that scenes matching the regex will be **skipped**
 
     dont-skip-this-one: # this scene will be imported; scenes listed are always processed (even if they don't match the regex)
 
+  rename-this-namespace: # this example shows how to rename an entire namespace in the file when importing
+    regex:
+      value: .* # regex for the scenes to be included (all, if skip=False)
+      skip: False # do not skip matching scene ids
+    to:
+      namespace: new-namespace # can add destination to:namespace (to rename namespace)
+
   public: # namespaces listed are always processed (even if they don't match the regex)
     lobby:
     	to: # add destination scene name and/or namespace to rename/change scene/namespace
-    		scene: lobby # can add destination to:scene (to rename scene) ()
-    		namespace: public_test # can add destination to:namespace (to change namespace)
+    		scene: lobby # can add destination to:scene (to rename scene)
+    		namespace: public_test # can add destination to:namespace (to change namespace; will override namespace-level to: setting)
       	parent: imported_lobby_root # objects will be added as children of this object (assumes parent exists )
     fireside: # another example: import scene 'fireside' in the file to 'fireside-imported'
        to:

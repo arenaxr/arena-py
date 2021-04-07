@@ -48,11 +48,15 @@ if __name__ == '__main__':
             nargs='+', help=f'The arena realm.')
     args = parser.parse_args()
 
+    fn = args.configfile
+    if isinstance(args.configfile, list):
+        fn = args.configfile[0]
+
     # load config
-    with open(args.configfile) as file:
+    with open(fn) as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
 
-    # copy args to config
+    # copy args to config (commandline will override config file)
     for arg in dir(args):
         if not arg.startswith('__') and not arg.startswith('_'):
             val = getattr(args, arg)
@@ -75,7 +79,7 @@ if __name__ == '__main__':
     elif import_file.endswith('.bson'):
         bs = open(f'./{import_file}', 'rb').read()
         arena_objects = []
-        for obj in bson.decode_all( f.read() ):
+        for obj in bson.decode_all( bs ):
             arena_objects.append(obj)
     else:
         print('Import objects filename (import_objects_filename) must be .json or .bson')
@@ -86,9 +90,16 @@ if __name__ == '__main__':
     namespaces = {}
     scenes = {}
 
+    dryrun = config.get('dryrun', True)
+    persist = config.get('persist', True)
     for obj in arena_objects:
         if obj_check_attr(obj, 'namespace', ns_config_dict):
             scenes_config_dict = config['namespaces'].get(obj['namespace'], { 'regex' : { 'value': '.*' } })
+
+            if 'to' in scenes_config_dict:
+                ns = scenes_config_dict['to'].get('namespace', obj['namespace'])
+                obj['namespace'] = ns
+
             if obj_check_attr(obj, 'sceneId', scenes_config_dict):
                 scene_config = scenes_config_dict.get(obj['sceneId'], { obj['sceneId']: {} })
                 if not scene_config:
@@ -123,7 +134,8 @@ if __name__ == '__main__':
                         obj['attributes']['scene-options'].pop('jitsiServer', None) # remove jitsiServer config
                 try:
                     # import object
-                    obj_importer.add(obj, persist=(not config.get('dryrun', True)), debug=False)
+                    if not dryrun:
+                        obj_importer.add(obj, persist=persist, debug=False)
                     print('.', end='')
                 except Exception as error:
                     print('Error adding object:' f'{obj["namespace"]}/{obj["sceneId"]}', error)

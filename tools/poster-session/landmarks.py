@@ -38,4 +38,5 @@ class Landmarks(dict):
         mqtt_auth = { 'username': mqtt_auth_data['username'], 'password': mqtt_auth_data['token'] }
 
         topic = f'{realm}/s/{mqtt_auth_data["username"]}/{scene}'
+        print(topic, json.dumps(self))
         publish.single( topic, json.dumps(self), hostname=mqtt_host, port=mqtt_port, auth=mqtt_auth)

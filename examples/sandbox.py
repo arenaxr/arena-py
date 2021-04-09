@@ -2,23 +2,24 @@ from arena import *
 import math
 
 scene = Scene(host="arenaxr.org", realm="realm", scene="example")
-shape = Box(object_id="my_shape", position=Position(.25,4,-3),scale=Scale(.25,2,4), persist=True)
-button = Cylinder(object_id="my_button", position=Position(.1,3.3,-1.5),scale=Scale(.1,.05,0.1),rotation=Rotation(0,0,90), persist=True)
 taPos = Position(-10,0,-10)
-
-taB = Box(object_id="my_shape1", position=Position(4.25,4,-3),scale=Scale(.25,2,4), persist=True)
-button2 = Cylinder(object_id="my_button1", position=Position(4.1,3.3,-1.5),scale=Scale(.1,.05,0.1),rotation=Rotation(0,0,90), persist=True)
+text = Text(object_id ="label", text="TA BOARD", position=Position(.25,6,4), rotation=Rotation(0,270,0))
+taB = Box(object_id="my_shape1", position=Position(.25,4, 4),scale=Scale(.25,2,4), persist=True)
+button2 = Cylinder(object_id="my_button1", position=Position(.1,3.3,5.5),scale=Scale(.1,.05,0.1),rotation=Rotation(0,0,90), persist=True)
 
 
 class QuestionBoard(Object):
-    def __init__(self,scene, max_display):
+    def __init__(self,scene, max_display, pos):
         self.start_display = 0
         self.end_display = 0
         self.display_amt = max_display
         self.q = []
         self.size = 0
+        self.board = Box(object_id="my_shape", position=pos,scale=Scale(.25,2,4), persist=True)
+        self.button = Cylinder(object_id="my_button", position=Position(.1,3.3,-1.5),scale=Scale(.1,.05,0.1),rotation=Rotation(0,0,90), persist=True)
+
     def insert(self, student, question):
-        self.q.append((student,Text(object_id ="my_text"+str(self.size), text=student, rotation=Rotation(0,270,0), scale=Scale(.25,.25,0.25), parent=shape)))
+        self.q.append((student,Text(object_id ="my_text"+str(self.size), text=student, rotation=Rotation(0,270,0), scale=Scale(.25,.25,0.25), parent=queue.board)))
         self.size += 1 
         if self.size < self.display_amt:
             self.end_display += 1
@@ -50,19 +51,24 @@ class QuestionBoard(Object):
         return self.q[self.start_display:self.start_display + self.end_display]
 
 class TABoard(Object):
-    def __init__(self,QBoard, position, max_display):
+    def __init__(self,scene,QBoard, position, max_display):
         self.start_display = 0
         self.end_display = 0
         self.display_amt = max_display
-        self.q = []
+        self.Q = []
         self.size = 0
-    def getSize(self):
-        return self.size
-    def insert(self, student, question):
-        self.q.append((student,question))
-        self.size += 1 
-        if self.size < self.display_amt:
-            self.end_display += 1
+        self.scene = scene
+        for i in range(len(QBoard)):
+            self.Q.append((Qboard[i][0], QBoard[i][1], Cylinder(object_id="my_button",scale=Scale(.1,.05,0.1),rotation=Rotation(0,0,90), persist=True)))
+    def display(self):
+        #get elements to display and display that text w a button next to it
+        #button should teleport user id associated with question to the TA
+        #after clicking button the question should be removed from the queue
+       
+        display_list = self.Q.get_display_list()
+        for i in range(0,len(display_list)): 
+            self.scene.update_object(display_list[i][1],position=Position(-1.5, .25 -0.1*i, 0))
+            self.scene.update_object(display_list[i][2],position=Position(-1.5, .25 -0.1*i, -1.5))
     def dequeue(self, student):
         if self.size <= 0:
             print("queue empty!")
@@ -74,7 +80,7 @@ class TABoard(Object):
         return (student,question)
 
 
-queue = QuestionBoard(scene,5)
+queue = QuestionBoard(scene,5,Position(.25,4,-3))
 
 """
 create Qboard object
@@ -106,10 +112,11 @@ def teleport(ta, student):
 
 @scene.run_once
 def setup():
-    scene.add_object(button)
-    scene.add_object(shape)
+    scene.add_object(queue.button)
+    scene.add_object(queue.board)
     scene.add_object(button2)
     scene.add_object(taB)
+    scene.add_object(text)
 
 @scene.run_forever(interval_ms=100)
 def main():
@@ -118,19 +125,19 @@ def main():
     global taPos
     def mouse_handler(scene, evt,msg):
         #
-        if evt.type == "mousedown" and clickB(evt.data.clickPos, button.data.position,1):
+        if evt.type == "mousedown" and clickB(evt.data.clickPos, queue.button.data.position,1):
             print("adding ", msg["data"]["source"])
             queue.insert(msg["data"]["source"],"a")
             #teleport(taPos, msg["data"]["source"])
+
+            display_list = queue.get_display_list()
+            for i in range(0,len(display_list)): 
+                scene.update_object(display_list[i][1],position=Position(-1.5, .25 -0.1*i, 0))
     def ta_mouse_handler(scene, evt, msg):
-        if evt.type == "mousedown" and clickB(evt.data.clickPos, button.data.position,1):
-            print("adding ", msg["data"]["source"])
+        if evt.type == "mousedown" and clickB(evt.data.clickPos, button2.data.position,1):
             teleport(taPos, msg["data"]["source"])
-    display_list = queue.get_display_list()
-    for i in range(0,len(display_list)): 
-        #scene.add_object(display_list[i][1])
-        scene.update_object(display_list[i][1],position=Position(-1.5, .25 -0.1*i, 0))
-    scene.update_object(shape, click_listener=True, evt_handler=mouse_handler)
+
+    scene.update_object(queue.button, click_listener=True, evt_handler=mouse_handler)
     scene.update_object(taB, click_listener=True, evt_handler=ta_mouse_handler)
 
 

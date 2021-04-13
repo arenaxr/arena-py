@@ -43,9 +43,9 @@ box = Box(object_id="my_box", position=Position(0,4,-2), scale=Scale(2,2,2))
 ```
 Note the input arguments. The names must match what they will be in the ARENA JSON specification. We don't have to worry too much about that now, but keep this in mind, as typos will be very bad!
 
-Box is a type of "Object". See [objects.md](objects.md).
+Box is a type of "Object". See [objects](https://arena.conix.io/content/python/objects.html).
 
-Position and Scale are what we call "Attributes". See [attributes.md](attributes.md).
+Position and Scale are what we call "Attributes". See [attributes](https://arena.conix.io/content/python/attributes.html).
 
 ## Adding our object to the ARENA
 ```python

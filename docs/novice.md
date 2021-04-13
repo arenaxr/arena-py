@@ -1,7 +1,7 @@
 # Novice Example - Exploring EVEN more functionality!
 
 ## Event Handlers
-See [events.md](events.md)
+See [events](https://arena.conix.io/content/python/events.html)
 ```python
 def mouse_handler(scene, evt, msg):
     print(evt.type)

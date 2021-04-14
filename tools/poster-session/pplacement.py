@@ -9,6 +9,8 @@ import yaml
 import time
 import re
 
+DFT_CONFIG_FILENAME='./config.yaml'
+
 def parse_button(button_markup):
     '''Parse a button markup in the form:
        [icon:text](link)
@@ -276,16 +278,18 @@ def make_walls():
 if __name__ == '__main__':
     global config
 
-    # load config
-    with open('config.yaml') as file:
-        config = yaml.load(file, Loader=yaml.FullLoader)
-
-    # get scenename for args, if given
+    # get args
     parser = argparse.ArgumentParser(description=(
         "Generate a poster session layout in a given scene"))
+    parser.add_argument('-c', '--conf', dest='configfile', default=DFT_CONFIG_FILENAME, action='store', type=str,
+            help=f'The configuration file. Default is {DFT_CONFIG_FILENAME}')
     parser.add_argument('-s', dest='scenename', default=None,
                         help='Scenename of the poster session (e.g. theme1, theme2)')
     args = parser.parse_args()
+
+    # load config
+    with open(args.configfile) as file:
+        config = yaml.load(file, Loader=yaml.FullLoader)
 
     # save scenename in config
     if args.scenename is not None:

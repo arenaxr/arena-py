@@ -39,7 +39,7 @@ wall:
   text_font: 'exo2bold'
   title_maxlen: 150 # will add '...' after this amount of characters; default: 150
 
-# ** Scene definitions **
+# ** Scene layout definitions **
 # Configure the layouts for each scene
 # layout: the layout of the walls; one of:
 #      ROWCOL - arrange walls in rows and columns; parameters:
@@ -51,21 +51,21 @@ wall:
 #               row_dir=-1: direction of rows (1 or -1)
 #               col_axis='x': which axis is used as the col axis
 #               row_axis='z': which axis is used as the row axis
-#               fixed_axis='y': axis that defines the plane where the walls are layed out
+#               fixed_axis='y': axis that defines the plane where the walls are laid out
 #      CIRLE - arrange in a circle; parameters:
 #               radius=50: radius of the circle (will try to layout the walls evenly spaced)
 #               a1_off=0: center of the circle offset from 0 in axis 1 (see axis1 param)
 #               a2_off=0: center of the circle offset from 0 in axis 2 (see axis2 param)
 #               axis1='x': which axis is used as axis1
 #               axis2='z': which axis is used as axis2
-#               fixed_axis='y': defines the plane where the walls are layed out
+#               fixed_axis='y': defines the plane where the walls are laid out
 #      SQUARE - arange walls in a square shape; parameters:
 #               length=50: length of the square (will try to layout the walls evenly spaced)
 #               a1_off=0: offset of the corner of the square from 0 in axis 1 (see axis1 param)
 #               a2_off=0: offset of the corner of the square from 0 in axis 2 (see axis2 param)
 #               axis1='x': which axis is used as axis1
 #               axis2='z': which axis is used as axis2
-#               fixed_axis='y': defines the plane where the walls are layed out
+#               fixed_axis='y': defines the plane where the walls are laid out
 #      LINE - arrange walls in a line; parameters:
 #               length=200: length of the line (will try to layout the walls evenly spaced)
 #               rotation=90: rotation (degrees) of the wall
@@ -74,7 +74,7 @@ wall:
 #               a2_off=0: offset of the line start from 0 in axis 2 (see axis2 param)
 #               axis1='x': which axis is used as axis1
 #               axis2='z': which axis is used as axis2
-#               fixed_axis='y': defines the plane where the walls are layed out
+#               fixed_axis='y': defines the plane where the walls are laid out
 ececapstone:
   layout: ROWCOL
   layout_args:

@@ -1,8 +1,8 @@
 run: venv
-	$(VENV)/python pplacement.py
+	$(VENV)/python pplacement.py $(ARGS)
 
 test: venv
-	$(VENV)/python test.py
+	$(VENV)/python test.py $(ARGS)
 
 signout: venv
 			$(VENV)/python signout.py

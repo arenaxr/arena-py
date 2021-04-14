@@ -1,6 +1,9 @@
 run: venv
 	$(VENV)/python pplacement.py
 
+test: venv
+	$(VENV)/python test.py
+
 signout: venv
 			$(VENV)/python signout.py
 
@@ -8,7 +11,7 @@ show-req: venv
 		$(VENV)/pip freeze
 
 freeze: venv
-				$(VENV)/pip freeze > requirements.txt
+				$(VENV)/pip freeze | sed s/=.*// > requirements.txt
 
 include Makefile.venv
 Makefile.venv:

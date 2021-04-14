@@ -10,7 +10,16 @@ Run the script with:
 make run
 ```
 
-This assumes you have [Make](https://www.gnu.org/software/make/) installed. The Makefile creates a [virtual environment that deals with installing all dependencies](https://github.com/sio/Makefile.venv), including the **arena-py library** (from pyPI; it does not use the development version in this repo).
+## Prerequisites
+
+You need to have [Make](https://www.gnu.org/software/make/) installed. The Makefile creates a [virtual environment that deals with installing all dependencies](https://github.com/sio/Makefile.venv), including the **arena-py library** (from pyPI; it does not use the development version in this repo).
+
+### Google Apps Script API
+The script uses the google apps script API to get the spreadsheet data. Make sure to follow these google python library pre-requisites:						
+1. A Google Cloud Platform project with the *Google Sheets API* enabled. See how to [create a project](https://developers.google.com/workspace/guides/create-project)
+2. Authorization credentials for a desktop application (pasted into 'credentials.json'). See how to [create credentials](https://developers.google.com/workspace/guides/create-credentials).
+
+More details [here](https://developers.google.com/apps-script/api/quickstart/python?hl=en).
 
 ## Arguments
 

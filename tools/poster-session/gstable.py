@@ -21,7 +21,7 @@ You need the following:
 1. A Google Cloud Platform project with the *Google Sheets API* enabled: https://developers.google.com/workspace/guides/create-project
 2. Authorization credentials for a desktop application (pasted into 'credentials.json'): https://developers.google.com/workspace/guides/create-credentials
 
-Details: https://developers.google.com/calendar/quickstart/python
+Details: https://developers.google.com/apps-script/api/quickstart/python?hl=en
 """
 from __future__ import print_function
 import os.path

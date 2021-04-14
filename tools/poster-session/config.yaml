@@ -1,5 +1,5 @@
 # persist objects (True/False): False=objects will disappear after a reload (and only appear to clients already viewing the scene when they are created)
-persist: False
+persist: True
 
 # arena related definitions
 arena:

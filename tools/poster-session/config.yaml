@@ -18,7 +18,7 @@ input_table:
   # include the sheet name ('Data Table') and the header, e.g: Data Table!A1:F10
   #
   # For details, see: https://developers.google.com/sheets/api/guides/concepts
-  named_range: Data Table!A1:H3
+  named_range: Data Table!A1:G3
 
 # where the icon files are
 icons:

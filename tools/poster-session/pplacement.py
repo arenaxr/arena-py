@@ -120,69 +120,70 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
         print(f'Could not add wall image: {err}')
 
     try:
-        (bicon, btext, burl) = parse_button(wall_data['button1']) # raise exception if failed to parse
+        if len(wall_data['button1']) > 0:
+            (bicon, btext, burl) = parse_button(wall_data['button1']) # raise exception if failed to parse
 
-        iconpath = f'{config["icons"][bicon]}' # raise exception if key does not exist
+            iconpath = f'{config["icons"][bicon]}' # raise exception if key does not exist
 
-        # button1
-        videolink = Image(
-            object_id=b1_name,
-            parent=root_name,
-            persist=persist,
-            position=Position(4, img_height + .3, 0.510),
-            scale=Scale(.5, .5, 1),
-            url=iconpath,
-            clickable=True,
-            goto_url=GotoUrl(dest='popup', on='mousedown', url=burl)
-        );
-        scene.add_object(videolink)
+            # button1
+            videolink = Image(
+                object_id=b1_name,
+                parent=root_name,
+                persist=persist,
+                position=Position(4, img_height + .3, 0.510),
+                scale=Scale(.5, .5, 1),
+                url=iconpath,
+                clickable=True,
+                goto_url=GotoUrl(dest='popup', on='mousedown', url=burl)
+            );
+            scene.add_object(videolink)
 
-        # button text
-        lblb1 = Text(
-            object_id=lbl_btn1,
-            parent=b1_name,
-            persist=persist,
-            position=Position(0, -.35, 0),
-            text=btext[0:10],
-            color=(255, 255, 255),
-            font=text_font,
-            width=4
-        )
-        scene.add_object(lblb1)
+            # button text
+            lblb1 = Text(
+                object_id=lbl_btn1,
+                parent=b1_name,
+                persist=persist,
+                position=Position(0, -.35, 0),
+                text=btext[0:10],
+                color=(255, 255, 255),
+                font=text_font,
+                width=4
+            )
+            scene.add_object(lblb1)
     except Exception as err:
         print(f'Could not add button1: {err}')
 
     try:
-        (bicon, btext, burl) = parse_button(wall_data['button2']) # raise exception if failed to parse
+        if len(wall_data['button2']) > 0:
+            (bicon, btext, burl) = parse_button(wall_data['button2']) # raise exception if failed to parse
 
-        iconpath = f'{config["icons"][bicon]}' # raise exception if key does not exist
+            iconpath = f'{config["icons"][bicon]}' # raise exception if key does not exist
 
-        # button2
-        videolink = Image(
-            object_id=b2_name,
-            parent=root_name,
-            persist=persist,
-            position=Position(4, img_height - .3, 0.510),
-            scale=Scale(.5, .5, 1),
-            url=iconpath,
-            clickable=True,
-            goto_url=GotoUrl(dest='popup', on='mousedown', url=burl)
-        );
-        scene.add_object(videolink)
+            # button2
+            videolink = Image(
+                object_id=b2_name,
+                parent=root_name,
+                persist=persist,
+                position=Position(4, img_height - .3, 0.510),
+                scale=Scale(.5, .5, 1),
+                url=iconpath,
+                clickable=True,
+                goto_url=GotoUrl(dest='popup', on='mousedown', url=burl)
+            );
+            scene.add_object(videolink)
 
-        # button text
-        lblb2 = Text(
-            object_id=lbl_btn2,
-            parent=b2_name,
-            persist=persist,
-            position=Position(0, -.35, 0),
-            text=btext[0:10],
-            color=(255, 255, 255),
-            font=text_font,
-            width=4
-        )
-        scene.add_object(lblb2)
-
+            # button text
+            lblb2 = Text(
+                object_id=lbl_btn2,
+                parent=b2_name,
+                persist=persist,
+                position=Position(0, -.35, 0),
+                text=btext[0:10],
+                color=(255, 255, 255),
+                font=text_font,
+                width=4
+            )
+            scene.add_object(lblb2)
     except Exception as err:
         print(f'Could not add button2: {err}')
 
@@ -227,10 +228,11 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
             parent=root_name,
             persist=persist,
             position=Position(0, wall_height-1.1, 0.510),
-            text=f'{wall_data["authors"]}', # raise exception if key does not exist
+            text=f'{wall_data["authors"][0:100]}', # raise exception if key does not exist
             color=text_color,
             font=text_font,
-            width=4
+            wrapCount=100,
+            width=8
         )
         scene.add_object(lbl)
     except Exception as err:

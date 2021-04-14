@@ -2,6 +2,8 @@
 
 This script creates poster walls using data from a google spreadsheet. For each line in the table (indicated by a range in the config file), it creates a poster wall. See the template [google spreadsheet template with instructions](https://docs.google.com/spreadsheets/d/1pRWUCnRwpr5cz_Tm2KFWvle_fVCwX5NVBopGcZcWLA0/edit?usp=sharing).
 
+![image](https://user-images.githubusercontent.com/3504501/114779569-48d22280-9d44-11eb-80b6-bd1b341d195b.png)
+
 The script operates on a scene at the time, but you can have data in the template spreadsheet for several scenes, and run the script once for each scene (indicated in the config file or passed through argument).
 
 Run the script with:

@@ -44,10 +44,6 @@ def authenticate_user(host, debug=False):
     debug_toggle = debug
     print("Signing in to the ARENA...")
 
-    local_token = _local_token_check()
-    if local_token:
-        return local_token["username"]
-
     creds = None
     browser = None
     try:
@@ -110,9 +106,6 @@ def authenticate_scene(host, realm, scene, username, debug=False):
     global _id_token
     global _mqtt_token
     debug_toggle = debug
-    local_token = _local_token_check()
-    if local_token:
-        return local_token["username"]
 
     print("Using remote-authenticated MQTT token.")
     mqtt_json = _get_mqtt_token(host, realm, scene, username, _id_token)
@@ -142,9 +135,11 @@ def get_writable_scenes(host, debug=False):
     return json.loads(my_scenes)
 
 
-def _local_token_check():
+def check_local_auth():
+    """
+    check for local mqtt_token first
+    """
     # TODO: remove local check after ARTS supports mqtt_token passing
-    # check for local mqtt_token first
     if os.path.exists(_local_mqtt_path):
         print("Using local MQTT token.")
         f = open(_local_mqtt_path, "r")

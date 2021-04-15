@@ -7,14 +7,17 @@ scene = Scene(host="arenaxr.org", realm="realm", scene="headbanger", )
 
 
 headlist = []
+cnt=0
 
 for x in range(100):
     head = GLTF(
+    object_id="head"+str(cnt),
     position=(random.random()*10, 1.5, random.random()*-10),
     scale=(1, 1, 1),
     url="https://www.dropbox.com/s/e28sgj44mwy0bbg/loomis-purple.glb?dl=0"
     )
     headlist.append(head)
+    cnt=cnt+1
 
 
 i=0

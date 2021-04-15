@@ -1,6 +1,11 @@
 # Changelog
 
-ARENA-py notable changes. Started 2021-19-2.
+ARENA-py notable changes. Started 2021-19-2 (version 0.1.12).
+
+## [0.1.27] - 2021-15-4
+### Changed
+- Better timing on `scene.run_forever`.
+- Move MQTT token check to work better on ARTS.
 
 ## [0.1.26] - 2021-7-4
 ### Changed
@@ -96,6 +101,7 @@ specify both to bypass auth.
 - `Arena` class renamed to `Scene`, but using `Arena` is still allowed. Updated examples to reflect this.
 - Tiny bug fix with `update_objects`.
 
+[0.1.26]: https://github.com/conix-center/ARENA-py/tree/be42141a15c62f14312cc51e6c3813e990aedce1
 [0.1.25]: https://github.com/conix-center/ARENA-py/tree/f12c50e990dd645875be3ae31be5840feb8a98aa
 [0.1.24]: https://github.com/conix-center/ARENA-py/tree/619be18bd16178fc40b9e670c313f578789845ea
 [0.1.23]: https://github.com/conix-center/ARENA-py/tree/53c0ac608db99d8df0c0ad775cdc4f67df55558b

@@ -28,15 +28,15 @@ class DisplayBoard(Object):
             self.start_display += 1
 
         
-    def dequeue(self, student):
+    def dequeue(self, studentID):
         if self.size <= 0:
             print("queue empty!")
             return
-        (student,question) = self.q.pop()
+        student =  self.q.pop(self.start_display + studentID)
         self.size -= 1
         if self.size < self.display_amt:
             self.end_display -= 1
-        return (student,question)
+        return student
     def scroll_up(self):
         if self.start_display == 0 and (self.end_display - self.start_display < display_amt):
             print("at top!")
@@ -56,19 +56,33 @@ class DisplayBoard(Object):
         return self.q[self.start_display:self.start_display + self.end_display]
 
 class TABoard(DisplayBoard):
-    def __init__(self,scene, board, max_display):
+    def __init__(self,scene, board, max_display, qboard):
         super().__init__(scene,board,max_display)
         self.id_ct = 0
         self.q = []
+        self.queue = qboard
         self.board = board
         #inherit queue from parent QB
         #id_ct
         pass
+
+    def dequeue(self, studentID):
+        if self.size <= 0:
+            print("queue empty!")
+            return
+        student =  self.q.pop(self.start_display + studentID)
+        scene.delete_object(student[1])
+        scene.delete_object(student[2])
+        self.queue.dequeue(studentID)
+        self.size -= 1
+        if self.size < self.display_amt:
+            self.end_display -= 1
+        return student
     def display(self):   
         display_list = self.get_display_list()
-        for i in range(0,len(display_list)): 
-            scene.update_object(display_list[i][1],position=Position(-1.5, .25 -0.1*i, 0))
-            scene.update_object(display_list[i][2],position=Position(-1.2, .25 -0.1*i, .45),scale=Scale(.05,.05,.1*.25))
+        for i in range(len(display_list)): 
+            scene.update_object(display_list[i][1],position=Position(-1.5, .25 -0.2*i, 0))
+            scene.update_object(display_list[i][2],position=Position(-1.2, .25 -0.2*i, .45),scale=Scale(.05,.05,.1*.25))
     def insert(self,student,question):
         #add button to associate with q
         #inc id_ct
@@ -78,9 +92,6 @@ class TABoard(DisplayBoard):
         if self.size < self.display_amt:
             self.end_display += 1
 
-    def dequeue(self, student):
-        #pop entry from q
-        pass
 
 class QBoard(DisplayBoard):
     def __init__(self,scene, board, max_display):
@@ -88,7 +99,7 @@ class QBoard(DisplayBoard):
         self.TABoards = []
         self.board = board
         self.button = Cylinder(object_id="my_button", position=Position(.1,3.3,-1.5),scale=Scale(.1,.05,0.1),rotation=Rotation(0,0,90), persist=True)
-        #id_ct
+
     def insert(self, student, question):
         self.q.append((student,Text(object_id ="my_text"+str(self.size), text=student, rotation=Rotation(0,270,0), scale=Scale(.25,.25,0.25), parent=self.board)))
         self.size += 1 
@@ -97,26 +108,30 @@ class QBoard(DisplayBoard):
         for i in range(len(self.TABoards)):
             self.TABoards[i].insert(student,question)
 
-        #loop through TA boards and call updateinsrt
-        #inc id_ct
-        pass
     def addTABoard(self, ta_board):
         self.TABoards.append(ta_board)
      
     def delTABoard(self):
         #delete ta board
         pass
-    def dequeue(self, student):
-        #pop entry from q, update all TA lists
-        pass
-    def display(self):
-       
+
+    def dequeue(self, studentID):
+        if self.size <= 0:
+            print("queue empty!")
+            return
+        student =  self.q.pop(self.start_display + studentID)
+        scene.delete_object(student[1])
+        self.size -= 1
+        if self.size < self.display_amt:
+            self.end_display -= 1
+        return student
+    def display(self):       
         display_list = self.get_display_list()
         for i in range(0,len(display_list)): 
             scene.update_object(display_list[i][1],position=Position(-1.5, .25 -0.1*i, 0))
 
 queue = QBoard(scene,Box(object_id="my_shape", position=Position(.25,4,-3),scale=Scale(.25,2,4), persist=True),5);
-taBoard = TABoard(scene, taB,5)
+taBoard = TABoard(scene, taB,5, queue)
 queue.addTABoard(taBoard)
 """
 create Qboard object
@@ -168,13 +183,19 @@ def main():
             taBoard.display()
     def ta_mouse_handler(scene, evt, msg):
         if evt.type == "mousedown":
-            for obj in(taBoard.get_display_list()):
+            i = 0
+            dQ = []
+            for obj in (taBoard.get_display_list()):
                 #print(obj[2]['data']['position'])
                 #print(evt['data']['clickPos'])
                 #print(obj[2]['data']['position'].distance_to(evt['data']['clickPos']))
-                if obj[2]['data']['position'].distance_to(evt['data']['clickPos']) <20:
+                if obj[2]['data']['position'].distance_to(evt['data']['clickPos']) <10:
                     teleport(taPos, msg["data"]["source"])
-
+                    dQ.append(i)
+                    print(i)
+                i+=1
+            for i in dQ[::-1]:
+                taBoard.dequeue(i)
     scene.update_object(queue.button, click_listener=True, evt_handler=mouse_handler)
     for obj in (taBoard.get_display_list()):
         scene.update_object(obj[2], click_listener=True, evt_handler=ta_mouse_handler)

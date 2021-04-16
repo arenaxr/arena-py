@@ -2,6 +2,10 @@
 
 ARENA-py notable changes. Started 2021-19-2 (version 0.1.12).
 
+## [0.1.28] - 2021-16-4
+### Changed
+- Reworked env/local token storage.
+
 ## [0.1.27] - 2021-15-4
 ### Changed
 - Better timing on `scene.run_forever`.

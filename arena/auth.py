@@ -44,10 +44,6 @@ def authenticate_user(host, debug=False):
     debug_toggle = debug
     print("Signing in to the ARENA...")
 
-    local_token = _local_token_check()
-    if local_token:
-        return local_token["username"]
-
     creds = None
     browser = None
     try:
@@ -110,9 +106,6 @@ def authenticate_scene(host, realm, scene, username, debug=False):
     global _id_token
     global _mqtt_token
     debug_toggle = debug
-    local_token = _local_token_check()
-    if local_token:
-        return local_token["username"]
 
     print("Using remote-authenticated MQTT token.")
     mqtt_json = _get_mqtt_token(host, realm, scene, username, _id_token)
@@ -122,10 +115,7 @@ def authenticate_scene(host, realm, scene, username, debug=False):
     os.chmod(_user_mqtt_path, 0o600)  # set user-only perms.
 
     _mqtt_token = json.loads(mqtt_json)
-    username = None
-    if 'username' in _mqtt_token:
-        username = _mqtt_token['username']
-    print(f'ARENA Username: {username}')
+    _log_token()
     return _mqtt_token
 
 
@@ -142,9 +132,40 @@ def get_writable_scenes(host, debug=False):
     return json.loads(my_scenes)
 
 
-def _local_token_check():
+def _log_token():
+    """
+    Update user with token in use.
+    """
+    global _mqtt_token
+    username = None
+    if 'username' in _mqtt_token:
+        username = _mqtt_token['username']
+    print(f'ARENA Token Username: {username}')
+
+    now = time.time()
+    tok = jwt.decode(_mqtt_token["token"], options={"verify_signature": False})
+    exp = float(tok["exp"])
+    dur_str = time.strftime("%H:%M:%S", time.gmtime(exp - now))
+    print(f'ARENA Token valid for: {dur_str}h')
+
+
+def store_environment_auth(username, token):
+    """
+    Keep a copy of the token in local memory for urlopen and other tasks.
+    """
+    global _mqtt_token
+    if username and token:
+        print("Using environment MQTT token.")
+        _mqtt_token = {"username": username, "token": token}
+        _log_token()
+
+
+def check_local_auth():
+    """
+    Check for local mqtt_token and save to local memory.
+    """
+    global _mqtt_token
     # TODO: remove local check after ARTS supports mqtt_token passing
-    # check for local mqtt_token first
     if os.path.exists(_local_mqtt_path):
         print("Using local MQTT token.")
         f = open(_local_mqtt_path, "r")
@@ -152,6 +173,7 @@ def _local_token_check():
         f.close()
         # TODO: check token expiration
         _mqtt_token = json.loads(mqtt_json)
+        _log_token()
         return _mqtt_token
     return None
 

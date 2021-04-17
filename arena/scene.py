@@ -66,10 +66,19 @@ class Scene(object):
         username = None
         password = None
         if os.environ.get("ARENA_USERNAME") and os.environ.get("ARENA_PASSWORD"):
+            # auth 1st: use passed in env var
             username = os.environ["ARENA_USERNAME"]
             password = os.environ["ARENA_PASSWORD"]
+            auth.store_environment_auth(username, password)
         else:
-            username = auth.authenticate_user(self.host, debug=self.debug)
+            local = auth.check_local_auth()
+            if local and 'username' in local and 'token' in local:
+                # auth 2nd: use locally saved token
+                username = local["username"]
+                password = local["token"]
+            else:
+                # auth 3rd: use the user account online
+                username = auth.authenticate_user(self.host, debug=self.debug)
 
         if os.environ.get("NAMESPACE"):
             self.namespace = os.environ["NAMESPACE"]

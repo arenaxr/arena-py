@@ -1,4 +1,5 @@
 from .worker import Worker
+import time
 
 class PersistentWorker(Worker):
     """
@@ -11,10 +12,13 @@ class PersistentWorker(Worker):
     async def run(self):
         if self.event: await self.event.wait()
         while True:
+            start = time.time()
             try:
                 self.func(*self.args, **self.kwargs)
             except Exception as e:
                 func_name = self.func.__name__
                 Worker.print_traceback(func_name)
                 return
-            await self.sleep(self.interval)
+            end = time.time()
+            target_time = max(0, self.interval - (end - start))
+            await self.sleep(target_time)

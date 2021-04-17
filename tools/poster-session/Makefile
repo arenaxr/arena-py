@@ -1,8 +1,9 @@
 run: venv
 	$(VENV)/python pplacement.py $(ARGS)
 
-test: venv
-	$(VENV)/python test.py $(ARGS)
+# shows how to force a scene by defining a SCENE env variable
+run-test-scene: venv
+	(SCENE=test $(VENV)/python pplacement.py $(ARGS))
 
 signout: venv
 			$(VENV)/python signout.py

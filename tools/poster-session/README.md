@@ -40,6 +40,14 @@ make ARGS='-h'
 make ARGS='--conf=myconfigfile.yaml'
 ```
 
+## Environment Variables
+
+Define environment variables to pass to the script in the Makefile. You can add new targets for these, e.g.:
+```
+cmu-test: venv
+  (NAMESPACE=cmu SCENE=test $(VENV)/python pplacement.py $(ARGS))
+```
+
 ## Config file
 
 Most of the time, you will want to invoke the script with no arguments:

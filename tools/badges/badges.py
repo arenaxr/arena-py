@@ -12,11 +12,12 @@ from arena import *
 BROKER = "arenaxr.org"
 REALM = "realm"
 SCENE = "badges-example"
-USERS = {}
+ALLUSERS = {}  # static list by username
+ACTUSERS = {}  # actual users by camera id
 
 
 def init_args():
-    global BROKER, REALM, SCENE, USERS
+    global BROKER, REALM, SCENE, ALLUSERS
     parser = argparse.ArgumentParser(
         description="ARENA badges manager example.")
     parser.add_argument(
@@ -29,24 +30,45 @@ def init_args():
     dr = csv.DictReader(buff)
     for row in dr:
         key = row["Username"]
-        USERS[key] = row
-    print(USERS)
+        ALLUSERS[key] = row
+    print(ALLUSERS)
 
 
 def scene_callback(scene, obj, msg):
-    print("on_msg_callback "+str(obj))
+    global ACTUSERS
+    #print("on_msg_callback "+str(obj))
+    cam_id = obj.object_id
+    # publish actual user overrides
+    # TODO: check frequency
+    if cam_id in ACTUSERS:
+        res = scene._publish(ACTUSERS[cam_id]["headtext"], "update")
+    return
 
 
 def user_join_callback(scene, obj, msg):
-    print("user_join_callback "+str(obj))
+    global ACTUSERS
+    #print("user_join_callback "+str(obj))
+    cam_id = obj.object_id
+    username = obj.object_id[18:]
+    print(username)
+    # Add our version of local avatar objects to actual users dict
+    text_id = f"headtext_{cam_id}"
+    #model_id = f"head-model_{cam_id}"
+    #mute_id = f"muted_{cam_id}"
+    ht_obj = Text(object_id=text_id, text=f"{obj.displayName} ({username})")
+    if cam_id not in ACTUSERS:
+        ACTUSERS[cam_id] = {"headtext": ht_obj}
+    return
 
 
 def user_left_callback(scene, obj, msg):
-    print("user_left_callback "+str(obj))
+    #print("user_left_callback "+str(obj))
+    return
 
 
 def end_program_callback(scene, obj, msg):
-    print("end_program_callback "+str(obj))
+    #print("end_program_callback "+str(obj))
+    return
 
 
 # parse args and wait for events

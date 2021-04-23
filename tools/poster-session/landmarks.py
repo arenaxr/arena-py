@@ -20,6 +20,7 @@ class Landmarks(dict):
         self['object_id'] = obj_id
         self['action'] = 'create'
         self['persist'] = True
+        self['overwrite'] = True
         self['type'] = 'landmarks'
         self['data'] = { 'landmarks' : [] }
 

@@ -41,7 +41,8 @@ def scene_callback(scene, obj, msg):
     # publish actual user overrides
     # TODO: check frequency
     if cam_id in ACTUSERS:
-        res = scene._publish(ACTUSERS[cam_id]["headtext"], "update")
+        #res = scene._publish(ACTUSERS[cam_id]["headtext"], "update")
+        scene.update_object(ACTUSERS[cam_id]["headtext"])
     return
 
 
@@ -55,7 +56,7 @@ def user_join_callback(scene, obj, msg):
     text_id = f"headtext_{cam_id}"
     #model_id = f"head-model_{cam_id}"
     #mute_id = f"muted_{cam_id}"
-    ht_obj = Text(object_id=text_id, text=f"{obj.displayName} ({username})")
+    ht_obj = Text(object_id=text_id, parent=cam_id, text=f"{obj.displayName} ({username})")
     if cam_id not in ACTUSERS:
         ACTUSERS[cam_id] = {"headtext": ht_obj}
     return

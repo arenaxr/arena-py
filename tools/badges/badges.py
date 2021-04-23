@@ -14,10 +14,11 @@ REALM = "realm"
 SCENE = "badges-example"
 ALLUSERS = {}  # static list by username
 ACTUSERS = {}  # actual users by camera id
+HEADERS = ["Username", "Name", "Role"]
 
 
 def init_args():
-    global BROKER, REALM, SCENE, ALLUSERS
+    global ALLUSERS
     parser = argparse.ArgumentParser(
         description="ARENA badges manager example.")
     parser.add_argument(
@@ -25,30 +26,43 @@ def init_args():
     args = parser.parse_args()
     print(args)
 
-    r = requests.get(args.userfile)
-    buff = io.StringIO(r.text)
-    dr = csv.DictReader(buff)
-    for row in dr:
+    read_online_user_state(args.userfile)
+    print(ALLUSERS)
+
+
+def read_online_user_state(url):
+    req = requests.get(url)
+    buff = io.StringIO(req.text)
+    reader = csv.DictReader(buff)
+    for row in reader:
         key = row["Username"]
         ALLUSERS[key] = row
-    print(ALLUSERS)
+
+
+def read_local_user_state(file):
+    reader = csv.DictReader(open(file))
+    for row in reader:
+        key = row["Username"]
+        ALLUSERS[key] = row
+
+
+def write_local_user_state(file):
+    fstr = open(file, 'w')
+    with fstr:
+        writer = csv.DictWriter(fstr, fieldnames=HEADERS)
+        writer.writeheader()
+        for row in ALLUSERS:
+            writer.writerow(ALLUSERS[row])
 
 
 def scene_callback(scene, obj, msg):
     global ACTUSERS
-    #print("on_msg_callback "+str(obj))
-    cam_id = obj.object_id
-    # publish actual user overrides
-    # TODO: check frequency
-    if cam_id in ACTUSERS:
-        #res = scene._publish(ACTUSERS[cam_id]["headtext"], "update")
-        scene.update_object(ACTUSERS[cam_id]["headtext"])
+    # TODO: TBD
     return
 
 
 def user_join_callback(scene, obj, msg):
     global ACTUSERS
-    #print("user_join_callback "+str(obj))
     cam_id = obj.object_id
     username = obj.object_id[18:]
     print(username)
@@ -56,19 +70,25 @@ def user_join_callback(scene, obj, msg):
     text_id = f"headtext_{cam_id}"
     #model_id = f"head-model_{cam_id}"
     #mute_id = f"muted_{cam_id}"
-    ht_obj = Text(object_id=text_id, parent=cam_id, text=f"{obj.displayName} ({username})")
+    ht_obj = Text(object_id=text_id, parent=cam_id,
+                  text=f"{obj.displayName} ({username})")
+    print(f"{cam_id} headtext stored as '{ht_obj.data.text}'")
     if cam_id not in ACTUSERS:
         ACTUSERS[cam_id] = {"headtext": ht_obj}
+    # publish all overrides so new users will see them
+    for user in ACTUSERS:
+        scene.update_object(ACTUSERS[user]["headtext"])
+        print(f"{user} headtext published")
     return
 
 
 def user_left_callback(scene, obj, msg):
-    #print("user_left_callback "+str(obj))
+    # TODO: TBD
     return
 
 
 def end_program_callback(scene, obj, msg):
-    #print("end_program_callback "+str(obj))
+    # TODO: TBD
     return
 
 

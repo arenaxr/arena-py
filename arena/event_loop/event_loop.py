@@ -36,12 +36,12 @@ class EventLoop(object):
 
         # register signals
         for s in self.signals:
-            if os.name == 'nt': # Windows does not add_signal_handler implemented
-                signal.signal(s, self.shutdown_wrapper)
-            else:
+            try:
                 self.loop.add_signal_handler(
                     s, self.shutdown_wrapper
                 )
+            except NotImplementedError:
+                signal.signal(s, self.shutdown_wrapper)
 
         # run event loop
         try:

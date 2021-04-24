@@ -1,6 +1,9 @@
-import socket
+# import socket
 import asyncio
-import paho.mqtt.client as mqtt
+try:
+    import paho.mqtt.client as mqtt
+except ImportError:
+    import mqtt.client as mqtt
 from .async_worker import AsyncWorker
 
 class AsyncioMQTTHelper:

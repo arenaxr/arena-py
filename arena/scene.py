@@ -89,6 +89,7 @@ class Scene(object):
 
         self.root_topic = f"{self.realm}/s/{self.namespaced_scene}"
         self.scene_topic = f"{self.root_topic}/#"   # main topic for entire scene
+        self.persist_topic = f"{self.root_topic}/persist"   # persist query topic
         self.persist_url = f"https://{self.host}/persist/{self.namespaced_scene}"
 
         self.latency_topic = "$NETWORK/latency"     # network graph latency update
@@ -97,6 +98,11 @@ class Scene(object):
         self.mqttc = mqtt.Client(
             self.mqttc_id, clean_session=True
         )
+        self.mqtt_persist = mqtt.Client(
+            clean_session=True
+        )
+        self.mqtt_persist.on_message = self._on_persist_msg
+        self.persist_result = None
 
 #         # do scene auth
 #         if username is None or password is None:
@@ -109,6 +115,7 @@ class Scene(object):
 #                 username = data["username"]
 #                 password = data["token"]
         self.mqttc.username_pw_set(username=username, password=password)
+        self.mqtt_persist.username_pw_set(username=username, password=password)
         print("=====")
 
         # set up callbacks
@@ -515,30 +522,51 @@ class Scene(object):
         if object_id in self.all_objects:
             obj = self.all_objects[object_id]
             obj.persist = True
-        else:
-            # pass token to persist
-            data = auth.urlopen(url=f"{self.persist_url}/{object_id}", creds=True)
-            output = json.loads(data)
-            if len(output) > 0:
-                output = output[0]
-
-                object_id = output["object_id"]
-                data = output["attributes"]
-                object_type = data.get("object_type", None)
-
-                ObjClass = OBJECT_TYPE_MAP.get(object_type, Object)
-                obj = ObjClass(object_id=object_id, data=data)
-                obj.persist = True
-
         return obj
+
+    def _on_persist_msg(self, client, userdata, msg):
+        try:
+            payload_str = msg.payload.decode("utf-8", "ignore")
+            payload = json.loads(payload_str)
+        except:
+            return
+
+        action = payload.get("action", None)
+        if action != "returnPersist":
+            return
+
+        request_uuid = payload.get("object_id", None)
+        if request_uuid is not None and request_uuid == userdata:
+            data = payload.get("data", [])
+            self.persist_result = data
 
     def get_persisted_objs(self):
         """Returns a dictionary of persisted objects. [TODO] check object_type"""
+        import uuid
+        request_uuid = str(uuid.uuid4())
+
+        persist_request = json.dumps({
+            "object_id": request_uuid,
+            "action": "getPersist",
+            "type":"object",
+            "data":{}
+        })
+
+        self.persist_result = None
+        self.mqtt_persist.user_data_set(request_uuid)
+        self.mqtt_persist.connect(self.host)
+        self.mqtt_persist.subscribe(self.persist_topic)
+        self.mqtt_persist.publish(self.persist_topic, persist_request, qos=1)
+
+        # Block until a matching result is received. Set a max n_iter here if desired.
+        while self.persist_result is None:
+            self.mqtt_persist.loop_read()
+        
+        self.mqtt_persist.disconnect()
+
         objs = {}
         # pass token to persist
-        data = auth.urlopen(url=self.persist_url, creds=True)
-        output = json.loads(data)
-        for obj in output:
+        for obj in self.persist_result:
             if obj["type"] == Object.object_type or obj["type"] == Object.type:
                 object_id = obj["object_id"]
                 data = obj["attributes"]
@@ -558,18 +586,14 @@ class Scene(object):
 
     def get_persisted_scene_option(self):
         """Returns a dictionary for scene-options. [TODO] wrap the output as a BaseObject"""
-        scene_opts_url = f"{self.persist_url}?type=scene-options"
-        # pass token to persist
-        data = auth.urlopen(url=scene_opts_url, creds=True )
-        output = json.loads(data)
-        return output
+        raise NotImplementedError
 
 
     def get_writable_scenes(self):
         """ Request list of scene names for logged in user account that user has publish permission for.
         Returns: list of scenes.
         """
-        return auth.get_writable_scenes(host=self.host, debug=self.debug)
+        raise NotImplementedError
 
 
     def message_callback_add(self, sub, callback):

@@ -2,10 +2,13 @@ import os
 import sys
 import json
 import random
-import socket
+# import socket
 import asyncio
 
-import paho.mqtt.client as mqtt
+try:
+    import paho.mqtt.client as mqtt
+except ImportError:
+    import mqtt.client as mqtt
 from datetime import datetime
 from inspect import signature
 
@@ -15,7 +18,7 @@ from .events import *
 from .utils import *
 from .event_loop import *
 
-from . import auth
+# from . import auth
 
 class Scene(object):
     """
@@ -66,19 +69,11 @@ class Scene(object):
         username = None
         password = None
         if os.environ.get("ARENA_USERNAME") and os.environ.get("ARENA_PASSWORD"):
-            # auth 1st: use passed in env var
             username = os.environ["ARENA_USERNAME"]
             password = os.environ["ARENA_PASSWORD"]
-            auth.store_environment_auth(username, password)
         else:
-            local = auth.check_local_auth()
-            if local and 'username' in local and 'token' in local:
-                # auth 2nd: use locally saved token
-                username = local["username"]
-                password = local["token"]
-            else:
-                # auth 3rd: use the user account online
-                username = auth.authenticate_user(self.host, debug=self.debug)
+            username = "test"
+            password = "test"
 
         if os.environ.get("NAMESPACE"):
             self.namespace = os.environ["NAMESPACE"]
@@ -103,16 +98,16 @@ class Scene(object):
             self.mqttc_id, clean_session=True
         )
 
-        # do scene auth
-        if username is None or password is None:
-            data = auth.authenticate_scene(
-                            self.host, self.realm,
-                            self.namespaced_scene, username,
-                            self.debug
-                        )
-            if 'username' in data and 'token' in data:
-                username = data["username"]
-                password = data["token"]
+#         # do scene auth
+#         if username is None or password is None:
+#             data = auth.authenticate_scene(
+#                             self.host, self.realm,
+#                             self.namespaced_scene, username,
+#                             self.debug
+#                         )
+#             if 'username' in data and 'token' in data:
+#                 username = data["username"]
+#                 password = data["token"]
         self.mqttc.username_pw_set(username=username, password=password)
         print("=====")
 
@@ -156,7 +151,7 @@ class Scene(object):
             self.mqttc.connect(self.host, kwargs["port"])
         else:
             self.mqttc.connect(self.host)
-        self.mqttc.socket().setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
+#         self.mqttc.socket().setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
 
         print(f"Loading: https://{self.host}/{self.namespace}/{self.scene}, realm={self.realm}")
 

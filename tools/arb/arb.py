@@ -1189,6 +1189,7 @@ if NAMESPACE:
     kwargs["namespace"] = NAMESPACE
 if DEBUG:
     kwargs["debug"] = DEBUG
+    kwargs["verify"] = False
 scene = Scene(
     host=BROKER,
     realm=REALM,

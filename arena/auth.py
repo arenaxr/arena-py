@@ -19,7 +19,6 @@ import requests
 from google.auth.transport.requests import AuthorizedSession, Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 
-_verify_ssl = True
 _scopes = ["openid",
            "https://www.googleapis.com/auth/userinfo.profile",
            "https://www.googleapis.com/auth/userinfo.email"]
@@ -31,16 +30,14 @@ _mqtt_token = None
 _id_token = None
 
 
-def authenticate_user(host, verify=True):
+def authenticate_user(host):
     """
     Begins authentication flow, getting Google auth, opening web browser if
     needed, getting username and state from ARENA server.
     host: The hostname of the ARENA webserver.
-    verify: False to skip SSL verify for localhost tests.
     Returns: Username from arena-account, or None.
     """
-    global _id_token, _verify_ssl
-    _verify_ssl = verify
+    global _id_token
     print("Signing in to the ARENA...")
 
     creds = None
@@ -86,18 +83,16 @@ def authenticate_user(host, verify=True):
     return username
 
 
-def authenticate_scene(host, realm, scene, username, verify=True):
+def authenticate_scene(host, realm, scene, username):
     """ End authentication flow, requesting permissions may change by owner
     or admin, for now, get a fresh mqtt_token each time.
     host: The hostname of the ARENA webserver.
     realm: The topic realm name.
     scene: The namespace/scene name combination.
     username: The ARENA username for the user.
-    verify: False to skip SSL verify for localhost tests.
     Returns: username and mqtt_token from arena-account.
     """
-    global _id_token, _mqtt_token, _verify_ssl
-    _verify_ssl = verify
+    global _id_token, _mqtt_token
 
     print("Using remote-authenticated MQTT token.")
     mqtt_json = _get_mqtt_token(host, realm, scene, username, _id_token)
@@ -111,14 +106,12 @@ def authenticate_scene(host, realm, scene, username, verify=True):
     return _mqtt_token
 
 
-def get_writable_scenes(host, verify=True):
+def get_writable_scenes(host):
     """ Request list of scene names for logged in user that user has publish permission for.
     host: The hostname of the ARENA webserver.
-    verify: False to skip SSL verify for localhost tests.
     Returns: list of scenes.
     """
-    global _id_token, _verify_ssl
-    _verify_ssl = verify
+    global _id_token
     my_scenes = _get_my_scenes(host, _id_token)
     return json.loads(my_scenes)
 
@@ -185,10 +178,11 @@ def check_local_auth():
 
 def _get_csrftoken(host):
     # get the csrftoken for django
-    global _csrftoken, _verify_ssl
+    global _csrftoken
     csrf_url = f'https://{host}/user/login'
+    verify = host != "localhost"
     client = requests.session()
-    client.get(csrf_url, verify=_verify_ssl)  # sets cookie
+    client.get(csrf_url, verify=verify)  # sets cookie
     if 'csrftoken' in client.cookies:
         _csrftoken = client.cookies['csrftoken']
     elif 'csrf' in client.cookies:
@@ -249,7 +243,9 @@ def urlopen(url, data=None, creds=False, csrf=None):
     creds: True to pass the MQTT token as a cookie.
     csrf: The csrftoken.
     """
-    global _mqtt_token, _verify_ssl
+    global _mqtt_token
+    urlparts = urlsplit(url)
+    verify = urlparts.netloc != "localhost"
     try:
         req = request.Request(url)
         if creds:
@@ -257,7 +253,7 @@ def urlopen(url, data=None, creds=False, csrf=None):
         if csrf:
             req.add_header("Cookie", f"csrftoken={csrf}")
             req.add_header("X-CSRFToken", csrf)
-        if _verify_ssl:
+        if verify:
             res = request.urlopen(req, data=data)
         else:
             context = ssl.create_default_context()

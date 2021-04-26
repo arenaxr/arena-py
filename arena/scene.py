@@ -32,7 +32,6 @@ class Scene(object):
                 user_left_callback = None,
                 delete_obj_callback = None,
                 end_program_callback = None,
-                verify = True,
                 debug = False,
                 **kwargs
             ):
@@ -60,7 +59,6 @@ class Scene(object):
         else:
             sys.exit("scene argument (scene) is unspecified, aborting...")
 
-        self.verify = verify
         self.debug = debug
 
         print("=====")
@@ -80,7 +78,7 @@ class Scene(object):
                 password = local["token"]
             else:
                 # auth 3rd: use the user account online
-                username = auth.authenticate_user(self.host, verify=self.verify)
+                username = auth.authenticate_user(self.host)
 
         if os.environ.get("NAMESPACE"):
             self.namespace = os.environ["NAMESPACE"]
@@ -109,8 +107,7 @@ class Scene(object):
         if username is None or password is None:
             data = auth.authenticate_scene(
                             self.host, self.realm,
-                            self.namespaced_scene, username,
-                            verify=self.verify
+                            self.namespaced_scene, username
                         )
             if 'username' in data and 'token' in data:
                 username = data["username"]
@@ -576,7 +573,7 @@ class Scene(object):
         """ Request list of scene names for logged in user account that user has publish permission for.
         Returns: list of scenes.
         """
-        return auth.get_writable_scenes(host=self.host, verify=self.verify)
+        return auth.get_writable_scenes(host=self.host)
 
 
     def message_callback_add(self, sub, callback):

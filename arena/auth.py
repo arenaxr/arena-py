@@ -44,11 +44,6 @@ def authenticate_user(host, verify=True):
     print("Signing in to the ARENA...")
 
     creds = None
-    browser = None
-    try:
-        browser = webbrowser.get()
-    except (webbrowser.Error) as err:
-        print("Console-only login. {0}".format(err))
 
     # store the user's access and refresh tokens
     if os.path.exists(_user_gauth_path):
@@ -67,11 +62,11 @@ def authenticate_user(host, verify=True):
             gauth_json = _get_gauthid(host)
             flow = InstalledAppFlow.from_client_config(
                 json.loads(gauth_json), _scopes)
-            if browser:
+            if _is_headless_client():
+                creds = flow.run_console()
+            else:
                 # TODO: select best client port to avoid likely conflicts
                 creds = flow.run_local_server(port=8989)
-            else:
-                creds = flow.run_console()
             session = flow.authorized_session()
         with open(_user_gauth_path, 'wb') as token:
             # save the credentials for the next run
@@ -126,6 +121,20 @@ def get_writable_scenes(host, verify=True):
     _verify_ssl = verify
     my_scenes = _get_my_scenes(host, _id_token)
     return json.loads(my_scenes)
+
+
+def _is_headless_client():
+    """ Determine headless or headed console.
+    """
+    if "SSH_TTY" in os.environ or "SSH_CLIENT" in os.environ:
+        print("SSH connection detected, using headless auth.")
+        return True
+    try:
+        webbrowser.get()
+        return False
+    except (webbrowser.Error) as err:
+        print("Console-only OS detected. {0}".format(err))
+        return True
 
 
 def _log_token():

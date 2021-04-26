@@ -78,7 +78,7 @@ class Scene(object):
                 password = local["token"]
             else:
                 # auth 3rd: use the user account online
-                username = auth.authenticate_user(self.host, debug=self.debug)
+                username = auth.authenticate_user(self.host)
 
         if os.environ.get("NAMESPACE"):
             self.namespace = os.environ["NAMESPACE"]
@@ -107,8 +107,7 @@ class Scene(object):
         if username is None or password is None:
             data = auth.authenticate_scene(
                             self.host, self.realm,
-                            self.namespaced_scene, username,
-                            self.debug
+                            self.namespaced_scene, username
                         )
             if 'username' in data and 'token' in data:
                 username = data["username"]
@@ -574,7 +573,7 @@ class Scene(object):
         """ Request list of scene names for logged in user account that user has publish permission for.
         Returns: list of scenes.
         """
-        return auth.get_writable_scenes(host=self.host, debug=self.debug)
+        return auth.get_writable_scenes(host=self.host)
 
 
     def message_callback_add(self, sub, callback):

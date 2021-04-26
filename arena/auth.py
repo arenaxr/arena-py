@@ -19,7 +19,7 @@ import requests
 from google.auth.transport.requests import AuthorizedSession, Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 
-debug_toggle = False
+_verify_ssl = True
 _scopes = ["openid",
            "https://www.googleapis.com/auth/userinfo.profile",
            "https://www.googleapis.com/auth/userinfo.email"]
@@ -31,17 +31,16 @@ _mqtt_token = None
 _id_token = None
 
 
-def authenticate_user(host, debug=False):
+def authenticate_user(host, verify=True):
     """
     Begins authentication flow, getting Google auth, opening web browser if
     needed, getting username and state from ARENA server.
     host: The hostname of the ARENA webserver.
-    debug: True to skip SSL verify for localhost tests.
+    verify: False to skip SSL verify for localhost tests.
     Returns: Username from arena-account, or None.
     """
-    global debug_toggle
-    global _id_token
-    debug_toggle = debug
+    global _id_token, _verify_ssl
+    _verify_ssl = verify
     print("Signing in to the ARENA...")
 
     creds = None
@@ -92,20 +91,18 @@ def authenticate_user(host, debug=False):
     return username
 
 
-def authenticate_scene(host, realm, scene, username, debug=False):
+def authenticate_scene(host, realm, scene, username, verify=True):
     """ End authentication flow, requesting permissions may change by owner
     or admin, for now, get a fresh mqtt_token each time.
     host: The hostname of the ARENA webserver.
     realm: The topic realm name.
     scene: The namespace/scene name combination.
     username: The ARENA username for the user.
-    debug: True to skip SSL verify for localhost tests.
+    verify: False to skip SSL verify for localhost tests.
     Returns: username and mqtt_token from arena-account.
     """
-    global debug_toggle
-    global _id_token
-    global _mqtt_token
-    debug_toggle = debug
+    global _id_token, _mqtt_token, _verify_ssl
+    _verify_ssl = verify
 
     print("Using remote-authenticated MQTT token.")
     mqtt_json = _get_mqtt_token(host, realm, scene, username, _id_token)
@@ -119,15 +116,14 @@ def authenticate_scene(host, realm, scene, username, debug=False):
     return _mqtt_token
 
 
-def get_writable_scenes(host, debug=False):
+def get_writable_scenes(host, verify=True):
     """ Request list of scene names for logged in user that user has publish permission for.
     host: The hostname of the ARENA webserver.
-    debug: True to skip SSL verify for localhost tests.
+    verify: False to skip SSL verify for localhost tests.
     Returns: list of scenes.
     """
-    global debug_toggle
-    global _id_token
-    debug_toggle = debug
+    global _id_token, _verify_ssl
+    _verify_ssl = verify
     my_scenes = _get_my_scenes(host, _id_token)
     return json.loads(my_scenes)
 
@@ -180,11 +176,10 @@ def check_local_auth():
 
 def _get_csrftoken(host):
     # get the csrftoken for django
-    global _csrftoken
+    global _csrftoken, _verify_ssl
     csrf_url = f'https://{host}/user/login'
     client = requests.session()
-    verify = not debug_toggle
-    client.get(csrf_url, verify=verify)  # sets cookie
+    client.get(csrf_url, verify=_verify_ssl)  # sets cookie
     if 'csrftoken' in client.cookies:
         _csrftoken = client.cookies['csrftoken']
     elif 'csrf' in client.cookies:
@@ -245,8 +240,7 @@ def urlopen(url, data=None, creds=False, csrf=None):
     creds: True to pass the MQTT token as a cookie.
     csrf: The csrftoken.
     """
-    global debug_toggle
-    global _mqtt_token
+    global _mqtt_token, _verify_ssl
     try:
         req = request.Request(url)
         if creds:
@@ -254,13 +248,13 @@ def urlopen(url, data=None, creds=False, csrf=None):
         if csrf:
             req.add_header("Cookie", f"csrftoken={csrf}")
             req.add_header("X-CSRFToken", csrf)
-        if debug_toggle:
+        if _verify_ssl:
+            res = request.urlopen(req, data=data)
+        else:
             context = ssl.create_default_context()
             context.check_hostname = False
             context.verify_mode = ssl.CERT_NONE
             res = request.urlopen(req, data=data, context=context)
-        else:
-            res = request.urlopen(req, data=data)
         return res.read().decode('utf-8')
     except (requests.exceptions.ConnectionError, ConnectionError, URLError, HTTPError) as err:
         print("{0}: ".format(err)+url)

@@ -2,11 +2,7 @@
 #
 # Application responds to users in the scene and updates the user avatar with name and badge updates.
 import argparse
-import csv
-import io
-import json
 
-import requests
 from arena import *
 
 BROKER = "arenaxr.org"
@@ -14,7 +10,6 @@ REALM = "realm"
 SCENE = "badges-example"
 ALLUSERS = {}  # static list by username
 ACTUSERS = {}  # actual users by camera id
-HEADERS = ["Username", "Name", "Role"]
 
 
 def init_args():
@@ -25,34 +20,6 @@ def init_args():
         "-u", "--userfile", type=str, help="CSV delimited user list")
     args = parser.parse_args()
     print(args)
-
-    read_online_user_state(args.userfile)
-    print(ALLUSERS)
-
-
-def read_online_user_state(url):
-    req = requests.get(url)
-    buff = io.StringIO(req.text)
-    reader = csv.DictReader(buff)
-    for row in reader:
-        key = row["Username"]
-        ALLUSERS[key] = row
-
-
-def read_local_user_state(file):
-    reader = csv.DictReader(open(file))
-    for row in reader:
-        key = row["Username"]
-        ALLUSERS[key] = row
-
-
-def write_local_user_state(file):
-    fstr = open(file, 'w')
-    with fstr:
-        writer = csv.DictWriter(fstr, fieldnames=HEADERS)
-        writer.writeheader()
-        for row in ALLUSERS:
-            writer.writerow(ALLUSERS[row])
 
 
 def scene_callback(scene, obj, msg):

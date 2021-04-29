@@ -2,10 +2,11 @@
 
 ARENA-py notable changes. Started 2021-19-2 (version 0.1.12).
 
-## [0.1.29] - forthcoming
+## [0.1.29] - 2021-29-4
 ### Changed
 - Auto-detect headless auth from SSH terminal.
 - Remove localhost tests from debug flag.
+- Color bug fix (blue and green were flipped).
 
 ## [0.1.28] - 2021-16-4
 ### Changed
@@ -110,6 +111,9 @@ specify both to bypass auth.
 - `Arena` class renamed to `Scene`, but using `Arena` is still allowed. Updated examples to reflect this.
 - Tiny bug fix with `update_objects`.
 
+[0.1.29]: https://github.com/conix-center/ARENA-py/tree/bd364bec29109c8dd12cce35e612df50f8cfb9e0
+[0.1.28]: https://github.com/conix-center/ARENA-py/tree/5b9273747f68f538d6130427da877541daa02d32
+[0.1.27]: https://github.com/conix-center/ARENA-py/tree/5e5150dd8e723915abbaaec68183a16a00cef852
 [0.1.26]: https://github.com/conix-center/ARENA-py/tree/be42141a15c62f14312cc51e6c3813e990aedce1
 [0.1.25]: https://github.com/conix-center/ARENA-py/tree/f12c50e990dd645875be3ae31be5840feb8a98aa
 [0.1.24]: https://github.com/conix-center/ARENA-py/tree/619be18bd16178fc40b9e670c313f578789845ea

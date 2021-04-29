@@ -20,7 +20,7 @@ class Color(Attribute):
                 c = (wcrgb.red, wcrgb.green, wcrgb.blue)
             else:
                 c = tuple(int(color[c:c+2], 16) for c in (0, 2, 4))
-            red, blue, green = c
+            red, green, blue = c
         super().__init__(red=red, green=green, blue=blue)
 
     @property

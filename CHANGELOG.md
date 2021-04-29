@@ -2,10 +2,11 @@
 
 ARENA-py notable changes. Started 2021-19-2 (version 0.1.12).
 
-## [0.1.29] - forthcoming
+## [0.1.29] - 2021-29-4
 ### Changed
 - Auto-detect headless auth from SSH terminal.
 - Remove localhost tests from debug flag.
+- Color bug fix (blue and green were flipped).
 
 ## [0.1.28] - 2021-16-4
 ### Changed

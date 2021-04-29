@@ -2,6 +2,11 @@
 
 ARENA-py notable changes. Started 2021-19-2 (version 0.1.12).
 
+## [0.1.30] - 2021-29-4
+### Changed
+- Remove top-level landmark type
+- Replace with new landmark attribute
+
 ## [0.1.29] - 2021-29-4
 ### Changed
 - Auto-detect headless auth from SSH terminal.

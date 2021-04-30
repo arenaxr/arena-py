@@ -1,7 +1,7 @@
 from arena import *
 from layout import Layout
 from landmarks import Landmarks
-from gstable import GoogleSheetTable
+from gcwrapper import GoogleClientWrapper
 import argparse
 import os
 import math
@@ -59,6 +59,9 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
     # default persit to False
     persist = config.get('persist', False)
 
+    # to save file to gdrive
+    gcw = GoogleClientWrapper();
+
     # get wall config
     wall_config         = config.get('wall', {})
     wall_width          = wall_config.get('width', 9)
@@ -66,6 +69,8 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
     wall_depth          = wall_config.get('depth', 1)
     img_height          = wall_config.get('img_height', 2.6)
     wall_color          = parse_color(wall_config, 'color', '151, 171, 216')
+    img_btn_color       = parse_color(wall_config, 'img_btn_color', '255, 255, 255')
+    img_btn_text_color  = parse_color(wall_config, 'img_btn_text_color', '0, 0, 0')
     text_color          = parse_color(wall_config, 'text_color', '0, 66, 117')
     back_text_color     = parse_color(wall_config, 'back_text_color', '96, 122, 163')
     text_font           = wall_config.get('text_font', 'exo2bold')
@@ -109,17 +114,58 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
     scene.add_object(wall)
 
     try:
+        img_url = wall_data.get('image_url') # deal with previous verions of the spreadsheet
+        if not img_url:
+            img_url=wall_data['image_url_1'] # raise exception if key does not exist
+
         # image on the wall
         img = Image(object_id=img_name,
             parent=root_name,
             persist=persist,
             position=Position(0, img_height, 0.510),
             scale=Scale(7.2,4.05,1),
-            url=wall_data['image_url'] # raise exception if key does not exist
+            url=img_url
         )
         scene.add_object(img)
     except Exception as err:
         print(f'Could not add wall image: {err}')
+
+    # get list of additional images
+    img_btns = {}
+    for img_key in ['image_url_1', 'image_url_2', 'image_url_3', 'image_url_4']:
+        img = wall_data.get(img_key)
+        if img:
+            btn_name = f'poster_imgbtn_{name_suffix}_{img_key}'
+            img_btns[btn_name] = {'img_object_id': img_name, 'img_url': img}
+            #btn_list.append({ 'btn_object_id': f'poster_imgbtn_{name_suffix}_{img_key}', 'img_object_id': img_name, 'img_url': img }) # remove non-existing columns or empty cells
+
+    if len(img_btns) > 1:
+        # add buttons to scroll between additional images
+        i=0
+        for btn in img_btns:
+            img_btn = Image(object_id=btn,
+                parent=root_name,
+                persist=persist,
+                position=Position(-(wall_width/2)+.45, img_height + (len(img_btns)-1) * .8 / 2 - i * .8, 0.510),
+                heigh=.5,
+                width=.5,
+                scale=Scale(.5, .5, 1),
+                color=img_btn_color
+            )
+            scene.add_object(img_btn)
+
+            # button text
+            lblbtn_img = Text(object_id=f'{btn}_text',
+                parent=btn,
+                persist=persist,
+                position=Position(0, 0, 0),
+                text=str(i+1),
+                color=img_btn_text_color,
+                font=text_font,
+                width=10
+            )
+            scene.add_object(lblbtn_img)
+            i = i + 1
 
     try:
         if len(wall_data['button1']) > 0:
@@ -241,13 +287,13 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
         print(f'Could not add wall authors: {err}')
 
     # return the image name as the object the landmark should point to
-    return img_name
+    return (img_name, img_btns)
 
 def make_walls():
     # get data from google spreadsheet table
     print('Getting data...')
-    gst = GoogleSheetTable();
-    data = gst.aslist(config['input_table']['spreadsheetid'], config['input_table']['named_range'])
+    gcw = GoogleClientWrapper();
+    data = gcw.gs_aslist(config['input_table']['spreadsheetid'], config['input_table']['named_range'])
 
     # filter by scenename in config
     filtered = list(filter(lambda v: v['scene'] == config['arena']['scenename'], data))
@@ -258,8 +304,9 @@ def make_walls():
     # create a lanmarks object; we will add a landmark for each wall
     landmarks = Landmarks();
 
+    btns = {}
     for i in range(len(filtered)):
-        ldmrk_obj_id = make_wall(
+        (ldmrk_obj_id, wall_btns) = make_wall(
             filtered[i]['id'], # use id as a suffix for the objects of each wall
             Position(t[i]['x'], t[i]['y'], t[i]['z']), # position as given by the layout
             Rotation(t[i]['rx'],t[i]['ry'],t[i]['rz']), # rotation as given by layout
@@ -270,8 +317,13 @@ def make_walls():
         if len(filtered[i]["title"]) > 50: lbl = lbl + '...'
         landmarks.push_landmark(ldmrk_obj_id, lbl) # push landmark to the list
 
+        btns.update(wall_btns)
+
     # add landmark list to scene
     landmarks.add_object(config['arena']['scenename'])
+
+    # save buttons data on gdrive
+    gcw.gd_save_json(config['links_config']['fileid'], btns, f'{config["input_table"]["spreadsheetid"]}.json');
 
     print('\nDone. Press Ctrl+C to disconnect.')
 

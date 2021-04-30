@@ -78,9 +78,11 @@ def init_args():
 
 
 def publish_badge(scene, badge_idx, cam_id, badge_icon):
+    # update arena viewers of this scene
     global config
     badge_icon_id = f"badge{badge_idx}_{cam_id}"
-    if (badge_idx % 2) == 0: # alternate badge sides
+    # TODO: fix the spacing of multiple badges
+    if (badge_idx % 2) == 0:  # alternate badge sides
         pos = badge_idx / 2 * 0.02
     else:
         pos = badge_idx * -0.02
@@ -97,6 +99,7 @@ def publish_badge(scene, badge_idx, cam_id, badge_icon):
             side='double'),
         url=config["badge_icons"][badge_icon])
     scene.add_object(badge)
+    # TODO: push config into parsable yaml
 
 
 def scene_callback(scene, obj, msg):
@@ -115,6 +118,7 @@ def scene_callback(scene, obj, msg):
     if action == "clientEvent":
         # handle click
         if msg_type == "mousedown":
+            # parse clicks from known badge name object ids
             if object_id in config["badge_icons"]:
                 cam_id = msg["data"]["source"]
                 username = cam_id[18:]  # strip camera_00123456789 for username
@@ -123,6 +127,7 @@ def scene_callback(scene, obj, msg):
                     ACTUSERS[cam_id] = {}
                 if "badges" not in ACTUSERS[cam_id]:
                     ACTUSERS[cam_id]["badges"] = []
+                # check if update to data model is needed, or if this is a dupe
                 if object_id not in ACTUSERS[cam_id]["badges"]:
                     ACTUSERS[cam_id]["badges"].append(object_id)
                     publish_badge(scene=scene,
@@ -130,13 +135,7 @@ def scene_callback(scene, obj, msg):
                                   cam_id=cam_id,
                                   badge_icon=object_id)
 
-    # TODO: parse clicks from known badge name object ids
-
-    # TODO: check if update to data model is needed, or if this is a dupe
-
     # TODO: update data model, local and remote
-
-    # TODO: update arena viewers of this scene
 
 
 def user_join_callback(scene, obj, msg):

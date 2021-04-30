@@ -1,6 +1,3 @@
-# persist objects (True/False): False=objects will disappear after a reload (and only appear to clients already viewing the scene when they are created)
-persist: True
-
 # arena related definitions
 arena:
   host: arenaxr.org # default: arenaxr.org
@@ -18,17 +15,28 @@ input_table:
   # include the sheet name ('Data Table') and the header, e.g: Data Table!A1:F10
   #
   # For details, see: https://developers.google.com/sheets/api/guides/concepts
-  named_range: Data Table!A1:G3
+  named_range: User Table
 
 # where the icon files are
-icons:
+badge_icons:
   ball1: https://arenaxr.org/store/users/wiselab/badges/img/ball-6x6.png
   cone1: https://arenaxr.org/store/users/wiselab/badges/img/cone-6x6.png
   cube1: https://arenaxr.org/store/users/wiselab/badges/img/cube-6x6.png
+role_icons:
+  guide: https://arenaxr.org/images/xr-logo-v8.png
+  staff: https://arenaxr.org/images/conix-face-black.png
+role_texts:
+  guide: (ETC Tour Guide)
+  staff: (ARENA Staff)
 
-# badge settings
+# icon placement relative to avatar
 badge:
   position: 0, -2, 0
   rotation: 0, 0, 0, 1
   img_height: 2
   max_icons: 10
+role:
+  position: 0, 2, 0
+  rotation: 0, 0, 0, 1
+  img_height: 2
+  max_icons: 1

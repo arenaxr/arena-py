@@ -30,19 +30,22 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 
+
 class GoogleSheetTable:
-    """Acess google sheet and get data
+    """Access google sheet and get data
        Based on: https://developers.google.com/sheets/api/quickstart/python
     """
     # If modifying these scopes, delete the file token.json.
-    SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
+    SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+
     def __init__(self):
         creds = None
         # The file token.json stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
         # time.
         if os.path.exists('token.json'):
-            creds = Credentials.from_authorized_user_file('token.json', GoogleSheetTable.SCOPES)
+            creds = Credentials.from_authorized_user_file(
+                'token.json', GoogleSheetTable.SCOPES)
         # If there are no (valid) credentials available, let the user log in.
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
@@ -71,9 +74,10 @@ class GoogleSheetTable:
 
         # Call the Sheets API
         result = self.sheet.values().get(spreadsheetId=sheet_id,
-                                        range=table_range_name).execute()
+                                         range=table_range_name).execute()
         values = result.get('values', [])
-        if len(values) == 0: return []
+        if len(values) == 0:
+            return []
         # Convert spreadsheet table into list of dict()
         columns = list(map(lambda v: v.replace(' ', '_'), values[0]))
         res_list = []

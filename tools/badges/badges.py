@@ -13,12 +13,10 @@ from arena import *
 from gstable import GoogleSheetTable
 
 DFT_CONFIG_FILENAME = './config.yaml'
-HOST = "arenaxr.org"
-REALM = "realm"
-SCENE = "badges-example"
 ALLUSERS = {}  # static list by username
 ACTUSERS = {}  # actual users by camera id
 config = {}
+data = []
 
 
 def init_args():
@@ -62,45 +60,64 @@ def init_args():
         print("Config missing 'input_table.named_range'.")
         exit(1)
 
-    if (config.get('icons') == None):
+    if (config.get('badge_icons') == None):
         print("Config missing 'icons' section")
         exit(1)
 
-    # get data from google spreadsheet table
-    print('Getting data...')
-    gst = GoogleSheetTable()
-    data = gst.aslist(config['input_table']['spreadsheetid'],
-                      config['input_table']['named_range'])
+    if (config.get('role_icons') == None):
+        print("Config missing 'icons' section")
+        exit(1)
 
-    # filter by scenename in config
-    filtered = list(
-        filter(lambda v: v['scene'] == config['arena']['scenename'], data))
+    if (config.get('badge') == None):
+        print("Config missing 'icons' section")
+        exit(1)
+
+    if (config.get('role') == None):
+        print("Config missing 'icons' section")
+        exit(1)
 
 
 def scene_callback(scene, obj, msg):
-    global ACTUSERS
     # TODO: TBD
     return
 
 
 def user_join_callback(scene, obj, msg):
-    global ACTUSERS
+    global ACTUSERS, config
     cam_id = obj.object_id
     username = obj.object_id[18:]
     print(username)
     # Add our version of local avatar objects to actual users dict
-    text_id = f"headtext_{cam_id}"
-    #model_id = f"head-model_{cam_id}"
-    #mute_id = f"muted_{cam_id}"
-    ht_obj = Text(object_id=text_id, parent=cam_id,
-                  text=f"{obj.displayName} ({username})")
-    print(f"{cam_id} headtext stored as '{ht_obj.data.text}'")
     if cam_id not in ACTUSERS:
-        ACTUSERS[cam_id] = {"headtext": ht_obj}
-    # publish all overrides so new users will see them
+        sheet_user = next(filter(lambda x: x['username'] == username, data))
+        if sheet_user:
+            text_id = f"headtext_{cam_id}"
+            role_icon_id = f"roleicon_{cam_id}"
+            ACTUSERS[cam_id] = {}
+            if 'role' in sheet_user:
+                role = sheet_user['role']
+                if role in config['role_texts']:
+                    ACTUSERS[cam_id]["headtext"] = Text(
+                        object_id=text_id,
+                        parent=cam_id,
+                        text=f"{obj.displayName} {config['role_texts'][role]}")
+                if role in config['role_icons']:
+                    ACTUSERS[cam_id]["roleicon"] = Image(
+                        object_id=role_icon_id,
+                        parent=cam_id,
+                        position=(0, 0.6, 0.045),
+                        rotation=(0, 1, 0, 0),
+                        scale=(0.2, 0.2, 0.02),
+                        src=f'url({config["role_icons"][role]})')
+
+    # publish all overrides so new user will see them
     for user in ACTUSERS:
-        scene.update_object(ACTUSERS[user]["headtext"])
-        print(f"{user} headtext published")
+        if 'headtext' in ACTUSERS[user]:
+            scene.update_object(ACTUSERS[user]["headtext"])
+            print(f"{user} headtext published")
+        if 'roleicon' in ACTUSERS[user]:
+            scene.add_object(ACTUSERS[user]["roleicon"])
+            print(f"{user} roleicon published")
     return
 
 
@@ -114,45 +131,30 @@ def end_program_callback(scene, obj, msg):
     return
 
 
-# parse args and wait for events
+# parse args and config
 init_args()
-kwargs = {}
+# establish shared Sheets auth
+gst = GoogleSheetTable()
+
+# get data from google spreadsheet table
+print('Getting data...')
+data = gst.aslist(config['input_table']['spreadsheetid'],
+                  config['input_table']['named_range'])
+
+# filter by scenename in config
+# filtered = list(
+#     filter(lambda v: v['scene'] == config['arena']['scenename'], data))
+
+# establish shared ARENA auth
 scene = Scene(
-    host=HOST,
-    realm=REALM,
-    scene=SCENE,
+    host=config['arena']['host'],
+    realm=config['arena']['realm'],
+    scene=config['arena']['scenename'],
     on_msg_callback=scene_callback,
     user_join_callback=user_join_callback,
     user_left_callback=user_left_callback,
-    end_program_callback=end_program_callback,
-    **kwargs)
-#scene = Scene(host=config['arena']['host'], realm=config['arena']['realm'], scene=config['arena']['scenename'])
+    end_program_callback=end_program_callback)
 
-
-ball1 = Sphere(
-    object_id="ball1",
-    persist=True,
-    clickable=True,
-    position=(-2, 2, -7),
-    scale=(0.25, 0.25, 0.25),
-    material=Material(color="#ff00a5"))
-cube1 = Box(
-    object_id="cube1",
-    persist=True,
-    clickable=True,
-    position=(0, 2, -7),
-    scale=(0.5, 0.5, 0.5),
-    material=Material(color="#00ff00"))
-cone1 = Cone(
-    object_id="cone1",
-    persist=True,
-    clickable=True,
-    position=(2, 2, -7),
-    scale=(0.25, 0.5, 0.25),
-    material=Material(color="#0000ff"))
-scene.add_object(ball1)
-scene.add_object(cube1)
-scene.add_object(cone1)
-
+# TODO: launch separate threads for each scene
 
 scene.run_tasks()

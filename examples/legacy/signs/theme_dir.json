@@ -1,0 +1,202 @@
+{
+  "sign1": {
+    "link1": [
+      "Theme 1: Driver Applications",
+      "https://arenaxr.org/?scene=theme1",
+      "sametab"
+    ],
+    "link2": [
+      "Theme 2: Hardware and Software Platforms",
+      "https://arenaxr.org/?scene=theme2",
+      "sametab"
+    ],
+    "link3": [
+      "Theme 3: Security",
+      "https://arenaxr.org/?scene=theme3",
+      "sametab"
+    ],
+    "link4": [
+      "Theme 4: Machine Learning",
+      "https://arenaxr.org/?scene=theme4",
+      "sametab"
+    ],
+    "link5": [
+      "Theme 5: Comms, Positioning and Control",
+      "https://arenaxr.org/?scene=theme5",
+      "sametab"
+    ],
+    "link6": [
+      "Theme 6: Programming and Resource Mgmt",
+      "https://arenaxr.org/?scene=theme6",
+      "sametab"
+    ],
+       "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+
+      "position": [
+      -10,
+      1,
+      -10
+    ],
+    "rotation": [
+      0,
+      0,
+      0,
+      1
+    ]
+},
+"sign2": {
+    "link1": [
+      "Theme 1: Driver Applications",
+      "https://arenaxr.org/?scene=theme1",
+      "sametab"
+    ],
+    "link2": [
+      "Theme 2: Hardware and Software Platforms",
+      "https://arenaxr.org/?scene=theme2",
+      "sametab"
+    ],
+    "link3": [
+      "Theme 3: Security",
+      "https://arenaxr.org/?scene=theme3",
+      "sametab"
+    ],
+    "link4": [
+      "Theme 4: Machine Learning",
+      "https://arenaxr.org/?scene=theme4",
+      "sametab"
+    ],
+    "link5": [
+      "Theme 5: Comms, Positioning and Control",
+      "https://arenaxr.org/?scene=theme5",
+      "sametab"
+    ],
+    "link6": [
+      "Theme 6: Programming and Resource Mgmt",
+      "https://arenaxr.org/?scene=theme6",
+      "sametab"
+    ],
+       "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+
+      "position": [
+      -10,
+      1,
+      -50
+    ],
+    "rotation": [
+      0,
+      0,
+      0,
+      1
+    ]
+},
+
+"sign3": {
+  "link1": [
+    "Theme 1: Driver Applications",
+    "https://arenaxr.org/?scene=theme1",
+    "sametab"
+  ],
+  "link2": [
+    "Theme 2: Hardware and Software Platforms",
+    "https://arenaxr.org/?scene=theme2",
+    "sametab"
+  ],
+  "link3": [
+    "Theme 3: Security",
+    "https://arenaxr.org/?scene=theme3",
+    "sametab"
+  ],
+  "link4": [
+    "Theme 4: Machine Learning",
+    "https://arenaxr.org/?scene=theme4",
+    "sametab"
+  ],
+  "link5": [
+    "Theme 5: Comms, Positioning and Control",
+    "https://arenaxr.org/?scene=theme5",
+    "sametab"
+  ],
+  "link6": [
+    "Theme 6: Programming and Resource Mgmt",
+    "https://arenaxr.org/?scene=theme6",
+    "sametab"
+  ],
+     "scale": [
+    0.5,
+    0.5,
+    0.5
+  ],
+
+    "position": [
+    10,
+    1,
+    -10
+  ],
+  "rotation": [
+    0,
+    0,
+    0,
+    1
+  ]
+},
+
+"sign4": {
+  "link1": [
+    "Theme 1: Driver Applications",
+    "https://arenaxr.org/?scene=theme1",
+    "sametab"
+  ],
+  "link2": [
+    "Theme 2: Hardware and Software Platforms",
+    "https://arenaxr.org/?scene=theme2",
+    "sametab"
+  ],
+  "link3": [
+    "Theme 3: Security",
+    "https://arenaxr.org/?scene=theme3",
+    "sametab"
+  ],
+  "link4": [
+    "Theme 4: Machine Learning",
+    "https://arenaxr.org/?scene=theme4",
+    "sametab"
+  ],
+  "link5": [
+    "Theme 5: Comms, Positioning and Control",
+    "https://arenaxr.org/?scene=theme5",
+    "sametab"
+  ],
+  "link6": [
+    "Theme 6: Programming and Resource Mgmt",
+    "https://arenaxr.org/?scene=theme6",
+    "sametab"
+  ],
+     "scale": [
+    0.5,
+    0.5,
+    0.5
+  ],
+
+    "position": [
+    10,
+    1,
+    -50
+  ],
+  "rotation": [
+    0,
+    0,
+    0,
+    1
+  ]
+}
+
+
+}

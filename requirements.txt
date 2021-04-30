@@ -1,6 +1,0 @@
-aiohttp
-numpy~=1.18.1
-paho-mqtt~=1.5.0
-requests~=2.23.0
-scipy~=1.4.1
-webcolors~=1.3

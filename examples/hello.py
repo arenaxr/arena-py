@@ -1,4 +1,9 @@
-import arena
-arena.init("arena.andrew.cmu.edu", "realm", "example")
-arena.Object(objType=arena.Shape.cube)
-arena.handle_events()
+from arena import *
+
+scene = Scene(host="arenaxr.org", realm="realm", scene="example")
+
+@scene.run_once
+def make_box():
+    scene.add_object(Box())
+
+scene.run_tasks()

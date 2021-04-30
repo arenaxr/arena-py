@@ -1,0 +1,21 @@
+{
+  "ballbot_model": {
+      "url": "store/users/ececapstone/ballbot_sm/ballbot.glb",
+      "scale": [
+      2.0,
+      2.0,
+      2.0 
+    ],
+      "location": [
+      15,
+      0.67,
+      -18.0 
+    ],
+      "rotation": [
+      0.0,
+      0.0,
+      0.0,
+      1.0 
+    ]
+}
+}

@@ -1,0 +1,161 @@
+{
+  "sign1": {
+    "title":"ComSenTer Theme Links",
+    "link1": [
+      "Theme 1: Systems and Algorithms for THz Networks",
+      "https://arenaxr.org/comsenter/theme1",
+      "sametab"
+    ],
+    "link2": [
+      "Theme 2: mm-Wave/THz ICs and Arrays for Comm and Imaging",
+      "https://arenaxr.org/comsenter/theme2",
+      "sametab"
+    ],
+    "link3": [
+      "Theme 3: Application-specific THz Transistors",
+      "https://arenaxr.org/comsenter/theme3",
+      "sametab"
+    ],
+    "link4": [
+      "Theme 4: Cemter-wide Demonstration Vehicles",
+      "https://arenaxr.org/comsenter/theme4",
+      "sametab"
+    ],
+       "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+
+      "position": [
+      20,
+      -1.0,
+      -10
+    ],
+    "rotation": [
+      0,
+      -90,
+      0
+    ]
+},
+  "sign2": {
+    "title":"ComSenTer Theme Links",
+    "link1": [
+      "Theme 1: Systems and Algorithms for THz Networks",
+      "https://arenaxr.org/comsenter/theme1",
+      "sametab"
+    ],
+    "link2": [
+      "Theme 2: mm-Wave/THz ICs and Arrays for Comm and Imaging",
+      "https://arenaxr.org/comsenter/theme2",
+      "sametab"
+    ],
+    "link3": [
+      "Theme 3: Application-specific THz Transistors",
+      "https://arenaxr.org/comsenter/theme3",
+      "sametab"
+    ],
+    "link4": [
+      "Theme 4: Cemter-wide Demonstration Vehicles",
+      "https://arenaxr.org/comsenter/theme4",
+      "sametab"
+    ],
+       "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+
+      "position": [
+      20.5,
+      -1.0,
+      -10
+    ],
+    "rotation": [
+      0,
+      90,
+      0
+    ]
+},
+
+"sign3": {
+  "title":"ComSenTer Theme Links",
+  "link1": [
+    "Theme 1: Systems and Algorithms for THz Networks",
+    "https://arenaxr.org/comsenter/theme1",
+    "sametab"
+  ],
+  "link2": [
+    "Theme 2: mm-Wave/THz ICs and Arrays for Comm and Imaging",
+    "https://arenaxr.org/comsenter/theme2",
+    "sametab"
+  ],
+  "link3": [
+    "Theme 3: Application-specific THz Transistors",
+    "https://arenaxr.org/comsenter/theme3",
+    "sametab"
+  ],
+  "link4": [
+    "Theme 4: Cemter-wide Demonstration Vehicles",
+    "https://arenaxr.org/comsenter/theme4",
+    "sametab"
+  ],
+     "scale": [
+    1.0,
+    1.0,
+    1.0
+  ],
+
+    "position": [
+    -20.5,
+    -1.0,
+    -10
+  ],
+  "rotation": [
+    0,
+    -90,
+    0
+  ]
+},
+"sign4": {
+  "title":"ComSenTer Theme Links",
+  "link1": [
+    "Theme 1: Systems and Algorithms for THz Networks",
+    "https://arenaxr.org/comsenter/theme1",
+    "sametab"
+  ],
+  "link2": [
+    "Theme 2: mm-Wave/THz ICs and Arrays for Comm and Imaging",
+    "https://arenaxr.org/comsenter/theme2",
+    "sametab"
+  ],
+  "link3": [
+    "Theme 3: Application-specific THz Transistors",
+    "https://arenaxr.org/comsenter/theme3",
+    "sametab"
+  ],
+  "link4": [
+    "Theme 4: Cemter-wide Demonstration Vehicles",
+    "https://arenaxr.org/comsenter/theme4",
+    "sametab"
+  ],
+     "scale": [
+    1.0,
+    1.0,
+    1.0
+  ],
+
+    "position": [
+    -20.0,
+    -1.0,
+    -10
+  ],
+  "rotation": [
+    0,
+    90,
+    0
+  ]
+}
+
+
+}

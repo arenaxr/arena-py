@@ -108,7 +108,8 @@ def user_join_callback(scene, obj, msg):
                         position=(0, 0.6, 0.045),
                         rotation=(0, 1, 0, 0),
                         scale=(0.2, 0.2, 0.02),
-                        src=f'url({config["role_icons"][role]})')
+                        material=Material(shader='flat', side='double'),
+                        url=config["role_icons"][role])
 
     # publish all overrides so new user will see them
     for user in ACTUSERS:

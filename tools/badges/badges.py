@@ -77,6 +77,28 @@ def init_args():
         exit(1)
 
 
+def publish_badge(scene, badge_idx, cam_id, badge_icon):
+    global config
+    badge_icon_id = f"badge{badge_idx}_{cam_id}"
+    if (badge_idx % 2) == 0: # alternate badge sides
+        pos = badge_idx / 2 * 0.2
+    else:
+        pos = badge_idx * -0.2
+    badge = Image(
+        object_id=badge_icon_id,
+        parent=cam_id,
+        position=(pos, -0.4, 0.045),
+        rotation=(0, 1, 0, 0),
+        scale=(0.2, 0.2, 0.02),
+        material=Material(
+            transparent=False,
+            alphaTest=0.5,
+            shader='flat',
+            side='double'),
+        url=config["badge_icons"][badge_icon])
+    scene.add_object(badge)
+
+
 def scene_callback(scene, obj, msg):
     global ACTUSERS, config
     object_id = action = msg_type = object_type = None
@@ -97,7 +119,16 @@ def scene_callback(scene, obj, msg):
                 cam_id = msg["data"]["source"]
                 username = cam_id[18:]  # strip camera_00123456789 for username
                 print(f"{object_id} is an expected click from {username}")
-                return
+                if cam_id not in ACTUSERS:
+                    ACTUSERS[cam_id] = {}
+                if "badges" not in ACTUSERS[cam_id]:
+                    ACTUSERS[cam_id]["badges"] = []
+                if object_id not in ACTUSERS[cam_id]["badges"]:
+                    ACTUSERS[cam_id]["badges"].append(object_id)
+                    publish_badge(scene=scene,
+                                  badge_idx=len(ACTUSERS[cam_id]["badges"])-1,
+                                  cam_id=cam_id,
+                                  badge_icon=object_id)
 
     # TODO: parse clicks from known badge name object ids
 
@@ -115,7 +146,8 @@ def user_join_callback(scene, obj, msg):
     print(username)
     # Add our version of local avatar objects to actual users dict
     if cam_id not in ACTUSERS:
-        sheet_user = next(filter(lambda x: x['username'] == username, data))
+        sheet_user = next(
+            filter(lambda x: x['username'] == username, data), None)
         if sheet_user:
             text_id = f"headtext_{cam_id}"
             role_icon_id = f"roleicon_{cam_id}"
@@ -135,7 +167,11 @@ def user_join_callback(scene, obj, msg):
                         position=(0, 0.6, 0.045),
                         rotation=(0, 1, 0, 0),
                         scale=(0.2, 0.2, 0.02),
-                        material=Material(shader='flat', side='double'),
+                        material=Material(
+                            transparent=False,
+                            alphaTest=0.5,
+                            shader='flat',
+                            side='double'),
                         url=config["role_icons"][role])
 
     # publish all overrides so new user will see them
@@ -146,11 +182,12 @@ def user_join_callback(scene, obj, msg):
         if 'roleicon' in ACTUSERS[user]:
             scene.add_object(ACTUSERS[user]["roleicon"])
             print(f"{user} roleicon published")
-
-    for icon in config["badge_icons"]:
-        print(f"{icon}")
-
-    return
+        if 'badges' in ACTUSERS[user]:
+            for i in range(len(ACTUSERS[user]["badges"])):
+                publish_badge(scene=scene,
+                              badge_idx=i,
+                              cam_id=user,
+                              badge_icon=ACTUSERS[user]["badges"][i])
 
 
 # parse args and config

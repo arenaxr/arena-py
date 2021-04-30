@@ -78,14 +78,40 @@ def init_args():
 
 
 def scene_callback(scene, obj, msg):
-    # TODO: TBD
-    return
+    global ACTUSERS, config
+    object_id = action = msg_type = object_type = None
+    if "object_id" in msg:
+        object_id = msg["object_id"]
+    if "action" in msg:
+        action = msg["action"]
+    if "type" in msg:
+        msg_type = msg["type"]
+    if "data" in msg and "object_type" in msg["data"]:
+        object_type = msg["data"]["object_type"]
+
+    # only process known object_ids for badge clicks
+    if action == "clientEvent":
+        # handle click
+        if msg_type == "mousedown":
+            if object_id in config["badge_icons"]:
+                cam_id = msg["data"]["source"]
+                username = cam_id[18:]  # strip camera_00123456789 for username
+                print(f"{object_id} is an expected click from {username}")
+                return
+
+    # TODO: parse clicks from known badge name object ids
+
+    # TODO: check if update to data model is needed, or if this is a dupe
+
+    # TODO: update data model, local and remote
+
+    # TODO: update arena viewers of this scene
 
 
 def user_join_callback(scene, obj, msg):
     global ACTUSERS, config
     cam_id = obj.object_id
-    username = obj.object_id[18:]
+    username = cam_id[18:]  # strip camera_00123456789 for username
     print(username)
     # Add our version of local avatar objects to actual users dict
     if cam_id not in ACTUSERS:
@@ -94,6 +120,7 @@ def user_join_callback(scene, obj, msg):
             text_id = f"headtext_{cam_id}"
             role_icon_id = f"roleicon_{cam_id}"
             ACTUSERS[cam_id] = {}
+            # update static user role data from table
             if 'role' in sheet_user:
                 role = sheet_user['role']
                 if role in config['role_texts']:
@@ -119,16 +146,10 @@ def user_join_callback(scene, obj, msg):
         if 'roleicon' in ACTUSERS[user]:
             scene.add_object(ACTUSERS[user]["roleicon"])
             print(f"{user} roleicon published")
-    return
 
+    for icon in config["badge_icons"]:
+        print(f"{icon}")
 
-def user_left_callback(scene, obj, msg):
-    # TODO: TBD
-    return
-
-
-def end_program_callback(scene, obj, msg):
-    # TODO: TBD
     return
 
 
@@ -152,9 +173,7 @@ scene = Scene(
     realm=config['arena']['realm'],
     scene=config['arena']['scenename'],
     on_msg_callback=scene_callback,
-    user_join_callback=user_join_callback,
-    user_left_callback=user_left_callback,
-    end_program_callback=end_program_callback)
+    user_join_callback=user_join_callback)
 
 # TODO: launch separate threads for each scene
 

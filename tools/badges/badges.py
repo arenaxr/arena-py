@@ -81,15 +81,15 @@ def publish_badge(scene, badge_idx, cam_id, badge_icon):
     global config
     badge_icon_id = f"badge{badge_idx}_{cam_id}"
     if (badge_idx % 2) == 0: # alternate badge sides
-        pos = badge_idx / 2 * 0.2
+        pos = badge_idx / 2 * 0.02
     else:
-        pos = badge_idx * -0.2
+        pos = badge_idx * -0.02
     badge = Image(
         object_id=badge_icon_id,
         parent=cam_id,
-        position=(pos, -0.4, 0.045),
+        position=(pos, -0.15, -0.35),
         rotation=(0, 1, 0, 0),
-        scale=(0.2, 0.2, 0.02),
+        scale=(0.02, 0.02, 0.02),
         material=Material(
             transparent=False,
             alphaTest=0.5,

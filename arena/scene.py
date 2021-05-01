@@ -127,7 +127,6 @@ class Scene(object):
                                           # but this scene instance does not
                                           # have a reference to
         self.users = {} # dict of all users
-        self.landmarks = Landmarks() # scene landmarks
 
         self.task_manager = EventLoop(self.disconnect)
 
@@ -417,18 +416,6 @@ class Scene(object):
                     object_type="look-at",
                     target=target)
         return self.generate_custom_event(evt, action="update")
-
-    def add_landmark(self, obj, label):
-        """Adds a landmark to the scene"""
-        if isinstance(obj, Object):
-            landmark_id = obj.object_id
-        else:
-            landmark_id = Object
-        # object must be persisted to make landmarks make sense
-        obj.persist = True
-        self.add_object(obj)
-        self.landmarks.add(landmark_id, label)
-        return self._publish(self.landmarks, "create")
 
     @property
     def all_objects(self):

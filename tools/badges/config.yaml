@@ -1,0 +1,42 @@
+# arena related definitions
+arena:
+  host: arenaxr.org # default: arenaxr.org
+  realm: realm # default: realm
+  scenename: badges-example # one of the scenes defined below
+
+# where is the input data: google spreadsheet id and cell range of the table
+input_table:
+  # The spreadsheetid can be found in the google spreadsheet url e.g.:
+  # https://docs.google.com/spreadsheets/d/**spreadsheetid**/edit#gid=0
+  #
+  # For details, see: https://developers.google.com/sheets/api/guides/concepts
+  spreadsheetid: 1pZT56FdSCCAOUKWqo44JbgCkTjb_2624tjJ8vWsH_1M
+  # The table_named_range is the A1 or R1C1 range of the data table; Must
+  # include the sheet name ('Data Table') and the header, e.g: Data Table!A1:F10
+  #
+  # For details, see: https://developers.google.com/sheets/api/guides/concepts
+  named_range: User Table
+
+# where the icon files are
+badge_icons:
+  ball1: https://arenaxr.org/store/users/wiselab/badges/img/ball-6x6.png
+  cone1: https://arenaxr.org/store/users/wiselab/badges/img/cone-6x6.png
+  cube1: https://arenaxr.org/store/users/wiselab/badges/img/cube-6x6.png
+role_icons:
+  guide: https://arenaxr.org/images/xr-logo-v8.png
+  staff: https://arenaxr.org/images/conix-face-black.png
+role_texts:
+  guide: (ETC Tour Guide)
+  staff: (ARENA Staff)
+
+# icon placement relative to avatar
+badge:
+  position: 0, -2, 0
+  rotation: 0, 0, 0, 1
+  img_height: 2
+  max_icons: 10
+role:
+  position: 0, 2, 0
+  rotation: 0, 0, 0, 1
+  img_height: 2
+  max_icons: 1

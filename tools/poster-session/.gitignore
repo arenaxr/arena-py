@@ -1,6 +1,10 @@
 # ignore local config
 config.yaml
 
+# ignore credentials
+credentials.json
+token.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

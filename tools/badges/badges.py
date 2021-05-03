@@ -13,14 +13,13 @@ from arena import *
 from gstable import GoogleSheetTable
 
 DFT_CONFIG_FILENAME = './config.yaml'
-ALLUSERS = {}  # static list by username
 ACTUSERS = {}  # actual users by camera id
 config = {}
 data = []
 
 
 def init_args():
-    global ALLUSERS, config
+    global config
 
     parser = argparse.ArgumentParser(
         description="ARENA badges manager example.")
@@ -78,9 +77,14 @@ def init_args():
 
 
 def publish_badge(scene, badge_idx, cam_id, badge_icon):
+    # update arena viewers of this scene
     global config
     badge_icon_id = f"badge{badge_idx}_{cam_id}"
-    if (badge_idx % 2) == 0: # alternate badge sides
+    if badge_icon_id in scene.all_objects:
+        return  # already published
+
+    # TODO: fix the spacing of multiple badges
+    if (badge_idx % 2) == 0:  # alternate badge sides
         pos = badge_idx / 2 * 0.02
     else:
         pos = badge_idx * -0.02
@@ -97,10 +101,11 @@ def publish_badge(scene, badge_idx, cam_id, badge_icon):
             side='double'),
         url=config["badge_icons"][badge_icon])
     scene.add_object(badge)
+    # TODO: push config into parsable yaml
 
 
 def scene_callback(scene, obj, msg):
-    global ACTUSERS, config
+    global ACTUSERS, config, data
     object_id = action = msg_type = object_type = None
     if "object_id" in msg:
         object_id = msg["object_id"]
@@ -115,6 +120,7 @@ def scene_callback(scene, obj, msg):
     if action == "clientEvent":
         # handle click
         if msg_type == "mousedown":
+            # parse clicks from known badge name object ids
             if object_id in config["badge_icons"]:
                 cam_id = msg["data"]["source"]
                 username = cam_id[18:]  # strip camera_00123456789 for username
@@ -123,27 +129,41 @@ def scene_callback(scene, obj, msg):
                     ACTUSERS[cam_id] = {}
                 if "badges" not in ACTUSERS[cam_id]:
                     ACTUSERS[cam_id]["badges"] = []
+                # check if update to data model is needed, or if this is a dupe
                 if object_id not in ACTUSERS[cam_id]["badges"]:
                     ACTUSERS[cam_id]["badges"].append(object_id)
+                    badge_idx = len(ACTUSERS[cam_id]["badges"])-1
                     publish_badge(scene=scene,
-                                  badge_idx=len(ACTUSERS[cam_id]["badges"])-1,
+                                  badge_idx=badge_idx,
                                   cam_id=cam_id,
                                   badge_icon=object_id)
-
-    # TODO: parse clicks from known badge name object ids
-
-    # TODO: check if update to data model is needed, or if this is a dupe
-
-    # TODO: update data model, local and remote
-
-    # TODO: update arena viewers of this scene
+                    # update data model, local and remote
+                    sheet_user = next(
+                        filter(lambda x: x['username'] == username, data), None)
+                    if not sheet_user:
+                        data = gst.addrow(config['input_table']['spreadsheetid'],
+                                          config['input_table']['named_range'],
+                                          [username])
+                    # update online badges
+                    row = next((index for (index, d) in enumerate(
+                        data) if d['username'] == username), None)
+                    data = gst.updaterow(config['input_table']['spreadsheetid'],
+                                         f"{config['input_table']['named_range']}!C{row+2}",
+                                         ACTUSERS[cam_id]["badges"])
 
 
 def user_join_callback(scene, obj, msg):
-    global ACTUSERS, config
+    # TODO: handle displayname update message
+    # TODO: handle no name incoming displayname message
+    global ACTUSERS, config, data
     cam_id = obj.object_id
     username = cam_id[18:]  # strip camera_00123456789 for username
     print(username)
+
+    # get data from google spreadsheet table
+    print('Getting data...')
+    data = gst.aslist(config['input_table']['spreadsheetid'],
+                      config['input_table']['named_range'])
     # Add our version of local avatar objects to actual users dict
     if cam_id not in ACTUSERS:
         sheet_user = next(
@@ -152,6 +172,11 @@ def user_join_callback(scene, obj, msg):
             text_id = f"headtext_{cam_id}"
             role_icon_id = f"roleicon_{cam_id}"
             ACTUSERS[cam_id] = {}
+            ACTUSERS[cam_id]['badges'] = []
+            idx = 0
+            while f'badge{idx}' in sheet_user:
+                ACTUSERS[cam_id]['badges'].append(sheet_user[f'badge{idx}'])
+                idx += 1
             # update static user role data from table
             if 'role' in sheet_user:
                 role = sheet_user['role']
@@ -194,15 +219,6 @@ def user_join_callback(scene, obj, msg):
 init_args()
 # establish shared Sheets auth
 gst = GoogleSheetTable()
-
-# get data from google spreadsheet table
-print('Getting data...')
-data = gst.aslist(config['input_table']['spreadsheetid'],
-                  config['input_table']['named_range'])
-
-# filter by scenename in config
-# filtered = list(
-#     filter(lambda v: v['scene'] == config['arena']['scenename'], data))
 
 # establish shared ARENA auth
 scene = Scene(

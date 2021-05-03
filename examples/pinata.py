@@ -15,8 +15,10 @@ RESPAWN_X_AREA = 100    # respawn in +/- this area bound
 RESPAWN_Z_AREA = 100
 RESPAWN_Y = 10          # respawn at exactly this Y position
 HIT_RELOAD=10           # how many hits does it take
-G_ACCEL = -9.8          
-HIT_IMPULSE = 10        # Velocity added to hit
+#G_ACCEL = -9.8          
+#HIT_IMPULSE = 20        
+G_ACCEL = -19.8          
+HIT_IMPULSE = 20        # Velocity added to hit
 GROUND_LEVEL = 0        # Ground level for pseudo-physics
 
 # some state defines
@@ -31,6 +33,7 @@ EXPLODE_SOUND_PATH="https://www.dropbox.com/s/jzk4tkho653ugbn/explode.wav?dl=0"
 BOUNCE_SOUND_PATH="https://www.dropbox.com/s/3obfz1in7tj37ce/boing.wav?dl=0"
 HIT_SOUND_PATH="https://www.dropbox.com/s/3gwfykslii55gp4/hit.wav?dl=0"
 WITCH_SOUND_PATH="https://www.dropbox.com/s/lw7elc3krguk1mh/witch.wav?dl=0"
+APPLAUSE_SOUND_PATH="https://www.dropbox.com/s/3k9fin95z6nbex9/applause.wav?dl=0"
 
 # location of the pinata
 pinata_loc = [0,0,0]
@@ -54,6 +57,39 @@ def explode():
     explode_sound = Sound(src=EXPLODE_SOUND_PATH,positional=True,autoplay=True,poolSize=1 )
     explode_sound_obj = Box(sound=explode_sound,position=pinata_loc,scale=Scale(.01,.01,.01),ttl=10) 
     scene.add_object(explode_sound_obj)
+    applause_sound = Sound(src=APPLAUSE_SOUND_PATH,positional=True,autoplay=True,poolSize=1 )
+    applause_sound_obj = Box(sound=applause_sound,position=pinata_loc,scale=Scale(.01,.01,.01),ttl=10) 
+    scene.add_object(applause_sound_obj)
+
+
+# This is a callback handler attached to the pinata that processes click events
+def click(scene, evt, msg):
+    global pinata_loc, vy, pinata_state, hit_counter, hit_text
+    if evt.type == "mousedown":
+        start = evt.data.clickPos
+        end = evt.data.position
+        # Minor offset in drawing the line so a user can see their own trail
+        start.x-=.1
+        start.y-=.1
+        start.z-=.1
+        # Draw a click tracer
+        line = ThickLine(path=(start,end), color=(255,0,0), lineWidth=5, ttl=1)
+        scene.add_object(line)
+        # Velocity of hit
+        vy+= HIT_IMPULSE
+        pinata_state=MOVING
+        hit_counter-=1
+        # Update the text over the pinata
+        hit_text.update_attributes(text=str(hit_counter))
+        scene.update_object(hit_text)
+
+        hit_sound = Sound(src=HIT_SOUND_PATH,positional=True,autoplay=True,poolSize=10 )
+        hit_sound_obj = Box(sound=hit_sound,position=pinata_loc,scale=Scale(.01,.01,.01),ttl=1) 
+        scene.add_object(hit_sound_obj)
+
+        print("Hit Counter: " + str(hit_counter))
+        if hit_counter==0:
+            pinata_state = EXPLODE # This is picked up by the main game loop and hides the pinata while running the explosion animation
 
 
 # This is a callback handler attached to the pinata that processes click events

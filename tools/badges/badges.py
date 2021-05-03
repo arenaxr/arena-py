@@ -13,14 +13,13 @@ from arena import *
 from gstable import GoogleSheetTable
 
 DFT_CONFIG_FILENAME = './config.yaml'
-ALLUSERS = {}  # static list by username
 ACTUSERS = {}  # actual users by camera id
 config = {}
 data = []
 
 
 def init_args():
-    global ALLUSERS, config
+    global config
 
     parser = argparse.ArgumentParser(
         description="ARENA badges manager example.")
@@ -103,7 +102,7 @@ def publish_badge(scene, badge_idx, cam_id, badge_icon):
 
 
 def scene_callback(scene, obj, msg):
-    global ACTUSERS, config
+    global ACTUSERS, config, data
     object_id = action = msg_type = object_type = None
     if "object_id" in msg:
         object_id = msg["object_id"]
@@ -130,15 +129,24 @@ def scene_callback(scene, obj, msg):
                 # check if update to data model is needed, or if this is a dupe
                 if object_id not in ACTUSERS[cam_id]["badges"]:
                     ACTUSERS[cam_id]["badges"].append(object_id)
+                    badge_idx = len(ACTUSERS[cam_id]["badges"])-1
                     publish_badge(scene=scene,
-                                  badge_idx=len(ACTUSERS[cam_id]["badges"])-1,
+                                  badge_idx=badge_idx,
                                   cam_id=cam_id,
                                   badge_icon=object_id)
-
-    # TODO: update data model, local and remote
+                    # update data model, local and remote
+                    sheet_user = next(
+                        filter(lambda x: x['username'] == username, data), None)
+                    if not sheet_user:
+                        sheet_user = {'username': username}
+                        data = gst.addrow(config['input_table']['spreadsheetid'],
+                                          config['input_table']['named_range'],
+                                          sheet_user)
 
 
 def user_join_callback(scene, obj, msg):
+    # TODO: handle displayname update message
+    # TODO: handle no name incoming displayname message
     global ACTUSERS, config
     cam_id = obj.object_id
     username = cam_id[18:]  # strip camera_00123456789 for username

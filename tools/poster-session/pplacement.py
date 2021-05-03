@@ -1,6 +1,5 @@
 from arena import *
 from layout import Layout
-from landmarks import Landmarks
 from gstable import GoogleSheetTable
 import argparse
 import os
@@ -255,9 +254,6 @@ def make_walls():
     # get layout coordinates
     t = Layout(getattr(Layout, config[config['arena']['scenename']]['layout']), filtered).get_transforms(**(config[config['arena']['scenename']]['layout_args']))
 
-    # create a lanmarks object; we will add a landmark for each wall
-    landmarks = Landmarks();
-
     for i in range(len(filtered)):
         ldmrk_obj_id = make_wall(
             filtered[i]['id'], # use id as a suffix for the objects of each wall
@@ -268,10 +264,6 @@ def make_walls():
         )
         lbl = f'{filtered[i]["title"][0:50]}' # cut title if too big and use a landmark label
         if len(filtered[i]["title"]) > 50: lbl = lbl + '...'
-        landmarks.push_landmark(ldmrk_obj_id, lbl) # push landmark to the list
-
-    # add landmark list to scene
-    landmarks.add_object(config['arena']['scenename'])
 
     print('\nDone. Press Ctrl+C to disconnect.')
 

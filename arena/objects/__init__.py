@@ -7,7 +7,6 @@ from .dodecahedron import Dodecahedron
 from .gltf import GLTF
 from .icosahedron import Icosahedron
 from .image import Image
-from .landmarks import Landmarks
 from .light import Light
 from .line import Line
 from .arena_object import Object
@@ -34,7 +33,6 @@ OBJECT_TYPE_MAP = {
     "gltf-model": GLTF,
     "icosahedron": Icosahedron,
     "image": Image,
-    "landmarks": Landmarks,
     "light": Light,
     "line": Line,
     "object": Object,

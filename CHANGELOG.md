@@ -2,6 +2,11 @@
 
 ARENA-py notable changes. Started 2021-19-2 (version 0.1.12).
 
+## [0.1.30] - 2021-29-4
+### Changed
+- Remove top-level landmark type.
+- Replace with new landmark attribute.
+
 ## [0.1.29] - 2021-29-4
 ### Changed
 - Auto-detect headless auth from SSH terminal.
@@ -111,6 +116,7 @@ specify both to bypass auth.
 - `Arena` class renamed to `Scene`, but using `Arena` is still allowed. Updated examples to reflect this.
 - Tiny bug fix with `update_objects`.
 
+[0.1.30]: https://github.com/conix-center/ARENA-py/tree/625355e515539a7fb40e17f6b0668a2488176d4d
 [0.1.29]: https://github.com/conix-center/ARENA-py/tree/bd364bec29109c8dd12cce35e612df50f8cfb9e0
 [0.1.28]: https://github.com/conix-center/ARENA-py/tree/5b9273747f68f538d6130427da877541daa02d32
 [0.1.27]: https://github.com/conix-center/ARENA-py/tree/5e5150dd8e723915abbaaec68183a16a00cef852

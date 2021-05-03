@@ -25,9 +25,18 @@ MOVING = 1
 EXPLODE = 2
 WAITING_RESTART = 3
 
+# Assets for the program
+pinata_model_path="https://www.dropbox.com/s/a7fm7tcvybhh5rj/pinata.glb?dl=0"
+explode_sound_path="https://www.dropbox.com/s/jzk4tkho653ugbn/explode.wav?dl=0"
+bounce_sound_path="https://www.dropbox.com/s/3obfz1in7tj37ce/boing.wav?dl=0"
+hit_sound_path="https://www.dropbox.com/s/3gwfykslii55gp4/hit.wav?dl=0"
+witch_sound_path="https://www.dropbox.com/s/lw7elc3krguk1mh/witch.wav?dl=0"
+
+# location of the pinata
 pinata_loc = [0,0,0]
 pinata_state = IDLE  # 0-still, 1-moving, 2-explode, 3-waiting to restart
 hit_counter = HIT_RELOAD 
+# time and velocity globals for physics
 t=0
 vy=0
 
@@ -42,7 +51,7 @@ def explode():
         rand_offset = (random.random()-0.5)/5
         colorBox = Box(position=(pinata_loc[0]+rand_offset, pinata_loc[1]+rand_offset, pinata_loc[2]+rand_offset),scale=Scale(.5,.5,.5),ttl=15,physics=Physics(type="dynamic")) 
         scene.add_object(colorBox) 
-    explode_sound = Sound(src="https://www.dropbox.com/s/jzk4tkho653ugbn/explode.wav?dl=0",positional=True,autoplay=True,poolSize=1 )
+    explode_sound = Sound(src=explode_sound_path,positional=True,autoplay=True,poolSize=1 )
     explode_sound_obj = Box(sound=explode_sound,position=pinata_loc,scale=Scale(.01,.01,.01),ttl=10) 
     scene.add_object(explode_sound_obj)
 
@@ -68,7 +77,7 @@ def click(scene, evt, msg):
         hit_text.update_attributes(text=str(hit_counter))
         scene.update_object(hit_text)
 
-        hit_sound = Sound(src="https://www.dropbox.com/s/3gwfykslii55gp4/hit.wav?dl=0",positional=True,autoplay=True,poolSize=10 )
+        hit_sound = Sound(src=hit_sound_path,positional=True,autoplay=True,poolSize=10 )
         hit_sound_obj = Box(sound=hit_sound,position=pinata_loc,scale=Scale(.01,.01,.01),ttl=1) 
         scene.add_object(hit_sound_obj)
 
@@ -79,7 +88,7 @@ def click(scene, evt, msg):
 # Reset game state
 def game_reset():
     global hit_counter,pinata_loc,pinata_state,pinata,hit_text,vy,t
-    witch_sound = Sound(src="https://www.dropbox.com/s/lw7elc3krguk1mh/witch.wav?dl=0",positional=True,autoplay=True,poolSize=1 )
+    witch_sound = Sound(src=witch_sound_path,positional=True,autoplay=True,poolSize=1 )
     witch_sound_obj = Box(sound=witch_sound,position=pinata_loc,scale=Scale(.01,.01,.01),ttl=10) 
     scene.add_object(witch_sound_obj)
     hit_counter=HIT_RELOAD
@@ -107,8 +116,8 @@ def main():
             persist=True,
             clickable=True,
             evt_handler=click,
-            url="https://www.dropbox.com/s/a7fm7tcvybhh5rj/pinata.glb?dl=0"
-        )
+            url=pinata_model_path
+            )
     scene.add_object(pinata)
     hit_text = Text(object_id="hit_text", persist=True, text=str(hit_counter), scale=Scale(3,3,3), position=Position(0.5,5,0), parent=pinata)
     scene.add_object(hit_text)
@@ -150,7 +159,7 @@ def main_loop():
             if vy>2 or  vy<-2:
                 vy=-.5*vy   # This is the bounce input, where the ground returns half the velocity
                 y = GROUND_LEVEL
-                boing_sound = Sound(src="https://www.dropbox.com/s/3obfz1in7tj37ce/boing.wav?dl=0",positional=True,autoplay=True,poolSize=10 )
+                boing_sound = Sound(src=bounce_sound_path,positional=True,autoplay=True,poolSize=10 )
                 boing_sound_obj = Box(sound=boing_sound,position=pinata_loc,scale=Scale(.01,.01,.01),ttl=1) 
                 scene.add_object(boing_sound_obj)
             else:

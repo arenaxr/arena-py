@@ -25,8 +25,14 @@ def init_args():
         description="ARENA badges manager example.")
     parser.add_argument('-c', '--conf', dest='configfile', default=DFT_CONFIG_FILENAME, action='store', type=str,
                         help=f'The configuration file. Default is {DFT_CONFIG_FILENAME}')
+    parser.add_argument('-b', dest='host', default=None,
+                        help='Hostname/broker for Badges')
+    parser.add_argument('-r', dest='realm', default=None,
+                        help='Realm for Badges')
+    parser.add_argument('-n', dest='namespace', default=None,
+                        help='Namespace for Badges')
     parser.add_argument('-s', dest='scenename', default=None,
-                        help='Scenename of the poster session (e.g. theme1, theme2)')
+                        help='Scenename for Badges (e.g. theme1, theme2)')
     args = parser.parse_args()
     print(args)
 
@@ -34,7 +40,13 @@ def init_args():
     with open(args.configfile) as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
 
-    # save scenename in config
+    # override config
+    if args.host is not None:
+        config['arena']['host'] = args.host
+    if args.realm is not None:
+        config['arena']['realm'] = args.realm
+    if args.namespace is not None:
+        config['arena']['namespace'] = args.namespace
     if args.scenename is not None:
         config['arena']['scenename'] = args.scenename
 
@@ -80,8 +92,8 @@ def publish_badge(scene, badge_idx, cam_id, badge_icon):
     # update arena viewers of this scene
     global config
     badge_icon_id = f"badge{badge_idx}_{cam_id}"
-    if badge_icon_id in scene.all_objects:
-        return  # already published
+    # if badge_icon_id in scene.all_objects:
+    #     return  # already published
 
     # TODO: fix the spacing of multiple badges
     if (badge_idx % 2) == 0:  # alternate badge sides
@@ -221,12 +233,16 @@ init_args()
 gst = GoogleSheetTable()
 
 # establish shared ARENA auth
+kwargs = {}
+if 'namespace' in config['arena']:
+    kwargs["namespace"] = config['arena']['namespace']
 scene = Scene(
     host=config['arena']['host'],
     realm=config['arena']['realm'],
     scene=config['arena']['scenename'],
     on_msg_callback=scene_callback,
-    user_join_callback=user_join_callback)
+    user_join_callback=user_join_callback,
+    **kwargs)
 
 # TODO: launch separate threads for each scene
 

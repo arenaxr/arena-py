@@ -31,6 +31,8 @@ hit_counter = HIT_RELOAD
 t=0
 vy=0
 
+# Generate a bunch of random boxes from the pinata location.
+# These boxes use local physics
 def explode():
     global pinata_loc, pinata
     print("Boom!")
@@ -45,21 +47,24 @@ def explode():
     scene.add_object(explode_sound_obj)
 
 
-
+# This is a callback handler attached to the pinata that processes click events
 def click(scene, evt, msg):
     global pinata_loc, vy, pinata_state, hit_counter, hit_text
     if evt.type == "mousedown":
         start = evt.data.clickPos
         end = evt.data.position
+        # Minor offset in drawing the line so a user can see their own trail
         start.x-=.1
         start.y-=.1
         start.z-=.1
+        # Draw a click tracer
         line = ThickLine(path=(start,end), color=(255,0,0), lineWidth=5, ttl=1)
         scene.add_object(line)
         # Velocity of hit
         vy+= HIT_IMPULSE
         pinata_state=MOVING
         hit_counter-=1
+        # Update the text over the pinata
         hit_text.update_attributes(text=str(hit_counter))
         scene.update_object(hit_text)
 
@@ -69,9 +74,9 @@ def click(scene, evt, msg):
 
         print("Hit Counter: " + str(hit_counter))
         if hit_counter==0:
-            pinata_state = EXPLODE
+            pinata_state = EXPLODE # This is picked up by the main game loop and hides the pinata while running the explosion animation
 
-
+# Reset game state
 def game_reset():
     global hit_counter,pinata_loc,pinata_state,pinata,hit_text,vy,t
     witch_sound = Sound(src="https://www.dropbox.com/s/lw7elc3krguk1mh/witch.wav?dl=0",positional=True,autoplay=True,poolSize=1 )
@@ -89,7 +94,8 @@ def game_reset():
     pinata_state=IDLE
     print( "Respawned at: " + str(pinata_loc))
 
-
+# Generate the models at startup
+# The pinata and text persist so new people entering can see them
 @scene.run_once
 def main():
     global pinata, pinata_loc, hit_text, hit_counter
@@ -109,6 +115,7 @@ def main():
     scene.update_object(hit_text)
     game_reset()
 
+# Main game loop called by scheduler every 100ms
 @scene.run_forever(interval_ms=100)
 def main_loop():
     global pinata, pinata_loc, t,pinata_state

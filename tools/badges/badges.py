@@ -80,6 +80,9 @@ def publish_badge(scene, badge_idx, cam_id, badge_icon):
     # update arena viewers of this scene
     global config
     badge_icon_id = f"badge{badge_idx}_{cam_id}"
+    if badge_icon_id in scene.all_objects:
+        return  # already published
+
     # TODO: fix the spacing of multiple badges
     if (badge_idx % 2) == 0:  # alternate badge sides
         pos = badge_idx / 2 * 0.02
@@ -138,10 +141,9 @@ def scene_callback(scene, obj, msg):
                     sheet_user = next(
                         filter(lambda x: x['username'] == username, data), None)
                     if not sheet_user:
-                        row = [username]
                         data = gst.addrow(config['input_table']['spreadsheetid'],
                                           config['input_table']['named_range'],
-                                          row)
+                                          [username])
                     # update online badges
                     row = next((index for (index, d) in enumerate(
                         data) if d['username'] == username), None)

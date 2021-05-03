@@ -86,29 +86,68 @@ class GoogleSheetTable:
         return res_list
 
     def addrow(self, sheet_id, table_range_name, row):
-        """Add a row as dict and return list of dict() with table contents
+        """Add a row as list and return list of dict() with table contents
         args:
         sheet_id
             the google spreadsheet id
         table_range_name
             the A1 or R1C1 range of the data table. e.g: Sheet1!A1:F10
         row
-            the dict() to add at the end
+            the list to add at the end
 
         See: https://developers.google.com/sheets/api/guides/concepts
         """
 
         values = [[]]
-        for key in row.keys():
-            values[0].append(row[key])
+        for cell in row:
+            values[0].append(cell)
         body = {'values': values}
+        # Add new row from  Sheets API
         result = self.sheet.values().append(spreadsheetId=sheet_id,
                                             range=table_range_name,
                                             valueInputOption='RAW',
                                             insertDataOption='INSERT_ROWS',
                                             body=body).execute()
 
-        # Call the Sheets API
+        # Get updated rows from  Sheets API
+        result = self.sheet.values().get(spreadsheetId=sheet_id,
+                                         range=table_range_name).execute()
+        values = result.get('values', [])
+        if len(values) == 0:
+            return []
+        # Convert spreadsheet table into list of dict()
+        columns = list(map(lambda v: v.replace(' ', '_'), values[0]))
+        res_list = []
+        for v in values[1:]:
+            res_list.append(dict(map(lambda k, v: (k, v), columns, v)))
+        return res_list
+
+
+    def updaterow(self, sheet_id, table_range_name, row):
+        """Add a row as list and return list of dict() with table contents
+        args:
+        sheet_id
+            the google spreadsheet id
+        table_range_name
+            the A1 or R1C1 range of the data table. e.g: Sheet1!A1:F10
+        row
+            the list to overwrite at the table_range_name cell
+
+        See: https://developers.google.com/sheets/api/guides/concepts
+        """
+
+        values = [[]]
+        for cell in row:
+            values[0].append(cell)
+        body = {'values': values}
+        # Add new row from  Sheets API
+        print(f"Updating {table_range_name}")
+        result = self.sheet.values().update(spreadsheetId=sheet_id,
+                                            range=table_range_name,
+                                            valueInputOption='RAW',
+                                            body=body).execute()
+
+        # Get updated rows from  Sheets API
         result = self.sheet.values().get(spreadsheetId=sheet_id,
                                          range=table_range_name).execute()
         values = result.get('values', [])

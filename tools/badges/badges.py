@@ -138,19 +138,30 @@ def scene_callback(scene, obj, msg):
                     sheet_user = next(
                         filter(lambda x: x['username'] == username, data), None)
                     if not sheet_user:
-                        sheet_user = {'username': username}
+                        row = [username]
                         data = gst.addrow(config['input_table']['spreadsheetid'],
                                           config['input_table']['named_range'],
-                                          sheet_user)
+                                          row)
+                    # update online badges
+                    row = next((index for (index, d) in enumerate(
+                        data) if d['username'] == username), None)
+                    data = gst.updaterow(config['input_table']['spreadsheetid'],
+                                         f"{config['input_table']['named_range']}!C{row+2}",
+                                         ACTUSERS[cam_id]["badges"])
 
 
 def user_join_callback(scene, obj, msg):
     # TODO: handle displayname update message
     # TODO: handle no name incoming displayname message
-    global ACTUSERS, config
+    global ACTUSERS, config, data
     cam_id = obj.object_id
     username = cam_id[18:]  # strip camera_00123456789 for username
     print(username)
+
+    # get data from google spreadsheet table
+    print('Getting data...')
+    data = gst.aslist(config['input_table']['spreadsheetid'],
+                      config['input_table']['named_range'])
     # Add our version of local avatar objects to actual users dict
     if cam_id not in ACTUSERS:
         sheet_user = next(
@@ -159,6 +170,11 @@ def user_join_callback(scene, obj, msg):
             text_id = f"headtext_{cam_id}"
             role_icon_id = f"roleicon_{cam_id}"
             ACTUSERS[cam_id] = {}
+            ACTUSERS[cam_id]['badges'] = []
+            idx = 0
+            while f'badge{idx}' in sheet_user:
+                ACTUSERS[cam_id]['badges'].append(sheet_user[f'badge{idx}'])
+                idx += 1
             # update static user role data from table
             if 'role' in sheet_user:
                 role = sheet_user['role']
@@ -201,15 +217,6 @@ def user_join_callback(scene, obj, msg):
 init_args()
 # establish shared Sheets auth
 gst = GoogleSheetTable()
-
-# get data from google spreadsheet table
-print('Getting data...')
-data = gst.aslist(config['input_table']['spreadsheetid'],
-                  config['input_table']['named_range'])
-
-# filter by scenename in config
-# filtered = list(
-#     filter(lambda v: v['scene'] == config['arena']['scenename'], data))
 
 # establish shared ARENA auth
 scene = Scene(

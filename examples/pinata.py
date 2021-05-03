@@ -1,19 +1,32 @@
+# This is a demo program of a pianta that randomly respawns and after some number of clicks
+# will explode and then respawn.
+# It currently does not use tweened animations (todo) and does not play well with navmeshes (todo)
+# The program simulates its own synchronous physics for the pinata.  The colored squares from the explosion
+# use globally asynchronous client-side physics (not consistent across viewers).
+
 from arena import *
 import random
 import time
 
 scene = Scene(host="arenaxr.org", realm="realm", scene="pinata")
 
-RESPAWN_X_AREA = 100
+# Constants used to define operations
+RESPAWN_X_AREA = 100    # respawn in +/- this area bound
 RESPAWN_Z_AREA = 100
-RESPAWN_Y = 10
-HIT_RELOAD=10
-G_ACCEL = -9.8
-HIT_IMPULSE = 10
-GROUND_LEVEL = 0
+RESPAWN_Y = 10          # respawn at exactly this Y position
+HIT_RELOAD=10           # how many hits does it take
+G_ACCEL = -9.8          
+HIT_IMPULSE = 10        # Velocity added to hit
+GROUND_LEVEL = 0        # Ground level for pseudo-physics
+
+# some state defines
+IDLE = 0
+MOVING = 1
+EXPLODE = 2
+WAITING_RESTART = 3
 
 pinata_loc = [0,0,0]
-pinata_state = 0  # 0-still, 1-moving, 2-explode 
+pinata_state = IDLE  # 0-still, 1-moving, 2-explode, 3-waiting to restart
 hit_counter = HIT_RELOAD 
 t=0
 vy=0
@@ -45,7 +58,7 @@ def click(scene, evt, msg):
         scene.add_object(line)
         # Velocity of hit
         vy+= HIT_IMPULSE
-        pinata_state=1
+        pinata_state=MOVING
         hit_counter-=1
         hit_text.update_attributes(text=str(hit_counter))
         scene.update_object(hit_text)
@@ -56,7 +69,7 @@ def click(scene, evt, msg):
 
         print("Hit Counter: " + str(hit_counter))
         if hit_counter==0:
-            pinata_state = 2 
+            pinata_state = EXPLODE
 
 
 def game_reset():
@@ -73,7 +86,7 @@ def game_reset():
     scene.update_object(hit_text)
     vy=0
     t=0
-    pinata_state=0
+    pinata_state=IDLE
     print( "Respawned at: " + str(pinata_loc))
 
 
@@ -101,39 +114,48 @@ def main_loop():
     global pinata, pinata_loc, t,pinata_state
     global vy
 
-    dt=.1  # size of timestamp set at 100ms
+    dt=.1  # size of timestamp set at 100ms converted to seconds
 
-    if pinata_state==2:
-        pinata_state=3
+
+    # If exploded, play animation and wait timeout until reset
+    if pinata_state==EXPLODE:
+        pinata_state=WAITING_RESTART
         t=0
         explode()
-    if pinata_state==3:
+    if pinata_state==WAITING_RESTART:
         t+=dt
         if t>20:
             game_reset()
-            pinata_state=0
+            pinata_state=IDLE
 
-
+    # Grab the current location of the pinata
     y=pinata_loc[1]
 
-    # If the pinata is hit, start computing gravity
-    if pinata_state==1:
-        y +=  vy * dt
-        vy += G_ACCEL * dt 
-        if y<=GROUND_LEVEL+.2: 
+    # If the pinata is moving, compute physics
+    if pinata_state==MOVING:
+        y +=  vy * dt           # Update position based on velocity
+        vy += G_ACCEL * dt      # Update velocity timestep
+
+        # Each time the pinata hits the ground, it bounces
+        # This section converts some amount of velocity at impact to be rebounce
+        # This section also caps small velocities to stop infinite bouncing
+        if y<=GROUND_LEVEL+.2:  
             if vy>2 or  vy<-2:
-                vy=-.5*vy
+                vy=-.5*vy   # This is the bounce input, where the ground returns half the velocity
                 y = GROUND_LEVEL
                 boing_sound = Sound(src="https://www.dropbox.com/s/3obfz1in7tj37ce/boing.wav?dl=0",positional=True,autoplay=True,poolSize=10 )
                 boing_sound_obj = Box(sound=boing_sound,position=pinata_loc,scale=Scale(.01,.01,.01),ttl=1) 
                 scene.add_object(boing_sound_obj)
             else:
+                # If the velocity is low enough, lets just cap it
                 vy=0
                 y = GROUND_LEVEL
-                pinata_state=0
+                pinata_state=IDLE
 
+        pinata_loc[0]+=random.random()-0.5
+        pinata_loc[2]+=random.random()-0.5
         pinata_loc[1]=y
-        t+=dt
+        t+=dt # Add to the physics timestep
         pinata.update_attributes(position=pinata_loc)
         scene.update_object(pinata)
 

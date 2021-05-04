@@ -13,13 +13,13 @@ def main():
             object_id="gltf-model_Earth",
             position=(0, 0.1, 0),
             scale=(10, 10, 10),
-            url="models/Earth.glb"
+            url="store/users/wiselab/models/Earth.glb"
         )
     moon = GLTF(
             object_id="gltf-model_Moon",
             position=(0, 0.05, 0.6),
             scale=(0.05, 0.05, 0.05),
-            url="models/Moon.glb",
+            url="store/users/wiselab/models/Earth.glb",
             parent="gltf-model_Earth"
         )
 

@@ -23,7 +23,7 @@ def make_box():
               color=(145, 195, 212))
     program1.add_object(obj)
     print(f"Program 1 persisted object: {obj.object_id}")
-    print(f"Program 1 persisted color: {obj.data.material.color}")
+    print(f"Program 1 persisted color: {obj.data.color}")
 
 
 program1.run_tasks()

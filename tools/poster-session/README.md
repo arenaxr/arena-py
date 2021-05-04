@@ -1,6 +1,6 @@
 # Programmatically Create a Poster Session Scene
 
-This script creates poster walls using data from a google spreadsheet. For each line in the table (indicated by a range in the config file), it creates a poster wall. See the template [google spreadsheet template with instructions](https://docs.google.com/spreadsheets/d/1pRWUCnRwpr5cz_Tm2KFWvle_fVCwX5NVBopGcZcWLA0/edit?usp=sharing).
+This script creates poster walls using data from a google spreadsheet. For each line in the table (indicated by a range in the config file), it creates a poster wall. See the template [google spreadsheet template with instructions](https://docs.google.com/spreadsheets/d/1xwVURk0BHHtncpeokjm0FZO_sffS7vjmVxt0ewxKaBU/edit?usp=sharing).
 
 ![image](https://user-images.githubusercontent.com/3504501/114779569-48d22280-9d44-11eb-80b6-bd1b341d195b.png)
 
@@ -16,9 +16,11 @@ make run
 
 You need to have [Make](https://www.gnu.org/software/make/) installed. The Makefile creates a [virtual environment that deals with installing all dependencies](https://github.com/sio/Makefile.venv), including the **arena-py library** (from pyPI; it does not use the development version in this repo).
 
+Before running, you also need to create a config file (default `config.yaml`). The repository includes a `config_example.yaml` that you can rename to `config.yaml` and adapt.
+
 ### Google Apps Script API
 The script uses the google apps script API to get the spreadsheet data. Make sure to follow these google python library pre-requisites:						
-1. A Google Cloud Platform project with the *Google Sheets API* enabled. See how to [create a project](https://developers.google.com/workspace/guides/create-project)
+1. A Google Cloud Platform project with *Google Sheets API* and *Google Drive API* enabled. See how to [create a project](https://developers.google.com/workspace/guides/create-project)
 2. Authorization credentials for a desktop application (pasted into 'credentials.json'). See how to [create credentials](https://developers.google.com/workspace/guides/create-credentials).
 
 More details [here](https://developers.google.com/apps-script/api/quickstart/python?hl=en).
@@ -56,7 +58,11 @@ Most of the time, you will want to invoke the script with no arguments:
 make run
 ```
 
-And define options in the **config file** (`./config.yaml` by default). The config file looks like this:
+And define options in the **config file** (`./config.yaml` by default).
+
+> *Note*: the repository includes a `config_example.yaml` that you can rename to `config.yaml` and adapt.
+
+The config file looks like this:
 
 ```yaml
 # persist objects (True/False)

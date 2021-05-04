@@ -2,10 +2,6 @@
 #
 # Application responds to users in the scene and updates the user avatar with name and badge updates.
 import argparse
-import math
-import os
-import re
-import time
 
 import yaml
 from arena import *
@@ -181,7 +177,6 @@ def user_join_callback(scene, obj, msg):
         sheet_user = next(
             filter(lambda x: x['username'] == username, data), None)
         if sheet_user:
-            text_id = f"headtext_{cam_id}"
             role_icon_id = f"roleicon_{cam_id}"
             ACTUSERS[cam_id] = {}
             ACTUSERS[cam_id]['badges'] = []
@@ -192,11 +187,6 @@ def user_join_callback(scene, obj, msg):
             # update static user role data from table
             if 'role' in sheet_user:
                 role = sheet_user['role']
-                if role in config['role_texts']:
-                    ACTUSERS[cam_id]["headtext"] = Text(
-                        object_id=text_id,
-                        parent=cam_id,
-                        text=f"{obj.displayName} {config['role_texts'][role]}")
                 if role in config['role_icons']:
                     ACTUSERS[cam_id]["roleicon"] = Image(
                         object_id=role_icon_id,
@@ -213,9 +203,6 @@ def user_join_callback(scene, obj, msg):
 
     # publish all overrides so new user will see them
     for user in ACTUSERS:
-        if 'headtext' in ACTUSERS[user]:
-            scene.update_object(ACTUSERS[user]["headtext"])
-            print(f"{user} headtext published")
         if 'roleicon' in ACTUSERS[user]:
             scene.add_object(ACTUSERS[user]["roleicon"])
             print(f"{user} roleicon published")

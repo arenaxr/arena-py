@@ -25,9 +25,6 @@ badge_icons:
 role_icons:
   guide: https://arenaxr.org/images/xr-logo-v8.png
   staff: https://arenaxr.org/images/conix-face-black.png
-role_texts:
-  guide: (ETC Tour Guide)
-  staff: (ARENA Staff)
 
 # icon placement relative to avatar
 badge:

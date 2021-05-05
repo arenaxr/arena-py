@@ -8,6 +8,15 @@ start_rot=0
 
 @scene.run_once
 def create_screenshare():
+    screenshare_diversion = Box(
+            object_id="screenshare",
+            position=Position(0,-1000,0),
+            scale=Scale(0,0,0),
+            persist=True
+        )
+    scene.add_object(screenshare_diversion)
+    print("Added Screenshare box")
+
     screenshare = Box(
             object_id="etc-share",
             color=Color(255,255,255),

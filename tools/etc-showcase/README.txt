@@ -2,6 +2,7 @@
 	1) creates a shareable screen called "etc-share"
 	2) Adds laser pointer click functionality to any "clickable" (Click Listener=True)  object
 	3) Spins the sign when the button is selected
+	4) Create a zero sized object called "screenshare" that is far away
 
 To run, do the following in the shell:
 

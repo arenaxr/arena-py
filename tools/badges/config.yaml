@@ -22,9 +22,9 @@ badge_icons:
   ball1: https://arenaxr.org/store/users/wiselab/badges/img/ball-6x6.png
   cone1: https://arenaxr.org/store/users/wiselab/badges/img/cone-6x6.png
   cube1: https://arenaxr.org/store/users/wiselab/badges/img/cube-6x6.png
+  rocket: https://arenaxr.org/store/users/etc/Level2/Level2Hunt/icons-Rocket.png
 role_icons:
   guide: https://arenaxr.org/images/xr-logo-v8.png
-  staff: https://arenaxr.org/images/conix-face-black.png
 
 # icon placement relative to avatar
 badge:

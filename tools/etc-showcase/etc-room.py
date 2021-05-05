@@ -1,11 +1,14 @@
 from arena import *
 import time
 
-scene = Scene(host="arenaxr.org",realm="realm",scene="spin-poster")
+scene = Scene(host="arenaxr.org",realm="realm",scene="etc-room")
 
 rot_state=0
 start_rot=0
 
+# This sets up the screenshare.  It first created a decoy screenshare called "screenshare"
+# that is tiny and far off so nobody can really use it.  It then creates a real screen
+# called "etc-share" within the screenshare frame for the scene that the students can use.
 @scene.run_once
 def create_screenshare():
     screenshare_diversion = Box(
@@ -29,9 +32,12 @@ def create_screenshare():
     scene.add_object(screenshare)
     print("Added Screenshare box")
 
+
+# This function grabs the Button object, makes it clickable and links it to an action that
+# spings the TriBoard (also loaded here)
 @scene.run_once
 def get_sign():
-    global sign # non allocated variables need to be global
+    global sign 
     global loaded
 
     # Get the sign model from persist / check that it exists
@@ -54,6 +60,7 @@ def get_sign():
         scene.update_object(button)
     
 # click_handler function that rotates sign when clicked
+# if not the "PushButton" object, it draws a laser ray
 def click_handler(scene,evt,msg):
     global sign # non allocated variables need to be global
     global rot_state
@@ -83,6 +90,7 @@ def click_handler(scene,evt,msg):
     
 
 # Load all clickable objects for laser
+# Note that objects made clickable while the program is running won't be added to this list
 @scene.run_once
 def load_all_clickables():
     objs = scene.get_persisted_objs()

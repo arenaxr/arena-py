@@ -11,15 +11,17 @@ import time
 scene = Scene(host="arenaxr.org", realm="realm", scene="pinata")
 
 # Constants used to define operations
-RESPAWN_X_AREA = 100    # respawn in +/- this area bound
-RESPAWN_Z_AREA = 100
+RESPAWN_X_MIN = -50
+RESPAWN_X_MAX = 50
+RESPAWN_Z_MIN = -50
+RESPAWN_Z_MAX = 50 
 RESPAWN_Y = 10          # respawn at exactly this Y position
 HIT_RELOAD=10           # how many hits does it take
 #G_ACCEL = -9.8          
 #HIT_IMPULSE = 20        
 G_ACCEL = -19.8          
 HIT_IMPULSE = 20        # Velocity added to hit
-GROUND_LEVEL = 0        # Ground level for pseudo-physics
+GROUND_LEVEL = -1       # Ground level for pseudo-physics
 
 # some state defines
 IDLE = 0
@@ -42,6 +44,7 @@ hit_counter = HIT_RELOAD
 # time and velocity globals for physics
 t=0
 vy=0
+restart_counter=0
 
 # Generate a bunch of random boxes from the pinata location.
 # These boxes use local physics
@@ -92,35 +95,6 @@ def click(scene, evt, msg):
             pinata_state = EXPLODE # This is picked up by the main game loop and hides the pinata while running the explosion animation
 
 
-# This is a callback handler attached to the pinata that processes click events
-def click(scene, evt, msg):
-    global pinata_loc, vy, pinata_state, hit_counter, hit_text
-    if evt.type == "mousedown":
-        start = evt.data.clickPos
-        end = evt.data.position
-        # Minor offset in drawing the line so a user can see their own trail
-        start.x-=.1
-        start.y-=.1
-        start.z-=.1
-        # Draw a click tracer
-        line = ThickLine(path=(start,end), color=(255,0,0), lineWidth=5, ttl=1)
-        scene.add_object(line)
-        # Velocity of hit
-        vy+= HIT_IMPULSE
-        pinata_state=MOVING
-        hit_counter-=1
-        # Update the text over the pinata
-        hit_text.update_attributes(text=str(hit_counter))
-        scene.update_object(hit_text)
-
-        hit_sound = Sound(src=HIT_SOUND_PATH,positional=True,autoplay=True,poolSize=10 )
-        hit_sound_obj = Box(sound=hit_sound,position=pinata_loc,scale=Scale(.01,.01,.01),ttl=1) 
-        scene.add_object(hit_sound_obj)
-
-        print("Hit Counter: " + str(hit_counter))
-        if hit_counter==0:
-            pinata_state = EXPLODE # This is picked up by the main game loop and hides the pinata while running the explosion animation
-
 # Reset game state
 def game_reset():
     global hit_counter,pinata_loc,pinata_state,pinata,hit_text,vy,t
@@ -128,7 +102,7 @@ def game_reset():
     witch_sound_obj = Box(sound=witch_sound,position=pinata_loc,scale=Scale(.01,.01,.01),ttl=10) 
     scene.add_object(witch_sound_obj)
     hit_counter=HIT_RELOAD
-    pinata_loc=[random.randrange(-RESPAWN_X_AREA,RESPAWN_X_AREA),RESPAWN_Y,random.randrange(-RESPAWN_Z_AREA,RESPAWN_Z_AREA)]   
+    pinata_loc=[random.randrange(RESPAWN_X_MIN,RESPAWN_X_MAX),RESPAWN_Y,random.randrange(RESPAWN_Z_MIN,RESPAWN_Z_MAX)]   
     pinata.update_attributes(position=pinata_loc)
     scene.update_object(pinata)
     hit_text.update_attributes(text=str(hit_counter))
@@ -163,11 +137,20 @@ def main():
 # Main game loop called by scheduler every 100ms
 @scene.run_forever(interval_ms=100)
 def main_loop():
-    global pinata, pinata_loc, t,pinata_state
+    global pinata, pinata_loc, t,pinata_state,restart_counter
     global vy
 
     dt=.1  # size of timestamp set at 100ms converted to seconds
 
+    # Watchdog timer, reset without any touches after 60 seconds
+    if pinata_state==IDLE:
+            restart_counter+=1
+            if restart_counter>=600:
+                restart_counter=0
+                game_reset()
+                pinata_state=IDLE
+    else:
+        restart_counter=0
 
     # If exploded, play animation and wait timeout until reset
     if pinata_state==EXPLODE:

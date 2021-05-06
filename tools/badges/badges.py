@@ -90,12 +90,12 @@ def publish_badge(scene, badge_idx, cam_id, badge_icon):
     badge_icon_id = f"badge{badge_idx}_{cam_id}"
     # if badge_icon_id in scene.all_objects:
     #     return  # already published
-
-    # TODO: fix the spacing of multiple badges
+    offset = 0.03
     if (badge_idx % 2) == 0:  # alternate badge sides
-        pos = badge_idx / 2 * 0.02
+        pos = (badge_idx / 2 * -offset)  # even
     else:
-        pos = badge_idx * -0.02
+        pos = (badge_idx / 2 * offset) + (offset / 2)  # odd
+    print(f"{badge_idx} {pos} {badge_icon_id}")
     badge = Image(
         object_id=badge_icon_id,
         parent=cam_id,

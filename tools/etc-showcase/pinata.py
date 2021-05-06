@@ -8,14 +8,14 @@ from arena import *
 import random
 import time
 
-scene = Scene(host="arenaxr.org", realm="realm", scene="pinata")
+scene = Scene(host="arenaxr.org", realm="realm", scene="ProjectHub")
 
 # Constants used to define operations
-RESPAWN_X_MIN = -50
-RESPAWN_X_MAX = 50
-RESPAWN_Z_MIN = -50
-RESPAWN_Z_MAX = 50 
-RESPAWN_Y = 10          # respawn at exactly this Y position
+RESPAWN_X_MIN = -67
+RESPAWN_X_MAX = 25
+RESPAWN_Z_MIN = -338
+RESPAWN_Z_MAX = -205 
+RESPAWN_Y = 20          # respawn at exactly this Y position
 HIT_RELOAD=10           # how many hits does it take
 #G_ACCEL = -9.8          
 #HIT_IMPULSE = 20        
@@ -91,7 +91,7 @@ def click(scene, evt, msg):
         scene.add_object(hit_sound_obj)
 
         print("Hit Counter: " + str(hit_counter))
-        if hit_counter==0:
+        if hit_counter<=0:
             pinata_state = EXPLODE # This is picked up by the main game loop and hides the pinata while running the explosion animation
 
 

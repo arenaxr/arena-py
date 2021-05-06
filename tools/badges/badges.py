@@ -87,6 +87,8 @@ def init_args():
 def publish_badge(scene, badge_idx, cam_id, badge_icon):
     # update arena viewers of this scene
     global config
+    if badge_icon not in config["badge_icons"]:
+        return
     badge_icon_id = f"badge{badge_idx}_{cam_id}"
     # if badge_icon_id in scene.all_objects:
     #     return  # already published
@@ -131,7 +133,8 @@ def scene_callback(scene, obj, msg):
             # parse clicks from known badge name object ids
             if object_id in config["badge_icons"]:
                 cam_id = msg["data"]["source"]
-                username = cam_id[18:]  # strip camera_00123456789_ for username
+                # strip camera_00123456789_ for username
+                username = cam_id[18:]
                 if cam_id not in ACTUSERS:
                     ACTUSERS[cam_id] = {}
                 if "badges" not in ACTUSERS[cam_id]:
@@ -144,6 +147,10 @@ def scene_callback(scene, obj, msg):
                                   badge_idx=badge_idx,
                                   cam_id=cam_id,
                                   badge_icon=object_id)
+                    # get data from google spreadsheet table
+                    print('Getting data...')
+                    data = gst.aslist(config['input_table']['spreadsheetid'],
+                                      config['input_table']['named_range'])
                     # update data model, local and remote
                     sheet_user = next(
                         filter(lambda x: x['username'] == username, data), None)
@@ -164,7 +171,6 @@ def user_join_callback(scene, obj, msg):
     cam_id = obj.object_id
     username = cam_id[18:]  # strip camera_00123456789_ for username
     print(f"{username} joined")
-
     # get data from google spreadsheet table
     print('Getting data...')
     data = gst.aslist(config['input_table']['spreadsheetid'],

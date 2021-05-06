@@ -17,3 +17,7 @@ You can also run the 'pinata.py' demo with:
 > export NAMESPACE=etc
 > export SCENE=ProjectHub
 > python3 pinata.py
+
+-----
+
+edit-rooms.sh: goes throughout the scenes listed in project-rooms.txt and adjusts settings

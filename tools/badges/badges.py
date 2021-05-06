@@ -95,7 +95,6 @@ def publish_badge(scene, badge_idx, cam_id, badge_icon):
         pos = (badge_idx / 2 * -offset)  # even
     else:
         pos = (badge_idx / 2 * offset) + (offset / 2)  # odd
-    print(f"{badge_idx} {pos} {badge_icon_id}")
     badge = Image(
         object_id=badge_icon_id,
         parent=cam_id,
@@ -109,6 +108,7 @@ def publish_badge(scene, badge_idx, cam_id, badge_icon):
             side='double'),
         url=config["badge_icons"][badge_icon])
     scene.add_object(badge)
+    print(f"{badge_icon_id} published")
     # TODO: push config into parsable yaml
 
 
@@ -131,8 +131,7 @@ def scene_callback(scene, obj, msg):
             # parse clicks from known badge name object ids
             if object_id in config["badge_icons"]:
                 cam_id = msg["data"]["source"]
-                username = cam_id[18:]  # strip camera_00123456789 for username
-                print(f"{object_id} is an expected click from {username}")
+                username = cam_id[18:]  # strip camera_00123456789_ for username
                 if cam_id not in ACTUSERS:
                     ACTUSERS[cam_id] = {}
                 if "badges" not in ACTUSERS[cam_id]:
@@ -161,12 +160,10 @@ def scene_callback(scene, obj, msg):
 
 
 def user_join_callback(scene, obj, msg):
-    # TODO: handle displayname update message
-    # TODO: handle no name incoming displayname message
     global ACTUSERS, config, data
     cam_id = obj.object_id
-    username = cam_id[18:]  # strip camera_00123456789 for username
-    print(username)
+    username = cam_id[18:]  # strip camera_00123456789_ for username
+    print(f"{username} joined")
 
     # get data from google spreadsheet table
     print('Getting data...')
@@ -200,6 +197,8 @@ def user_join_callback(scene, obj, msg):
                             shader='flat',
                             side='double'),
                         url=config["role_icons"][role])
+
+    # TODO: throttle republish, 1-5 seconds
 
     # publish all overrides so new user will see them
     for user in ACTUSERS:

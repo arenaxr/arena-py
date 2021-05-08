@@ -166,6 +166,15 @@ def scene_callback(scene, obj, msg):
                                          ACTUSERS[cam_id]["badges"])
 
 
+def user_left_callback(scene, obj, msg):
+    global ACTUSERS
+    cam_id = obj.object_id
+    username = cam_id[18:]  # strip camera_00123456789_ for username
+    print(f"{username} left")
+    if cam_id in ACTUSERS:
+        del ACTUSERS[cam_id]
+
+
 def user_join_callback(scene, obj, msg):
     global ACTUSERS, config, data
     cam_id = obj.object_id
@@ -234,6 +243,7 @@ scene = Scene(
     scene=config['arena']['scenename'],
     on_msg_callback=scene_callback,
     user_join_callback=user_join_callback,
+    user_left_callback=user_left_callback,
     **kwargs)
 
 # TODO: launch separate threads for each scene

@@ -2,9 +2,16 @@
 
 ARENA-py notable changes. Started 2021-19-2 (version 0.1.12).
 
+## [0.1.31] - 2021-10-5
+### Changed
+- `add_msg_callback` auto subscribes to topic.
+- Possibly fix `Color` bug with invalid colors.
+
 ## [0.1.30] - 2021-29-4
 ### Changed
 - Remove top-level landmark type.
+
+### Added
 - Replace with new landmark attribute.
 
 ## [0.1.29] - 2021-29-4

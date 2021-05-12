@@ -87,15 +87,16 @@ def init_args():
 def publish_badge(scene, badge_idx, cam_id, badge_icon):
     # update arena viewers of this scene
     global config
+    if badge_icon not in config["badge_icons"]:
+        return
     badge_icon_id = f"badge{badge_idx}_{cam_id}"
     # if badge_icon_id in scene.all_objects:
     #     return  # already published
-
-    # TODO: fix the spacing of multiple badges
+    offset = 0.03
     if (badge_idx % 2) == 0:  # alternate badge sides
-        pos = badge_idx / 2 * 0.02
+        pos = (badge_idx / 2 * -offset)  # even
     else:
-        pos = badge_idx * -0.02
+        pos = (badge_idx / 2 * offset) + (offset / 2)  # odd
     badge = Image(
         object_id=badge_icon_id,
         parent=cam_id,
@@ -109,6 +110,7 @@ def publish_badge(scene, badge_idx, cam_id, badge_icon):
             side='double'),
         url=config["badge_icons"][badge_icon])
     scene.add_object(badge)
+    print(f"{badge_icon_id} published")
     # TODO: push config into parsable yaml
 
 
@@ -131,8 +133,8 @@ def scene_callback(scene, obj, msg):
             # parse clicks from known badge name object ids
             if object_id in config["badge_icons"]:
                 cam_id = msg["data"]["source"]
-                username = cam_id[18:]  # strip camera_00123456789 for username
-                print(f"{object_id} is an expected click from {username}")
+                # strip camera_00123456789_ for username
+                username = cam_id[18:]
                 if cam_id not in ACTUSERS:
                     ACTUSERS[cam_id] = {}
                 if "badges" not in ACTUSERS[cam_id]:
@@ -145,6 +147,10 @@ def scene_callback(scene, obj, msg):
                                   badge_idx=badge_idx,
                                   cam_id=cam_id,
                                   badge_icon=object_id)
+                    # get data from google spreadsheet table
+                    print('Getting data...')
+                    data = gst.aslist(config['input_table']['spreadsheetid'],
+                                      config['input_table']['named_range'])
                     # update data model, local and remote
                     sheet_user = next(
                         filter(lambda x: x['username'] == username, data), None)
@@ -160,14 +166,20 @@ def scene_callback(scene, obj, msg):
                                          ACTUSERS[cam_id]["badges"])
 
 
+def user_left_callback(scene, obj, msg):
+    global ACTUSERS
+    cam_id = obj.object_id
+    username = cam_id[18:]  # strip camera_00123456789_ for username
+    print(f"{username} left")
+    if cam_id in ACTUSERS:
+        del ACTUSERS[cam_id]
+
+
 def user_join_callback(scene, obj, msg):
-    # TODO: handle displayname update message
-    # TODO: handle no name incoming displayname message
     global ACTUSERS, config, data
     cam_id = obj.object_id
-    username = cam_id[18:]  # strip camera_00123456789 for username
-    print(username)
-
+    username = cam_id[18:]  # strip camera_00123456789_ for username
+    print(f"{username} joined")
     # get data from google spreadsheet table
     print('Getting data...')
     data = gst.aslist(config['input_table']['spreadsheetid'],
@@ -201,6 +213,8 @@ def user_join_callback(scene, obj, msg):
                             side='double'),
                         url=config["role_icons"][role])
 
+    # TODO: throttle republish, 1-5 seconds
+
     # publish all overrides so new user will see them
     for user in ACTUSERS:
         if 'roleicon' in ACTUSERS[user]:
@@ -229,6 +243,7 @@ scene = Scene(
     scene=config['arena']['scenename'],
     on_msg_callback=scene_callback,
     user_join_callback=user_join_callback,
+    user_left_callback=user_left_callback,
     **kwargs)
 
 # TODO: launch separate threads for each scene

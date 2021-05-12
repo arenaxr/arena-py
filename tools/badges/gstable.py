@@ -24,11 +24,14 @@ You need the following:
 Details: https://developers.google.com/apps-script/api/quickstart/python?hl=en
 """
 from __future__ import print_function
+
+import os
 import os.path
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
+
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
 
 
 class GoogleSheetTable:
@@ -53,7 +56,10 @@ class GoogleSheetTable:
             else:
                 flow = InstalledAppFlow.from_client_secrets_file(
                     'credentials.json', GoogleSheetTable.SCOPES)
-                creds = flow.run_local_server(port=0)
+                if "SSH_TTY" in os.environ or "SSH_CLIENT" in os.environ:
+                    creds = flow.run_console()
+                else:
+                    creds = flow.run_local_server(port=0)
             # Save the credentials for the next run
             with open('token.json', 'w') as token:
                 token.write(creds.to_json())
@@ -121,7 +127,6 @@ class GoogleSheetTable:
         for v in values[1:]:
             res_list.append(dict(map(lambda k, v: (k, v), columns, v)))
         return res_list
-
 
     def updaterow(self, sheet_id, table_range_name, row):
         """Add a row as list and return list of dict() with table contents

@@ -1,9 +1,8 @@
 #!/bin/bash
 
-# NOTE: iterations of a while ** in a pipeline ** are executed inside a subshell
-# see: http://mywiki.wooledge.org/BashFAQ/024
-cat project-rooms.txt | while read room; do
-  export NAMESPACE=etc
-  export SCENE=$room
+cat scene-list.txt | while read scene; do
+  export NAMESPACE=$(echo $scene | cut -f 1 -d '/')
+  export SCENE=$(echo $scene | cut -f 2 -d '/')
+  #echo 'Scene:'$NAMESPACE'/'$SCENE
   python3 edit-room.py
 done

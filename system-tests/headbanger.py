@@ -1,6 +1,6 @@
-import datetime
 import random
 import time
+from datetime import datetime
 
 from arena import *
 
@@ -11,6 +11,8 @@ scene = Scene(host="arenaxr.org", realm="realm", scene="headbanger", )
 heads = 100
 # Type of head.  0- box, 1- GLTF
 head_type = 1
+# Rotation type.  0- network MQTT ticks, 1- animation ticks
+rotation_type = 0
 
 headlist = []
 cnt = 0
@@ -30,14 +32,24 @@ for x in range(heads):
             position=(random.random()*10, 1.5, random.random()*-10),
             scale=(.1, .1, .1),
         )
+    if rotation_type == 1:
+        animation = Animation(
+            property="rotation",
+            start=(0, 0, 0),
+            end=(0, 360, 0),
+            loop=True,
+            easing="linear",
+            # dur=20000
+        )
+        head.dispatch_animation(animation)
+
     headlist.append(head)
     cnt = cnt+1
-
 
 i = 0
 cnt = 0
 cycle = 0
-last = datetime.datetime.now()
+last = datetime.now()
 
 
 @scene.run_once
@@ -45,11 +57,15 @@ def main():
     print("Adding heads")
     for head in headlist:
         scene.add_object(head)
+        if rotation_type == 1:
+            scene.run_animations(head)
 
 
 @scene.run_forever(interval_ms=100)
 def update():
     global i, headlist, cnt, last, cycle
+    if rotation_type == 1:
+        return  # do not re-publish for animantion case
     if cnt < 100:
         print("waiting...")
         cnt = cnt+1
@@ -79,7 +95,7 @@ def update():
             print("********************************** Blue High")
         cycle = cycle+1
     cnt = cnt+1
-    now = datetime.datetime.now()
+    now = datetime.now()
     c = now-last
     last = now
     print("Heads: " + str(heads) + " Tick: " + str(cnt) +

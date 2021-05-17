@@ -1,3 +1,4 @@
+import signal, os
 import asyncio
 import traceback
 
@@ -5,7 +6,8 @@ class Worker(object):
     """
     Wrapper for async function for single ARENA tasks.
     """
-    def __init__(self, func, event=None, *args, **kwargs):
+    def __init__(self, event_loop, func, event=None, *args, **kwargs):
+        self.event_loop = event_loop
         self.func = func
         self.event = event
         self.args = args
@@ -18,7 +20,9 @@ class Worker(object):
         except Exception as e:
             func_name = self.func.__name__
             Worker.print_traceback(func_name)
-            return
+
+            # disconnect and stop running the program
+            self.event_loop.shutdown_wrapper()
 
     async def sleep(self, interval):
         await asyncio.sleep(interval)

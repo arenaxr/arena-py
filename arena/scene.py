@@ -128,9 +128,9 @@ class Scene(object):
                                           # have a reference to
         self.users = {} # dict of all users
 
-        self.task_manager = EventLoop(self.disconnect)
+        self.event_loop = EventLoop(self.disconnect)
 
-        aioh = AsyncioMQTTHelper(self.task_manager, self.mqttc)
+        aioh = AsyncioMQTTHelper(self.event_loop, self.mqttc)
 
         # have all tasks wait until mqtt client is connected before starting
         self.mqtt_connect_evt = asyncio.Event()
@@ -170,8 +170,8 @@ class Scene(object):
     def run_once(self, func=None, **kwargs):
         """Runs a user-defined function on startup"""
         if func is not None:
-            w = SingleWorker(func, self.mqtt_connect_evt, **kwargs)
-            self.task_manager.add_task(w)
+            w = SingleWorker(self.event_loop, func, self.mqtt_connect_evt, **kwargs)
+            self.event_loop.add_task(w)
         else:
             # if there is no func, we are in a decorator
             def _run_once(func):
@@ -185,8 +185,8 @@ class Scene(object):
             if interval_ms < 0:
                 print("Invalid interval! Defaulting to 1000ms")
                 interval_ms = 1000
-            w = LazyWorker(func, self.mqtt_connect_evt, interval_ms, **kwargs)
-            self.task_manager.add_task(w)
+            w = LazyWorker(self.event_loop, func, self.mqtt_connect_evt, interval_ms, **kwargs)
+            self.event_loop.add_task(w)
         else:
             # if there is no func, we are in a decorator
             def _run_after_interval(func):
@@ -197,8 +197,8 @@ class Scene(object):
     def run_async(self, func=None, **kwargs):
         """Runs a user defined aynscio function"""
         if func is not None:
-            w = AsyncWorker(func, self.mqtt_connect_evt, **kwargs)
-            self.task_manager.add_task(w)
+            w = AsyncWorker(self.event_loop, func, self.mqtt_connect_evt, **kwargs)
+            self.event_loop.add_task(w)
         else:
             # if there is no func, we are in a decorator
             def _run_async(func):
@@ -212,8 +212,8 @@ class Scene(object):
             if interval_ms < 0:
                 print("Invalid interval! Defaulting to 1000ms")
                 interval_ms = 1000
-            t = PersistentWorker(func, self.mqtt_connect_evt, interval_ms, **kwargs)
-            self.task_manager.add_task(t)
+            t = PersistentWorker(self.event_loop, func, self.mqtt_connect_evt, interval_ms, **kwargs)
+            self.event_loop.add_task(t)
         else:
             # if there is no func, we are in a decorator
             def _run_forever(func):
@@ -224,11 +224,11 @@ class Scene(object):
     def run_tasks(self):
         """Run event loop"""
         print("Connecting to the ARENA...")
-        self.task_manager.run()
+        self.event_loop.run()
 
     def stop_tasks(self):
         """Stop event loop"""
-        self.task_manager.stop()
+        self.event_loop.stop()
 
     async def sleep(self, interval_ms):
         """Public function for sleeping in async functions"""
@@ -268,76 +268,81 @@ class Scene(object):
             try:
                 payload_str = msg.payload.decode("utf-8", "ignore")
                 payload = json.loads(payload_str)
-            except:
+            except Exception as e:
+                print("Malformed payload, ignoring")
                 return
 
-            # update object attributes, if possible
-            if "object_id" in payload:
-                # parese payload
-                object_id = payload.get("object_id", None)
-                action = payload.get("action", None)
+            try:
+                # update object attributes, if possible
+                if "object_id" in payload:
+                    # parese payload
+                    object_id = payload.get("object_id", None)
+                    action = payload.get("action", None)
 
-                data = payload.get("data", {})
-                object_type = data.get("object_type", None)
+                    data = payload.get("data", {})
+                    object_type = data.get("object_type", None)
 
-                event = None
+                    event = None
 
-                # create/get object from object_id
-                if object_id in self.all_objects:
-                    obj = self.all_objects[object_id]
-                else:
-                    ObjClass = OBJECT_TYPE_MAP.get(object_type, Object)
-                    obj = ObjClass(**payload)
+                    # create/get object from object_id
+                    if object_id in self.all_objects:
+                        obj = self.all_objects[object_id]
+                    else:
+                        ObjClass = OBJECT_TYPE_MAP.get(object_type, Object)
+                        obj = ObjClass(**payload)
 
-                # react to action accordingly
-                if action:
-                    if action == "clientEvent":
-                        event = Event(**payload)
-                        if obj.evt_handler:
-                            self.callback_wrapper(obj.evt_handler, event, payload)
+                    # react to action accordingly
+                    if action:
+                        if action == "clientEvent":
+                            event = Event(**payload)
+                            if obj.evt_handler:
+                                self.callback_wrapper(obj.evt_handler, event, payload)
+                                continue
+
+                        elif action == "delete":
+                            if Camera.object_type in object_id: # object is a camera
+                                if object_id in self.users and self.user_left_callback:
+                                    self.callback_wrapper(
+                                            self.user_left_callback,
+                                            self.users[object_id],
+                                            payload
+                                        )
+                            elif self.delete_obj_callback:
+                                self.callback_wrapper(self.delete_obj_callback, obj, payload)
                             continue
 
-                    elif action == "delete":
-                        if Camera.object_type in object_id: # object is a camera
-                            if object_id in self.users and self.user_left_callback:
+                        else: # create/update
+                            obj.update_attributes(**payload)
+
+                    # call new message callback for all messages
+                    if self.on_msg_callback:
+                        if not event:
+                            self.callback_wrapper(self.on_msg_callback, obj, payload)
+                        else:
+                            self.callback_wrapper(self.on_msg_callback, event, payload)
+
+                    # run user_join_callback when user is found
+                    if object_type and object_type == Camera.object_type:
+                        if object_id not in self.users:
+                            if object_id in self.all_objects:
+                                self.users[object_id] = obj
+                            else:
+                                self.users[object_id] = Camera(**payload)
+
+                            if self.user_join_callback:
                                 self.callback_wrapper(
-                                        self.user_left_callback,
+                                        self.user_join_callback,
                                         self.users[object_id],
                                         payload
                                     )
-                        elif self.delete_obj_callback:
-                            self.callback_wrapper(self.delete_obj_callback, obj, payload)
-                        continue
 
-                    else: # create/update
-                        obj.update_attributes(**payload)
+                    # if its an object the library has not seen before, call new object callback
+                    elif object_id not in self.unspecified_object_ids and self.new_obj_callback:
+                        self.callback_wrapper(self.new_obj_callback, obj, payload)
+                        self.unspecified_object_ids.add(object_id)
 
-                # call new message callback for all messages
-                if self.on_msg_callback:
-                    if not event:
-                        self.callback_wrapper(self.on_msg_callback, obj, payload)
-                    else:
-                        self.callback_wrapper(self.on_msg_callback, event, payload)
-
-                # run user_join_callback when user is found
-                if object_type and object_type == Camera.object_type:
-                    if object_id not in self.users:
-                        if object_id in self.all_objects:
-                            self.users[object_id] = obj
-                        else:
-                            self.users[object_id] = Camera(**payload)
-
-                        if self.user_join_callback:
-                            self.callback_wrapper(
-                                    self.user_join_callback,
-                                    self.users[object_id],
-                                    payload
-                                )
-
-                # if its an object the library has not seen before, call new object callback
-                elif object_id not in self.unspecified_object_ids and self.new_obj_callback:
-                    self.callback_wrapper(self.new_obj_callback, obj, payload)
-                    self.unspecified_object_ids.add(object_id)
+            except Exception as e:
+                print("Malformed message, ignoring")
 
     def callback_wrapper(self, func, arg, msg):
         """Checks for number of arguments for callback"""

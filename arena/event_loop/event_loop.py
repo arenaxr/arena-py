@@ -1,5 +1,6 @@
 import os
 import signal
+import sys
 import asyncio
 
 class EventLoop(object):
@@ -8,7 +9,10 @@ class EventLoop(object):
     """
     def __init__(self, shutdown_func=None):
         self.tasks = []
+        if os.name == "nt" and sys.version_info >= (3, 8):
+            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
         self.loop = asyncio.get_event_loop()
+
         if os.name == 'nt': # Windows doesnt have SIGHUP signal
             self.signals = (signal.SIGTERM, signal.SIGINT)
         else:

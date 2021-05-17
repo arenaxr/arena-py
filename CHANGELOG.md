@@ -6,6 +6,7 @@ ARENA-py notable changes. Started 2021-19-2 (version 0.1.12).
 ### Added
 - Programs will now disconnect and exit on an exception.
 - Added try except block on message parsing.
+- `WindowsSelectorEventLoopPolicy` added for Windows Python >=3.8
 
 ## [0.1.31] - 2021-10-5
 ### Changed

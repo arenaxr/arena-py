@@ -22,6 +22,7 @@ class AsyncioMQTTHelper:
 
         self.loop.add_reader(sock, cb)
         self.misc_loop_worker = AsyncWorker(
+                                self.event_loop,
                                 func=self.misc_loop,
                                 event=None,
                             )

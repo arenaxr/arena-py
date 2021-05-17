@@ -5,8 +5,8 @@ class PersistentWorker(Worker):
     """
     Wrapper for an ARENA task that runs at a periodic interval.
     """
-    def __init__(self, func, event=None, interval=1000, *args, **kwargs):
-        super().__init__(func, event, *args, **kwargs)
+    def __init__(self, event_loop, func, event=None, interval=1000, *args, **kwargs):
+        super().__init__(event_loop, func, event, *args, **kwargs)
         self.interval = interval / 1000 # ms -> s
 
     async def run(self):

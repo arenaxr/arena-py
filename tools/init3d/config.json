@@ -1,0 +1,10 @@
+{
+	"arts": {
+		"reg": "proc/reg",
+		"ctl": "proc/control",
+		"dgb": "proc/debug",
+		"stdout": "proc/debug/stdout",
+		"stdin": "proc/debug/stdin",
+		"rest_url": "arts-api/v1/"
+	}
+}

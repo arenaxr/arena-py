@@ -2,18 +2,24 @@
 #
 # 3d program manager: Subscribes to runtime channels to 3d-control programs present int the scene.
 import argparse
+import json
 
 from arena import *
 
-HOST = None
-REALM = None
+HOST = "arenaxr.org"
+REALM = "realm"
 NAMESPACE = None
 SCENE = None
-RUNTIME_TOPIC= None
+TOPIC_ALL = None
+TOPIC_REG = None
+TOPIC_CTL = None
+TOPIC_DBG = None
+TOPIC_STDOUT = None
+TOPIC_STDIN = None
 
 
 def init_args():
-    global HOST, REALM, NAMESPACE, SCENE, RUNTIME_TOPIC
+    global HOST, REALM, NAMESPACE, SCENE, TOPIC_ALL
 
     parser = argparse.ArgumentParser(
         description="ARENA init3d manager example.")
@@ -36,7 +42,13 @@ def init_args():
         NAMESPACE = args.namespace
     if args.scenename is not None:
         SCENE = args.scenename
-    RUNTIME_TOPIC = f"{REALM}/proc"
+
+    TOPIC_ALL = f"{REALM}/proc/#"
+    TOPIC_REG = f'{REALM}/proc/reg'
+    TOPIC_CTL = f'{REALM}/proc/control'
+    TOPIC_DBG = f'{REALM}/proc/debug'
+    TOPIC_STDOUT = f'{TOPIC_DBG}/stdout'
+    TOPIC_STDIN = f'{TOPIC_DBG}/stdin'
 
 
 def runtime_callback(client, userdata, msg):
@@ -48,6 +60,7 @@ def runtime_callback(client, userdata, msg):
         pass
 
 
+# setup and launch
 init_args()
 kwargs = {}
 if NAMESPACE:
@@ -57,5 +70,5 @@ scene = Scene(
     realm=REALM,
     scene=SCENE,
     **kwargs)
-scene.message_callback_add(RUNTIME_TOPIC, runtime_callback)
+scene.message_callback_add(TOPIC_ALL, runtime_callback)
 scene.run_tasks()

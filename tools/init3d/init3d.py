@@ -5,7 +5,7 @@ import argparse
 import json
 import pprint
 
-from arena import *
+from arena import Scene
 
 from arts.artsrequests import Action, ARTSRESTRequest, FileType
 from arts.module import Module

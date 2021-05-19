@@ -14,9 +14,9 @@ class Module(dict):
 
     def __init__(self, mod_name, mod_filename, mod_uuid=uuid.uuid4(), parent_rt=None, mod_ft=FileType.PY, mod_args='', mod_env=''):
         # determine filetype from extension
-        if (mod_filename.endswith('.py')):
+        if mod_filename.endswith('.py'):
             mod_ft = FileType.PY
-        if (mod_filename.endswith('.wasm')):
+        if mod_filename.endswith('.wasm'):
             mod_ft = FileType.WA
 
         dict.__init__(self, uuid=str(mod_uuid), name=mod_name, parent=parent_rt,

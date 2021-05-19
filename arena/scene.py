@@ -37,27 +37,27 @@ class Scene(object):
             ):
         if os.environ.get("MQTTH"):
             self.host  = os.environ["MQTTH"]
-        elif "host" in kwargs:
+        elif "host" in kwargs and kwargs["host"] is not None:
             self.host = kwargs["host"]
             print("Cannot find MQTTH environmental variable, using input parameter instead.")
         else:
-            sys.exit("mqtt host argument (host) is unspecified, aborting...")
+            sys.exit("mqtt host argument (host) is unspecified or None, aborting...")
 
         if os.environ.get("REALM"):
             self.realm  = os.environ["REALM"]
-        elif "realm" in kwargs:
+        elif "realm" in kwargs and kwargs["realm"] is not None:
             self.realm = kwargs["realm"]
             print("Cannot find REALM environmental variable, using input parameter instead.")
         else:
-            sys.exit("realm argument (realm) is unspecified, aborting...")
+            sys.exit("realm argument (realm) is unspecified or None, aborting...")
 
         if os.environ.get("SCENE"):
             self.scene  = os.environ["SCENE"]
-        elif "scene" in kwargs:
+        elif "scene" in kwargs and kwargs["scene"] is not None:
             self.scene = kwargs["scene"]
             print("Cannot find SCENE environmental variable, using input parameter instead.")
         else:
-            sys.exit("scene argument (scene) is unspecified, aborting...")
+            sys.exit("scene argument (scene) is unspecified or None, aborting...")
 
         self.debug = debug
 

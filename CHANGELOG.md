@@ -2,6 +2,10 @@
 
 ARENA-py notable changes. Started 2021-19-2 (version 0.1.12).
 
+## [0.1.33] - 2021-18-5
+### Changed
+- Do not accept None for host, realm, scene in `Scene` constructor.
+
 ## [0.1.32] - 2021-16-5
 ### Added
 - Programs will now disconnect and exit on an exception.

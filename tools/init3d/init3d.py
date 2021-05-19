@@ -134,12 +134,13 @@ def createModule(scene):
 
     # create environment variables to be passed as a *space-separated* string
     #env = re.sub(r'${scene}', SCENE, env)
-    env = f"NAMESPACE={NAMESPACE} SCENE={SCENE} MQTTH={HOST} REALM={REALM}"
+    #env = f"NAMESPACE={NAMESPACE} SCENE={SCENE} MQTTH={HOST} REALM={REALM}"
+    env = f"['NAMESPACE={NAMESPACE}','SCENE={SCENE}','MQTTH={HOST}','REALM={REALM}']"
 
     # create a module object
-    mod = Module("wiselab/py/boxes", "boxes.py", mod_env=env)
+    mod = Module("arena/py/moving-box", "box.py", mod_env=env)
 
-    # mod = Module("wiselab/boxes", "boxes.py", mod_uuid='4264bac8-13ed-453b-b157-49cc2421a112')
+    # mod = Module("wiselab/boxes", "box.py", mod_uuid='4264bac8-13ed-453b-b157-49cc2421a112')
 
     # get arts request json string (req_uuid will be used to confirm the request)
     req_uuid, artsModCreateReq = mod.artsReqJson(Action.create)
@@ -149,7 +150,6 @@ def createModule(scene):
     scene.mqttc.publish(
         f"{REALM}/{config['arts']['ctl']}", artsModCreateReq)
     return mod
-
 
 def deleteModule(mod, scene):
     global config

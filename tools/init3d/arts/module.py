@@ -8,6 +8,7 @@ import uuid
 
 from arts.artsrequests import Action, ARTSRequestMsg, FileType, Type
 
+
 class Module(dict):
     """Create a module object
 
@@ -19,7 +20,7 @@ class Module(dict):
     """
     type = 'module'
 
-    def __init__(self, mod_name, mod_filename, mod_uuid=uuid.uuid4(), parent_rt=None, mod_ft=FileType.PY, mod_args='', mod_env=''):
+    def __init__(self, mod_name, mod_filename, mod_uuid=uuid.uuid4(), parent_rt=None, mod_ft=FileType.PY, mod_fid='na', mod_args='', mod_env=''):
         # determine filetype from extension
         if mod_filename.endswith('.py'):
             mod_ft = FileType.PY
@@ -27,7 +28,7 @@ class Module(dict):
             mod_ft = FileType.WA
 
         dict.__init__(self, uuid=str(mod_uuid), name=mod_name, parent=parent_rt,
-                      filename=mod_filename, filetype=mod_ft, args=mod_args, env=mod_env)
+                      filename=mod_filename, filetype=mod_ft, fileid=mod_fid, args=mod_args, env=mod_env)
 
     @property
     def uuid(self):
@@ -66,24 +67,32 @@ class Module(dict):
         return self['filetype']
 
     @filetype.setter
-    def filetype(self, ft):
-        self['filetype'] = ft
+    def filetype(self, mod_ft):
+        self['filetype'] = mod_ft
+
+    @property
+    def fileid(self):
+        return self['fileid']
+
+    @fileid.setter
+    def fileid(self, mod_fid):
+        self['fileid'] = mod_fid
 
     @property
     def args(self):
         return self['args']
 
     @args.setter
-    def args(self, m_args):
-        self['args'] = m_args
+    def args(self, mod_args):
+        self['args'] = mod_args
 
     @property
     def env(self):
         return self['env']
 
     @env.setter
-    def env(self, m_args):
-        self['env'] = m_args
+    def env(self, mod_env):
+        self['env'] = mod_env
 
     def artsReqJson(self, action):
         req_uuid = str(uuid.uuid4())

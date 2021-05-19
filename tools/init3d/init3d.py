@@ -79,14 +79,13 @@ class Settings(dict):
 
 def module_test(scene: Scene):
     global config, programs, click_obj
-    # json pretty printer
-    pp = pprint.PrettyPrinter(indent=4)
 
     click_obj = Sphere(
         object_id="click_obj",
         position=Position(0, 1, -1),
         scale={"x": 0.1, "y": 0.1, "z": 0.1},
         color=CLR_RED,
+        material=Material(color=CLR_RED),
         clickable=True,
         evt_handler=click_handler,
     )
@@ -101,6 +100,7 @@ def module_test(scene: Scene):
     # we can use arts rest interface to query existing modules
     modulesJson = artsRest.getModules()
     print('** These are all the modules known to ARTS:')
+    pp = pprint.PrettyPrinter(indent=4)
     pp.pprint(modulesJson)
 
     # query for modules of a particular runtime, given its uuid:
@@ -137,7 +137,7 @@ def createModule(scene):
     env = f"NAMESPACE={NAMESPACE} SCENE={SCENE} MQTTH={HOST} REALM={REALM}"
 
     # create a module object
-    mod = Module("wiselab/boxes", "boxes.py", mod_env=env)
+    mod = Module("wiselab/py/boxes", "boxes.py", mod_env=env)
 
     # mod = Module("wiselab/boxes", "boxes.py", mod_uuid='4264bac8-13ed-453b-b157-49cc2421a112')
 

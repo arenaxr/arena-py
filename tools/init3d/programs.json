@@ -1,6 +1,6 @@
 [
 	{
-		"name": "wiselab/boxes",
+		"name": "wiselab/py/boxes",
 		"filename": "boxes.py",
 		"args": "",
 		"env": "NAMESPACE=${namespace} SCENE=${scene} MQTTH=${mqtth} REALM=${realm}",

@@ -1,26 +1,34 @@
-# init3d.py
-#
-# 3d program manager: Subscribes to runtime channels to 3d-control programs present in the scene.
+""" init3d.py
+3d program manager: Subscribes to runtime channels to 3d-control modules present in the scene.
+"""
 import argparse
 import json
 import pprint
+import re
 
-from arena import Scene
+from arena import Material, Position, Scene, Sphere
 
 from arts.artsrequests import Action, ARTSRESTRequest, FileType
 from arts.module import Module
 
 CFG_FILE = 'config.json'
+PRG_FILE = 'programs.json'
 HOST = None
 REALM = "realm"
 NAMESPACE = None
 SCENE = None
 TOPIC_ALL = None
-settings = None
+config = None
+programs = None
+keywords = ["moduleid", "namespace", "scene", "mqtth", "realm"]
+click_obj = None
+mod = None
+CLR_RED = (255, 0, 0)
+CLR_GRN = (0, 255, 0)
 
 
 def init_args():
-    global HOST, REALM, NAMESPACE, SCENE, TOPIC_ALL, settings
+    global HOST, REALM, NAMESPACE, SCENE, TOPIC_ALL, config, programs
 
     parser = argparse.ArgumentParser(
         description="ARENA init3d manager example.")
@@ -44,7 +52,10 @@ def init_args():
     if args.scenename is not None:
         SCENE = args.scenename
 
-    settings = Settings(CFG_FILE)
+    config = Settings(CFG_FILE)
+    print(config)
+    programs = Settings(PRG_FILE)
+    print(programs)
     TOPIC_ALL = f"{REALM}/proc/#"
 
 
@@ -67,39 +78,26 @@ class Settings(dict):
 
 
 def module_test(scene: Scene):
-    global HOST, REALM, NAMESPACE, SCENE
+    global config, programs, click_obj
     # json pretty printer
     pp = pprint.PrettyPrinter(indent=4)
 
-    # create ARTSRESTRequest object to query arts
-    artsRest = ARTSRESTRequest(f"{HOST}/{settings['arts']['rest_url']}")
-
-    # create environment variables to be passed as a *space-separated* string
-    env = f"NAMESPACE={NAMESPACE} SCENE={SCENE} MQTTH={HOST} REALM={REALM}"
-
-    # create a module object
-    # the minimal arguments to create a module are name and filename (env is optional)
-    # these are all the arguments that can be passed and their defaults:
-    #    mod_name, mod_filename, mod_uuid=uuid.uuid4(), parent_rt=None, mod_ft=FileType.PY, mod_args='', mod_env=''
-    #    Note: filetype will be inferred from filename extension (.py or .wasm)
-    mod = Module("wiselab/boxes", "boxes.py", mod_env=env)
-
-    # we can create a module object to a running module (for example, to send a delete request), if we know its uuid:
-    # mod = Module("wiselab/boxes", "boxes.py", mod_uuid='4264bac8-13ed-453b-b157-49cc2421a112')
-
-    # get arts request json string (req_uuid will be used to confirm the request)
-    req_uuid, artsModCreateReq = mod.artsReqJson(Action.create)
-    print(artsModCreateReq)
-
-    # publish request
-    #publish.single(f"{REALM}/{settings['arts']['ctl']}", artsModCreateReq, hostname=HOST)
-    scene.mqttc.publish(
-        f"{REALM}/{settings['arts']['ctl']}", artsModCreateReq)
+    click_obj = Sphere(
+        object_id="click_obj",
+        position=Position(0, 1, -1),
+        scale={"x": 0.1, "y": 0.1, "z": 0.1},
+        color=CLR_RED,
+        clickable=True,
+        evt_handler=click_handler,
+    )
+    scene.add_object(click_obj)
 
     # TODO: we can check for arts confirmation:
-    #  1. subscribe to reg topic (settings['arts']['ctl'])
+    #  1. subscribe to reg topic (config['arts']['ctl'])
     #  2. look for message of type "arts_resp", with the object_id set to the value of req_uuid we saved before
 
+    # create ARTSRESTRequest object to query arts
+    artsRest = ARTSRESTRequest(f"{HOST}/{config['arts']['rest_url']}")
     # we can use arts rest interface to query existing modules
     modulesJson = artsRest.getModules()
     print('** These are all the modules known to ARTS:')
@@ -111,15 +109,55 @@ def module_test(scene: Scene):
     # we can also query arts for runtimes:
     #  runtimesJson = artsRest.getRuntimes()
 
-    # wait for user
-    input("Press Enter to kill the module...")
 
+def click_handler(scene, evt, msg):
+    global mod, click_obj
+
+    if evt.type == "mousedown":
+        if mod:
+            # kill the module
+            deleteModule(mod, scene)
+            mod = None
+            click_obj.update_attributes(
+                color=CLR_RED,
+                material=Material(color=CLR_RED))
+        else:
+            # create a module object
+            mod = createModule(scene)
+            click_obj.update_attributes(
+                color=CLR_GRN,
+                material=Material(color=CLR_GRN))
+
+
+def createModule(scene):
+    global HOST, REALM, NAMESPACE, SCENE, config
+
+    # create environment variables to be passed as a *space-separated* string
+    #env = re.sub(r'${scene}', SCENE, env)
+    env = f"NAMESPACE={NAMESPACE} SCENE={SCENE} MQTTH={HOST} REALM={REALM}"
+
+    # create a module object
+    mod = Module("wiselab/boxes", "boxes.py", mod_env=env)
+
+    # mod = Module("wiselab/boxes", "boxes.py", mod_uuid='4264bac8-13ed-453b-b157-49cc2421a112')
+
+    # get arts request json string (req_uuid will be used to confirm the request)
+    req_uuid, artsModCreateReq = mod.artsReqJson(Action.create)
+    print(artsModCreateReq)
+
+    # publish request
+    scene.mqttc.publish(
+        f"{REALM}/{config['arts']['ctl']}", artsModCreateReq)
+    return mod
+
+
+def deleteModule(mod, scene):
+    global config
     # kill the module
     req_uuid, artsModDeleteReq = mod.artsReqJson(Action.delete)
     print(artsModDeleteReq)
-    #publish.single(f"{REALM}/{settings['arts']['ctl']}", artsModDeleteReq, hostname=HOST)
     scene.mqttc.publish(
-        f"{REALM}/{settings['arts']['ctl']}", artsModDeleteReq)
+        f"{REALM}/{config['arts']['ctl']}", artsModDeleteReq)
 
 
 # setup and launch

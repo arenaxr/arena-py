@@ -1,0 +1,30 @@
+[
+	{
+		"name": "wiselab/boxes",
+		"filename": "boxes.py",
+		"args": "",
+		"env": "NAMESPACE=${namespace} SCENE=${scene} MQTTH=${mqtth} REALM=${realm}",
+		"channels": ""
+	},
+	{
+		"name": "wiselab/arb",
+		"filename": "arb.py",
+		"args": "${scene} -n ${namespace} -b ${mqtth} -m wiselab/arb/arb-manifest.json",
+		"env": "",
+		"channels": ""
+	},
+	{
+		"name": "wiselab/face-avatar",
+		"filename": "avatar.py",
+		"args": "",
+		"env": "NAMESPACE=${namespace} SCENE=${scene} MQTTH=${mqtth} REALM=${realm}",
+		"channels": "[{'path': '/ch/${namespace}/${scene} type': 'pubsub mode': 'rw params': {'topic': '${realm}/s/${namespace}/${scene}'}}]"
+	},
+	{
+		"name": "arena/py/image-switcher",
+		"filename": "image-switcher.py",
+		"args": "",
+		"env": "MID=${moduleid} SCENE=${scene} NAMESPACE=${namespace} MQTTH=${mqtth} REALM=${realm} GD_FILE_ID=1WD7-a7onzoegXxQFtiRZPTd-ZC2Mgzyo",
+		"channels": ""
+	}
+]

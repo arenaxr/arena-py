@@ -8,8 +8,15 @@ import uuid
 
 from arts.artsrequests import Action, ARTSRequestMsg, FileType, Type
 
-
 class Module(dict):
+    """Create a module object
+
+    The minimal arguments to create a module are name and filename (env is optional).
+    These are all the arguments that can be passed and their defaults:
+    mod_name, mod_filename, mod_uuid=uuid.uuid4(), parent_rt=None, mod_ft=FileType.PY, mod_args='', mod_env=''.
+    Note: filetype will be inferred from filename extension (.py or .wasm).
+    Note: we can create a module object to a running module (for example, to send a delete request), if we know its uuid.
+    """
     type = 'module'
 
     def __init__(self, mod_name, mod_filename, mod_uuid=uuid.uuid4(), parent_rt=None, mod_ft=FileType.PY, mod_args='', mod_env=''):

@@ -52,9 +52,9 @@ def init_args():
     if args.scenename is not None:
         SCENE = args.scenename
 
-    config = Settings(CFG_FILE)
+    config = load_json_file(CFG_FILE)
     print(config)
-    programs = Settings(PRG_FILE)
+    programs = load_json_file(PRG_FILE)
     print(programs)
     TOPIC_ALL = f"{REALM}/proc/#"
 
@@ -68,13 +68,10 @@ def runtime_callback(client, userdata, msg):
         pass
 
 
-class Settings(dict):
-
-    def __init__(self, cfg_file):
-        with open(CFG_FILE) as json_data_file:
-            s_dict = json.load(json_data_file)
-
-        dict.__init__(self, s_dict)
+def load_json_file(cfg_file):
+    with open(cfg_file) as json_data_file:
+        s_dict = json.load(json_data_file)
+    return s_dict
 
 
 def module_test(scene: Scene):

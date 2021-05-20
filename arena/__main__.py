@@ -78,6 +78,7 @@ if __name__ == "__main__":
                         help=f"Action to do ({PUBLISH} or {SUBSCRIBE})",
                         choices=(PUBLISH, SUBSCRIBE),
                         required=True)
+
     parser.add_argument("-t", "--topic",
                         type=str,
                         help=f"Custom topic to publish/subscribe to")

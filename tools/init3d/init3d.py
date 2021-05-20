@@ -65,61 +65,16 @@ def load_json_file(cfg_file):
 def module_test(scene: Scene):
     global config, programs, start_obj, stop_obj
 
-    stop_obj = Box(
-        object_id="stop_obj",
-        position=Position(-0.11, 1, -1),
-        scale={"x": 0.1, "y": 0.1, "z": 0.01},
-        rotation={"x": 0, "y": 0, "z": -90},
-        color=CLR_RED,
-        material=Material(color=CLR_RED, transparent=True,
-                          opacity=0.4, shading="flat"),
-        clickable=True,
-        evt_handler=stop_handler,
-    )
-    scene.add_object(stop_obj)
-    stop_txt = Text(
-        object_id="stop_txt",
-        parent=stop_obj.object_id,
-        text="012345",
-        rotation={"x": 0, "y": 0, "z": 90},
-        scale={"x": 1, "y": 1, "z": 10},
-    )
-    scene.add_object(stop_txt)
+    process_objects(scene, 0, "arena/py/moving-box",
+                    "box.py", ["012345", "a69e07"])
+    process_objects(scene, 1, "wiselab/arb",
+                    "arb.py", [])
 
-    start_obj = Cone(
-        object_id="start_obj",
-        position=Position(0, 1, -1),
-        scale={"x": 0.05, "y": 0.1, "z": 0.01},
-        rotation={"x": 0, "y": 0, "z": -90},
-        color=CLR_RED,
-        material=Material(color=CLR_RED, transparent=True,
-                          opacity=0.4, shading="flat"),
-        clickable=True,
-        evt_handler=start_handler,
-    )
-    scene.add_object(start_obj)
-    start_txt = Text(
-        object_id="start_txt",
-        parent=start_obj.object_id,
-        text="moving-boxes.py",
-        align="left",
-        anchor="left",
-        xOffset=-0.5,
-        rotation={"x": 0, "y": 0, "z": 90},
-        scale={"x": 1, "y": 2, "z": 10},
-    )
-    scene.add_object(start_txt)
-
-    name_txt = Text(
-        object_id="name_txt",
-        text="arena/py/moving-boxes",
-        position=Position(0.2, 1, -1),
-        align="left",
-        anchor="left",
-        xOffset=-0.5,
-        scale={"x": 0.1, "y": 0.1, "z": 0.1},
-    )
-    scene.add_object(name_txt)
+    # query for modules of a particular runtime, given its uuid:
+    #  modulesJson = artsRest.getRuntimes('a69e075c-51e5-4555-999c-c49eb283dc1d')
+    #
+    # we can also query arts for runtimes:
+    #  runtimesJson = artsRest.getRuntimes()
 
     # TODO: we can check for arts confirmation:
     #  1. subscribe to reg topic (config['arts']['ctl'])
@@ -133,11 +88,71 @@ def module_test(scene: Scene):
     pp = pprint.PrettyPrinter(indent=4)
     pp.pprint(modulesJson)
 
-    # query for modules of a particular runtime, given its uuid:
-    #  modulesJson = artsRest.getRuntimes('a69e075c-51e5-4555-999c-c49eb283dc1d')
-    #
-    # we can also query arts for runtimes:
-    #  runtimesJson = artsRest.getRuntimes()
+
+def process_objects(scene, pidx, name, file, modules):
+    y = 1 + (0.1*(pidx+1)) + (0.01*(pidx+1))
+    regex = r"/[!#$&'()*+,\/:;=?@[\]]/g"
+    tag = f"{re.sub(regex, '_', name)}_{re.sub(regex, '_', file)}"
+
+    # start the module
+    start_obj = Cone(
+        object_id=f"start_obj_{tag}",
+        position=Position(0, y, -1),
+        scale={"x": 0.05, "y": 0.1, "z": 0.01},
+        rotation={"x": 0, "y": 0, "z": -90},
+        color=CLR_RED,
+        material=Material(color=CLR_RED, transparent=True,
+                          opacity=0.4, shading="flat"),
+        clickable=True,
+        evt_handler=start_handler,
+    )
+    start_txt = Text(
+        object_id=f"start_txt_{tag}",
+        parent=start_obj.object_id,
+        text=file,
+        align="left",
+        anchor="left",
+        xOffset=-0.5,
+        rotation={"x": 0, "y": 0, "z": 90},
+        scale={"x": 1, "y": 2, "z": 10},
+    )
+    # module name
+    name_txt = Text(
+        object_id=f"name_txt_{tag}",
+        text=name,
+        position=Position(0.15, y, -1),
+        align="left",
+        anchor="left",
+        xOffset=-0.5,
+        scale={"x": 0.1, "y": 0.1, "z": 0.1},
+    )
+    scene.add_object(start_obj)
+    scene.add_object(start_txt)
+    scene.add_object(name_txt)
+
+    for midx, val in enumerate(modules):
+        # stop running module
+        x = (-0.1*(midx+1)) - (0.01*(midx+1))
+        stop_obj = Box(
+            object_id=f"stop_obj{midx}_{tag}",
+            position=Position(x, y, -1),
+            scale={"x": 0.1, "y": 0.1, "z": 0.01},
+            rotation={"x": 0, "y": 0, "z": -90},
+            color=CLR_RED,
+            material=Material(color=CLR_RED, transparent=True,
+                              opacity=0.4, shading="flat"),
+            clickable=True,
+            evt_handler=stop_handler,
+        )
+        stop_txt = Text(
+            object_id=f"stop_txt{midx}_{tag}",
+            parent=stop_obj.object_id,
+            text=val,
+            rotation={"x": 0, "y": 0, "z": 90},
+            scale={"x": 1, "y": 1, "z": 10},
+        )
+        scene.add_object(stop_obj)
+        scene.add_object(stop_txt)
 
 
 def start_handler(scene, evt, msg):

@@ -1,8 +1,9 @@
 from ..base_object import *
-from ..attributes import Animation, Data
+from ..attributes import Animation, Data, Color
 from ..utils import *
 import uuid
 
+DEFAULT_COLOR = Color(128,128,128)
 
 class Object(BaseObject):
     """
@@ -64,6 +65,9 @@ class Object(BaseObject):
         self.evt_handler = evt_handler
         self.update_handler = update_handler
         self.animations = []
+
+        # add default color
+        self.update_attributes(color=DEFAULT_COLOR)
 
         # add current object to all_objects dict
         Object.add(self)

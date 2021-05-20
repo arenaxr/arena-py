@@ -59,4 +59,4 @@ class EventLoop(object):
             self.loop.close()
 
     def stop(self):
-        self.loop.stop()
+        self.shutdown_wrapper()

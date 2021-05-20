@@ -3,6 +3,12 @@
 ARENA-py notable changes. Started 2021-19-2 (version 0.1.12).
 
 ## [0.1.33] - 2021-18-5
+### Added
+- `Object`s start with a default color of `(128,128,128)`.
+- Add first draft of ARENA-py CLI (similar to mosquitto_pub/sub)!
+Usage: `python3 -m arena -s <scene> -a <pub/sub> ...`
+Type `python3 -m arena -h` for options.
+
 ### Changed
 - Do not accept None for host, realm, scene in `Scene` constructor.
 
@@ -113,7 +119,7 @@ specify both to bypass auth.
 
 ### Changed
 - scene callbacks (`on_msg`, `new_obj`, `delete_obj`, etc.) have an `Object` instance as an argument rather than dict.
-- `get_persisted_obj` returns an Object.
+- `get_persisted_obj` returns an `Object`.
 
 ## [0.1.13] - 2021-19-2
 ### Added

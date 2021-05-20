@@ -82,7 +82,7 @@ class Scene(object):
 
         if os.environ.get("NAMESPACE"):
             self.namespace = os.environ["NAMESPACE"]
-        elif "namespace" not in kwargs:
+        elif "namespace" not in kwargs or ("namespace" in kwargs and kwargs["namespace"] is None):
             self.namespace = username
         else:
             self.namespace = kwargs["namespace"]
@@ -223,7 +223,7 @@ class Scene(object):
 
     def run_tasks(self):
         """Run event loop"""
-        print("Connecting to the ARENA...")
+        print("Connecting to the ARENA... ", end="")
         self.event_loop.run()
 
     def stop_tasks(self):
@@ -269,7 +269,8 @@ class Scene(object):
                 payload_str = msg.payload.decode("utf-8", "ignore")
                 payload = json.loads(payload_str)
             except Exception as e:
-                print("Malformed payload, ignoring")
+                print("Malformed payload, ignoring:")
+                print(e)
                 return
 
             try:
@@ -342,7 +343,8 @@ class Scene(object):
                         self.unspecified_object_ids.add(object_id)
 
             except Exception as e:
-                print("Malformed message, ignoring")
+                print("Malformed message, ignoring:")
+                print(e)
 
     def callback_wrapper(self, func, arg, msg):
         """Checks for number of arguments for callback"""

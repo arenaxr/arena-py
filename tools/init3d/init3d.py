@@ -7,7 +7,7 @@ import os
 import pprint
 import re
 
-from arena import Material, Position, Scene, Sphere
+from arena import *
 
 from arts.artsrequests import Action, ARTSRESTRequest, FileType
 from arts.module import Module
@@ -22,7 +22,8 @@ TOPIC_ALL = None
 config = None
 programs = None
 keywords = ["moduleid", "namespace", "scene", "mqtth", "realm"]
-click_obj = None
+start_obj = None
+stop_obj = None
 mod = None
 CLR_RED = (255, 0, 0)
 CLR_GRN = (0, 255, 0)
@@ -62,18 +63,63 @@ def load_json_file(cfg_file):
 
 
 def module_test(scene: Scene):
-    global config, programs, click_obj
+    global config, programs, start_obj, stop_obj
 
-    click_obj = Sphere(
-        object_id="click_obj",
-        position=Position(0, 1, -1),
-        scale={"x": 0.1, "y": 0.1, "z": 0.1},
+    stop_obj = Box(
+        object_id="stop_obj",
+        position=Position(-0.11, 1, -1),
+        scale={"x": 0.1, "y": 0.1, "z": 0.01},
+        rotation={"x": 0, "y": 0, "z": -90},
         color=CLR_RED,
-        material=Material(color=CLR_RED),
+        material=Material(color=CLR_RED, transparent=True,
+                          opacity=0.4, shading="flat"),
         clickable=True,
-        evt_handler=click_handler,
+        evt_handler=stop_handler,
     )
-    scene.add_object(click_obj)
+    scene.add_object(stop_obj)
+    stop_txt = Text(
+        object_id="stop_txt",
+        parent=stop_obj.object_id,
+        text="012345",
+        rotation={"x": 0, "y": 0, "z": 90},
+        scale={"x": 1, "y": 1, "z": 10},
+    )
+    scene.add_object(stop_txt)
+
+    start_obj = Cone(
+        object_id="start_obj",
+        position=Position(0, 1, -1),
+        scale={"x": 0.05, "y": 0.1, "z": 0.01},
+        rotation={"x": 0, "y": 0, "z": -90},
+        color=CLR_RED,
+        material=Material(color=CLR_RED, transparent=True,
+                          opacity=0.4, shading="flat"),
+        clickable=True,
+        evt_handler=start_handler,
+    )
+    scene.add_object(start_obj)
+    start_txt = Text(
+        object_id="start_txt",
+        parent=start_obj.object_id,
+        text="moving-boxes.py",
+        align="left",
+        anchor="left",
+        xOffset=-0.5,
+        rotation={"x": 0, "y": 0, "z": 90},
+        scale={"x": 1, "y": 2, "z": 10},
+    )
+    scene.add_object(start_txt)
+
+    name_txt = Text(
+        object_id="name_txt",
+        text="arena/py/moving-boxes",
+        position=Position(0.2, 1, -1),
+        align="left",
+        anchor="left",
+        xOffset=-0.5,
+        scale={"x": 0.1, "y": 0.1, "z": 0.1},
+    )
+    scene.add_object(name_txt)
 
     # TODO: we can check for arts confirmation:
     #  1. subscribe to reg topic (config['arts']['ctl'])
@@ -94,31 +140,36 @@ def module_test(scene: Scene):
     #  runtimesJson = artsRest.getRuntimes()
 
 
-def click_handler(scene, evt, msg):
-    global mod, click_obj
+def start_handler(scene, evt, msg):
+    global mod, start_obj
 
     if evt.type == "mousedown":
         if mod:
             # kill the module
             deleteModule(mod, scene)
             mod = None
-            click_obj.update_attributes(
+            start_obj.update_attributes(
                 color=CLR_RED,
                 material=Material(color=CLR_RED))
         else:
             # create a module object
             mod = createModule(scene)
-            click_obj.update_attributes(
+            start_obj.update_attributes(
                 color=CLR_GRN,
                 material=Material(color=CLR_GRN))
+
+
+def stop_handler(scene, evt, msg):
+    global mod, stop_obj
+    # TODO: add stop handler
 
 
 def createModule(scene):
     global HOST, REALM, NAMESPACE, SCENE, config
 
     # create environment variables to be passed as a *space-separated* string
-    #env = re.sub(r'${scene}', SCENE, env)
-    #env = f"NAMESPACE={NAMESPACE} SCENE={SCENE} MQTTH={HOST} REALM={REALM}"
+    # env = re.sub(r'${scene}', SCENE, env)
+    # env = f"NAMESPACE={NAMESPACE} SCENE={SCENE} MQTTH={HOST} REALM={REALM}"
     env = f"['NAMESPACE={NAMESPACE}','SCENE={SCENE}','MQTTH={HOST}','REALM={REALM}']"
 
     # create a module object

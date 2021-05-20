@@ -21,11 +21,9 @@ SCENE = None
 TOPIC_ALL = None
 config = {}
 programs = []
-start_obj = None
-stop_obj = None
-mod = None
 CLR_RED = (255, 0, 0)
 CLR_GRN = (0, 255, 0)
+init3d_root = None
 
 
 def init_args():
@@ -62,7 +60,7 @@ def load_json_file(cfg_file):
 
 
 def process_keywords(str):
-    global HOST, REALM, NAMESPACE, SCENE, keywords
+    global HOST, REALM, NAMESPACE, SCENE
     str = re.sub(r'\${mqtth}', HOST, str)
     str = re.sub(r'\${realm}', REALM, str)
     str = re.sub(r'\${namespace}', NAMESPACE, str)
@@ -71,7 +69,7 @@ def process_keywords(str):
 
 
 def module_test(scene: Scene):
-    global config, programs, start_obj, stop_obj
+    global config, programs
 
     # one time process keyword substitution
     for pidx, prog in enumerate(programs):
@@ -80,10 +78,7 @@ def module_test(scene: Scene):
         programs[pidx]['ch'] = process_keywords(prog['ch'])
 
     # render module controllers
-    for pidx, prog in enumerate(programs):
-        # process_objects(scene, 0, "arena/py/moving-box",
-        #                 "box.py", ["012345", "a69e07"])
-        process_objects(scene, pidx, prog, [])
+    populateControls(scene)
 
     # query for modules of a particular runtime, given its uuid:
     #  modulesJson = artsRest.getRuntimes('a69e075c-51e5-4555-999c-c49eb283dc1d')
@@ -104,7 +99,28 @@ def module_test(scene: Scene):
     pp.pprint(modulesJson)
 
 
-def process_objects(scene, pidx, prog, modules):
+def populateControls(scene):
+    global config, programs, init3d_root
+    # render module controllers
+    parent_id = "init3d_root"
+
+    init3d_root = Box(
+        object_id=parent_id,
+        position=Position(0, 0, 0),
+        scale={"x": 1, "y": 1, "z": 1},
+        material=Material(transparent=True, opacity=0),
+    )
+    scene.delete_object(init3d_root)  # clear root
+    scene.add_object(init3d_root)
+
+    for pidx, prog in enumerate(programs):
+        mods = []
+        if 'modules' in prog:
+            mods = prog['modules']
+        process_objects(scene, parent_id, pidx, prog, mods)
+
+
+def process_objects(scene, parent_id, pidx, prog, modules):
     name = prog['name']
     file = prog['file']
     y = 1 + (0.1*(pidx+1)) + (0.01*(pidx+1))
@@ -113,12 +129,13 @@ def process_objects(scene, pidx, prog, modules):
 
     # start the module
     start_obj = Cone(
-        object_id=f"start_obj_{tag}",
+        object_id=f"start_{pidx}_{tag}",
+        parent=parent_id,
         position=Position(0, y, -1),
         scale={"x": 0.05, "y": 0.1, "z": 0.01},
         rotation={"x": 0, "y": 0, "z": -90},
         color=CLR_RED,
-        material=Material(color=CLR_RED, transparent=True,
+        material=Material(color=CLR_GRN, transparent=True,
                           opacity=0.4, shading="flat"),
         clickable=True,
         evt_handler=start_handler,
@@ -136,6 +153,7 @@ def process_objects(scene, pidx, prog, modules):
     # module name
     name_txt = Text(
         object_id=f"name_txt_{tag}",
+        parent=parent_id,
         text=name,
         position=Position(0.15, y, -1),
         align="left",
@@ -151,7 +169,8 @@ def process_objects(scene, pidx, prog, modules):
         # stop running module
         x = (-0.1*(midx+1)) - (0.01*(midx+1))
         stop_obj = Box(
-            object_id=f"stop_obj{midx}_{tag}",
+            object_id=f"stop_{midx}_{tag}",
+            parent=parent_id,
             position=Position(x, y, -1),
             scale={"x": 0.1, "y": 0.1, "z": 0.01},
             rotation={"x": 0, "y": 0, "z": -90},
@@ -162,7 +181,7 @@ def process_objects(scene, pidx, prog, modules):
             evt_handler=stop_handler,
         )
         stop_txt = Text(
-            object_id=f"stop_txt{midx}_{tag}",
+            object_id=f"stop_txt_{midx}_{tag}",
             parent=stop_obj.object_id,
             text=val,
             rotation={"x": 0, "y": 0, "z": 90},
@@ -172,38 +191,40 @@ def process_objects(scene, pidx, prog, modules):
         scene.add_object(stop_txt)
 
 
-def start_handler(scene, evt, msg):
-    global mod, start_obj
-
-    if evt.type == "mousedown":
-        if mod:
-            # kill the module
-            deleteModule(mod, scene)
-            mod = None
-        else:
-            env = f"['NAMESPACE={NAMESPACE}','SCENE={SCENE}','MQTTH={HOST}','REALM={REALM}']"
-            mod = createModule(scene, "arena/py/moving-box", "box.py", env, "")
+def start_handler(scene, event, msg):
+    obj = event.object_id.split("_")
+    if event.type == "mousedown":
+        pidx = int(obj[1])
+        mod = createModule(scene, pidx)
+        programs[pidx]['modules'].append(mod.uuid)
+        populateControls(scene)
 
 
-def stop_handler(scene, evt, msg):
-    global mod, stop_obj
-    # TODO: add stop handler
+def stop_handler(scene, event, msg):
+    # kill the module
+    obj = event.object_id.split("_")
+    if event.type == "mousedown":
+        pidx = int(obj[1])
+        uuid = obj[2]
+        deleteModule(scene, programs[pidx], uuid)
+        programs[pidx]['modules'].append(uuid)
+        populateControls(scene)
 
 
-def createModule(scene, name, file, env, args):
+def createModule(scene, pidx):
     global config
-
-    # create environment variables to be passed as a string
-    # env = f"['NAMESPACE={NAMESPACE}','SCENE={SCENE}','MQTTH={HOST}','REALM={REALM}']"
-
     # create a module object
+    name = programs[pidx]['name']
+    file = programs[pidx]['file']
+    env = programs[pidx]['env']
+    args = programs[pidx]['args']
     # mod = Module("arena/py/moving-box", "box.py", mod_env=env)
     # mod = Module("wiselab/boxes", "box.py", mod_uuid='4264bac8-13ed-453b-b157-49cc2421a112')
     mod = Module(name, file, mod_env=env, mod_args=args)
 
     # get arts request json string (req_uuid will be used to confirm the request)
     req_uuid, artsModCreateReq = mod.artsReqJson(Action.create)
-    print(artsModCreateReq)
+    # print(artsModCreateReq)
 
     # publish request
     scene.mqttc.publish(
@@ -211,13 +232,23 @@ def createModule(scene, name, file, env, args):
     return mod
 
 
-def deleteModule(mod, scene):
+def deleteModule(scene, prog, uuid):
     global config
     # kill the module
+    mod = Module(prog['name'], prog['file'], mod_uuid=uuid)
     req_uuid, artsModDeleteReq = mod.artsReqJson(Action.delete)
-    print(artsModDeleteReq)
+    # print(artsModDeleteReq)
     scene.mqttc.publish(
         f"{REALM}/{config['arts']['ctl']}", artsModDeleteReq)
+
+
+def user_join_callback(scene, event, msg):
+    populateControls(scene)
+
+
+def end_program_callback(scene, event, msg):
+    global init3d_root
+    scene.delete_object(init3d_root)  # clear root
 
 
 # setup and launch
@@ -229,6 +260,8 @@ scene = Scene(
     host=HOST,
     realm=REALM,
     scene=SCENE,
+    user_join_callback=user_join_callback,
+    end_program_callback=end_program_callback,
     **kwargs)
 scene.message_callback_add(TOPIC_ALL, runtime_callback)
 scene.run_after_interval(module_test(scene), 1000)

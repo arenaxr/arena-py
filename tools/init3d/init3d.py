@@ -7,10 +7,10 @@ import os
 import pprint
 import re
 
-from arena import *
-
 from arts.artsrequests import Action, ARTSRESTRequest, FileType
 from arts.module import Module
+
+from arena import *
 
 CFG_FILE = 'config.json'
 PRG_FILE = 'programs.json'
@@ -19,9 +19,8 @@ REALM = "realm"
 NAMESPACE = None
 SCENE = None
 TOPIC_ALL = None
-config = None
-programs = None
-keywords = ["moduleid", "namespace", "scene", "mqtth", "realm"]
+config = {}
+programs = []
 start_obj = None
 stop_obj = None
 mod = None
@@ -62,13 +61,29 @@ def load_json_file(cfg_file):
     return s_dict
 
 
+def process_keywords(str):
+    global HOST, REALM, NAMESPACE, SCENE, keywords
+    str = re.sub(r'\${mqtth}', HOST, str)
+    str = re.sub(r'\${realm}', REALM, str)
+    str = re.sub(r'\${namespace}', NAMESPACE, str)
+    str = re.sub(r'\${scene}', SCENE, str)
+    return str
+
+
 def module_test(scene: Scene):
     global config, programs, start_obj, stop_obj
 
-    process_objects(scene, 0, "arena/py/moving-box",
-                    "box.py", ["012345", "a69e07"])
-    process_objects(scene, 1, "wiselab/arb",
-                    "arb.py", [])
+    # one time process keyword substitution
+    for pidx, prog in enumerate(programs):
+        programs[pidx]['env'] = process_keywords(prog['env'])
+        programs[pidx]['args'] = process_keywords(prog['args'])
+        programs[pidx]['ch'] = process_keywords(prog['ch'])
+
+    # render module controllers
+    for pidx, prog in enumerate(programs):
+        # process_objects(scene, 0, "arena/py/moving-box",
+        #                 "box.py", ["012345", "a69e07"])
+        process_objects(scene, pidx, prog, [])
 
     # query for modules of a particular runtime, given its uuid:
     #  modulesJson = artsRest.getRuntimes('a69e075c-51e5-4555-999c-c49eb283dc1d')
@@ -89,9 +104,11 @@ def module_test(scene: Scene):
     pp.pprint(modulesJson)
 
 
-def process_objects(scene, pidx, name, file, modules):
+def process_objects(scene, pidx, prog, modules):
+    name = prog['name']
+    file = prog['file']
     y = 1 + (0.1*(pidx+1)) + (0.01*(pidx+1))
-    regex = r"/[!#$&'()*+,\/:;=?@[\]]/g"
+    regex = r"[!#$&'()*+,\/:;=?@[\]]"
     tag = f"{re.sub(regex, '_', name)}_{re.sub(regex, '_', file)}"
 
     # start the module
@@ -163,15 +180,9 @@ def start_handler(scene, evt, msg):
             # kill the module
             deleteModule(mod, scene)
             mod = None
-            start_obj.update_attributes(
-                color=CLR_RED,
-                material=Material(color=CLR_RED))
         else:
-            # create a module object
-            mod = createModule(scene)
-            start_obj.update_attributes(
-                color=CLR_GRN,
-                material=Material(color=CLR_GRN))
+            env = f"['NAMESPACE={NAMESPACE}','SCENE={SCENE}','MQTTH={HOST}','REALM={REALM}']"
+            mod = createModule(scene, "arena/py/moving-box", "box.py", env, "")
 
 
 def stop_handler(scene, evt, msg):
@@ -179,18 +190,16 @@ def stop_handler(scene, evt, msg):
     # TODO: add stop handler
 
 
-def createModule(scene):
-    global HOST, REALM, NAMESPACE, SCENE, config
+def createModule(scene, name, file, env, args):
+    global config
 
-    # create environment variables to be passed as a *space-separated* string
-    # env = re.sub(r'${scene}', SCENE, env)
-    # env = f"NAMESPACE={NAMESPACE} SCENE={SCENE} MQTTH={HOST} REALM={REALM}"
-    env = f"['NAMESPACE={NAMESPACE}','SCENE={SCENE}','MQTTH={HOST}','REALM={REALM}']"
+    # create environment variables to be passed as a string
+    # env = f"['NAMESPACE={NAMESPACE}','SCENE={SCENE}','MQTTH={HOST}','REALM={REALM}']"
 
     # create a module object
-    mod = Module("arena/py/moving-box", "box.py", mod_env=env)
-
+    # mod = Module("arena/py/moving-box", "box.py", mod_env=env)
     # mod = Module("wiselab/boxes", "box.py", mod_uuid='4264bac8-13ed-453b-b157-49cc2421a112')
+    mod = Module(name, file, mod_env=env, mod_args=args)
 
     # get arts request json string (req_uuid will be used to confirm the request)
     req_uuid, artsModCreateReq = mod.artsReqJson(Action.create)

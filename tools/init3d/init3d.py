@@ -1,8 +1,9 @@
 """ init3d.py
 3d program manager: Subscribes to runtime channels to 3d-control modules present in the scene.
+- service "service name" start/stop/status/restart
 """
-import argparse
 import json
+import os
 import pprint
 import re
 
@@ -29,28 +30,14 @@ CLR_GRN = (0, 255, 0)
 
 def init_args():
     global HOST, REALM, NAMESPACE, SCENE, TOPIC_ALL, config, programs
-
-    parser = argparse.ArgumentParser(
-        description="ARENA init3d manager example.")
-    parser.add_argument('-b', dest='host', default=None,
-                        help='Hostname/broker for Init3d')
-    parser.add_argument('-r', dest='realm', default=None,
-                        help='Realm for Init3d')
-    parser.add_argument('-n', dest='namespace', default=None,
-                        help='Namespace for Init3d')
-    parser.add_argument('-s', dest='scenename', default=None,
-                        help='Scenename for Init3d (e.g. theme1, theme2)')
-    args = parser.parse_args()
-    print(args)
-
-    if args.host is not None:
-        HOST = args.host
-    if args.realm is not None:
-        REALM = args.realm
-    if args.namespace is not None:
-        NAMESPACE = args.namespace
-    if args.scenename is not None:
-        SCENE = args.scenename
+    if os.getenv("MQTTH") is not None:
+        HOST = os.getenv("MQTTH")
+    if os.getenv("REALM") is not None:
+        REALM = os.getenv("REALM")
+    if os.getenv("NAMESPACE") is not None:
+        NAMESPACE = os.getenv("NAMESPACE")
+    if os.getenv("SCENE") is not None:
+        SCENE = os.getenv("SCENE")
 
     config = load_json_file(CFG_FILE)
     print(config)
@@ -147,6 +134,7 @@ def createModule(scene):
     scene.mqttc.publish(
         f"{REALM}/{config['arts']['ctl']}", artsModCreateReq)
     return mod
+
 
 def deleteModule(mod, scene):
     global config

@@ -91,14 +91,29 @@ def queryRunningModules():
     # query existing modules
     modulesJson = artsRest.getModules()
     for mod in modulesJson:
-        # add current modules to list
+        # add current modules to list, for this scene
         if restModuleInScene(mod):
+            known = False
             for pidx, prog in enumerate(programs):
+                # add unknown module instances
                 if 'modules' not in prog:
                     programs[pidx]['modules'] = []
                 if prog['name'] == mod['name'] and prog['file'] == mod['filename']:
+                    known = True
                     if mod['uuid'] not in prog['modules']:
                         programs[pidx]['modules'].append(mod['uuid'])
+                # add unknown programs
+                if not known:
+                    module = {"name": mod['name'],
+                              "file": mod['filename'],
+                              "modules": [mod['uuid']]}
+                    if 'env' in mod:
+                        module['env'] = mod['env']
+                    if 'args' in mod:
+                        module['args'] = mod['args']
+                    if 'ch' in mod:
+                        module['ch'] = mod['ch']
+                    programs.append(module)
 
 
 def restModuleInScene(mod):

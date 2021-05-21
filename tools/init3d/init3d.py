@@ -6,10 +6,10 @@ import json
 import os
 import re
 
-from arts.artsrequests import Action, ARTSRESTRequest, FileType
-from arts.module import Module
-
 from arena import *
+
+from artsrequests import Action, ARTSRESTRequest, FileType
+from module import Module
 
 CFG_FILE = 'config.json'
 PRG_FILE = 'programs.json'
@@ -44,6 +44,9 @@ def init_args():
 
 
 def runtime_callback(client, userdata, msg):
+    # TODO: we can check for arts confirmation:
+    #  1. subscribe to reg topic (config['arts']['ctl'])
+    #  2. look for message of type "arts_resp", with the object_id set to the value of req_uuid we saved before
     try:
         payload_str = msg.payload.decode("utf-8", "ignore")
         payload = json.loads(payload_str)
@@ -67,23 +70,13 @@ def process_keywords(str):
     return str
 
 
-def module_test(scene: Scene):
+def startup_state(scene: Scene):
     global programs
     # one time process keyword substitution
     for pidx, prog in enumerate(programs):
         programs[pidx]['env'] = process_keywords(prog['env'])
         programs[pidx]['args'] = process_keywords(prog['args'])
         programs[pidx]['ch'] = process_keywords(prog['ch'])
-
-    # query for modules of a particular runtime, given its uuid:
-    #  modulesJson = artsRest.getRuntimes('a69e075c-51e5-4555-999c-c49eb283dc1d')
-    #
-    # we can also query arts for runtimes:
-    #  runtimesJson = artsRest.getRuntimes()
-
-    # TODO: we can check for arts confirmation:
-    #  1. subscribe to reg topic (config['arts']['ctl'])
-    #  2. look for message of type "arts_resp", with the object_id set to the value of req_uuid we saved before
 
     # create ARTSRESTRequest object to query arts
     queryRunningModules()
@@ -287,5 +280,5 @@ scene = Scene(
     **kwargs)
 NAMESPACE = scene.namespace  # update actual
 scene.message_callback_add(TOPIC_ALL, runtime_callback)
-scene.run_after_interval(module_test(scene), 1000)
+scene.run_after_interval(startup_state(scene), 1000)
 scene.run_tasks()

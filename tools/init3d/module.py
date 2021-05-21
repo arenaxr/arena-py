@@ -6,7 +6,7 @@ Module class; Store information about modules
 import json
 import uuid
 
-from arts.artsrequests import Action, ARTSRequestMsg, FileType, Type
+from artsrequests import Action, ARTSRequestMsg, FileType, Type
 
 
 class Module(dict):

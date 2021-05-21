@@ -253,7 +253,7 @@ def createModule(scene, pidx):
     file = programs[pidx]['file']
     env = programs[pidx]['env']
     args = programs[pidx]['args']
-    # mod = Module("arena/py/moving-box", "box.py", mod_env=env)
+    # mod = Module("arena/py/moving-box", "box.py", mod_uuid=uuid.uuid4(), mod_env=env)
     # mod = Module("arena/py/moving-box", "box.py", mod_uuid='4264bac8-13ed-453b-b157-49cc2421a112')
     mod = Module(name, file, uuid.uuid4(), mod_env=env, mod_args=args)
     print(mod.uuid)

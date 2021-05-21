@@ -21,6 +21,13 @@
 		"ch": "[{'path': '/ch/${namespace}/${scene} type': 'pubsub mode': 'rw params': {'topic': '${realm}/s/${namespace}/${scene}'}}]"
 	},
 	{
+		"name": "wiselab/tutorial-agent",
+		"file": "tutorial-agent.py",
+		"args": "",
+		"env": "['NAMESPACE=${namespace}','SCENE=${scene}','MQTTH=${mqtth}','REALM=${realm}']",
+		"ch": ""
+	},
+	{
 		"name": "wiselab/laser-pointer",
 		"file": "laser-pointer.py",
 		"args": "",

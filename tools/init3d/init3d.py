@@ -4,7 +4,6 @@
 """
 import json
 import os
-import pprint
 import re
 
 from arts.artsrequests import Action, ARTSRESTRequest, FileType
@@ -14,7 +13,7 @@ from arena import *
 
 CFG_FILE = 'config.json'
 PRG_FILE = 'programs.json'
-HOST = None
+HOST = "arenaxr.org"
 REALM = "realm"
 NAMESPACE = None
 SCENE = None
@@ -69,16 +68,12 @@ def process_keywords(str):
 
 
 def module_test(scene: Scene):
-    global config, programs
-
+    global programs
     # one time process keyword substitution
     for pidx, prog in enumerate(programs):
         programs[pidx]['env'] = process_keywords(prog['env'])
         programs[pidx]['args'] = process_keywords(prog['args'])
         programs[pidx]['ch'] = process_keywords(prog['ch'])
-
-    # render module controllers
-    populateControls(scene)
 
     # query for modules of a particular runtime, given its uuid:
     #  modulesJson = artsRest.getRuntimes('a69e075c-51e5-4555-999c-c49eb283dc1d')
@@ -91,12 +86,41 @@ def module_test(scene: Scene):
     #  2. look for message of type "arts_resp", with the object_id set to the value of req_uuid we saved before
 
     # create ARTSRESTRequest object to query arts
+    queryRunningModules()
+    # render module controllers
+    populateControls(scene)
+
+
+def queryRunningModules():
+    global config, programs
+    # create ARTSRESTRequest object to query arts
     artsRest = ARTSRESTRequest(f"{HOST}/{config['arts']['rest_url']}")
-    # we can use arts rest interface to query existing modules
+    # query existing modules
     modulesJson = artsRest.getModules()
-    print('** These are all the modules known to ARTS:')
-    pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(modulesJson)
+    for mod in modulesJson:
+        # add current modules to list
+        if restModuleInScene(mod):
+            for pidx, prog in enumerate(programs):
+                if 'modules' not in prog:
+                    programs[pidx]['modules'] = []
+                if prog['name'] == mod['name'] and prog['file'] == mod['filename']:
+                    if mod['uuid'] not in prog['modules']:
+                        programs[pidx]['modules'].append(mod['uuid'])
+
+
+def restModuleInScene(mod):
+    global SCENE, NAMESPACE
+    matchS = False
+    matchNS = False
+    if f'SCENE={SCENE}' in mod['env']:
+        matchS = True
+    if f'NAMESPACE=' in mod['env']:
+        if f'NAMESPACE={NAMESPACE}' in mod['env']:
+            matchNS = True
+    else:
+        if NAMESPACE == 'public':
+            matchNS = True
+    return (matchS and matchNS)
 
 
 def populateControls(scene):
@@ -261,6 +285,7 @@ scene = Scene(
     user_join_callback=user_join_callback,
     end_program_callback=end_program_callback,
     **kwargs)
+NAMESPACE = scene.namespace  # update actual
 scene.message_callback_add(TOPIC_ALL, runtime_callback)
 scene.run_after_interval(module_test(scene), 1000)
 scene.run_tasks()

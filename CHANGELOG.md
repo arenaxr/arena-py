@@ -2,6 +2,10 @@
 
 ARENA-py notable changes. Started 2021-19-2 (version 0.1.12).
 
+## [0.1.34] - 2021-18-5
+### Changed
+- Remove default color from `Object`s.
+
 ## [0.1.33] - 2021-18-5
 ### Added
 - `Object`s start with a default color of `(128,128,128)`.
@@ -139,6 +143,8 @@ specify both to bypass auth.
 - `Arena` class renamed to `Scene`, but using `Arena` is still allowed. Updated examples to reflect this.
 - Tiny bug fix with `update_objects`.
 
+[0.1.33]: https://github.com/conix-center/ARENA-py/tree/4fac2d9c206c0ccb6710d288a642528cd184274e
+[0.1.32]: https://github.com/conix-center/ARENA-py/tree/68f08513fd54ee7d97753aec92814b33dfe7391d
 [0.1.31]: https://github.com/conix-center/ARENA-py/tree/724e14f4e37112b96d90e94d9e521800bdea0997
 [0.1.30]: https://github.com/conix-center/ARENA-py/tree/625355e515539a7fb40e17f6b0668a2488176d4d
 [0.1.29]: https://github.com/conix-center/ARENA-py/tree/bd364bec29109c8dd12cce35e612df50f8cfb9e0

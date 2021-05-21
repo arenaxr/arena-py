@@ -14,6 +14,7 @@ class Color(Attribute):
             hexcolor = re.search(r"^(?:[0-9a-fA-F]{3}){1,2}$", color)
             wcrgb = None
             if not hexcolor:
+                # try appending leading zeros until it works
                 for i in range(8):
                     try:
                         wcrgb = webcolors.name_to_rgb("#"+i*"0"+color)
@@ -22,7 +23,7 @@ class Color(Attribute):
                 if wcrgb is not None:
                     c = (wcrgb.red, wcrgb.green, wcrgb.blue)
                 else:
-                    c = (0,0,0)
+                    c = (128,128,128)
             else:
                 c = tuple(int(color[c:c+2], 16) for c in (0, 2, 4))
             red, green, blue = c

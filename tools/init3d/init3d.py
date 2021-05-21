@@ -90,6 +90,7 @@ def queryRunningModules():
     # create ARTSRESTRequest object to query arts
     artsRest = ARTSRESTRequest(f"{HOST}/{config['arts']['rest_url']}")
     # query existing modules
+    new_programs = []
     modulesJson = artsRest.getModules()
     for mod in modulesJson:
         # add current modules to list, for this scene
@@ -103,7 +104,7 @@ def queryRunningModules():
                     known = True
                     if mod['uuid'] not in prog['modules']:
                         programs[pidx]['modules'].append(mod['uuid'])
-                # add unknown programs
+                # add unknown module instances
                 if not known:
                     module = {"name": mod['name'],
                               "file": mod['filename'],
@@ -114,7 +115,10 @@ def queryRunningModules():
                         module['args'] = mod['args']
                     if 'ch' in mod:
                         module['ch'] = mod['ch']
-                    programs.append(module)
+                    new_programs.append(module)
+
+    # TODO: add found programs
+    print(new_programs)
 
 
 def restModuleInScene(mod):

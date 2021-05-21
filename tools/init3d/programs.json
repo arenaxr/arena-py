@@ -9,8 +9,8 @@
 	{
 		"name": "wiselab/arb",
 		"file": "arb.py",
-		"args": "['${scene}','-n','${namespace}','-b','${mqtth}','-m','wiselab/arb/arb-manifest.json']",
-		"env": "",
+		"args": "['${scene}','-n','${namespace}','-b','${mqtth}'",
+		"env": "['NAMESPACE=${namespace}','SCENE=${scene}','MQTTH=${mqtth}','REALM=${realm}']",
 		"ch": ""
 	},
 	{

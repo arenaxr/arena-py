@@ -1,2 +1,2 @@
-arena-py==0.1.31
+arena-py
 requests

@@ -21,10 +21,10 @@
 		"ch": "[{'path': '/ch/${namespace}/${scene} type': 'pubsub mode': 'rw params': {'topic': '${realm}/s/${namespace}/${scene}'}}]"
 	},
 	{
-		"name": "arena/py/image-switcher",
-		"file": "image-switcher.py",
+		"name": "wiselab/laser-pointer",
+		"file": "laser-pointer.py",
 		"args": "",
-		"env": "['SCENE=${scene}','NAMESPACE=${namespace}','MQTTH=${mqtth}','REALM=${realm}','GD_FILE_ID=1WD7-a7onzoegXxQFtiRZPTd-ZC2Mgzyo']",
+		"env": "['NAMESPACE=${namespace}','SCENE=${scene}','MQTTH=${mqtth}','REALM=${realm}']",
 		"ch": ""
 	}
 ]

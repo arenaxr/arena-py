@@ -103,7 +103,6 @@ def populateControls(scene):
     global config, programs, init3d_root
     # render module controllers
     parent_id = "init3d_root"
-
     init3d_root = Box(
         object_id=parent_id,
         position=Position(0, 0, 0),
@@ -112,7 +111,6 @@ def populateControls(scene):
     )
     scene.delete_object(init3d_root)  # clear root
     scene.add_object(init3d_root)
-
     for pidx, prog in enumerate(programs):
         mods = []
         if 'modules' in prog:
@@ -169,7 +167,7 @@ def process_objects(scene, parent_id, pidx, prog, modules):
         # stop running module
         x = (-0.1*(midx+1)) - (0.01*(midx+1))
         stop_obj = Box(
-            object_id=f"stop_{midx}_{tag}",
+            object_id=f"stop_{pidx}_{val}",
             parent=parent_id,
             position=Position(x, y, -1),
             scale={"x": 0.1, "y": 0.1, "z": 0.01},
@@ -181,9 +179,9 @@ def process_objects(scene, parent_id, pidx, prog, modules):
             evt_handler=stop_handler,
         )
         stop_txt = Text(
-            object_id=f"stop_txt_{midx}_{tag}",
+            object_id=f"stop_txt_{pidx}_{val}",
             parent=stop_obj.object_id,
-            text=val,
+            text=val[0:6],
             rotation={"x": 0, "y": 0, "z": 90},
             scale={"x": 1, "y": 1, "z": 10},
         )
@@ -196,6 +194,8 @@ def start_handler(scene, event, msg):
     if event.type == "mousedown":
         pidx = int(obj[1])
         mod = createModule(scene, pidx)
+        if 'modules' not in programs[pidx]:
+            programs[pidx]['modules'] = []
         programs[pidx]['modules'].append(mod.uuid)
         populateControls(scene)
 
@@ -207,7 +207,9 @@ def stop_handler(scene, event, msg):
         pidx = int(obj[1])
         uuid = obj[2]
         deleteModule(scene, programs[pidx], uuid)
-        programs[pidx]['modules'].append(uuid)
+        if 'modules' not in programs[pidx]:
+            programs[pidx]['modules'] = []
+        programs[pidx]['modules'].remove(uuid)
         populateControls(scene)
 
 
@@ -219,14 +221,11 @@ def createModule(scene, pidx):
     env = programs[pidx]['env']
     args = programs[pidx]['args']
     # mod = Module("arena/py/moving-box", "box.py", mod_env=env)
-    # mod = Module("wiselab/boxes", "box.py", mod_uuid='4264bac8-13ed-453b-b157-49cc2421a112')
+    # mod = Module("arena/py/moving-box", "box.py", mod_uuid='4264bac8-13ed-453b-b157-49cc2421a112')
     mod = Module(name, file, mod_env=env, mod_args=args)
-
+    print(mod.uuid)
     # get arts request json string (req_uuid will be used to confirm the request)
     req_uuid, artsModCreateReq = mod.artsReqJson(Action.create)
-    # print(artsModCreateReq)
-
-    # publish request
     scene.mqttc.publish(
         f"{REALM}/{config['arts']['ctl']}", artsModCreateReq)
     return mod
@@ -237,7 +236,6 @@ def deleteModule(scene, prog, uuid):
     # kill the module
     mod = Module(prog['name'], prog['file'], mod_uuid=uuid)
     req_uuid, artsModDeleteReq = mod.artsReqJson(Action.delete)
-    # print(artsModDeleteReq)
     scene.mqttc.publish(
         f"{REALM}/{config['arts']['ctl']}", artsModDeleteReq)
 

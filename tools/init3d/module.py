@@ -20,7 +20,7 @@ class Module(dict):
     """
     type = 'module'
 
-    def __init__(self, mod_name, mod_filename, mod_uuid=uuid.uuid4(), parent_rt=None, mod_ft=FileType.PY, mod_fid='na', mod_args='', mod_env=''):
+    def __init__(self, mod_name, mod_filename, mod_uuid, parent_rt=None, mod_ft=FileType.PY, mod_fid='na', mod_args='', mod_env=''):
         # determine filetype from extension
         if mod_filename.endswith('.py'):
             mod_ft = FileType.PY

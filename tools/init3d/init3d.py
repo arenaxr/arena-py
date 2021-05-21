@@ -5,6 +5,7 @@
 import json
 import os
 import re
+import uuid
 
 from arena import *
 
@@ -254,7 +255,7 @@ def createModule(scene, pidx):
     args = programs[pidx]['args']
     # mod = Module("arena/py/moving-box", "box.py", mod_env=env)
     # mod = Module("arena/py/moving-box", "box.py", mod_uuid='4264bac8-13ed-453b-b157-49cc2421a112')
-    mod = Module(name, file, mod_env=env, mod_args=args)
+    mod = Module(name, file, uuid.uuid4(), mod_env=env, mod_args=args)
     print(mod.uuid)
     # get arts request json string (req_uuid will be used to confirm the request)
     req_uuid, artsModCreateReq = mod.artsReqJson(Action.create)

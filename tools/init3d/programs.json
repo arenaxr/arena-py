@@ -1,0 +1,37 @@
+[
+	{
+		"name": "arena/py/moving-box",
+		"file": "box.py",
+		"args": "",
+		"env": "['NAMESPACE=${namespace}','SCENE=${scene}','MQTTH=${mqtth}','REALM=${realm}']",
+		"ch": ""
+	},
+	{
+		"name": "wiselab/arb",
+		"file": "arb.py",
+		"args": "['${scene}','-n','${namespace}','-b','${mqtth}'",
+		"env": "['NAMESPACE=${namespace}','SCENE=${scene}','MQTTH=${mqtth}','REALM=${realm}']",
+		"ch": ""
+	},
+	{
+		"name": "wiselab/face-avatar",
+		"file": "avatar.py",
+		"args": "",
+		"env": "['NAMESPACE=${namespace}','SCENE=${scene}','MQTTH=${mqtth}','REALM=${realm}']",
+		"ch": "[{'path': '/ch/${namespace}/${scene} type': 'pubsub mode': 'rw params': {'topic': '${realm}/s/${namespace}/${scene}'}}]"
+	},
+	{
+		"name": "wiselab/tutorial-agent",
+		"file": "tutorial-agent.py",
+		"args": "",
+		"env": "['NAMESPACE=${namespace}','SCENE=${scene}','MQTTH=${mqtth}','REALM=${realm}']",
+		"ch": ""
+	},
+	{
+		"name": "wiselab/laser-pointer",
+		"file": "laser-pointer.py",
+		"args": "",
+		"env": "['NAMESPACE=${namespace}','SCENE=${scene}','MQTTH=${mqtth}','REALM=${realm}']",
+		"ch": ""
+	}
+]

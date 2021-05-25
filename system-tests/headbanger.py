@@ -4,7 +4,7 @@ from datetime import datetime
 
 from arena import *
 
-scene = Scene(host="arenaxr.org", realm="realm", scene="headbanger", )
+scene = Scene(host="arenaxr.org", scene="headbanger", )
 # Create models
 
 # How Many heads?

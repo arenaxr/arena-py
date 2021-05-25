@@ -14,7 +14,7 @@ from arena import *
 
 
 program1 = Scene(host="arenaxr.org",
-                 realm="realm", scene="persist-test")
+                 scene="persist-test")
 
 
 @program1.run_once

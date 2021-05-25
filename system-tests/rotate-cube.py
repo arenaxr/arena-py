@@ -7,7 +7,7 @@ import random
 
 
 # start ARENA client
-scene = Scene(host="arenaxr.org", realm="realm", scene="test")
+scene = Scene(host="arenaxr.org", scene="test")
 
 box = Box(object_id="box", position=(0,4,-2), scale=Scale(2,2,2), rotation=(0,0,0), color=Color(0,0,0))
 scene.add_object(box)

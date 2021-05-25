@@ -1,7 +1,7 @@
 from arena import *
 
 # setup library
-scene = Scene(host="arenaxr.org", realm="realm", scene="example")
+scene = Scene(host="arenaxr.org", scene="example")
 
 # make a box
 box = Box(object_id="my_box", position=Position(0,4,-2), scale=Scale(2,2,2))

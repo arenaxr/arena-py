@@ -1,6 +1,6 @@
 from arena import *
 
-scene = Scene(host="arena-dev1.conix.io", realm="realm", scene="example")
+scene = Scene(host="arena-dev1.conix.io", scene="example")
 
 def evt_handler(scene, evt, msg):
     if evt.type == "textinput":

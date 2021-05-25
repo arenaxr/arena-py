@@ -7,7 +7,7 @@ from arena import *
 import random
 
 
-scene = Scene(host="arenaxr.org", realm="realm", scene="test")
+scene = Scene(host="arenaxr.org", scene="test")
 
 
 music_on = False

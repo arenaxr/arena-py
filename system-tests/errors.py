@@ -6,7 +6,7 @@
 from arena import Scene
 
 
-scene = Scene(host="arenaxr.org", realm="realm", scene="example")
+scene = Scene(host="arenaxr.org", scene="example")
 
 
 @scene.run_once

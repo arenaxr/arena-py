@@ -1,6 +1,6 @@
 from arena import *
 
-scene = Scene(host="arenaxr.org", realm="realm", scene="example")
+scene = Scene(host="arenaxr.org", scene="example")
 
 position = (1,2,-3) # Position(1,2,-3) works too
 

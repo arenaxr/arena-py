@@ -7,7 +7,7 @@ from arena import *
 import random
 
 
-scene = Scene(host="arenaxr.org", realm="realm", scene="test")
+scene = Scene(host="arenaxr.org", scene="test")
 
 def evt_handler(scene, evt, msg): # should magically be able to click, thanks to auto-updates-helper.py...
     print("clicked")

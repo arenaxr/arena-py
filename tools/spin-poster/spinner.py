@@ -1,7 +1,7 @@
 from arena import *
 import time
 
-scene = Scene(host="arenaxr.org",realm="realm",scene="spin-poster")
+scene = Scene(host="arenaxr.org",scene="spin-poster")
 
 rot_state=0
 start_rot=0
@@ -29,7 +29,7 @@ def get_sign():
         button.update_attributes(evt_handler=click_handler)
         button.update_attributes(clickable=True)
         scene.update_object(button)
-    
+
 # click_handler function that rotates sign when clicked
 def click_handler(scene,evt,msg):
     global sign # non allocated variables need to be global
@@ -37,7 +37,7 @@ def click_handler(scene,evt,msg):
 
     print("Got Click Event from:" + evt.object_id)
     if evt.type == "mousedown":
-        last_rot=rot_state        
+        last_rot=rot_state
         rot_state-=(360/3)%360
         # Set the baseline rotation before launching animation to avoid flicker
         sign.data.rotation.y=last_rot

@@ -8,18 +8,18 @@ from arena import *
 import random
 import time
 
-scene = Scene(host="arenaxr.org", realm="realm", scene="pinata")
+scene = Scene(host="arenaxr.org", scene="pinata")
 
 # Constants used to define operations
 RESPAWN_X_MIN = -50
 RESPAWN_X_MAX = 50
 RESPAWN_Z_MIN = -50
-RESPAWN_Z_MAX = 50 
+RESPAWN_Z_MAX = 50
 RESPAWN_Y = 10          # respawn at exactly this Y position
 HIT_RELOAD=10           # how many hits does it take
-#G_ACCEL = -9.8          
-#HIT_IMPULSE = 20        
-G_ACCEL = -19.8          
+#G_ACCEL = -9.8
+#HIT_IMPULSE = 20
+G_ACCEL = -19.8
 HIT_IMPULSE = 20        # Velocity added to hit
 GROUND_LEVEL = -1       # Ground level for pseudo-physics
 
@@ -40,7 +40,7 @@ APPLAUSE_SOUND_PATH="https://www.dropbox.com/s/3k9fin95z6nbex9/applause.wav?dl=0
 # location of the pinata
 pinata_loc = [0,0,0]
 pinata_state = IDLE  # 0-still, 1-moving, 2-explode, 3-waiting to restart
-hit_counter = HIT_RELOAD 
+hit_counter = HIT_RELOAD
 # time and velocity globals for physics
 t=0
 vy=0
@@ -55,13 +55,13 @@ def explode():
     scene.update_object(pinata)
     for i in range(50):
         rand_offset = (random.random()-0.5)/5
-        colorBox = Box(position=(pinata_loc[0]+rand_offset, pinata_loc[1]+rand_offset, pinata_loc[2]+rand_offset),scale=Scale(.5,.5,.5),ttl=15,physics=Physics(type="dynamic")) 
-        scene.add_object(colorBox) 
+        colorBox = Box(position=(pinata_loc[0]+rand_offset, pinata_loc[1]+rand_offset, pinata_loc[2]+rand_offset),scale=Scale(.5,.5,.5),ttl=15,physics=Physics(type="dynamic"))
+        scene.add_object(colorBox)
     explode_sound = Sound(src=EXPLODE_SOUND_PATH,positional=True,autoplay=True,poolSize=1 )
-    explode_sound_obj = Box(sound=explode_sound,position=pinata_loc,scale=Scale(.01,.01,.01),ttl=10) 
+    explode_sound_obj = Box(sound=explode_sound,position=pinata_loc,scale=Scale(.01,.01,.01),ttl=10)
     scene.add_object(explode_sound_obj)
     applause_sound = Sound(src=APPLAUSE_SOUND_PATH,positional=True,autoplay=True,poolSize=1 )
-    applause_sound_obj = Box(sound=applause_sound,position=pinata_loc,scale=Scale(.01,.01,.01),ttl=10) 
+    applause_sound_obj = Box(sound=applause_sound,position=pinata_loc,scale=Scale(.01,.01,.01),ttl=10)
     scene.add_object(applause_sound_obj)
 
 
@@ -87,7 +87,7 @@ def click(scene, evt, msg):
         scene.update_object(hit_text)
 
         hit_sound = Sound(src=HIT_SOUND_PATH,positional=True,autoplay=True,poolSize=10 )
-        hit_sound_obj = Box(sound=hit_sound,position=pinata_loc,scale=Scale(.01,.01,.01),ttl=1) 
+        hit_sound_obj = Box(sound=hit_sound,position=pinata_loc,scale=Scale(.01,.01,.01),ttl=1)
         scene.add_object(hit_sound_obj)
 
         print("Hit Counter: " + str(hit_counter))
@@ -99,10 +99,10 @@ def click(scene, evt, msg):
 def game_reset():
     global hit_counter,pinata_loc,pinata_state,pinata,hit_text,vy,t
     witch_sound = Sound(src=WITCH_SOUND_PATH,positional=True,autoplay=True,poolSize=1 )
-    witch_sound_obj = Box(sound=witch_sound,position=pinata_loc,scale=Scale(.01,.01,.01),ttl=10) 
+    witch_sound_obj = Box(sound=witch_sound,position=pinata_loc,scale=Scale(.01,.01,.01),ttl=10)
     scene.add_object(witch_sound_obj)
     hit_counter=HIT_RELOAD
-    pinata_loc=[random.randrange(RESPAWN_X_MIN,RESPAWN_X_MAX),RESPAWN_Y,random.randrange(RESPAWN_Z_MIN,RESPAWN_Z_MAX)]   
+    pinata_loc=[random.randrange(RESPAWN_X_MIN,RESPAWN_X_MAX),RESPAWN_Y,random.randrange(RESPAWN_Z_MIN,RESPAWN_Z_MAX)]
     pinata.update_attributes(position=pinata_loc)
     scene.update_object(pinata)
     hit_text.update_attributes(text=str(hit_counter))
@@ -174,12 +174,12 @@ def main_loop():
         # Each time the pinata hits the ground, it bounces
         # This section converts some amount of velocity at impact to be rebounce
         # This section also caps small velocities to stop infinite bouncing
-        if y<=GROUND_LEVEL+.2:  
+        if y<=GROUND_LEVEL+.2:
             if vy>2 or  vy<-2:
                 vy=-.5*vy   # This is the bounce input, where the ground returns half the velocity
                 y = GROUND_LEVEL
                 boing_sound = Sound(src=BOUNCE_SOUND_PATH,positional=True,autoplay=True,poolSize=10 )
-                boing_sound_obj = Box(sound=boing_sound,position=pinata_loc,scale=Scale(.01,.01,.01),ttl=1) 
+                boing_sound_obj = Box(sound=boing_sound,position=pinata_loc,scale=Scale(.01,.01,.01),ttl=1)
                 scene.add_object(boing_sound_obj)
             else:
                 # If the velocity is low enough, lets just cap it

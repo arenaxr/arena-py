@@ -1,6 +1,6 @@
 from arena import *
 
-scene = Scene(host="arenaxr.org", realm="realm", scene="example")
+scene = Scene(host="arenaxr.org", scene="example")
 
 color = (100,200,100) # Color(100,200,100) works too
 

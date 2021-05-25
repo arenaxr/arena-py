@@ -1,6 +1,6 @@
 from arena import *
 
-scene = Scene(host="arenaxr.org", realm="realm", scene="example")
+scene = Scene(host="arenaxr.org", scene="example")
 
 my_torus = Torus(
     object_id="my_torus",

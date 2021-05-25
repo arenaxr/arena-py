@@ -3,7 +3,7 @@ import time
 import uuid
 
 # setup library
-scene = Scene(host="arenaxr.org", realm="realm", namespace="etc", scene="ProjectHub_2")
+scene = Scene(host="arenaxr.org", namespace="etc", scene="ProjectHub_2")
 
 def edit_scene_options():
     # create generic object for scene-options

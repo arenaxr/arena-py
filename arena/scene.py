@@ -1,30 +1,38 @@
-import os
-import sys
-import json
-import random
-import socket
 import asyncio
-
-import paho.mqtt.client as mqtt
+import json
+import os
+import random
+import re
+import socket
+import sys
 from datetime import datetime
 from inspect import signature
 
-from .attributes import *
-from .objects import *
-from .events import *
-from .utils import *
-from .event_loop import *
+import paho.mqtt.client as mqtt
 
 from . import auth
+from .attributes import *
+from .event_loop import *
+from .events import *
+from .objects import *
+from .utils import *
+
 
 class Scene(object):
     """
     Gives access to an ARENA scene.
     Wrapper around Paho MQTT client and EventLoop.
     Can create and execute various user-defined functions/tasks.
+
+    :param str host: Hostname of the MQTT broker (required).
+    :param str realm: Reserved topic fork for future use (optional).
+    :param str namespace: Username of authenticated user or other namespace (automatic).
+    :param str scene: The name of the scene, without namespace (required).
     """
+
     def __init__(
                 self,
+                realm = "realm",
                 network_latency_interval = 10000,  # run network latency update every 10s
                 on_msg_callback = None,
                 new_obj_callback = None,
@@ -36,24 +44,27 @@ class Scene(object):
                 **kwargs
             ):
         if os.environ.get("MQTTH"):
-            self.host  = os.environ["MQTTH"]
-        elif "host" in kwargs and kwargs["host"] is not None:
+            self.host = os.environ["MQTTH"]
+        elif "host" in kwargs and kwargs["host"]:
             self.host = kwargs["host"]
             print("Cannot find MQTTH environmental variable, using input parameter instead.")
         else:
             sys.exit("mqtt host argument (host) is unspecified or None, aborting...")
 
         if os.environ.get("REALM"):
-            self.realm  = os.environ["REALM"]
-        elif "realm" in kwargs and kwargs["realm"] is not None:
+            self.realm = os.environ["REALM"]
+        elif "realm" in kwargs and kwargs["realm"]:
             self.realm = kwargs["realm"]
             print("Cannot find REALM environmental variable, using input parameter instead.")
         else:
-            sys.exit("realm argument (realm) is unspecified or None, aborting...")
+            # Use default "realm" until multiple realms exist, avoids user confusion.
+            self.realm = realm
 
         if os.environ.get("SCENE"):
-            self.scene  = os.environ["SCENE"]
-        elif "scene" in kwargs and kwargs["scene"] is not None:
+            self.scene = os.environ["SCENE"]
+        elif "scene" in kwargs and kwargs["scene"]:
+            if re.search("/", kwargs["scene"]):
+                sys.exit("scene argument (scene) cannot include '/', aborting...")
             self.scene = kwargs["scene"]
             print("Cannot find SCENE environmental variable, using input parameter instead.")
         else:

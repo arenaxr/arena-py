@@ -4,7 +4,7 @@
 
 from arena import *
 
-scene = Scene(host="arenaxr.org", realm="realm", scene="test")
+scene = Scene(host="arenaxr.org", scene="test")
 
 @scene.run_once
 def main():

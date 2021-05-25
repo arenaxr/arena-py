@@ -1,6 +1,6 @@
 from arena import *
 
-scene = Scene(host="arenaxr.org",realm="realm",scene="spin-poster")
+scene = Scene(host="arenaxr.org",scene="spin-poster")
 
 rot=0
 start_rot=0
@@ -10,8 +10,8 @@ sign_z=-10
 
 @scene.run_once
 def make_sign():
-    global sign 
-    global button 
+    global sign
+    global button
     sign = GLTF(
         object_id="sign",
         position=(sign_x,sign_y,sign_z),
@@ -36,11 +36,11 @@ def make_sign():
     scene.add_object(button)
 
     slide1_material = Material(src="https://www.dropbox.com/s/3hccefrz6ywlknh/slide1.png?dl=0")
-    slide1 = Box( 
-        object_id="slide1", 
-        position=Position(0,3.21,0.57), 
-        rotation=(0,0,0), 
-        scale={"x":1.85,"y":3.35,"z":0}, 
+    slide1 = Box(
+        object_id="slide1",
+        position=Position(0,3.21,0.57),
+        rotation=(0,0,0),
+        scale={"x":1.85,"y":3.35,"z":0},
         material=slide1_material,
         persist=True,
         parent="sign"
@@ -49,11 +49,11 @@ def make_sign():
 
 
     slide2_material = Material(src="https://www.dropbox.com/s/xvh920h7zqeqaqd/slide2.png?dl=0")
-    slide2 = Box( 
-        object_id="slide2", 
-        position=Position(0.47,3.21,-.30), 
-        rotation=(0,120,0), 
-        scale={"x":1.85,"y":3.35,"z":0}, 
+    slide2 = Box(
+        object_id="slide2",
+        position=Position(0.47,3.21,-.30),
+        rotation=(0,120,0),
+        scale={"x":1.85,"y":3.35,"z":0},
         material=slide2_material,
         persist=True,
         parent="sign"
@@ -61,10 +61,10 @@ def make_sign():
     scene.add_object(slide2)
 
     slide3_material = Material(src="https://www.dropbox.com/s/krxk5n4kxetaxcd/slide3.png?dl=0")
-    slide3 = Box( object_id="slide3", 
+    slide3 = Box( object_id="slide3",
         position=Position(-0.50,3.21,-.30),
-        rotation=(0,-120,0), 
-        scale={"x":1.85,"y":3.35,"z":0}, 
+        rotation=(0,-120,0),
+        scale={"x":1.85,"y":3.35,"z":0},
         material=slide3_material,
         persist=True,
         parent="sign"
@@ -75,11 +75,11 @@ def make_sign():
 
 
 def click_handler(scene,evt,msg):
-    global rot    
+    global rot
     global sign # non allocated variables need to be global
 
     if evt.type == "mousedown":
-        last_rot=rot        
+        last_rot=rot
         rot-=(360/3)%360
         # Set the baseline rotation before launching animation to avoid flicker
         sign.data.rotation.y=last_rot

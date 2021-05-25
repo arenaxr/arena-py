@@ -7,7 +7,7 @@ import random
 import time
 
 
-scene = Scene(host="arenaxr.org", realm="realm", scene="test")
+scene = Scene(host="arenaxr.org", scene="test")
 
 
 def randmove():

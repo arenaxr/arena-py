@@ -4,7 +4,7 @@
 
 from arena import *
 
-scene = Scene(host="arenaxr.org", realm="realm", scene="test")
+scene = Scene(host="arenaxr.org", scene="test")
 
 object_id = "the_box"
 

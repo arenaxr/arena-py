@@ -1,7 +1,7 @@
 from arena import *
 
 # setup library
-scene = Scene(host="arenaxr.org", realm="realm", scene="example")
+scene = Scene(host="arenaxr.org", scene="example")
 
 def main():
     # make a box

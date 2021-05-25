@@ -3,7 +3,7 @@ import os
 from google_drive_downloader import GoogleDriveDownloader as gdd
 
 # setup library
-scene = Scene(host="arenaxr.org", realm="realm", scene="test")
+scene = Scene(host="arenaxr.org", scene="test")
 
 @scene.run_async
 async def func():

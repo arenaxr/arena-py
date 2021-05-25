@@ -1,7 +1,7 @@
 import math
 from arena import *
 
-scene = Scene(host="arenaxr.org", realm="realm", scene="example")
+scene = Scene(host="arenaxr.org", scene="example")
 
 rotation_euler = (45,0,45) # Rotation(45,0,45) works too
 rotation_quaternion = (0,0,1,1) # Rotation(0,0,1,1) works too

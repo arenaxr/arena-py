@@ -1,6 +1,6 @@
 from arena import *
 
-scene = Scene(host="arenaxr.org",realm="realm",scene="spin-poster")
+scene = Scene(host="arenaxr.org",scene="spin-poster")
 
 rot=0
 start_rot=0

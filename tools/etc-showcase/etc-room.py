@@ -1,7 +1,7 @@
 from arena import *
 import time
 
-scene = Scene(host="arenaxr.org",realm="realm",scene="etc-room")
+scene = Scene(host="arenaxr.org",scene="etc-room")
 
 rot_state=0
 start_rot=0
@@ -37,7 +37,7 @@ def create_screenshare():
 # spings the TriBoard (also loaded here)
 @scene.run_once
 def get_sign():
-    global sign 
+    global sign
     global loaded
 
     # Get the sign model from persist / check that it exists
@@ -58,7 +58,7 @@ def get_sign():
         button.update_attributes(evt_handler=click_handler)
         button.update_attributes(clickable=True)
         scene.update_object(button)
-    
+
 # click_handler function that rotates sign when clicked
 # if not the "PushButton" object, it draws a laser ray
 def click_handler(scene,evt,msg):
@@ -68,7 +68,7 @@ def click_handler(scene,evt,msg):
     print("Got Click Event from:" + evt.object_id)
     if evt.type == "mousedown":
         if evt.object_id=="[PushButton]":
-            last_rot=rot_state        
+            last_rot=rot_state
             rot_state-=(360/3)%360
             # Set the baseline rotation before launching animation to avoid flicker
             sign.data.rotation.y=last_rot
@@ -87,7 +87,7 @@ def click_handler(scene,evt,msg):
             scene.add_object(line)
             ball = Sphere( position=end, scale = (0.06,0.06,0.06), color=(255,0,0), ttl=1)
             scene.add_object(ball)
-    
+
 
 # Load all clickable objects for laser
 # Note that objects made clickable while the program is running won't be added to this list

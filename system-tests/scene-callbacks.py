@@ -14,7 +14,7 @@ def delete_obj_callback(scene, obj, msg):
     print("delete", obj, obj.object_id)
 
 scene = Scene(
-              host="arenaxr.org", realm="realm", scene="test",
+              host="arenaxr.org", scene="test",
               new_obj_callback=new_obj_callback,
               on_msg_callback=on_msg_callback,
               delete_obj_callback=delete_obj_callback

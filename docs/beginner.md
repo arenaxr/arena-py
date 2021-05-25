@@ -24,9 +24,9 @@ from arena import *
 ```python
 arena = Scene()
 ```
-You can also pass host, realm, and scene as arguments, if you don't want to use enviornmental variables. These *must* be keyword arguments:
+You can also pass host and scene as arguments, if you don't want to use environmental variables. These *must* be keyword arguments:
 ```python
-scene = Scene(host=[host], realm=[realm], scene=[scene])
+scene = Scene(host=[host], scene=[scene])
 ```
 Note: ARENA-py will always favor environmental variables over arguments.
 
@@ -66,7 +66,7 @@ Now, go into the scene to see your box!
 from arena import *
 
 # setup library
-scene = Scene(host="arenaxr.org", realm="realm", scene="example")
+scene = Scene(host="arenaxr.org", scene="example")
 
 def main():
     # make a box

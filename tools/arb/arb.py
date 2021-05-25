@@ -589,7 +589,7 @@ def get_clicklines_len(obj):
         scale = obj.data.scale
     if object_type == "gltf-model":
         # TODO: if we can get the gltf size (not scale), we can make accurate clicklines
-        scale = Scale(1, 1, 1)
+        scale = Scale(0.1, 0.1, 0.1)
         line_extension = arblib.CLICKLINE_LEN_MOD
     else:
         line_extension = arblib.CLICKLINE_LEN_OBJ

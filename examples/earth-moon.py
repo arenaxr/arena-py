@@ -19,7 +19,7 @@ def main():
             object_id="gltf-model_Moon",
             position=(0, 0.05, 0.6),
             scale=(0.05, 0.05, 0.05),
-            url="store/users/wiselab/models/Earth.glb",
+            url="store/users/wiselab/models/Moon.glb",
             parent="gltf-model_Earth"
         )
 

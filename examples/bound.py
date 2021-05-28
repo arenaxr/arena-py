@@ -1,8 +1,18 @@
+'''
+bound.py
+   Demonstrates constraining user to specified bounds
+'''
 from arena import *
 import math
 
 scene = Scene(host="arenaxr.org", realm="realm", scene="example")
 
+'''
+   Determines whether or not user is within bounds
+   @param center:   center of boundary
+   @param r:        radius from center to edge of boundaries
+   @param pos:      user's position
+'''
 def check_out_bounds(center,r, pos):
     cx = center[0] 
     cy = center[1]
@@ -27,8 +37,6 @@ def main():
   global scene
   bound(Position(0,2,0), 1)
     
-   
-
 
 scene.run_tasks()
 

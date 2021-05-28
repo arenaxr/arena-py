@@ -1,3 +1,7 @@
+'''
+oh-boards.py
+    Demonstrates queue board and TA boards for enqueuing and dequeuing students in OH
+'''
 from arena import *
 import math
 
@@ -56,20 +60,7 @@ class DisplayBoard(Object):
         self.size += 1 
         if self.size < self.display_amt:
             self.end_display += 1
-    """
-    Dequeues students from the displayboard
-       @param student_id: offset of student's index in the queue from start_display
-    """
-    def dequeue(self, student_id):
-        if self.size <= 0:
-            print("queue empty!")
-            return
-        student =  self.q.pop(self.start_display + student_id)
-        self.size -= 1
-        if self.size < self.display_amt:
-            self.end_display -= 1
-        return student
-
+   
     def scroll_up(self):
         if self.start_display == 0 and (self.end_display - self.start_display < self.display_amt):
             print("at top!")
@@ -108,7 +99,10 @@ class TABoard(DisplayBoard):
         self.board = board
         self.id = board_id
         
-    #Removes student from the TABoard, and returns that student
+     """
+    Dequeues students from the TA board
+       @param student_id: offset of student's index in the queue from start_display
+    """
     def dequeue(self, scene, student_id):
         if self.size <= 0:
             print("queue empty!")

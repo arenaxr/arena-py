@@ -7,7 +7,7 @@ Use these ARENA applications to enhance your XR scenes.
 - [camera-tour/](camera-tour/): Camera Tour, take your scene visitors on a tour.
 - [dir-sign/](dir-sign/): Direction sign, a fun way to list links to other scenes in 3D.
 - [etc-showcase/](etc-showcase/): A fusion of laser pointers, pinata, spinning posters and more!
-- [import-export-scenes/](import-export-scene/): Migrate scenes.
+- [import-export-scenes/](import-export-scenes/): Migrate scenes.
 - [init3d/](init3d/): Init3d, `init.d` in 3D to start and stop programs.
 - [poster-session/](poster-session/): Layout poster wall in a scene, using data from JSON.
 - [spin-poster/](spin-poster/): Spinning Poster, to click and rotate 3-panel posters.

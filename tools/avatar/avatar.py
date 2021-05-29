@@ -24,23 +24,12 @@ def user_join_callback(scene, camera, msg):
         avatars[user_id] = HeadRig(scene, user_id, camera)
 
 
-def new_obj_callback(scene, obj, msg):
-    global avatars
-
-    user_id = extract_user_id(obj.object_id)
-    if user_id is None: return
-
-    if "type" in obj and "face-features" == msg["type"] and user_id in avatars:
-        if user_id not in avatars:
-            avatars[user_id] = HeadRig(scene, user_id, Camera(object_id=obj.object_id))
-        avatars[user_id].add_face(obj)
-
-
 def on_msg_callback(scene, obj, msg):
     global avatars
 
     user_id = extract_user_id(obj.object_id)
-    if user_id is None: return
+    if user_id is None: 
+        return 
 
     if user_id in avatars:
         avatar = avatars[user_id]
@@ -50,9 +39,11 @@ def on_msg_callback(scene, obj, msg):
         else:
             avatar.rig_off()
 
+        if avatar.faceObj is None and "type" in obj and "face-features" == msg["type"]:
+            avatar.add_face(obj)
+
 
 scene.on_msg_callback = on_msg_callback
-scene.new_obj_callback = new_obj_callback
 scene.user_join_callback = user_join_callback
 
 scene.run_tasks()

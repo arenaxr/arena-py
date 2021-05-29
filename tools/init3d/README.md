@@ -24,5 +24,6 @@ NOTE: This interface is under construction...
 
 <!-- space -->
 # Functions
+- Loads start information from a pre-defined list of programs: [programs.json](programs.json).
 - Scans running modules for actively running programs.
 - Allows start/stop of listed programs in each scene.

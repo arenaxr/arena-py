@@ -11,6 +11,7 @@ oh-boards.py
         Currently we're only adding the camera id but once text input is integrated this should be changed to the student's question
 
     TA Board Usage:
+        The top left buttons on the Main Queue are for scrolling up and down the queue.
         Whenever a question is added to the Main Queue it should also appear on each TA Board linked to it with a button next to the question.
         If a button is pressed then the student who enqueued the question should teleport to the user (TA) who pressed that button and the student should be dequeued.
     
@@ -23,13 +24,12 @@ import math
 
 scene = Scene(host="arenaxr.org", realm="realm", scene="example")
 
-taPos = Position(-10,0,-10)     #TA position to teleport to for testing purposes
+taPos = Position(-10,0,0)     #TA position to teleport to for testing purposes
 board_size = Scale(.25,2,4)     #Size of boards
 max_display_amount = 4          #Amount of questions to display on the queue
 spacing  = -0.15                #Amount of spacing between queue elements
 
 #Base identifiers to prevent overwriting objects
-ta_id = "ta"
 button_id = "button_"
 
 #TA board label
@@ -61,7 +61,6 @@ taB2 = Box(
     persist=True)
 
 
-
 """
 DisplayBoard object
    Basic queue with scrolling fuctionality and the ability to dequeue students anywhere in the queue
@@ -75,10 +74,11 @@ class DisplayBoard(Object):
         self.start_display = 0                    
         self.end_display = 0
         self.display_amt = max_display + 1
-        self.q = []                           #queue to hold students' questions
         self.size = 0
         self.board= board
-        #Text Objexts to be displayed
+        #queue to hold students' questions
+        self.q = []                           
+        #objects to be displayed in scene
         self.display_objects = []
         #button for scrolling up
         self.up_button = Cylinder(object_id="up_button_"+id, position=Position(-.5,.4,-.4),scale=Scale(.05,.4,.025),rotation=Rotation(0,0,90), persist = True, parent = self.board)
@@ -155,14 +155,14 @@ class TABoard(DisplayBoard):
     
     """
     Dequeues students from the TA board
-       @param student_id: offset of student's index in the queue from start_display
+       @param student_id: student's index in the queue
     """
     def dequeue(self, scene, student_id):
         if self.size <= 0:
             print("queue empty!")
             return
         for i in range(student_id - self.start_display,len(self.display_objects)):
-            if i + 1 < self.size - 1:
+            if i + self.start_display < self.size - 1:
                 scene.update_object(self.display_objects[i][0], text = self.q[self.start_display+i+1][1])
         student =  self.q.pop(student_id)
         self.size -= 1
@@ -170,6 +170,7 @@ class TABoard(DisplayBoard):
             self.end_display -= 1
             scene.delete_object(self.display_objects[len(self.display_objects)-1][0])
             scene.delete_object(self.display_objects[len(self.display_objects)-1][1])
+            self.display_objects.pop(len(self.display_objects)-1)
         return student[0]
 
     def display(self):   
@@ -182,7 +183,7 @@ class TABoard(DisplayBoard):
         #insert tuple containing (student, question, button to dequeue student)
         if len(self.display_objects) < self.display_amt-1:
             self.display_objects.append([
-                Text(object_id =self.id+str(self.size), text=question+str(self.size), rotation=Rotation(0,270,0), scale=Scale(.25,.25,0.25), parent=self.board),
+                Text(object_id =self.id+str(self.size), text=question, rotation=Rotation(0,270,0), scale=Scale(.25,.25,0.25), parent=self.board),
                 Cylinder(object_id=self.id+button_id+str(len(self.display_objects)), rotation=Rotation(0,0,90), parent= self.board)]
             )
         self.insert([student, question+str(self.size)])
@@ -226,7 +227,7 @@ class QBoard(DisplayBoard):
         on_display = False
         if len(self.display_objects) < self.display_amt-1:
             on_display = True
-            self.display_objects.append([Text(object_id ="my_text"+str(self.size), text=question+str(self.size), rotation=Rotation(0,270,0), scale=Scale(.25,.25,0.25), parent=self.board, persist=True)])
+            self.display_objects.append([Text(object_id ="my_text"+str(self.size), text=question, rotation=Rotation(0,270,0), scale=Scale(.25,.25,0.25), parent=self.board, persist=True)])
         self.insert([student, question+str(self.size), on_display])
         for board in self.TABoards:                     #update TABoards
             board.add_to_queue(student,question)
@@ -250,10 +251,10 @@ class QBoard(DisplayBoard):
             return
         for board in self.TABoards:
             board.dequeue(scene, student_id)
-        if self.q[student_id][2]:
+        if self.q[student_id][2]: #if the question is currently on display
             #Updates the text of each object following the student that got removed to the text of the student after him/her 
             for i in range(student_id - self.start_display,len(self.display_objects)):
-                if i + 1 < self.size - 1:
+                if i + self.start_display < self.size - 1:
                     scene.update_object(self.display_objects[i][0], text = self.q[i+1+self.start_display][1])                    
                     self.q[i+1+self.start_display][2] = True
         else:
@@ -265,6 +266,7 @@ class QBoard(DisplayBoard):
         if self.size < self.display_amt-1:
             self.end_display -= 1
             scene.delete_object(self.display_objects[len(self.display_objects)-1][0])
+            self.display_objects.pop(len(self.display_objects)-1)
         return student[0]
 
     def display(self):       
@@ -277,6 +279,7 @@ class QBoard(DisplayBoard):
         super().enable_scrolling(scene)
         for board in self.TABoards:
             board.enable_scrolling(scene)
+
     def show_board(self, scene):
         super().show_board(scene)
         for board in self.TABoards:
@@ -314,7 +317,6 @@ def main():
     #add student to main queue and TA boards
     def enqueue_mouse_handler(scene, evt, msg):
         if evt.type == "mousedown" and evt['data']['position'].distance_to(evt['data']['clickPos']) < 7:
-            print("adding ", msg["data"]["source"])
             queue.add_to_queue(msg["data"]["source"], msg["data"]["source"])
             queue.display()
 

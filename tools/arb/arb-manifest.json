@@ -2,32 +2,32 @@
     "models": [
         {
             "name": "avocado",
-            "url_gltf": "models/Avocado.glb",
+            "url_gltf": "store/models/Avocado.glb",
             "scale": 5
         },
         {
             "name": "shuttle",
-            "url_gltf": "models/Shuttle.glb",
+            "url_gltf": "store/models/Shuttle.glb",
             "scale": 5
         },
         {
             "name": "duck",
-            "url_gltf": "models/Duck.glb",
+            "url_gltf": "store/models/Duck.glb",
             "scale": 0.2
         },
         {
             "name": "earth",
-            "url_gltf": "models/Earth.glb",
+            "url_gltf": "store/models/Earth.glb",
             "scale": 2
         },
         {
             "name": "lantern",
-            "url_gltf": "models/Lantern.glb",
+            "url_gltf": "store/models/Lantern.glb",
             "scale": 0.015
         },
         {
             "name": "camera",
-            "url_gltf": "models/AntiqueCamera.glb",
+            "url_gltf": "store/models/AntiqueCamera.glb",
             "scale": 0.05
         }
     ]

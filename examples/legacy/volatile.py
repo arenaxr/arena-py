@@ -30,7 +30,7 @@ arena.Object(objName="duck",
              scale=(0.1, 0.1, 0.1),
              rotation=(0.7, 0, 0, 0.7),
              parent=TAG.objName,
-             url="models/Duck.glb",
+             url="store/models/Duck.glb",
              persist=True)
 
 # our main event loop

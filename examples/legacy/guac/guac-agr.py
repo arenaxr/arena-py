@@ -125,7 +125,7 @@ def drawAvocado():
         persist=False,
         objName="gltf-model_avocadoman",
         objType=arena.Shape.gltf_model,
-        url="models/avocadoman/scene.gltf",
+        url="store/models/avocadoman/scene.gltf",
         location=(-1, 0.01, -4),
         scale=(0.005, 0.005, 0.005),
     )

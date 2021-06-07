@@ -116,7 +116,7 @@ if __name__ == '__main__':
 
                 # do some custom changes
                 if 'url' in obj['attributes']:
-                    if obj['attributes']['url'] == 'models/factory_robot_arm/scene.gltf':
+                    if obj['attributes']['url'] == 'store/models/factory_robot_arm/scene.gltf':
                         obj['attributes']['url'] = '/store/users/wiselab/models/factory_robot_arm/scene.gltf'
                     if obj['attributes']['url'].startswith('store/'):
                         obj['attributes']['url'] = f'/{obj["attributes"]["url"]}' # add '/' at the start of gltf models in store/

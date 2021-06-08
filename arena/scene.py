@@ -161,10 +161,11 @@ class Scene(object):
         self.msg_queue = asyncio.Queue()
 
         # connect to mqtt broker
+        self.mqttc.tls_set()
         if "port" in kwargs:
             self.mqttc.connect(self.host, kwargs["port"])
         else:
-            self.mqttc.connect(self.host)
+            self.mqttc.connect(self.host, port=8883)
         self.mqttc.socket().setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
 
         print(f"Loading: https://{self.host}/{self.namespace}/{self.scene}, realm={self.realm}")

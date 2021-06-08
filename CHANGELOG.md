@@ -2,6 +2,10 @@
 
 ARENA-py notable changes. Started 2021-19-2 (version 0.1.12).
 
+## [0.1.35] - 2021-8-6
+### Changed
+- MQTT broker connection uses encrypted TLS.
+
 ## [0.1.34] - 2021-18-5
 ### Changed
 - Remove default color from `Object`s.

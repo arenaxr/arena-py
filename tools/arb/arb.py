@@ -189,6 +189,7 @@ def panel_callback(_scene, event, msg):
     elif mode == Mode.EDIT:
         # TODO: migrate to shared-scene setting
         USERS[camname].set_clickableOnlyEvents(active)
+        USERS[camname].set_textright("SCENE-OPTIONS changed: RELOAD")
     # active buttons
     if mode == Mode.CREATE:
         update_dropdown(camname, objid, mode, arblib.SHAPES, 2, shape_callback)

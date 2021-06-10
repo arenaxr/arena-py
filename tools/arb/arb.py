@@ -186,6 +186,9 @@ def panel_callback(_scene, event, msg):
         show_redpill_scene(active)
     elif mode == Mode.LAMP:
         USERS[camname].set_lamp(active)
+    elif mode == Mode.EDIT:
+        # TODO: migrate to shared-scene setting
+        USERS[camname].set_clickableOnlyEvents(active)
     # active buttons
     if mode == Mode.CREATE:
         update_dropdown(camname, objid, mode, arblib.SHAPES, 2, shape_callback)
@@ -473,9 +476,12 @@ def do_nudge_select(camname, objid, position=None):
     xl, yl, zl = get_clicklines_len(obj)
     # nudge object + or - on 3 axis
     root = make_clickroot(objid, position, delim, move=True)
-    make_clickline("x", xl, objid, position, delim, color, callback, move=True, parent=root)
-    make_clickline("y", yl, objid, position, delim, color, callback, move=True, parent=root)
-    make_clickline("z", zl, objid, position, delim, color, callback, move=True, parent=root)
+    make_clickline("x", xl, objid, position, delim, color,
+                   callback, move=True, parent=root)
+    make_clickline("y", yl, objid, position, delim, color,
+                   callback, move=True, parent=root)
+    make_clickline("z", zl, objid, position, delim, color,
+                   callback, move=True, parent=root)
     # TODO: restore make_followspot(objid, position, delim, color, move=True)
     pos = Position(round(position.x, 3), round(
         position.y, 3), round(position.z, 3))
@@ -533,13 +539,16 @@ def do_stretch_select(camname, objid, scale=None):
     xl, yl, zl = get_clicklines_len(obj)
     # scale and reposition on one of 6 sides
     root = make_clickroot(objid, position, delim, move=True)
-    make_clickline("x", xl, objid, position, delim, color, callback, move=True, parent=root)
+    make_clickline("x", xl, objid, position, delim, color,
+                   callback, move=True, parent=root)
     make_clickline("x", -xl, objid, position, delim,
                    color, callback, move=True, parent=root)
-    make_clickline("y", yl, objid, position, delim, color, callback, move=True, parent=root)
+    make_clickline("y", yl, objid, position, delim, color,
+                   callback, move=True, parent=root)
     make_clickline("y", -yl, objid, position, delim,
                    color, callback, move=True, parent=root)
-    make_clickline("z", zl, objid, position, delim, color, callback, move=True, parent=root)
+    make_clickline("z", zl, objid, position, delim, color,
+                   callback, move=True, parent=root)
     make_clickline("z", -zl, objid, position, delim,
                    color, callback, move=True, parent=root)
     # TODO: restore make_followspot(objid, position, delim, color)
@@ -564,10 +573,14 @@ def do_rotate_select(camname, objid, rotation=None):
     # rotate object + or - on 3 axis, plus show original axis as after
     # effect
     root = make_clickroot(objid, position, delim)
-    ghost = make_clickroot(objid, position, delim, rotation=rotation, move=True)
-    make_clickline("x", xl, objid, position, delim, color, callback, ghost=ghost, parent=root)
-    make_clickline("y", yl, objid, position, delim, color, callback, ghost=ghost, parent=root)
-    make_clickline("z", zl, objid, position, delim, color, callback, ghost=ghost, parent=root)
+    ghost = make_clickroot(objid, position, delim,
+                           rotation=rotation, move=True)
+    make_clickline("x", xl, objid, position, delim, color,
+                   callback, ghost=ghost, parent=root)
+    make_clickline("y", yl, objid, position, delim, color,
+                   callback, ghost=ghost, parent=root)
+    make_clickline("z", zl, objid, position, delim, color,
+                   callback, ghost=ghost, parent=root)
     # TODO: restore make_followspot(objid, position, delim, color)
     try:
         rote = arblib.rotation_quat2euler(
@@ -750,7 +763,7 @@ def make_clickline(axis, linelen, objid, start, delim,
     if ghost:
         boxline(  # ghostline aligns to parent rotation
             object_id=objid, axis=axis, direction=direction, delim=delim,
-            suffix="ghost", color=(255,255,255), start=start, end=end, line_width=0.005,
+            suffix="ghost", color=(255, 255, 255), start=start, end=end, line_width=0.005,
             move=move, parent=ghost)
     if ghost:
         cones = arblib.ROTATE_CONES
@@ -768,7 +781,7 @@ def make_clickroot(objid, position, delim, rotation=None, move=False):
     if rotation:
         name += "_rotated"
     else:
-        rotation=Rotation(0, 0, 0, 1)
+        rotation = Rotation(0, 0, 0, 1)
     if name not in CONTROLS[objid]:
         CONTROLS[objid][name] = Box(
             object_id=name,
@@ -779,7 +792,8 @@ def make_clickroot(objid, position, delim, rotation=None, move=False):
         )
         scene.add_object(CONTROLS[objid][name])
     elif move:
-        scene.update_object(CONTROLS[objid][name], position=position, rotation=rotation)
+        scene.update_object(CONTROLS[objid][name],
+                            position=position, rotation=rotation)
     return name
 
 

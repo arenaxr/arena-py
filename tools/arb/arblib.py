@@ -126,6 +126,8 @@ class Mode(enum.Enum):
     STRETCH = "stretch"
     PARENT = "parent"
 
+    EDIT = "edit"
+
 
 class ButtonType(enum.Enum):
     ACTION = "action"
@@ -192,6 +194,7 @@ class User:
             [Mode.LOCK, 0, 0, True, ButtonType.TOGGLE],
             [Mode.DELETE, 1, 0, True, ButtonType.ACTION],
             [Mode.PARENT, 2, 0, True, ButtonType.ACTION],
+            [Mode.EDIT, 3, 0, True, ButtonType.TOGGLE],
             # bottom row
             [Mode.WALL, -2, -1, True, ButtonType.ACTION],
             [Mode.OCCLUDE, -1, -1, True, ButtonType.ACTION],
@@ -204,6 +207,11 @@ class User:
                 scene, camname, but[0], but[1], but[2], enable=but[3], btype=but[4],
                 parent=self.follow.object_id, callback=panel_callback)
             self.panel[pbutton.button.object_id] = pbutton
+
+        # set panel state from scene-options
+        self.scene_options = scene.get_persisted_scene_option()
+        if self.scene_options and "data" in self.scene_options:
+            self.panel[f"{camname}_button_{Mode.EDIT.value}"].set_active = not self.scene_options["data"]["scene-options"]["clickableOnlyEvents"]
 
     def make_hudtext(self, label, position, text):
         text = Text(
@@ -287,6 +295,20 @@ class User:
     def delete(self):
         self.scene.delete_object(self.hud)
         self.scene.delete_object(self.follow)
+
+    def set_clickableOnlyEvents(self, edit_on):
+        opt_obj = Object(object_id='scene-options', persist=True)
+        opt_obj.type = 'scene-options'
+        del opt_obj.data.object_type
+        opt_obj.data['scene-options'] = {
+            "clickableOnlyEvents": not edit_on
+        }
+        if self.scene_options:
+            self.scene.update_object(opt_obj)
+        else:
+            self.scene.add_object(opt_obj)
+            self.scene_options = opt_obj.__dict__
+        # TODO: add reload scene logic
 
 
 class Button:

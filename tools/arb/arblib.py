@@ -210,8 +210,9 @@ class User:
 
         # set panel state from scene-options
         self.scene_options = scene.get_persisted_scene_option()
-        if self.scene_options and "data" in self.scene_options:
-            self.panel[f"{camname}_button_{Mode.EDIT.value}"].set_active = not self.scene_options["data"]["scene-options"]["clickableOnlyEvents"]
+        if self.scene_options and "attributes" in self.scene_options[0]:
+            self.panel[f"{camname}_button_{Mode.EDIT.value}"].set_active(not self.scene_options[
+                0]["attributes"]["scene-options"]["clickableOnlyEvents"])
 
     def make_hudtext(self, label, position, text):
         text = Text(

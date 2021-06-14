@@ -5,7 +5,7 @@ with open("README.md", "r") as readme:
 
 setuptools.setup(
     name="arena-py",
-    version="0.1.35",
+    version="0.1.36",
     author="Conix Research Center",
     author_email="info@conix.io",
     license="BSD 3-clause \"New\" or \"Revised License\"",
@@ -19,7 +19,7 @@ setuptools.setup(
         "paho-mqtt~=1.5.0",
         "requests~=2.23.0",
         "webcolors~=1.3",
-        "google_auth_oauthlib~=0.4.2",
+        "google_auth_oauthlib~=0.4.4",
         "PyJWT~=2.0.0",
         "numpy>=1.19.5",
         "scipy>=1.5.4"

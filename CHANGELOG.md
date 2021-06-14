@@ -2,6 +2,10 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.1.36] - 2021-06-14
+### Changed
+- Google OAuth localhost flow removed, replaced with console flow.
+
 ## [0.1.35] - 2021-06-08
 ### Changed
 - MQTT broker connection uses encrypted TLS.
@@ -147,6 +151,8 @@ specify both to bypass auth.
 - `Arena` class renamed to `Scene`, but using `Arena` is still allowed. Updated examples to reflect this.
 - Tiny bug fix with `update_objects`.
 
+[0.1.35]: https://github.com/conix-center/ARENA-py/tree/461e5808b745068ebb77898776fa4e3e15f1574d
+[0.1.34]: https://github.com/conix-center/ARENA-py/tree/e3a74d04ba564f1f40dcc26cf9c95c0e966f527b
 [0.1.33]: https://github.com/conix-center/ARENA-py/tree/4fac2d9c206c0ccb6710d288a642528cd184274e
 [0.1.32]: https://github.com/conix-center/ARENA-py/tree/68f08513fd54ee7d97753aec92814b33dfe7391d
 [0.1.31]: https://github.com/conix-center/ARENA-py/tree/724e14f4e37112b96d90e94d9e521800bdea0997

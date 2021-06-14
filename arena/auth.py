@@ -57,13 +57,30 @@ def authenticate_user(host):
         else:
             print("Requesting new Google authentication.")
             gauth_json = _get_gauthid(host)
-            flow = InstalledAppFlow.from_client_config(
-                json.loads(gauth_json), _scopes)
+
             if _is_headless_client():
+                flow = InstalledAppFlow.from_client_config(
+                    json.loads(gauth_json), _scopes)
                 creds = flow.run_console()
             else:
-                # TODO: select best client port to avoid likely conflicts
-                creds = flow.run_local_server(port=8989)
+                # Starting 9 June 2021, flow.run_local_server() seems to usually fail with:
+                # 'Localhost URI is not allowed for 'NATIVE_DEVICE' client type.'
+                # The Google flow.run_local_server() demo seems to no longer work:
+                # https://google-auth-oauthlib.readthedocs.io/en/latest/reference/google_auth_oauthlib.flow.html#google_auth_oauthlib.flow.InstalledAppFlow
+                # flow = InstalledAppFlow.from_client_config(
+                #    json.loads(gauth_json), _scopes)
+                # creds = flow.run_local_server(port=0)
+
+                # alternate, run console flow with browser popup
+                flow = InstalledAppFlow.from_client_config(
+                    json.loads(gauth_json), _scopes, redirect_uri='urn:ietf:wg:oauth:2.0:oob')
+                auth_url, _ = flow.authorization_url(prompt='consent')
+                print('Please go to this URL: {}'.format(auth_url))
+                webbrowser.open(auth_url, new=1, autoraise=True)
+                code = input('Enter the authorization code: ')
+                flow.fetch_token(code=code)
+                creds = flow.credentials
+
             session = flow.authorized_session()
         with open(_user_gauth_path, 'wb') as token:
             # save the credentials for the next run

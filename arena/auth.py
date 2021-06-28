@@ -19,7 +19,6 @@ import requests
 from google.auth.transport.requests import AuthorizedSession, Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 
-debug_toggle = False
 _scopes = ["openid",
            "https://www.googleapis.com/auth/userinfo.profile",
            "https://www.googleapis.com/auth/userinfo.email"]
@@ -31,29 +30,17 @@ _mqtt_token = None
 _id_token = None
 
 
-def authenticate_user(host, debug=False):
+def authenticate_user(host):
     """
     Begins authentication flow, getting Google auth, opening web browser if
     needed, getting username and state from ARENA server.
     host: The hostname of the ARENA webserver.
-    debug: True to skip SSL verify for localhost tests.
     Returns: Username from arena-account, or None.
     """
-    global debug_toggle
     global _id_token
-    debug_toggle = debug
     print("Signing in to the ARENA...")
 
-    local_token = _local_token_check()
-    if local_token:
-        return local_token["username"]
-
     creds = None
-    browser = None
-    try:
-        browser = webbrowser.get()
-    except (webbrowser.Error) as err:
-        print("Console-only login. {0}".format(err))
 
     # store the user's access and refresh tokens
     if os.path.exists(_user_gauth_path):
@@ -70,13 +57,28 @@ def authenticate_user(host, debug=False):
         else:
             print("Requesting new Google authentication.")
             gauth_json = _get_gauthid(host)
-            flow = InstalledAppFlow.from_client_config(
-                json.loads(gauth_json), _scopes)
-            if browser:
-                # TODO: select best client port to avoid likely conflicts
-                creds = flow.run_local_server(port=8989)
-            else:
+
+            if _is_headless_client():
+                # console flow for remote client
+                flow = InstalledAppFlow.from_client_config(
+                    json.loads(gauth_json), _scopes)
                 creds = flow.run_console()
+            else:
+                # automated browser flow for local client
+                flow = InstalledAppFlow.from_client_config(
+                   json.loads(gauth_json), _scopes)
+                creds = flow.run_local_server(port=0)
+
+                # # alternate, run console flow with browser popup
+                # flow = InstalledAppFlow.from_client_config(
+                #     json.loads(gauth_json), _scopes, redirect_uri='urn:ietf:wg:oauth:2.0:oob')
+                # auth_url, _ = flow.authorization_url(prompt='consent')
+                # print('Please go to this URL: {}'.format(auth_url))
+                # webbrowser.open(auth_url, new=1, autoraise=True)
+                # code = input('Enter the authorization code: ')
+                # flow.fetch_token(code=code)
+                # creds = flow.credentials
+
             session = flow.authorized_session()
         with open(_user_gauth_path, 'wb') as token:
             # save the credentials for the next run
@@ -96,23 +98,16 @@ def authenticate_user(host, debug=False):
     return username
 
 
-def authenticate_scene(host, realm, scene, username, debug=False):
+def authenticate_scene(host, realm, scene, username):
     """ End authentication flow, requesting permissions may change by owner
     or admin, for now, get a fresh mqtt_token each time.
     host: The hostname of the ARENA webserver.
     realm: The topic realm name.
     scene: The namespace/scene name combination.
     username: The ARENA username for the user.
-    debug: True to skip SSL verify for localhost tests.
     Returns: username and mqtt_token from arena-account.
     """
-    global debug_toggle
-    global _id_token
-    global _mqtt_token
-    debug_toggle = debug
-    local_token = _local_token_check()
-    if local_token:
-        return local_token["username"]
+    global _id_token, _mqtt_token
 
     print("Using remote-authenticated MQTT token.")
     mqtt_json = _get_mqtt_token(host, realm, scene, username, _id_token)
@@ -122,29 +117,68 @@ def authenticate_scene(host, realm, scene, username, debug=False):
     os.chmod(_user_mqtt_path, 0o600)  # set user-only perms.
 
     _mqtt_token = json.loads(mqtt_json)
-    username = None
-    if 'username' in _mqtt_token:
-        username = _mqtt_token['username']
-    print(f'ARENA Username: {username}')
+    _log_token()
     return _mqtt_token
 
 
-def get_writable_scenes(host, debug=False):
+def get_writable_scenes(host):
     """ Request list of scene names for logged in user that user has publish permission for.
     host: The hostname of the ARENA webserver.
-    debug: True to skip SSL verify for localhost tests.
     Returns: list of scenes.
     """
-    global debug_toggle
     global _id_token
-    debug_toggle = debug
     my_scenes = _get_my_scenes(host, _id_token)
     return json.loads(my_scenes)
 
 
-def _local_token_check():
+def _is_headless_client():
+    """ Determine headless or headed console.
+    """
+    if "SSH_TTY" in os.environ or "SSH_CLIENT" in os.environ:
+        print("SSH connection detected, using headless auth.")
+        return True
+    try:
+        webbrowser.get()
+        return False
+    except (webbrowser.Error) as err:
+        print("Console-only OS detected. {0}".format(err))
+        return True
+
+
+def _log_token():
+    """
+    Update user with token in use.
+    """
+    global _mqtt_token
+    username = None
+    if 'username' in _mqtt_token:
+        username = _mqtt_token['username']
+    print(f'ARENA Token Username: {username}')
+
+    now = time.time()
+    tok = jwt.decode(_mqtt_token["token"], options={"verify_signature": False})
+    exp = float(tok["exp"])
+    dur_str = time.strftime("%H:%M:%S", time.gmtime(exp - now))
+    print(f'ARENA Token valid for: {dur_str}h')
+
+
+def store_environment_auth(username, token):
+    """
+    Keep a copy of the token in local memory for urlopen and other tasks.
+    """
+    global _mqtt_token
+    if username and token:
+        print("Using environment MQTT token.")
+        _mqtt_token = {"username": username, "token": token}
+        _log_token()
+
+
+def check_local_auth():
+    """
+    Check for local mqtt_token and save to local memory.
+    """
+    global _mqtt_token
     # TODO: remove local check after ARTS supports mqtt_token passing
-    # check for local mqtt_token first
     if os.path.exists(_local_mqtt_path):
         print("Using local MQTT token.")
         f = open(_local_mqtt_path, "r")
@@ -152,6 +186,7 @@ def _local_token_check():
         f.close()
         # TODO: check token expiration
         _mqtt_token = json.loads(mqtt_json)
+        _log_token()
         return _mqtt_token
     return None
 
@@ -160,8 +195,8 @@ def _get_csrftoken(host):
     # get the csrftoken for django
     global _csrftoken
     csrf_url = f'https://{host}/user/login'
+    verify = host != "localhost"
     client = requests.session()
-    verify = not debug_toggle
     client.get(csrf_url, verify=verify)  # sets cookie
     if 'csrftoken' in client.cookies:
         _csrftoken = client.cookies['csrftoken']
@@ -223,8 +258,9 @@ def urlopen(url, data=None, creds=False, csrf=None):
     creds: True to pass the MQTT token as a cookie.
     csrf: The csrftoken.
     """
-    global debug_toggle
     global _mqtt_token
+    urlparts = urlsplit(url)
+    verify = urlparts.netloc != "localhost"
     try:
         req = request.Request(url)
         if creds:
@@ -232,13 +268,13 @@ def urlopen(url, data=None, creds=False, csrf=None):
         if csrf:
             req.add_header("Cookie", f"csrftoken={csrf}")
             req.add_header("X-CSRFToken", csrf)
-        if debug_toggle:
+        if verify:
+            res = request.urlopen(req, data=data)
+        else:
             context = ssl.create_default_context()
             context.check_hostname = False
             context.verify_mode = ssl.CERT_NONE
             res = request.urlopen(req, data=data, context=context)
-        else:
-            res = request.urlopen(req, data=data)
         return res.read().decode('utf-8')
     except (requests.exceptions.ConnectionError, ConnectionError, URLError, HTTPError) as err:
         print("{0}: ".format(err)+url)

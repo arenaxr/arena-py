@@ -53,9 +53,7 @@ class Layout:
         kwargs
             Variable list of parameters, depending on the layout type
         """
-        if (self.type == Layout.ROWCOL):
-            print(kwargs)
-            return self.row_layout(**kwargs)
+        if (self.type == Layout.ROWCOL): return self.row_layout(**kwargs)
         if (self.type == Layout.CIRCLE): return self.circle_layout(**kwargs)
         if (self.type == Layout.LINE): return self.line_layout(**kwargs)
         if (self.type == Layout.SQUARE): return self.square_layout(**kwargs)

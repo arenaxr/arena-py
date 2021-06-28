@@ -1,6 +1,6 @@
 from arena import *
 
-scene = Scene(host="arenaxr.org", realm="realm", scene="example")
+scene = Scene(host="arenaxr.org", scene="example")
 
 sound = Sound(positional=True, poolSize=1, autoplay=True, src="store/users/wiselab/audio/september.mp3")
 

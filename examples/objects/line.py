@@ -1,6 +1,6 @@
 from arena import *
 
-scene = Scene(host="arenaxr.org", realm="realm", scene="example")
+scene = Scene(host="arenaxr.org", scene="example")
 
 start = (0,0,-3)
 end = (10,10,-10)

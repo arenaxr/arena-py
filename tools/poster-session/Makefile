@@ -1,5 +1,12 @@
 run: venv
-	$(VENV)/python pplacement.py
+	$(VENV)/python pplacement.py $(ARGS)
+
+run-switcher: venv
+	$(VENV)/python image-switcher.py $(ARGS)
+
+# shows how to force a scene by defining a SCENE env variable
+run-testscene: venv
+	(SCENE=test $(VENV)/python pplacement.py $(ARGS))
 
 signout: venv
 			$(VENV)/python signout.py
@@ -8,7 +15,7 @@ show-req: venv
 		$(VENV)/pip freeze
 
 freeze: venv
-				$(VENV)/pip freeze > requirements.txt
+				$(VENV)/pip freeze | sed s/=.*// > requirements.txt
 
 include Makefile.venv
 Makefile.venv:

@@ -1,30 +1,38 @@
-import os
-import sys
-import json
-import random
-import socket
 import asyncio
-
-import paho.mqtt.client as mqtt
+import json
+import os
+import random
+import re
+import socket
+import sys
 from datetime import datetime
 from inspect import signature
 
-from .attributes import *
-from .objects import *
-from .events import *
-from .utils import *
-from .event_loop import *
+import paho.mqtt.client as mqtt
 
 from . import auth
+from .attributes import *
+from .event_loop import *
+from .events import *
+from .objects import *
+from .utils import *
+
 
 class Scene(object):
     """
     Gives access to an ARENA scene.
     Wrapper around Paho MQTT client and EventLoop.
     Can create and execute various user-defined functions/tasks.
+
+    :param str host: Hostname of the MQTT broker (required).
+    :param str realm: Reserved topic fork for future use (optional).
+    :param str namespace: Username of authenticated user or other namespace (automatic).
+    :param str scene: The name of the scene, without namespace (required).
     """
+
     def __init__(
                 self,
+                realm = "realm",
                 network_latency_interval = 10000,  # run network latency update every 10s
                 on_msg_callback = None,
                 new_obj_callback = None,
@@ -36,28 +44,31 @@ class Scene(object):
                 **kwargs
             ):
         if os.environ.get("MQTTH"):
-            self.host  = os.environ["MQTTH"]
-        elif "host" in kwargs:
+            self.host = os.environ["MQTTH"]
+        elif "host" in kwargs and kwargs["host"]:
             self.host = kwargs["host"]
             print("Cannot find MQTTH environmental variable, using input parameter instead.")
         else:
-            sys.exit("mqtt host argument (host) is unspecified, aborting...")
+            sys.exit("mqtt host argument (host) is unspecified or None, aborting...")
 
         if os.environ.get("REALM"):
-            self.realm  = os.environ["REALM"]
-        elif "realm" in kwargs:
+            self.realm = os.environ["REALM"]
+        elif "realm" in kwargs and kwargs["realm"]:
             self.realm = kwargs["realm"]
             print("Cannot find REALM environmental variable, using input parameter instead.")
         else:
-            sys.exit("realm argument (realm) is unspecified, aborting...")
+            # Use default "realm" until multiple realms exist, avoids user confusion.
+            self.realm = realm
 
         if os.environ.get("SCENE"):
-            self.scene  = os.environ["SCENE"]
-        elif "scene" in kwargs:
+            self.scene = os.environ["SCENE"]
+        elif "scene" in kwargs and kwargs["scene"]:
+            if re.search("/", kwargs["scene"]):
+                sys.exit("scene argument (scene) cannot include '/', aborting...")
             self.scene = kwargs["scene"]
             print("Cannot find SCENE environmental variable, using input parameter instead.")
         else:
-            sys.exit("scene argument (scene) is unspecified, aborting...")
+            sys.exit("scene argument (scene) is unspecified or None, aborting...")
 
         self.debug = debug
 
@@ -66,14 +77,23 @@ class Scene(object):
         username = None
         password = None
         if os.environ.get("ARENA_USERNAME") and os.environ.get("ARENA_PASSWORD"):
+            # auth 1st: use passed in env var
             username = os.environ["ARENA_USERNAME"]
             password = os.environ["ARENA_PASSWORD"]
+            auth.store_environment_auth(username, password)
         else:
-            username = auth.authenticate_user(self.host, debug=self.debug)
+            local = auth.check_local_auth()
+            if local and 'username' in local and 'token' in local:
+                # auth 2nd: use locally saved token
+                username = local["username"]
+                password = local["token"]
+            else:
+                # auth 3rd: use the user account online
+                username = auth.authenticate_user(self.host)
 
         if os.environ.get("NAMESPACE"):
             self.namespace = os.environ["NAMESPACE"]
-        elif "namespace" not in kwargs:
+        elif "namespace" not in kwargs or ("namespace" in kwargs and kwargs["namespace"] is None):
             self.namespace = username
         else:
             self.namespace = kwargs["namespace"]
@@ -98,8 +118,7 @@ class Scene(object):
         if username is None or password is None:
             data = auth.authenticate_scene(
                             self.host, self.realm,
-                            self.namespaced_scene, username,
-                            self.debug
+                            self.namespaced_scene, username
                         )
             if 'username' in data and 'token' in data:
                 username = data["username"]
@@ -119,11 +138,10 @@ class Scene(object):
                                           # but this scene instance does not
                                           # have a reference to
         self.users = {} # dict of all users
-        self.landmarks = Landmarks() # scene landmarks
 
-        self.task_manager = EventLoop(self.disconnect)
+        self.event_loop = EventLoop(self.disconnect)
 
-        aioh = AsyncioMQTTHelper(self.task_manager, self.mqttc)
+        aioh = AsyncioMQTTHelper(self.event_loop, self.mqttc)
 
         # have all tasks wait until mqtt client is connected before starting
         self.mqtt_connect_evt = asyncio.Event()
@@ -143,10 +161,11 @@ class Scene(object):
         self.msg_queue = asyncio.Queue()
 
         # connect to mqtt broker
+        self.mqttc.tls_set()
         if "port" in kwargs:
             self.mqttc.connect(self.host, kwargs["port"])
         else:
-            self.mqttc.connect(self.host)
+            self.mqttc.connect(self.host, port=8883)
         self.mqttc.socket().setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
 
         print(f"Loading: https://{self.host}/{self.namespace}/{self.scene}, realm={self.realm}")
@@ -163,8 +182,8 @@ class Scene(object):
     def run_once(self, func=None, **kwargs):
         """Runs a user-defined function on startup"""
         if func is not None:
-            w = SingleWorker(func, self.mqtt_connect_evt, **kwargs)
-            self.task_manager.add_task(w)
+            w = SingleWorker(self.event_loop, func, self.mqtt_connect_evt, **kwargs)
+            self.event_loop.add_task(w)
         else:
             # if there is no func, we are in a decorator
             def _run_once(func):
@@ -178,8 +197,8 @@ class Scene(object):
             if interval_ms < 0:
                 print("Invalid interval! Defaulting to 1000ms")
                 interval_ms = 1000
-            w = LazyWorker(func, self.mqtt_connect_evt, interval_ms, **kwargs)
-            self.task_manager.add_task(w)
+            w = LazyWorker(self.event_loop, func, self.mqtt_connect_evt, interval_ms, **kwargs)
+            self.event_loop.add_task(w)
         else:
             # if there is no func, we are in a decorator
             def _run_after_interval(func):
@@ -190,8 +209,8 @@ class Scene(object):
     def run_async(self, func=None, **kwargs):
         """Runs a user defined aynscio function"""
         if func is not None:
-            w = AsyncWorker(func, self.mqtt_connect_evt, **kwargs)
-            self.task_manager.add_task(w)
+            w = AsyncWorker(self.event_loop, func, self.mqtt_connect_evt, **kwargs)
+            self.event_loop.add_task(w)
         else:
             # if there is no func, we are in a decorator
             def _run_async(func):
@@ -205,8 +224,8 @@ class Scene(object):
             if interval_ms < 0:
                 print("Invalid interval! Defaulting to 1000ms")
                 interval_ms = 1000
-            t = PersistentWorker(func, self.mqtt_connect_evt, interval_ms, **kwargs)
-            self.task_manager.add_task(t)
+            t = PersistentWorker(self.event_loop, func, self.mqtt_connect_evt, interval_ms, **kwargs)
+            self.event_loop.add_task(t)
         else:
             # if there is no func, we are in a decorator
             def _run_forever(func):
@@ -216,12 +235,12 @@ class Scene(object):
 
     def run_tasks(self):
         """Run event loop"""
-        print("Connecting to the ARENA...")
-        self.task_manager.run()
+        print("Connecting to the ARENA... ", end="")
+        self.event_loop.run()
 
     def stop_tasks(self):
         """Stop event loop"""
-        self.task_manager.stop()
+        self.event_loop.stop()
 
     async def sleep(self, interval_ms):
         """Public function for sleeping in async functions"""
@@ -261,76 +280,83 @@ class Scene(object):
             try:
                 payload_str = msg.payload.decode("utf-8", "ignore")
                 payload = json.loads(payload_str)
-            except:
+            except Exception as e:
+                print("Malformed payload, ignoring:")
+                print(e)
                 return
 
-            # update object attributes, if possible
-            if "object_id" in payload:
-                # parese payload
-                object_id = payload.get("object_id", None)
-                action = payload.get("action", None)
+            try:
+                # update object attributes, if possible
+                if "object_id" in payload:
+                    # parese payload
+                    object_id = payload.get("object_id", None)
+                    action = payload.get("action", None)
 
-                data = payload.get("data", {})
-                object_type = data.get("object_type", None)
+                    data = payload.get("data", {})
+                    object_type = data.get("object_type", None)
 
-                event = None
+                    event = None
 
-                # create/get object from object_id
-                if object_id in self.all_objects:
-                    obj = self.all_objects[object_id]
-                else:
-                    ObjClass = OBJECT_TYPE_MAP.get(object_type, Object)
-                    obj = ObjClass(**payload)
+                    # create/get object from object_id
+                    if object_id in self.all_objects:
+                        obj = self.all_objects[object_id]
+                    else:
+                        ObjClass = OBJECT_TYPE_MAP.get(object_type, Object)
+                        obj = ObjClass(**payload)
 
-                # react to action accordingly
-                if action:
-                    if action == "clientEvent":
-                        event = Event(**payload)
-                        if obj.evt_handler:
-                            self.callback_wrapper(obj.evt_handler, event, payload)
+                    # react to action accordingly
+                    if action:
+                        if action == "clientEvent":
+                            event = Event(**payload)
+                            if obj.evt_handler:
+                                self.callback_wrapper(obj.evt_handler, event, payload)
+                                continue
+
+                        elif action == "delete":
+                            if Camera.object_type in object_id: # object is a camera
+                                if object_id in self.users and self.user_left_callback:
+                                    self.callback_wrapper(
+                                            self.user_left_callback,
+                                            self.users[object_id],
+                                            payload
+                                        )
+                            elif self.delete_obj_callback:
+                                self.callback_wrapper(self.delete_obj_callback, obj, payload)
                             continue
 
-                    elif action == "delete":
-                        if Camera.object_type in object_id: # object is a camera
-                            if object_id in self.users and self.user_left_callback:
+                        else: # create/update
+                            obj.update_attributes(**payload)
+
+                    # call new message callback for all messages
+                    if self.on_msg_callback:
+                        if not event:
+                            self.callback_wrapper(self.on_msg_callback, obj, payload)
+                        else:
+                            self.callback_wrapper(self.on_msg_callback, event, payload)
+
+                    # run user_join_callback when user is found
+                    if object_type and object_type == Camera.object_type:
+                        if object_id not in self.users:
+                            if object_id in self.all_objects:
+                                self.users[object_id] = obj
+                            else:
+                                self.users[object_id] = Camera(**payload)
+
+                            if self.user_join_callback:
                                 self.callback_wrapper(
-                                        self.user_left_callback,
+                                        self.user_join_callback,
                                         self.users[object_id],
                                         payload
                                     )
-                        elif self.delete_obj_callback:
-                            self.callback_wrapper(self.delete_obj_callback, obj, payload)
-                        continue
 
-                    else: # create/update
-                        obj.update_attributes(**payload)
+                    # if its an object the library has not seen before, call new object callback
+                    elif object_id not in self.unspecified_object_ids and self.new_obj_callback:
+                        self.callback_wrapper(self.new_obj_callback, obj, payload)
+                        self.unspecified_object_ids.add(object_id)
 
-                # call new message callback for all messages
-                if self.on_msg_callback:
-                    if not event:
-                        self.callback_wrapper(self.on_msg_callback, obj, payload)
-                    else:
-                        self.callback_wrapper(self.on_msg_callback, event, payload)
-
-                # run user_join_callback when user is found
-                if object_type and object_type == Camera.object_type:
-                    if object_id not in self.users:
-                        if object_id in self.all_objects:
-                            self.users[object_id] = obj
-                        else:
-                            self.users[object_id] = Camera(**payload)
-
-                        if self.user_join_callback:
-                            self.callback_wrapper(
-                                    self.user_join_callback,
-                                    self.users[object_id],
-                                    payload
-                                )
-
-                # if its an object the library has not seen before, call new object callback
-                elif object_id not in self.unspecified_object_ids and self.new_obj_callback:
-                    self.callback_wrapper(self.new_obj_callback, obj, payload)
-                    self.unspecified_object_ids.add(object_id)
+            except Exception as e:
+                print("Malformed message, ignoring:")
+                print(e)
 
     def callback_wrapper(self, func, arg, msg):
         """Checks for number of arguments for callback"""
@@ -409,18 +435,6 @@ class Scene(object):
                     object_type="look-at",
                     target=target)
         return self.generate_custom_event(evt, action="update")
-
-    def add_landmark(self, obj, label):
-        """Adds a landmark to the scene"""
-        if isinstance(obj, Object):
-            landmark_id = obj.object_id
-        else:
-            landmark_id = Object
-        # object must be persisted to make landmarks make sense
-        obj.persist = True
-        self.add_object(obj)
-        self.landmarks.add(landmark_id, label)
-        return self._publish(self.landmarks, "create")
 
     @property
     def all_objects(self):
@@ -560,20 +574,20 @@ class Scene(object):
         output = json.loads(data)
         return output
 
-
     def get_writable_scenes(self):
         """ Request list of scene names for logged in user account that user has publish permission for.
         Returns: list of scenes.
         """
-        return auth.get_writable_scenes(host=self.host, debug=self.debug)
-
+        return auth.get_writable_scenes(host=self.host)
 
     def message_callback_add(self, sub, callback):
         """Subscribes to new topic and adds callback"""
+        self.mqttc.subscribe(sub)
         self.mqttc.message_callback_add(sub, callback)
 
     def message_callback_remove(self, sub):
-        """Unsubscribes to topic and removes filter for callback"""
+        """Unsubscribes to topic and removes callback"""
+        self.mqttc.unsubscribe(sub)
         self.mqttc.message_callback_remove(sub)
 
     def get_user_list(self):

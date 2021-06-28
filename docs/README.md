@@ -12,14 +12,14 @@
 Code for these can be found [here](../examples/tutorial)
 
 ## General Documentation
-See [ARENA Documentation: Python](https://conix-center.github.io/ARENA/content/python/).
+See [ARENA Documentation: Python](https://arena.conix.io/content/python/).
 
 ## A simple program
 ```python
 from arena import *
 
 # create library
-scene = Scene(host="arenaxr.org", realm="realm", scene="example")
+scene = Scene(host="arenaxr.org", scene="example")
 
 @scene.run_once # make this function a task that runs once at startup
 def main():

@@ -32,9 +32,9 @@ class Face(object):
 
         # update translation
         new_trans = data["pose"]["translation"]
-        new_trans[0] = 0
+        new_trans[0] = 0.0
         new_trans[1] = -0.07
-        new_trans[2] = 0.035
+        new_trans[2] = -0.045
         self.trans = self.trans_filter.add(new_trans) # filter
         self.trans = Position(*new_trans)
 

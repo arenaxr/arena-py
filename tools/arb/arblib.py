@@ -14,7 +14,7 @@ from arena import (Box, Circle, Color, Cone, Cylinder, Dodecahedron,
                    Text, Torus, TorusKnot, Triangle)
 
 CLICKLINE_LEN_OBJ = 0.5  # meters
-CLICKLINE_LEN_MOD = 1  # meters
+CLICKLINE_LEN_MOD = 0.5  # meters
 CLICKLINE_SCL = Scale(1, 1, 1)  # meters
 FLOOR_Y = 0.1  # meters
 GRIDLEN = 20  # meters
@@ -98,7 +98,7 @@ SHAPES = [Sphere.object_type,
           Triangle.object_type]
 DEF_MANIFEST = [{  # default model, if none loaded
     "name": "duck",
-    "url_gltf": "models/Duck.glb",
+    "url_gltf": "store/models/Duck.glb",
     "scale": 0.1
 }]
 EVT_MOUSEENTER = "mouseenter"

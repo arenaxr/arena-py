@@ -24,9 +24,9 @@ from arena import *
 ```python
 arena = Scene()
 ```
-You can also pass host, realm, and scene as arguments, if you don't want to use enviornmental variables. These *must* be keyword arguments:
+You can also pass host and scene as arguments, if you don't want to use environmental variables. These *must* be keyword arguments:
 ```python
-scene = Scene(host=[host], realm=[realm], scene=[scene])
+scene = Scene(host=[host], scene=[scene])
 ```
 Note: ARENA-py will always favor environmental variables over arguments.
 
@@ -43,9 +43,9 @@ box = Box(object_id="my_box", position=Position(0,4,-2), scale=Scale(2,2,2))
 ```
 Note the input arguments. The names must match what they will be in the ARENA JSON specification. We don't have to worry too much about that now, but keep this in mind, as typos will be very bad!
 
-Box is a type of "Object". See [objects.md](objects.md).
+Box is a type of "Object". See [objects](https://arena.conix.io/content/python/objects.html).
 
-Position and Scale are what we call "Attributes". See [attributes.md](attributes.md).
+Position and Scale are what we call "Attributes". See [attributes](https://arena.conix.io/content/python/attributes.html).
 
 ## Adding our object to the ARENA
 ```python
@@ -66,7 +66,7 @@ Now, go into the scene to see your box!
 from arena import *
 
 # setup library
-scene = Scene(host="arenaxr.org", realm="realm", scene="example")
+scene = Scene(host="arenaxr.org", scene="example")
 
 def main():
     # make a box

@@ -1,7 +1,7 @@
 from arena import *
 import random
 
-scene = Scene(host="arenaxr.org", realm="realm", scene="example")
+scene = Scene(host="arenaxr.org", scene="example")
 
 @scene.run_once
 def make_bouncy_ball():

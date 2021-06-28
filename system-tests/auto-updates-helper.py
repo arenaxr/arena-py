@@ -7,7 +7,7 @@ from arena import *
 import random
 
 
-scene = Scene(host="arenaxr.org", realm="realm", scene="test")
+scene = Scene(host="arenaxr.org", scene="test")
 
 box = Box(object_id="box", position=(0,2,-1), rotation=(0,0,0), scale=(2,2,2), material=Material(transparent=True, opacity=1))
 

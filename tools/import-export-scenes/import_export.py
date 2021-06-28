@@ -41,11 +41,11 @@ if __name__ == '__main__':
     parser.add_argument('-n','--no-dry-run', dest='dryrun', action='store_false')
     parser.set_defaults(dryrun=None)
     parser.add_argument('-o', '--host', dest='host', action='store', type=str,
-            nargs='+', help=f'The arena host.')
+            help=f'The arena host.')
     parser.add_argument('-p', '--mqtt-port', dest='mqtt_port', action='store', type=str,
-            nargs='+', help=f'The arena mqtt host port.')
+            help=f'The arena mqtt host port.')
     parser.add_argument('-r', '--realm', dest='realm', action='store', type=str,
-            nargs='+', help=f'The arena realm.')
+            help=f'The arena realm.')
     args = parser.parse_args()
 
     fn = args.configfile
@@ -67,7 +67,6 @@ if __name__ == '__main__':
     if config['action'] == 'export':
         print('Export is not implemented yet')
         exit(1)
-
 
     obj_importer = ARENAObjectImport(realm=config.get('realm', DFT_REALM), mqtt_host=config.get('host', DFT_HOST), mqtt_port=config.get('mqtt_port', DFT_PORT));
 
@@ -117,12 +116,15 @@ if __name__ == '__main__':
 
                 # do some custom changes
                 if 'url' in obj['attributes']:
-                    if obj['attributes']['url'] == 'models/factory_robot_arm/scene.gltf':
+                    if obj['attributes']['url'] == 'store/models/factory_robot_arm/scene.gltf':
                         obj['attributes']['url'] = '/store/users/wiselab/models/factory_robot_arm/scene.gltf'
                     if obj['attributes']['url'].startswith('store/'):
                         obj['attributes']['url'] = f'/{obj["attributes"]["url"]}' # add '/' at the start of gltf models in store/
                     if obj['attributes']['url'].startswith('https://arena-cdn.conix.io/store'):
                         obj['attributes']['url'] = f'{obj["attributes"]["url"].replace("https://arena-cdn.conix.io/store", "/store")}'
+
+                    #if obj['attributes']['url'].startswith('https://arena.andrew.cmu.edu/store'):
+                    #    obj['attributes']['url'] = f'{obj["attributes"]["url"].replace("https://arena.andrew.cmu.edu/store", "/store")}'
 
                     #   if obj['attributes']['url'].startswith('/store'):
                     #    obj['attributes']['url'] = f'https://arena-cdn.conix.io{obj["attributes"]["url"]}'

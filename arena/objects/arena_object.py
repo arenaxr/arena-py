@@ -1,8 +1,7 @@
 from ..base_object import *
-from ..attributes import Animation, Data
+from ..attributes import Animation, Data, Color
 from ..utils import *
 import uuid
-
 
 class Object(BaseObject):
     """

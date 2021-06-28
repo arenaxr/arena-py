@@ -12,15 +12,21 @@ class Color(Attribute):
             # hex to tuple to Color
             color = red.lstrip("#")
             hexcolor = re.search(r"^(?:[0-9a-fA-F]{3}){1,2}$", color)
+            wcrgb = None
             if not hexcolor:
-                try:
-                    wcrgb = webcolors.name_to_rgb(color)
-                except:
-                    wcrgb = webcolors.hex_to_rgb("#0"+color)
-                c = (wcrgb.red, wcrgb.green, wcrgb.blue)
+                # try appending leading zeros until it works
+                for i in range(8):
+                    try:
+                        wcrgb = webcolors.name_to_rgb("#"+i*"0"+color)
+                    except:
+                        break
+                if wcrgb is not None:
+                    c = (wcrgb.red, wcrgb.green, wcrgb.blue)
+                else:
+                    c = (128,128,128)
             else:
                 c = tuple(int(color[c:c+2], 16) for c in (0, 2, 4))
-            red, blue, green = c
+            red, green, blue = c
         super().__init__(red=red, green=green, blue=blue)
 
     @property

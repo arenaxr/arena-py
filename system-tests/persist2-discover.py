@@ -17,11 +17,11 @@ def on_msg_callback(scene, obj, msg):
     if isinstance(obj, Event) and obj.type == "mousedown":
         print(f"Program 2 mousedown event: {obj.object_id}")
         obj = scene.get_persisted_obj(obj.object_id)
-        print(f"Program 2 persisted color: {obj.data.material.color}")
+        print(f"Program 2 persisted color: {obj.data.color}")
 
 
 program2 = Scene(
-    host="arenaxr.org", realm="realm", scene="persist-test",
+    host="arenaxr.org", scene="persist-test",
     on_msg_callback=on_msg_callback,
 )
 

@@ -19,7 +19,7 @@ def secondary_callback(msg):
 
 
 # subscribe to objects
-scene = Scene(host="arenaxr.org", realm="realm", scene="example", on_msg_callback=objects_callback)
+scene = Scene(host="arenaxr.org", scene="example", on_msg_callback=objects_callback)
 
 @scene.run_async
 async def test():

@@ -18,7 +18,7 @@ title_text_font_width = 5
 link_text_font_width = 4
 
 
-scene = Scene(host="arenaxr.org",realm="realm",scene="example")
+scene = Scene(host="arenaxr.org",scene="example")
 
 print( "Starting up")
 

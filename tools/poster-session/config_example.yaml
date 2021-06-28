@@ -1,0 +1,92 @@
+# persist objects (True/False): False=objects will disappear after a reload (and only appear to clients already viewing the scene when they are created)
+persist: True
+
+# arena related definitions
+arena:
+  host: arenaxr.org # default: arenaxr.org
+  realm: realm # default: realm
+  scenename: ececapstone # one of the scenes defined below
+
+# where is the input data: google spreadsheet id and cell range of the table
+input_table:
+  # The spreadsheetid can be found in the google spreadsheet url e.g.:
+  # https://docs.google.com/spreadsheets/d/**spreadsheetid**/edit#gid=0
+  #
+  # For details, see: https://developers.google.com/sheets/api/guides/concepts
+  spreadsheetid: 1xwVURk0BHHtncpeokjm0FZO_sffS7vjmVxt0ewxKaBU
+  # The table_named_range is the A1 or R1C1 range of the data table; Must
+  # include the sheet name ('Data Table') and the header, e.g: Data Table!A1:F10
+  #
+  # For details, see: https://developers.google.com/sheets/api/guides/concepts
+  named_range: Data Table!A1:J3
+
+# where to save the links config
+links_config:
+  # The fileid can be found by right-clicking the file name and select Get link:
+  # https://drive.google.com/file/d/**fileid**/view?usp=sharing
+  fileid: 1WD7-a7onzoegXxQFtiRZPTd-ZC2Mgzyo
+
+# where the icon files are
+icons:
+  video: /store/users/arena/poster-imgs/video.png
+  catalog: /store/users/arena/poster-imgs/catalog.png
+  pdf: /store/users/arena/poster-imgs/pdf.png
+  link: /store/users/arena/poster-imgs/link.png
+
+# wall settings (dimension, color, ...)
+wall:
+  width: 9 # default: 9
+  height: 6 # default: 6
+  depth: 1 # default: 1
+  img_height: 2.6 # default: 2.6
+  color: 151, 171, 216 # default: 151, 171, 216
+  img_btn_color: 255, 255, 255 # default: 255, 255, 255
+  img_btn_text_color: 0, 0, 0 # default: 0, 0, 0
+  text_color: 0, 66, 117 # default: 0, 66, 117
+  back_text_color: 96, 122, 163 # default: 0, 66, 117
+  text_font: 'exo2bold'
+  title_maxlen: 150 # will add '...' after this amount of characters; default: 150
+
+# ** Scene layout definitions **
+# Configure the layouts for each scene
+# layout: the layout of the walls; one of:
+#      ROWCOL - arrange walls in rows and columns; parameters:
+#               row_dist=30: distance between rows
+#               col_dist=30: distance between cols
+#               row_off=0: where rows start (offset from 0)
+#               col_off=0: where cols start (offset from 0)
+#               col_dir=1: direction of cols (1 or -1)
+#               row_dir=-1: direction of rows (1 or -1)
+#               col_axis='x': which axis is used as the col axis
+#               row_axis='z': which axis is used as the row axis
+#               fixed_axis='y': axis that defines the plane where the walls are laid out
+#      CIRLE - arrange in a circle; parameters:
+#               radius=50: radius of the circle (will try to layout the walls evenly spaced)
+#               a1_off=0: center of the circle offset from 0 in axis 1 (see axis1 param)
+#               a2_off=0: center of the circle offset from 0 in axis 2 (see axis2 param)
+#               axis1='x': which axis is used as axis1
+#               axis2='z': which axis is used as axis2
+#               fixed_axis='y': defines the plane where the walls are laid out
+#      SQUARE - arange walls in a square shape; parameters:
+#               length=50: length of the square (will try to layout the walls evenly spaced)
+#               a1_off=0: offset of the corner of the square from 0 in axis 1 (see axis1 param)
+#               a2_off=0: offset of the corner of the square from 0 in axis 2 (see axis2 param)
+#               axis1='x': which axis is used as axis1
+#               axis2='z': which axis is used as axis2
+#               fixed_axis='y': defines the plane where the walls are laid out
+#      LINE - arrange walls in a line; parameters:
+#               length=200: length of the line (will try to layout the walls evenly spaced)
+#               rotation=90: rotation (degrees) of the wall
+#               alternating_rot=True: alternating rotation to make the walls face each other in pairs (True/False)
+#               a1_off=0: offset of the line start from 0 in axis 1 (see axis1 param)
+#               a2_off=0: offset of the line start from 0 in axis 2 (see axis2 param)
+#               axis1='x': which axis is used as axis1
+#               axis2='z': which axis is used as axis2
+#               fixed_axis='y': defines the plane where the walls are laid out
+ececapstone:
+  layout: ROWCOL
+  layout_args:
+    row_dist: 20
+    col_dist: 20
+    row_off: 20
+    col_off: -50

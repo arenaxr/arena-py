@@ -66,7 +66,7 @@ def authenticate_user(host):
             else:
                 # automated browser flow for local client
                 flow = InstalledAppFlow.from_client_config(
-                   json.loads(gauth_json), _scopes)
+                    json.loads(gauth_json), _scopes)
                 creds = flow.run_local_server(port=0)
 
                 # # alternate, run console flow with browser popup
@@ -98,19 +98,20 @@ def authenticate_user(host):
     return username
 
 
-def authenticate_scene(host, realm, scene, username):
+def authenticate_scene(host, realm, scene, username, video=False):
     """ End authentication flow, requesting permissions may change by owner
     or admin, for now, get a fresh mqtt_token each time.
     host: The hostname of the ARENA webserver.
     realm: The topic realm name.
     scene: The namespace/scene name combination.
     username: The ARENA username for the user.
+    video: If Jitsi video conference is requested.
     Returns: username and mqtt_token from arena-account.
     """
     global _id_token, _mqtt_token
 
     print("Using remote-authenticated MQTT token.")
-    mqtt_json = _get_mqtt_token(host, realm, scene, username, _id_token)
+    mqtt_json = _get_mqtt_token(host, realm, scene, username, _id_token, video)
     # save mqtt_token
     with open(_user_mqtt_path, mode="w") as d:
         d.write(mqtt_json)
@@ -234,7 +235,7 @@ def _get_user_state(host, id_token):
     return urlopen(url, data=data, csrf=_csrftoken)
 
 
-def _get_mqtt_token(host, realm, scene, username, id_token):
+def _get_mqtt_token(host, realm, scene, username, id_token, video):
     global _csrftoken
     url = f'https://{host}/user/mqtt_auth'
     if not _csrftoken:
@@ -246,6 +247,8 @@ def _get_mqtt_token(host, realm, scene, username, id_token):
         "realm": realm,
         "scene": scene
     }
+    if video:
+        params["camid"] = True
     query_string = parse.urlencode(params)
     data = query_string.encode("ascii")
     return urlopen(url, data=data, csrf=_csrftoken)
@@ -304,6 +307,10 @@ def _print_mqtt_token(jwt):
     print(f'User: {jwt["sub"]}')
     exp_str = time.strftime("%c", time.localtime(jwt["exp"]))
     print(f'Expires: {exp_str}')
+    if "room" in jwt:
+        print('Video Conference: enabled')
+    else:
+        print('Video Conference: disabled')
     print('Publish topics:')
     for pub in jwt["publ"]:
         print(f'- {pub}')

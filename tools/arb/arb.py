@@ -251,6 +251,8 @@ def panel_callback(_scene, event, msg):
         show_redpill_scene(active)
     elif mode == Mode.LAMP:
         USERS[camname].set_lamp(active)
+    elif mode == Mode.SLIDER:
+        USERS[camname].slider = active
     # active buttons
     if mode == Mode.CREATE:
         update_dropdown(camname, objid, mode, arblib.SHAPES, 2, shape_callback)

@@ -125,6 +125,7 @@ class Mode(enum.Enum):
     LAMP = "lamp"
     STRETCH = "stretch"
     PARENT = "parent"
+    SLIDER = "slider"
 
 
 class ButtonType(enum.Enum):
@@ -177,6 +178,7 @@ class User:
         )
         self.scene.add_object(self.follow)
         self.redpill = False
+        self.slider = False
         self.panel = {}  # button dictionary
         self.dbuttons = {}
         buttons = [
@@ -199,6 +201,7 @@ class User:
             [Mode.RENAME, 0, -1, True, ButtonType.ACTION],
             [Mode.COLOR, 1, -1, True, ButtonType.ACTION],
             [Mode.LAMP, 2, -1, True, ButtonType.TOGGLE],
+            [Mode.SLIDER, 3, -1, True, ButtonType.TOGGLE],
         ]
         for but in buttons:
             pbutton = Button(

@@ -16,6 +16,7 @@ from urllib.parse import urlsplit
 
 import jwt
 import requests
+from google.auth import jwt as gJWT
 from google.auth.transport.requests import AuthorizedSession, Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 
@@ -39,15 +40,24 @@ def authenticate_user(host):
     """
     global _id_token
     print("Signing in to the ARENA...")
-
+    gauth_json = _get_gauthid(host)
     creds = None
 
     # store the user's access and refresh tokens
     if os.path.exists(_user_gauth_path):
-        print("Using cached Google authentication.")
         with open(_user_gauth_path, 'rb') as token:
             creds = pickle.load(token)
         session = AuthorizedSession(creds)
+        id_claims = gJWT.decode(creds.id_token, verify=False)
+
+        # for reuse, client_id must still match
+        gauth = json.loads(gauth_json)
+        if "installed" not in gauth or "client_id" not in gauth["installed"]:
+            creds = None
+        if id_claims["aud"] != gauth["installed"]["client_id"]:
+            creds = None
+        if creds:
+            print("Using cached Google authentication.")
     # if no credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
@@ -56,8 +66,6 @@ def authenticate_user(host):
             session = AuthorizedSession(creds)
         else:
             print("Requesting new Google authentication.")
-            gauth_json = _get_gauthid(host)
-
             if _is_headless_client():
                 # console flow for remote client
                 flow = InstalledAppFlow.from_client_config(
@@ -301,21 +309,21 @@ def signout():
     print("Signed out of the ARENA.")
 
 
-def _print_mqtt_token(jwt):
-    print('ARENA MQTT Permissions')
+def _print_mqtt_token(mqtt_claims):
+    print('ARENA MQTT/Video Permissions')
     print('----------------------')
-    print(f'User: {jwt["sub"]}')
-    exp_str = time.strftime("%c", time.localtime(jwt["exp"]))
+    print(f'User: {mqtt_claims["sub"]}')
+    exp_str = time.strftime("%c", time.localtime(mqtt_claims["exp"]))
     print(f'Expires: {exp_str}')
-    if "room" in jwt:
+    if "room" in mqtt_claims:
         print('Video Conference: enabled')
     else:
         print('Video Conference: disabled')
     print('Publish topics:')
-    for pub in jwt["publ"]:
+    for pub in mqtt_claims["publ"]:
         print(f'- {pub}')
     print('Subscribe topics:')
-    for sub in jwt["subs"]:
+    for sub in mqtt_claims["subs"]:
         print(f'- {sub}')
 
 
@@ -333,9 +341,9 @@ def permissions():
         mqtt_json = f.read()
         f.close()
         mqtt_token = json.loads(mqtt_json)
-        decoded = jwt.decode(mqtt_token["token"], options={
+        mqtt_claims = jwt.decode(mqtt_token["token"], options={
             "verify_signature": False})
-        _print_mqtt_token(decoded)
+        _print_mqtt_token(mqtt_claims)
 
 
 if __name__ == '__main__':

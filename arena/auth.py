@@ -344,7 +344,8 @@ def permissions():
         mqtt_claims = jwt.decode(mqtt_token["token"], options={
             "verify_signature": False})
         _print_mqtt_token(mqtt_claims)
-
+    else:
+        print("Not signed into the ARENA.")
 
 if __name__ == '__main__':
     globals()[sys.argv[1]]()

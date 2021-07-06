@@ -5,7 +5,7 @@ with open("README.md", "r") as readme:
 
 setuptools.setup(
     name="arena-py",
-    version="0.1.37",
+    version="0.1.38",
     author="Conix Research Center",
     author_email="info@conix.io",
     license="BSD 3-clause \"New\" or \"Revised License\"",
@@ -15,8 +15,8 @@ setuptools.setup(
     url="https://github.com/conix-center/ARENA-py",
     packages=setuptools.find_packages(),
     scripts=[
-        'scripts/arena-signout',
-        'scripts/arena-permissions'
+        'scripts/arena-py-signout',
+        'scripts/arena-py-permissions'
     ],
     install_requires=[
         "aiohttp>=3.7.4",

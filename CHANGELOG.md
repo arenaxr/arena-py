@@ -2,6 +2,12 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.1.38] - 2021-07-06
+### Added
+- Improved auto-detect signout when server changes.
+- Auth scripts: 'arena-py-signout' and 'arena-py-permissions'.
+- Ability to request video token.
+
 ## [0.1.37] - 2021-06-23
 ### Changed
 - Google OAuth localhost flow restored.

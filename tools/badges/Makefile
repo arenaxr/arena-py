@@ -5,9 +5,6 @@ run: venv
 run-test-scene: venv
 	(SCENE=test $(VENV)/python badges.py $(ARGS))
 
-signout: venv
-			$(VENV)/python signout.py
-
 show-req: venv
 		$(VENV)/pip freeze
 

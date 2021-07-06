@@ -15,8 +15,8 @@ setuptools.setup(
     url="https://github.com/conix-center/ARENA-py",
     packages=setuptools.find_packages(),
     scripts=[
-        'scripts/arena-sign-out',
-        'scripts/arena-show-permissions'
+        'scripts/arena-signout',
+        'scripts/arena-permissions'
     ],
     install_requires=[
         "aiohttp>=3.7.4",

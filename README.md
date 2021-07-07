@@ -51,11 +51,11 @@ before opening a client MQTT connection.
 
 ### Sign-Out
 ```bash
-python3 -c "from arena import auth; auth.signout()"
+arena-py-signout
 ```
 ### Show Permissions
 ```bash
-python3 -c "from arena import auth; auth.permissions()"
+arena-py-permissions
 ```
 
 ## Changelog

@@ -8,9 +8,6 @@ run-switcher: venv
 run-testscene: venv
 	(SCENE=test $(VENV)/python pplacement.py $(ARGS))
 
-signout: venv
-			$(VENV)/python signout.py
-
 show-req: venv
 		$(VENV)/pip freeze
 

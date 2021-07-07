@@ -139,7 +139,9 @@ class User:
         self.camname = camname
         self.mode = Mode.NONE
         self.clipboard = self.cliptarget = None
-        self.target_id = self.target_control_id = self.position = self.rotation = None
+        self.target_id = self.target_control_id = None
+        self.position = self.rotation = None
+        self.position_last = self.rotation_last = None
         self.gesturing = False
         self.target_style = self.typetext = ""
         self.locky = LOCK_YOFF
@@ -201,7 +203,7 @@ class User:
             [Mode.RENAME, 0, -1, True, ButtonType.ACTION],
             [Mode.COLOR, 1, -1, True, ButtonType.ACTION],
             [Mode.LAMP, 2, -1, True, ButtonType.TOGGLE],
-            [Mode.SLIDER, 3, -1, True, ButtonType.TOGGLE],
+            [Mode.SLIDER, 3, -1, False, ButtonType.TOGGLE],  # TODO: adjust scale
         ]
         for but in buttons:
             pbutton = Button(

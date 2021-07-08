@@ -200,15 +200,31 @@ def handle_clickline_event(event, mode):
         if USERS[camname].gesturing:
             obj = scene.get_persisted_obj(object_id)
             # determine direction of 2d gesture in 3d
-            if click_id[1][0] == "y":
-                val = -(USERS[camname].position_last.y -
-                        USERS[camname].position.y)
-            elif click_id[1][0] == "x":
-                val = -(USERS[camname].position_last.x -
-                        USERS[camname].position.x)
-            else:  # click_id[1][0] == "z":
-                val = -(USERS[camname].position_last.z -
-                        USERS[camname].position.z)
+            if mode == Mode.ROTATE:  # rotation based: rotate
+                try:
+                    rot_last = arblib.rotation_quat2euler(
+                        (USERS[camname].rotation_last.x, USERS[camname].rotation_last.y, USERS[camname].rotation_last.z, USERS[camname].rotation_last.w))
+                    rot = arblib.rotation_quat2euler(
+                        (USERS[camname].rotation.x, USERS[camname].rotation.y, USERS[camname].rotation.z, USERS[camname].rotation.w))
+                    if click_id[1][0] == "y":
+                        val = -(rot_last[1] - rot[1])
+                    elif click_id[1][0] == "x":
+                        val = -(rot_last[0] - rot[0])
+                    else:  # click_id[1][0] == "z":
+                        val = -(rot_last[2] - rot[2])
+                except ValueError as error:
+                    print(f"Rotation error: {error}")
+                    return None, None, None, val
+            else:  # position based: nudge, scale, stretch
+                if click_id[1][0] == "y":
+                    val = -(USERS[camname].position_last.y -
+                            USERS[camname].position.y)
+                elif click_id[1][0] == "x":
+                    val = -(USERS[camname].position_last.x -
+                            USERS[camname].position.x)
+                else:  # click_id[1][0] == "z":
+                    val = -(USERS[camname].position_last.z -
+                            USERS[camname].position.z)
             if val >= 0:
                 direction = f"{(click_id[1])[0:1]}p"
                 move = f"p{(click_id[1])[2:4]}"
@@ -1006,7 +1022,10 @@ def rotateline_callback(_scene, event, msg):
     if not obj or not direction or "rotation" not in obj.data:
         return
     rotated = rot = obj.data.rotation
-    inc = float(USERS[event.data.source].target_style)
+    if val == 0:
+        inc = float(USERS[event.data.source].target_style)
+    else:
+        inc = float(val)
     try:
         rot = arblib.rotation_quat2euler((rot.x, rot.y, rot.z, rot.w))
     except ValueError as error:

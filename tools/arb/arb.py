@@ -127,9 +127,6 @@ def handle_clickline_event(event, mode):
         ctrl_object_id = event.object_id
     click_id = ctrl_object_id.split(f"_{mode.value}_")
     object_id = click_id[0]
-    print(
-        f"{ctrl_object_id} {event.type} g:{USERS[camname].gesturing} {USERS[camname].target_control_id}")
-    # my-camera twofingerstart g:False None
     if not USERS[camname].target_control_id and not USERS[camname].gesturing and event.object_id == "my-camera":
         return None, None, None, val
     direction = (click_id[1])[0:2]
@@ -710,7 +707,6 @@ def get_clicklines_len(obj):
     xl = scale.x + line_extension
     yl = scale.y + line_extension
     zl = scale.z + line_extension
-    print(xl, yl, zl)
     return xl, yl, zl
 
 

@@ -85,7 +85,7 @@ def publish_badge(_scene: Scene, cam_id, badge_icon, active=False):
         parent=cam_id,
         clickable=True,
         evt_handler=question_callback,
-        position=(0, -0.15, -0.35),
+        position=(0, -0.1, -0.2),  # fit just behind video screen
         rotation=(0, 0, 0),
         scale=(0.02, 0.02, 0.02),
         material=Material(
@@ -140,6 +140,7 @@ def question_callback(_scene: Scene, event, msg):
     if "data" in msg and "object_type" in msg["data"]:
         object_type = msg["data"]["object_type"]
 
+    # TODO: handle only clicking you own buttons
     if action == "clientEvent":
         # handle click
         if msg_type == "mousedown":

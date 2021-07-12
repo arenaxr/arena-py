@@ -16,8 +16,8 @@ import math
 import random
 import statistics
 
-from arena import (GLTF, Box, Circle, Color, Cone, Line, Material, Object,
-                   Position, Rotation, Scale, Scene, ThickLine)
+from arena import (GLTF, Box, Circle, Color, Cone, Event, Line, Material,
+                   Object, Position, Rotation, Scale, Scene, ThickLine)
 
 import arblib
 from arblib import (EVT_MOUSEDOWN, EVT_MOUSEENTER, EVT_MOUSELEAVE, ButtonType,
@@ -118,26 +118,125 @@ def handle_clip_event(event):
 
 
 def handle_clickline_event(event, mode):
-    # naming order: objectname_clicktype_axis_direction
-    click_id = event.object_id.split(f"_{mode.value}_")
+    camname = event.data.source
+    val = 0
+    # naming order: object-name_mode_axis-move_direction
+    if USERS[camname].target_control_id and (event.type.startswith("twofinger") or USERS[camname].gesturing):
+        ctrl_object_id = USERS[camname].target_control_id
+    else:
+        ctrl_object_id = event.object_id
+    click_id = ctrl_object_id.split(f"_{mode.value}_")
     object_id = click_id[0]
-    direction = (click_id[1])[0: 2]
-    move = (click_id[1])[1: 4]
+    if not USERS[camname].target_control_id and not USERS[camname].gesturing and event.object_id == "my-camera":
+        return None, None, None, val
+    direction = (click_id[1])[0:2]
+    move = (click_id[1])[1:4]
     if event.type == EVT_MOUSEENTER:
-        scene.update_object(
-            CONTROLS[object_id][event.object_id],
-            material=Material(transparent=True, opacity=arblib.OPC_CLINE_HOVER))
+        if not USERS[camname].gesturing:
+            scene.update_object(
+                CONTROLS[object_id][ctrl_object_id],
+                material=Material(transparent=True, opacity=arblib.OPC_CLINE_HOVER))
+            # set controller target
+            USERS[camname].target_control_id = ctrl_object_id
     elif event.type == EVT_MOUSELEAVE:
+        if not USERS[camname].gesturing:
+            scene.update_object(
+                CONTROLS[object_id][ctrl_object_id],
+                material=Material(transparent=True, opacity=arblib.OPC_CLINE))
+            # release controller target
+            USERS[camname].target_control_id = None
+
+    # handle gestures
+    elif event.type == "twofingerstart":
+        # start hold down event for both clickers
+        USERS[camname].gesturing = True
         scene.update_object(
-            CONTROLS[object_id][event.object_id],
-            material=Material(transparent=True, opacity=arblib.OPC_CLINE))
+            CONTROLS[object_id][f"{object_id}_{mode.value}_{(click_id[1])[0:1]}p{(click_id[1])[2:4]}"],
+            material=Material(transparent=True, opacity=arblib.OPC_CLINE_HOVER))
+        scene.update_object(
+            CONTROLS[object_id][f"{object_id}_{mode.value}_{(click_id[1])[0:1]}n{(click_id[1])[2:4]}"],
+            material=Material(transparent=True, opacity=arblib.OPC_CLINE_HOVER))
+    elif event.type == "twofingerend":
+        # release hold down event for both clickers
+        if USERS[camname].gesturing:
+            scene.update_object(
+                CONTROLS[object_id][f"{object_id}_{mode.value}_{(click_id[1])[0:1]}p{(click_id[1])[2:4]}"],
+                material=Material(transparent=True, opacity=arblib.OPC_CLINE))
+            scene.update_object(
+                CONTROLS[object_id][f"{object_id}_{mode.value}_{(click_id[1])[0:1]}n{(click_id[1])[2:4]}"],
+                material=Material(transparent=True, opacity=arblib.OPC_CLINE))
+            # release controller target
+            USERS[camname].target_control_id = None
+            USERS[camname].gesturing = False
+    elif event.type == "twofingermove" and USERS[camname].slider:
+        # send slider movement for clickers
+        if USERS[camname].gesturing:
+            obj = scene.get_persisted_obj(object_id)
+            # determine direction of 2d gesture in 3d
+            if click_id[1][0] == "y":
+                val = event.data.positionStart.y - event.data.position.y
+            elif click_id[1][0] == "x":
+                if event.data.clickPos.z > obj.data.position.z:
+                    val = event.data.positionStart.x - event.data.position.x
+                else:
+                    val = event.data.positionStart.x + event.data.position.x
+            else:  # click_id[1][0] == "z":
+                if event.data.clickPos.x < obj.data.position.x:
+                    val = event.data.positionStart.x - event.data.position.x
+                else:
+                    val = event.data.positionStart.x + event.data.position.x
+            if val >= 0:
+                direction = f"{(click_id[1])[0:1]}p"
+                move = f"p{(click_id[1])[2:4]}"
+            else:
+                direction = f"{(click_id[1])[0:1]}n"
+                move = f"n{(click_id[1])[2:4]}"
+            return (obj, direction, move, abs(val))
+    else:
+        # send camera movement for clickers
+        if USERS[camname].gesturing:
+            obj = scene.get_persisted_obj(object_id)
+            # determine direction of 2d gesture in 3d
+            if mode == Mode.ROTATE:  # rotation based: rotate
+                try:
+                    rot_last = arblib.rotation_quat2euler(
+                        (USERS[camname].rotation_last.x, USERS[camname].rotation_last.y, USERS[camname].rotation_last.z, USERS[camname].rotation_last.w))
+                    rot = arblib.rotation_quat2euler(
+                        (USERS[camname].rotation.x, USERS[camname].rotation.y, USERS[camname].rotation.z, USERS[camname].rotation.w))
+                    if click_id[1][0] == "y":
+                        val = -(rot_last[1] - rot[1])
+                    elif click_id[1][0] == "x":
+                        val = -(rot_last[0] - rot[0])
+                    else:  # click_id[1][0] == "z":
+                        val = -(rot_last[2] - rot[2])
+                except ValueError as error:
+                    print(f"Rotation error: {error}")
+                    return None, None, None, val
+            else:  # position based: nudge, scale, stretch
+                if click_id[1][0] == "y":
+                    val = -(USERS[camname].position_last.y -
+                            USERS[camname].position.y)
+                elif click_id[1][0] == "x":
+                    val = -(USERS[camname].position_last.x -
+                            USERS[camname].position.x)
+                else:  # click_id[1][0] == "z":
+                    val = -(USERS[camname].position_last.z -
+                            USERS[camname].position.z)
+            if val >= 0:
+                direction = f"{(click_id[1])[0:1]}p"
+                move = f"p{(click_id[1])[2:4]}"
+            else:
+                direction = f"{(click_id[1])[0:1]}n"
+                move = f"n{(click_id[1])[2:4]}"
+            return (obj, direction, move, abs(val))
+
     # allow any user to change an object
     if event.type != EVT_MOUSEDOWN:
-        return None, None, None
-    if USERS[event.data.source].mode != mode:
-        return None, None, None
+        return None, None, None, val
+    if USERS[camname].mode != mode:
+        return None, None, None, val
     obj = scene.get_persisted_obj(object_id)
-    return (obj, direction, move)
+    return (obj, direction, move, val)
 
 
 def panel_callback(_scene, event, msg):
@@ -186,6 +285,8 @@ def panel_callback(_scene, event, msg):
         show_redpill_scene(active)
     elif mode == Mode.LAMP:
         USERS[camname].set_lamp(active)
+    elif mode == Mode.SLIDER:
+        USERS[camname].slider = active
     # active buttons
     if mode == Mode.CREATE:
         update_dropdown(camname, objid, mode, arblib.SHAPES, 2, shape_callback)
@@ -473,9 +574,12 @@ def do_nudge_select(camname, objid, position=None):
     xl, yl, zl = get_clicklines_len(obj)
     # nudge object + or - on 3 axis
     root = make_clickroot(objid, position, delim, move=True)
-    make_clickline("x", xl, objid, position, delim, color, callback, move=True, parent=root)
-    make_clickline("y", yl, objid, position, delim, color, callback, move=True, parent=root)
-    make_clickline("z", zl, objid, position, delim, color, callback, move=True, parent=root)
+    make_clickline("x", xl, objid, position, delim, color,
+                   callback, move=True, parent=root)
+    make_clickline("y", yl, objid, position, delim, color,
+                   callback, move=True, parent=root)
+    make_clickline("z", zl, objid, position, delim, color,
+                   callback, move=True, parent=root)
     # TODO: restore make_followspot(objid, position, delim, color, move=True)
     pos = Position(round(position.x, 3), round(
         position.y, 3), round(position.z, 3))
@@ -533,13 +637,16 @@ def do_stretch_select(camname, objid, scale=None):
     xl, yl, zl = get_clicklines_len(obj)
     # scale and reposition on one of 6 sides
     root = make_clickroot(objid, position, delim, move=True)
-    make_clickline("x", xl, objid, position, delim, color, callback, move=True, parent=root)
+    make_clickline("x", xl, objid, position, delim, color,
+                   callback, move=True, parent=root)
     make_clickline("x", -xl, objid, position, delim,
                    color, callback, move=True, parent=root)
-    make_clickline("y", yl, objid, position, delim, color, callback, move=True, parent=root)
+    make_clickline("y", yl, objid, position, delim, color,
+                   callback, move=True, parent=root)
     make_clickline("y", -yl, objid, position, delim,
                    color, callback, move=True, parent=root)
-    make_clickline("z", zl, objid, position, delim, color, callback, move=True, parent=root)
+    make_clickline("z", zl, objid, position, delim, color,
+                   callback, move=True, parent=root)
     make_clickline("z", -zl, objid, position, delim,
                    color, callback, move=True, parent=root)
     # TODO: restore make_followspot(objid, position, delim, color)
@@ -564,10 +671,14 @@ def do_rotate_select(camname, objid, rotation=None):
     # rotate object + or - on 3 axis, plus show original axis as after
     # effect
     root = make_clickroot(objid, position, delim)
-    ghost = make_clickroot(objid, position, delim, rotation=rotation, move=True)
-    make_clickline("x", xl, objid, position, delim, color, callback, ghost=ghost, parent=root)
-    make_clickline("y", yl, objid, position, delim, color, callback, ghost=ghost, parent=root)
-    make_clickline("z", zl, objid, position, delim, color, callback, ghost=ghost, parent=root)
+    ghost = make_clickroot(objid, position, delim,
+                           rotation=rotation, move=True)
+    make_clickline("x", xl, objid, position, delim, color,
+                   callback, ghost=ghost, parent=root)
+    make_clickline("y", yl, objid, position, delim, color,
+                   callback, ghost=ghost, parent=root)
+    make_clickline("z", zl, objid, position, delim, color,
+                   callback, ghost=ghost, parent=root)
     # TODO: restore make_followspot(objid, position, delim, color)
     try:
         rote = arblib.rotation_quat2euler(
@@ -596,7 +707,6 @@ def get_clicklines_len(obj):
     xl = scale.x + line_extension
     yl = scale.y + line_extension
     zl = scale.z + line_extension
-    print(xl, yl, zl)
     return xl, yl, zl
 
 
@@ -750,7 +860,7 @@ def make_clickline(axis, linelen, objid, start, delim,
     if ghost:
         boxline(  # ghostline aligns to parent rotation
             object_id=objid, axis=axis, direction=direction, delim=delim,
-            suffix="ghost", color=(255,255,255), start=start, end=end, line_width=0.005,
+            suffix="ghost", color=(255, 255, 255), start=start, end=end, line_width=0.005,
             move=move, parent=ghost)
     if ghost:
         cones = arblib.ROTATE_CONES
@@ -768,7 +878,7 @@ def make_clickroot(objid, position, delim, rotation=None, move=False):
     if rotation:
         name += "_rotated"
     else:
-        rotation=Rotation(0, 0, 0, 1)
+        rotation = Rotation(0, 0, 0, 1)
     if name not in CONTROLS[objid]:
         CONTROLS[objid][name] = Box(
             object_id=name,
@@ -779,7 +889,8 @@ def make_clickroot(objid, position, delim, rotation=None, move=False):
         )
         scene.add_object(CONTROLS[objid][name])
     elif move:
-        scene.update_object(CONTROLS[objid][name], position=position, rotation=rotation)
+        scene.update_object(CONTROLS[objid][name],
+                            position=position, rotation=rotation)
     return name
 
 
@@ -812,11 +923,14 @@ def meters_increment(meters_style):
 
 
 def nudgeline_callback(_scene, event, msg):
-    obj, direction, move = handle_clickline_event(event, Mode.NUDGE)
+    obj, direction, move, val = handle_clickline_event(event, Mode.NUDGE)
     if not obj or not direction or "position" not in obj.data:
         return
     nudged = loc = obj.data.position
-    inc = meters_increment(USERS[event.data.source].target_style)
+    if val == 0:
+        inc = meters_increment(USERS[event.data.source].target_style)
+    else:
+        inc = val
     if direction == "xp":
         nudged = Position(x=incr_pos(loc.x, inc), y=loc.y, z=loc.z)
     elif direction == "xn":
@@ -836,11 +950,14 @@ def nudgeline_callback(_scene, event, msg):
 
 
 def scaleline_callback(_scene, event, msg):
-    obj, direction, move = handle_clickline_event(event, Mode.SCALE)
+    obj, direction, move, val = handle_clickline_event(event, Mode.SCALE)
     if not obj or not direction or "scale" not in obj.data:
         return
     scaled = sca = obj.data.scale
-    inc = meters_increment(USERS[event.data.source].target_style)
+    if val == 0:
+        inc = meters_increment(USERS[event.data.source].target_style)
+    else:
+        inc = val
     if direction == "xp":
         scaled = Scale(x=incr_pos(sca.x, inc), y=incr_pos(
             sca.y, inc), z=incr_pos(sca.z, inc))
@@ -855,12 +972,15 @@ def scaleline_callback(_scene, event, msg):
 
 
 def stretchline_callback(_scene, event, msg):
-    obj, direction, move = handle_clickline_event(event, Mode.STRETCH)
+    obj, direction, move, val = handle_clickline_event(event, Mode.STRETCH)
     if not obj or not direction or not move or "scale" not in obj.data or "position" not in obj.data:
         return
     scaled = sca = obj.data.scale
     moved = loc = obj.data.position
-    inc = meters_increment(USERS[event.data.source].target_style)
+    if val == 0:
+        inc = meters_increment(USERS[event.data.source].target_style)
+    else:
+        inc = val
     if direction == "xp":
         scaled = Scale(x=incr_pos(sca.x, inc), y=sca.y, z=sca.z)
         moved = Position(x=recenter(
@@ -894,11 +1014,14 @@ def stretchline_callback(_scene, event, msg):
 
 
 def rotateline_callback(_scene, event, msg):
-    obj, direction, move = handle_clickline_event(event, Mode.ROTATE)
+    obj, direction, move, val = handle_clickline_event(event, Mode.ROTATE)
     if not obj or not direction or "rotation" not in obj.data:
         return
     rotated = rot = obj.data.rotation
-    inc = float(USERS[event.data.source].target_style)
+    if val == 0:
+        inc = float(USERS[event.data.source].target_style)
+    else:
+        inc = float(val)
     try:
         rot = arblib.rotation_quat2euler((rot.x, rot.y, rot.z, rot.w))
     except ValueError as error:
@@ -1092,6 +1215,8 @@ def scene_callback(_scene, event, msg):
             USERS[camname] = arblib.User(scene, camname, panel_callback)
 
         # save camera's attitude in the world
+        USERS[camname].position_last = USERS[camname].position
+        USERS[camname].rotation_last = USERS[camname].rotation
         USERS[camname].position = Position(msg["data"]["position"]["x"],
                                            msg["data"]["position"]["y"],
                                            msg["data"]["position"]["z"])
@@ -1115,6 +1240,18 @@ def scene_callback(_scene, event, msg):
         # else: # TODO: panel lock position drop is inaccurate
             # users[camname].lockx = rx + arblib.LOCK_XOFF
             # users[camname].locky = -(ry * math.pi) - arblib.LOCK_YOFF
+
+        # handle gesturing two-finger touch as clickline camera match-moves
+        if USERS[camname].gesturing and not USERS[camname].slider:
+            event["data"]["source"] = camname
+            if USERS[camname].mode == Mode.NUDGE:
+                nudgeline_callback(_scene, event, msg)
+            elif USERS[camname].mode == Mode.ROTATE:
+                rotateline_callback(_scene, event, msg)
+            elif USERS[camname].mode == Mode.SCALE:
+                scaleline_callback(_scene, event, msg)
+            elif USERS[camname].mode == Mode.STRETCH:
+                stretchline_callback(_scene, event, msg)
 
     # mouse event
     elif action == "clientEvent":
@@ -1167,6 +1304,36 @@ def scene_callback(_scene, event, msg):
                 else:  # no edits yet, load previous name to change
                     USERS[camname].typetext = object_id
                 USERS[camname].set_textright(USERS[camname].typetext)
+
+        # handle two-finger touch as clickline sliders
+        elif msg_type == "twofingerstart" or msg_type == "twofingermove" or msg_type == "twofingerend":
+            if USERS[camname].mode == Mode.NUDGE:
+                nudgeline_callback(_scene, event, msg)
+            elif USERS[camname].mode == Mode.ROTATE:
+                rotateline_callback(_scene, event, msg)
+            elif USERS[camname].mode == Mode.SCALE:
+                scaleline_callback(_scene, event, msg)
+            elif USERS[camname].mode == Mode.STRETCH:
+                stretchline_callback(_scene, event, msg)
+
+        # handle three-finger touch as toggle for clickline modes
+        elif msg_type == "threefingerstart":
+            if USERS[camname].mode == Mode.NONE:
+                buttonname = Mode.ROTATE
+            elif USERS[camname].mode == Mode.ROTATE:
+                buttonname = Mode.NUDGE
+            elif USERS[camname].mode == Mode.NUDGE:
+                buttonname = Mode.SCALE
+            elif USERS[camname].mode == Mode.SCALE:
+                buttonname = Mode.STRETCH
+            else:
+                buttonname = USERS[camname].mode  # collapse
+            event = Event(  # convert to panel click
+                object_id=f"{camname}_button_{buttonname.value}",
+                action="clientEvent",
+                type=EVT_MOUSEDOWN,
+                data={"source": camname})
+            panel_callback(_scene, event, msg)
 
 
 def end_program_callback(_scene):

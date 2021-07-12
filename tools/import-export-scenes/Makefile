@@ -7,9 +7,6 @@ import: venv
 test: venv
 		$(VENV)/python test.py
 
-signout: venv
-			$(VENV)/python signout.py
-
 show-req: venv
 		$(VENV)/pip freeze
 

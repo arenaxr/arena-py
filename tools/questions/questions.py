@@ -69,6 +69,9 @@ def init_args():
         print("Config missing 'icons' section")
         exit(1)
 
+    config["badge_icons"]["question"] = f'https://{config["arena"].get("host")}/{config["badge_icons"].get("question")}'
+    config["role_icons"]["question"] = f'https://{config["arena"].get("host")}/{config["role_icons"].get("question")}'
+
 
 def publish_badge(_scene: Scene, cam_id, badge_icon, active=False):
     # update arena viewers of this scene

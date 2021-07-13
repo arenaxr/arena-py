@@ -77,9 +77,11 @@ def publish_badge(_scene: Scene, cam_id, badge_icon, active=False):
         return
     badge_icon_id = f"badge_{cam_id}"
     if active:
-        opacity = 0.4
+        opacity = 1.0
+        transparent = True
     else:
-        opacity = 0.9
+        opacity = 0.25
+        transparent = True
     badge = Image(
         object_id=badge_icon_id,
         parent=cam_id,
@@ -89,15 +91,16 @@ def publish_badge(_scene: Scene, cam_id, badge_icon, active=False):
         rotation=(0, 0, 0),
         scale=(0.02, 0.02, 0.02),
         material=Material(
-            transparent=True,
+            transparent=transparent,
             opacity=opacity,
-            alphaTest=0.5,
+            alphaTest=0.2,
             shader="flat",
             side="double"),
         url=config["badge_icons"][badge_icon])
     _scene.add_object(badge)
     ACTUSERS[cam_id]["badge"] = badge
     print(f"{badge_icon_id} added")
+
     # TODO: push config into parsable yaml
 
 

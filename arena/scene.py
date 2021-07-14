@@ -323,6 +323,7 @@ class Scene(object):
                                         )
                             elif self.delete_obj_callback:
                                 self.callback_wrapper(self.delete_obj_callback, obj, payload)
+                            Object.remove(obj)
                             continue
 
                         else: # create/update

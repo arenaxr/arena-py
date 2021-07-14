@@ -6,9 +6,9 @@ arena:
 
 # where the icon files are
 badge_icons:
-  question: https://arenaxr.org/store/users/wiselab/questions/img/question.png
+  question: store/users/wiselab/questions/img/question.png
 role_icons:
-  question: https://arenaxr.org/store/users/wiselab/questions/img/question.png
+  question: store/users/wiselab/questions/img/question.png
 
 # icon placement relative to avatar
 badge:

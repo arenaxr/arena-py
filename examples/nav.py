@@ -48,6 +48,8 @@ def drawpath(waypoints, name_seed, persist ):
 def click_handler(scene,evt,msg):
     if evt.type =="mouseup":
         waypoints = []
+        waypoints.append( (18.9, -3.05,-12.3))
+        waypoints.append((18.9, -4.147,-12.0))
         waypoints.append((17.4, -4.147,-15.4))
         waypoints.append((14.95,-4.1,-16.0))
         waypoints.append((11.6,-1.8,-17.1))
@@ -64,10 +66,10 @@ def click_handler(scene,evt,msg):
 def draw_waypoints():
 
     cyl = Cylinder(
-        position = (17.4, -4.147,-15.4),
+        position = (18.9, -3.05,-12.3),
         color=(0,255,255),
-        scale=(0.1,0.05,0.1),
-        material=Material(transparent=True, opacity=0.5),
+        scale=(0.03,0.03,0.03),
+        material=Material(transparent=True, opacity=0.1),
         evt_handler=click_handler,
         clickable=True
     )            

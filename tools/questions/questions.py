@@ -69,6 +69,9 @@ def init_args():
         print("Config missing 'icons' section")
         exit(1)
 
+    config["badge_icons"]["question"] = f'https://{config["arena"].get("host")}/{config["badge_icons"].get("question")}'
+    config["role_icons"]["question"] = f'https://{config["arena"].get("host")}/{config["role_icons"].get("question")}'
+
 
 def publish_badge(_scene: Scene, cam_id, badge_icon, active=False):
     # update arena viewers of this scene
@@ -109,25 +112,26 @@ def publish_roleicon(_scene: Scene, cam_id, role_icon, active=False):
     if role_icon not in config["role_icons"]:
         return
     role_icon_id = f"roleicon_{cam_id}"
+    role = ACTUSERS[cam_id]["roleicon"] = Image(
+        object_id=role_icon_id,
+        parent=cam_id,
+        position=(0, 0.625, 0.045),
+        rotation=(0, 180, 0),
+        scale=(0.2, 0.2, 0.02),
+        material=Material(
+            transparent=False,
+            alphaTest=0.5,
+            shader="flat",
+            side="double"),
+        url=config["role_icons"][role_icon])
     if active:
-        role = ACTUSERS[cam_id]["roleicon"] = Image(
-            object_id=role_icon_id,
-            parent=cam_id,
-            position=(0, 0.6, 0.045),
-            rotation=(0, 180, 0),
-            scale=(0.2, 0.2, 0.02),
-            material=Material(
-                transparent=False,
-                alphaTest=0.5,
-                shader="flat",
-                side="double"),
-            url=config["role_icons"][role_icon])
         _scene.add_object(role)
         ACTUSERS[cam_id]["roleicon"] = role
         print(f"{role_icon_id} added")
-    elif "roleicon" in ACTUSERS[cam_id]:
-        _scene.delete_object(ACTUSERS[cam_id]["roleicon"])
-        del ACTUSERS[cam_id]["roleicon"]
+    else:
+        _scene.delete_object(role)
+        if "roleicon" in ACTUSERS[cam_id]:
+            del ACTUSERS[cam_id]["roleicon"]
         print(f"{role_icon_id} removed")
 
 
@@ -173,12 +177,12 @@ def user_join_callback(_scene: Scene, obj, msg):
     # publish all overrides so new user will see them
     if cam_id not in ACTUSERS:
         ACTUSERS[cam_id] = {}
-        publish_badge(_scene=_scene,
-                      cam_id=cam_id,
-                      badge_icon="question")
-        publish_roleicon(_scene=_scene,
-                         cam_id=cam_id,
-                         role_icon="question")
+    for user in ACTUSERS:
+        active = ("roleicon" in ACTUSERS[user])
+        publish_badge(_scene=_scene, cam_id=user,
+                      badge_icon="question", active=active)
+        publish_roleicon(_scene=_scene, cam_id=user,
+                         role_icon="question", active=active)
 
 
 def end_program_callback(_scene: Scene):

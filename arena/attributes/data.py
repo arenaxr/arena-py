@@ -3,6 +3,7 @@ from .attribute import Attribute
 from .position import Position
 from .rotation import Rotation
 from .goto_url import GotoUrl
+from .jitsi_video import JitsiVideo
 from .physics import Physics
 from .scale import Scale
 from .material import Material
@@ -28,6 +29,14 @@ class Data(Attribute):
                 k = "goto_url"
                 if isinstance(v, dict):
                     data[k] = GotoUrl(**v)
+                else:
+                    data[k] = v
+
+            if k == "jitsi-video":
+                dash_words += [k]
+                k = "jitsi_video"
+                if isinstance(v, dict):
+                    data[k] = JitsiVideo(**v)
                 else:
                     data[k] = v
 

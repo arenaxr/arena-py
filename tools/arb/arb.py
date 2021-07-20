@@ -1225,8 +1225,17 @@ def scene_callback(_scene, event, msg):
                                            msg["data"]["rotation"]["z"],
                                            msg["data"]["rotation"]["w"])
 
-        rx = msg["data"]["rotation"]["x"]
-        ry = msg["data"]["rotation"]["y"]
+        # rx = msg["data"]["rotation"]["x"]
+        # ry = msg["data"]["rotation"]["y"]
+        rot = (0, 0, 0)
+        try:
+            rot = arblib.rotation_quat2euler((
+                ["data"]["rotation"]["x"],
+                ["data"]["rotation"]["y"],
+                ["data"]["rotation"]["z"],
+                ["data"]["rotation"]["w"]))
+        except ValueError as error:
+            print(f"Rotation error: {error}")
 
         # floating controller
         if not USERS[camname].follow_lock:
@@ -1237,9 +1246,9 @@ def scene_callback(_scene, event, msg):
             pz = arblib.PANEL_RADIUS * math.sin(ty)
             scene.update_object(USERS[camname].follow,
                                 position=Position(px, py, pz))
-        # else: # TODO: panel lock position drop is inaccurate
-            # users[camname].lockx = rx + arblib.LOCK_XOFF
-            # users[camname].locky = -(ry * math.pi) - arblib.LOCK_YOFF
+        # else:  # TODO: panel lock position drop is inaccurate
+        #     USERS[camname].lockx = rot[0] + arblib.LOCK_XOFF
+        #     USERS[camname].locky = rot[1] + arblib.LOCK_YOFF
 
         # handle gesturing two-finger touch as clickline camera match-moves
         if USERS[camname].gesturing and not USERS[camname].slider:

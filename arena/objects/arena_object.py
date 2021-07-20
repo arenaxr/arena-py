@@ -159,6 +159,9 @@ class Object(BaseObject):
             elif "goto_url" == k:
                 json_data["goto-url"] = v
 
+            elif "jitsi_video" == k:
+                json_data["jitsi-video"] = v
+
             elif "collision_listener" == k:
                 json_data["collision-listener"] = v
 

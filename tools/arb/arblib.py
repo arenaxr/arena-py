@@ -144,8 +144,8 @@ class User:
         self.position_last = self.rotation_last = None
         self.gesturing = False
         self.target_style = self.typetext = ""
-        self.locky = LOCK_YOFF
-        self.lockx = LOCK_XOFF
+        self.lock_inc = LOCK_YOFF
+        self.lock_azi = LOCK_XOFF
         self.wloc_start = self.wloc_end = None
         self.wrot_start = self.wrot_end = None
         self.lamp = None
@@ -482,6 +482,11 @@ def temp_loc_marker(position, color):
 def temp_rot_marker(position, rotation):
     return Box(ttl=120, rotation=rotation, material=Material(color=Color(255, 255, 255)),
                position=position, scale=Scale(0.02, 0.01, 0.15), clickable=True)
+
+
+def rotation_quat2radian(quat):
+    rotq = scipy.spatial.transform.Rotation.from_quat(list(quat))
+    return tuple(rotq.as_euler('xyz', degrees=False))
 
 
 def rotation_quat2euler(quat):

@@ -1225,30 +1225,31 @@ def scene_callback(_scene, event, msg):
                                            msg["data"]["rotation"]["z"],
                                            msg["data"]["rotation"]["w"])
 
-        # rx = msg["data"]["rotation"]["x"]
-        # ry = msg["data"]["rotation"]["y"]
-        rot = (0, 0, 0)
         try:
-            rot = arblib.rotation_quat2euler((
-                ["data"]["rotation"]["x"],
-                ["data"]["rotation"]["y"],
-                ["data"]["rotation"]["z"],
-                ["data"]["rotation"]["w"]))
+            rotrad = arblib.rotation_quat2radian((
+                msg["data"]["rotation"]["x"],
+                msg["data"]["rotation"]["y"],
+                msg["data"]["rotation"]["z"],
+                msg["data"]["rotation"]["w"]))
         except ValueError as error:
+            rotrad = (0, 0, 0)
             print(f"Rotation error: {error}")
 
         # floating controller
         if not USERS[camname].follow_lock:
-            ty = -(ry + USERS[camname].locky) / 0.7 * math.pi / 2
-            tx = -(rx + USERS[camname].lockx) / 0.7 * math.pi / 2
-            px = arblib.PANEL_RADIUS * -math.cos(ty)
-            py = arblib.PANEL_RADIUS * math.sin(tx)
-            pz = arblib.PANEL_RADIUS * math.sin(ty)
-            scene.update_object(USERS[camname].follow,
-                                position=Position(px, py, pz))
-        # else:  # TODO: panel lock position drop is inaccurate
-        #     USERS[camname].lockx = rot[0] + arblib.LOCK_XOFF
-        #     USERS[camname].locky = rot[1] + arblib.LOCK_YOFF
+            print(rotrad)
+            azi = USERS[camname].lock_azi + rotrad[0]
+            inc = USERS[camname].lock_inc + rotrad[1]
+            px = arblib.PANEL_RADIUS * math.cos(azi) * math.sin(inc)
+            py = arblib.PANEL_RADIUS * math.sin(azi) * math.sin(inc)
+            pz = -arblib.PANEL_RADIUS * math.cos(azi)
+            pos = Position(px, py, pz)
+            scene.update_object(USERS[camname].follow, position=pos)
+            print(pos)
+        else:
+            # save azimuth/inclintion for next lock release
+            USERS[camname].lock_azi = rotrad[0] + arblib.LOCK_XOFF
+            USERS[camname].lock_inc = rotrad[1] + arblib.LOCK_YOFF
 
         # handle gesturing two-finger touch as clickline camera match-moves
         if USERS[camname].gesturing and not USERS[camname].slider:

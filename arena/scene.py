@@ -15,6 +15,7 @@ from .attributes import *
 from .event_loop import *
 from .events import *
 from .objects import *
+from .stores import *
 from .utils import *
 
 
@@ -106,6 +107,7 @@ class Scene(object):
         self.namespaced_scene =  f"{self.namespace}/{self.scene}"
 
         self.root_topic = f"{self.realm}/s/{self.namespaced_scene}"
+        # TODO: f"{self.root_topic}/+" so only see first layers of stores
         self.scene_topic = f"{self.root_topic}/#"   # main topic for entire scene
         self.persist_url = f"https://{self.host}/persist/{self.namespaced_scene}"
 
@@ -289,21 +291,30 @@ class Scene(object):
             try:
                 # update object attributes, if possible
                 if "object_id" in payload:
-                    # parese payload
+                    # parse payload
                     object_id = payload.get("object_id", None)
                     action = payload.get("action", None)
 
                     data = payload.get("data", {})
+                    message_type = payload.get("type", None)
                     object_type = data.get("object_type", None)
 
                     event = None
 
-                    # create/get object from object_id
-                    if object_id in self.all_objects:
-                        obj = self.all_objects[object_id]
+                    if message_type == "store":
+                        # create/get store from object_id
+                        if object_id in self.all_stores:
+                            obj = self.all_stores[object_id]
+                        else:
+                            StoreClass = STORE_TYPE_MAP.get(object_type, Store)
+                            obj = StoreClass(**payload)
                     else:
-                        ObjClass = OBJECT_TYPE_MAP.get(object_type, Object)
-                        obj = ObjClass(**payload)
+                        # create/get object from object_id
+                        if object_id in self.all_objects:
+                            obj = self.all_objects[object_id]
+                        else:
+                            ObjClass = OBJECT_TYPE_MAP.get(object_type, Object)
+                            obj = ObjClass(**payload)
 
                     # react to action accordingly
                     if action:
@@ -323,10 +334,18 @@ class Scene(object):
                                         )
                             elif self.delete_obj_callback:
                                 self.callback_wrapper(self.delete_obj_callback, obj, payload)
+
+                            if isinstance(obj, Store):
+                                Store.remove(obj)
+                            else:
+                                Object.remove(obj)
                             continue
 
                         else: # create/update
-                            obj.update_attributes(**payload)
+                            if isinstance(obj, JSON) and "jq_updates" in data:
+                                obj.update_store(**data)
+                            else:
+                                obj.update_attributes(**payload)
 
                     # call new message callback for all messages
                     if self.on_msg_callback:
@@ -442,16 +461,22 @@ class Scene(object):
         """Returns all the objects in a scene"""
         return Object.all_objects
 
+    @property
+    def all_stores(self):
+        """Returns all the stores in a scene"""
+        return Store.all_stores
+
     def add_object(self, obj):
         """Public function to create an object"""
         res = self._publish(obj, "create")
-        self.run_animations(obj)
+        if not isinstance(obj, Store):
+            self.run_animations(obj)
         return res
 
     def add_objects(self, objs):
         """Public function to create multiple objects in a list"""
         for obj in objs:
-            self.add_objects(obj)
+            self.add_object(obj)
         return len(objs)
 
     def update_object(self, obj, **kwargs):
@@ -459,7 +484,12 @@ class Scene(object):
         if kwargs:
             obj.update_attributes(**kwargs)
         res = self._publish(obj, "update")
-        self.run_animations(obj)
+        return res
+
+    def update_store(self, obj, path=None, **kwargs):
+        """Public function to update a store"""
+        data = obj.update_store(**kwargs)
+        res = self._publish(obj, "update", path=path, data=data)
         return res
 
     def update_objects(self, objs, **kwargs):
@@ -473,7 +503,10 @@ class Scene(object):
         payload = {
             "object_id": obj.object_id
         }
-        Object.remove(obj)
+        if isinstance(obj, Store):
+            Store.remove(obj)
+        else:
+            Object.remove(obj)
         return self._publish(payload, "delete")
 
     def run_animations(self, obj):
@@ -498,23 +531,34 @@ class Scene(object):
             obj.clear_animations()
             return self._publish(payload, "dispatch_animation")
 
-    def _publish(self, obj, action):
+    def _publish(self, obj, action, path=None, data=None):
         """Publishes to mqtt broker with "action":action"""
         topic = f"{self.root_topic}/{self.mqttc_id}/{obj['object_id']}"
+        if path is not None:
+            topic += path
         d = datetime.now().isoformat()[:-3]+"Z"
 
         if action == "delete":
-            payload = obj
+            if data is not None:
+                payload = data
+            else:
+                payload = obj
             payload["action"] = "delete"
             payload["timestamp"] = d
             payload = json.dumps(payload)
-        elif action == "dispatch_animation":
-            payload = obj
+        elif action == "dispatch_animation" and not isinstance(obj, Store):
+            if data is not None:
+                payload = data
+            else:
+                payload = obj
             payload["action"] = "update"
             payload["timestamp"] = d
             payload = json.dumps(payload)
         else:
-            payload = obj.json(action=action, timestamp=d)
+            if data is not None:
+                payload = obj.json(data=data, action=action, timestamp=d)
+            else:
+                payload = obj.json(action=action, timestamp=d)
 
         self.mqttc.publish(topic, payload, qos=0)
         if self.debug: print("[publish]", topic, payload)

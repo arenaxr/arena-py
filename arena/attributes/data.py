@@ -112,6 +112,9 @@ class Data(Attribute):
             elif isinstance(v, Attribute):
                 data[k] = v
 
+            elif k == "json_data":  # For JSON store
+                data[k] = v
+
             else:
                 try:
                     # unknown attribute

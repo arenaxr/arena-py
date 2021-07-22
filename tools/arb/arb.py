@@ -1236,20 +1236,44 @@ def scene_callback(_scene, event, msg):
             print(f"Rotation error: {error}")
 
         # floating controller
+        rx = rotrad[0]
+        ry = rotrad[1]
+        rz = rotrad[2]
         if not USERS[camname].follow_lock:
-            print(rotrad)
-            azi = USERS[camname].lock_azi + rotrad[0]
-            inc = USERS[camname].lock_inc + rotrad[1]
-            px = arblib.PANEL_RADIUS * math.cos(azi) * math.sin(inc)
-            py = arblib.PANEL_RADIUS * math.sin(azi) * math.sin(inc)
-            pz = -arblib.PANEL_RADIUS * math.cos(azi)
+            #azi = ((math.pi)+rz)-USERS[camname].lock_azi
+            #inc = ((math.pi/2)+rx)-USERS[camname].lock_inc
+            # azi = (math.pi/2) + ry
+            # inc = (math.pi) + rx
+            # px = (arblib.PANEL_RADIUS * math.cos(azi) * math.sin(inc))
+            # py = (arblib.PANEL_RADIUS * math.sin(azi) * math.sin(inc))
+            # pz = (arblib.PANEL_RADIUS * math.cos(inc))
+
+            # where:
+            # r >= 0
+            # inc >= 0 and inc <= pi
+            # azi >= 0 and azi <= 2pi
+            azi = (math.pi/2*3) + ry
+            if azi > 2*math.pi:
+                azi = (math.pi/2) + rx
+            inc = (math.pi/2*3) + rx
+            if inc > math.pi:
+                inc = (math.pi/2) + ry
+            px = (arblib.PANEL_RADIUS * math.cos(azi) * math.sin(inc))
+            pz = (arblib.PANEL_RADIUS * math.sin(azi) * math.sin(inc))
+            py = (arblib.PANEL_RADIUS * math.cos(inc))
+
             pos = Position(px, py, pz)
             scene.update_object(USERS[camname].follow, position=pos)
-            print(pos)
+
+            print([rx, ry, rz])
+            #print([USERS[camname].lock_azi, USERS[camname].lock_inc])
+            print([azi, inc])
         else:
             # save azimuth/inclintion for next lock release
-            USERS[camname].lock_azi = rotrad[0] + arblib.LOCK_XOFF
-            USERS[camname].lock_inc = rotrad[1] + arblib.LOCK_YOFF
+            USERS[camname].lock_azi = (
+                (math.pi/2)+ry) + arblib.LOCK_AZIOFF
+            USERS[camname].lock_inc = (
+                (math.pi/2)+rx) + arblib.LOCK_INCOFF
 
         # handle gesturing two-finger touch as clickline camera match-moves
         if USERS[camname].gesturing and not USERS[camname].slider:

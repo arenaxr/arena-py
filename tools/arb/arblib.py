@@ -21,8 +21,6 @@ GRIDLEN = 20  # meters
 SCL_HUD = 0.1  # meters
 PANEL_RADIUS = 1  # meters
 CLIP_RADIUS = PANEL_RADIUS + 0.25  # meters
-LOCK_AZIOFF = 0  # radian azimuth offset
-LOCK_INCOFF = 0  # radian inclination offset
 CLR_HUDTEXT = Color(128, 128, 128)  # gray
 CLR_NUDGE = Color(255, 255, 0)  # yellow
 CLR_SCALE = Color(0, 0, 255)  # blue
@@ -144,8 +142,8 @@ class User:
         self.position_last = self.rotation_last = None
         self.gesturing = False
         self.target_style = self.typetext = ""
-        self.lock_inc = LOCK_INCOFF
-        self.lock_azi = LOCK_AZIOFF
+        self.lock_rx = 0
+        self.lock_ry = 0
         self.wloc_start = self.wloc_end = None
         self.wrot_start = self.wrot_end = None
         self.lamp = None

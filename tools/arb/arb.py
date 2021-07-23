@@ -1232,48 +1232,42 @@ def scene_callback(_scene, event, msg):
                 msg["data"]["rotation"]["z"],
                 msg["data"]["rotation"]["w"]))
         except ValueError as error:
-            rotrad = (0, 0, 0)
             print(f"Rotation error: {error}")
+            return
 
         # floating controller
         rx = rotrad[0]
         ry = rotrad[1]
         rz = rotrad[2]
         if not USERS[camname].follow_lock:
-            #azi = ((math.pi)+rz)-USERS[camname].lock_azi
-            #inc = ((math.pi/2)+rx)-USERS[camname].lock_inc
-            # azi = (math.pi/2) + ry
-            # inc = (math.pi) + rx
-            # px = (arblib.PANEL_RADIUS * math.cos(azi) * math.sin(inc))
-            # py = (arblib.PANEL_RADIUS * math.sin(azi) * math.sin(inc))
-            # pz = (arblib.PANEL_RADIUS * math.cos(inc))
-
             # where:
-            # r >= 0
-            # inc >= 0 and inc <= pi
-            # azi >= 0 and azi <= 2pi
-            azi = (math.pi/2*3) + ry
-            if azi > 2*math.pi:
-                azi = (math.pi/2) + rx
-            inc = (math.pi/2*3) + rx
-            if inc > math.pi:
-                inc = (math.pi/2) + ry
-            px = (arblib.PANEL_RADIUS * math.cos(azi) * math.sin(inc))
-            pz = (arblib.PANEL_RADIUS * math.sin(azi) * math.sin(inc))
-            py = (arblib.PANEL_RADIUS * math.cos(inc))
+            # radius: r >= 0
+            # inclination (theta): inc >= 0 and inc <= pi
+            # azimuth (epsilon): azi >= 0 and azi <= 2pi
+            # TODO: handle excess theta/epsilon from offset
+            # TODO: handle VR lock position offset
+            azi = (math.pi/2) - ry + USERS[camname].lock_ry
+            inc = (math.pi/2) + rx - USERS[camname].lock_rx
 
+            # derive cartesian coordinates x,y,z from spherical coordinates r,epsilon,theta
+            px = (arblib.PANEL_RADIUS * math.cos(azi) * math.sin(inc))
+            py = (arblib.PANEL_RADIUS * math.cos(inc))
+            pz = -(arblib.PANEL_RADIUS * math.sin(azi) * math.sin(inc))
             pos = Position(px, py, pz)
             scene.update_object(USERS[camname].follow, position=pos)
 
-            print([rx, ry, rz])
-            #print([USERS[camname].lock_azi, USERS[camname].lock_inc])
-            print([azi, inc])
+            # TODO: remove this debug
+            if event["displayName"] == "user1":
+                print([math.floor(math.degrees(rx)), math.floor(
+                    math.degrees(ry)), math.floor(math.degrees(rz))])
+                print([math.floor(math.degrees(USERS[camname].lock_ry)),
+                       math.floor(math.degrees(USERS[camname].lock_rx))])
+                print([math.floor(math.degrees(azi)),
+                       math.floor(math.degrees(inc))])
         else:
-            # save azimuth/inclintion for next lock release
-            USERS[camname].lock_azi = (
-                (math.pi/2)+ry) + arblib.LOCK_AZIOFF
-            USERS[camname].lock_inc = (
-                (math.pi/2)+rx) + arblib.LOCK_INCOFF
+            # save rotation of azimuth/inclination for next lock release
+            USERS[camname].lock_ry = ry
+            USERS[camname].lock_rx = rx
 
         # handle gesturing two-finger touch as clickline camera match-moves
         if USERS[camname].gesturing and not USERS[camname].slider:

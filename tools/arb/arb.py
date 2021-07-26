@@ -6,7 +6,6 @@
 # pylint: disable=missing-docstring
 
 # TODO: highlight mouseenter to avoid click
-# TODO: fix follow unlock position relative, not default
 # TODO: handle click-listener objects with 1.1 x scale shield?
 # TODO: add easy doc overlay for each button operation
 
@@ -1244,10 +1243,15 @@ def scene_callback(_scene, event, msg):
             # radius: r >= 0
             # inclination (theta): inc >= 0 and inc <= pi
             # azimuth (epsilon): azi >= 0 and azi <= 2pi
-            # TODO: handle excess theta/epsilon from offset
             # TODO: handle VR lock position offset
-            azi = (math.pi/2) - ry + USERS[camname].lock_ry
-            inc = (math.pi/2) + rx - USERS[camname].lock_rx
+            if abs(rx) >= (math.pi/2) and abs(rz) >= (math.pi/2):
+                azi = (math.pi*1.5) + ry + USERS[camname].lock_ry
+            else:
+                azi = (math.pi/2) - ry + USERS[camname].lock_ry
+            if abs(rx) >= (math.pi/2) and abs(rz) >= (math.pi/2):
+                inc = (math.pi*1.5) - rx - USERS[camname].lock_rx
+            else:
+                inc = (math.pi/2) + rx - USERS[camname].lock_rx
 
             # derive cartesian coordinates x,y,z from spherical coordinates r,epsilon,theta
             px = (arblib.PANEL_RADIUS * math.cos(azi) * math.sin(inc))

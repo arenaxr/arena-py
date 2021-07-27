@@ -1244,14 +1244,14 @@ def scene_callback(_scene, event, msg):
             # inclination (theta): inc >= 0 and inc <= pi
             # azimuth (epsilon): azi >= 0 and azi <= 2pi
             # TODO: handle VR lock position offset
-            if abs(rx) >= (math.pi/2) and abs(rz) >= (math.pi/2):
-                azi = (math.pi*1.5) + ry + USERS[camname].lock_ry
-            else:
+            if abs(rx) < (math.pi/2):
                 azi = (math.pi/2) - ry + USERS[camname].lock_ry
-            if abs(rx) >= (math.pi/2) and abs(rz) >= (math.pi/2):
-                inc = (math.pi*1.5) - rx - USERS[camname].lock_rx
             else:
+                azi = (math.pi*1.5) + ry + USERS[camname].lock_ry
+            if abs(rx) < (math.pi/2):
                 inc = (math.pi/2) + rx - USERS[camname].lock_rx
+            else:
+                inc = (math.pi) - rx - USERS[camname].lock_rx
 
             # derive cartesian coordinates x,y,z from spherical coordinates r,epsilon,theta
             px = (arblib.PANEL_RADIUS * math.cos(azi) * math.sin(inc))

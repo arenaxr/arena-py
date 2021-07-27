@@ -1,0 +1,8 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+args = sys.argv
+args[0] = "python3 -m arena -a sub"
+os.system(" ".join(args))

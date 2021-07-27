@@ -39,16 +39,18 @@ def main(mqtth, realm, scene, namespace, action, topic, message):
 
     if action == SUBSCRIBE:
         if topic is None:
+            print(f"Subscribing to topic: <{scene.scene_topic}>... ", end="")
             scene.on_msg_callback = on_msg_callback
         else:
             print(f"Subscribing to topic: <{topic}>... ", end="")
             scene.message_callback_add(topic, on_custom_topic_callback)
-            print("done!")
+        print("done!")
 
     elif action == PUBLISH:
         if message is None:
             print("Message not specified! Aborting...")
             return
+        print(f"Subscribing to topic: <{scene.root_topic}>... ")
         scene.run_once(send_msg, scene=scene, topic=topic, msg=message)
 
     scene.run_tasks()

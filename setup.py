@@ -16,7 +16,9 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     scripts=[
         'scripts/arena-py-signout',
-        'scripts/arena-py-permissions'
+        'scripts/arena-py-sub',
+        'scripts/arena-py-permissions',
+        'scripts/arena-py-pub',
     ],
     install_requires=[
         "aiohttp>=3.7.4",

@@ -5,6 +5,8 @@ Usage: python3 -m arena -s <scene> -a <pub/sub> ...
 """
 
 import argparse
+import json
+
 from arena import *
 
 # define defaults
@@ -12,8 +14,10 @@ DEFAULT_MQTT_HOST = "arenaxr.org"
 PUBLISH = "pub"
 SUBSCRIBE = "sub"
 
+
 def on_msg_callback(scene, obj, msg):
     print(f"<{scene.root_topic}> \"{msg}\"")
+
 
 def on_custom_topic_callback(client, userdata, msg):
     try:
@@ -22,10 +26,17 @@ def on_custom_topic_callback(client, userdata, msg):
     except:
         pass
 
+
 def send_msg(scene, topic, msg):
     if topic is None:
-        print(f"Publishing to topic: <{scene.root_topic}>... ", end="")
-        scene.mqttc.publish(scene.root_topic, msg)
+        # use object topic name if possible
+        try:
+            json_msg = json.loads(msg)
+            obj_topic = f"{scene.root_topic}/{json_msg['object_id']}"
+        except:
+            obj_topic = scene.root_topic
+        print(f"Publishing to topic: <{obj_topic}>... ", end="")
+        scene.mqttc.publish(obj_topic, msg)
     else:
         print(f"Publishing to topic: <{topic}>... ", end="")
         scene.mqttc.publish(topic, msg)
@@ -39,11 +50,12 @@ def main(mqtth, realm, scene, namespace, action, topic, message):
 
     if action == SUBSCRIBE:
         if topic is None:
+            print(f"Subscribing to topic: <{scene.scene_topic}>... ", end="")
             scene.on_msg_callback = on_msg_callback
         else:
             print(f"Subscribing to topic: <{topic}>... ", end="")
             scene.message_callback_add(topic, on_custom_topic_callback)
-            print("done!")
+        print("done!")
 
     elif action == PUBLISH:
         if message is None:
@@ -55,7 +67,7 @@ def main(mqtth, realm, scene, namespace, action, topic, message):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=("ARENA-py CLI"))
+    parser = argparse.ArgumentParser(description=("ARENA-py MQTT CLI"))
 
     parser.add_argument("-mh", "--mqtth",
                         type=str,
@@ -67,8 +79,7 @@ if __name__ == "__main__":
                         default="realm")
     parser.add_argument("-s", "--scene",
                         type=str,
-                        help="Scene to listen to",
-                        default="none")
+                        help="Scene to listen to")
     parser.add_argument("-n", "--namespace",
                         type=str,
                         help="Namespace of scene",

@@ -1,5 +1,3 @@
-# from re import split
-
 import jq
 
 from .arena_store import Store
@@ -20,7 +18,8 @@ class JSON(Store):
         new_data = self.data.json_data
         for update in jq_updates:
             new_data = jq.compile(update).input(new_data)
-        self.data.json_data = (new_data.all())[0]
+            new_data = (new_data.all())[0]
+        self.data.json_data = new_data
 
         if self.update_handler:
             self.update_handler(self)

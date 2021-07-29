@@ -2,11 +2,22 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.1.39] - 2021-07-28
+### Added
+- Attribute `jitsi-video`.
+- MQTT CLI pub/sub scripts: `arena-py-pub` and `arena-py-sub`.
+
+### Changed
+- Remove local objects when receiving `delete` message.
+- MQTT CLI auto-generates topic from `object_id` when undefined.
+
 ## [0.1.38] - 2021-07-06
 ### Added
-- Improved auto-detect signout when server changes.
-- Auth scripts: 'arena-py-signout' and 'arena-py-permissions'.
+- Auth scripts: `arena-py-signout` and `arena-py-permissions`.
 - Ability to request video token.
+
+### Changed
+- Improved auto-detect signout when server changes.
 
 ## [0.1.37] - 2021-06-23
 ### Changed

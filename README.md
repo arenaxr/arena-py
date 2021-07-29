@@ -49,6 +49,9 @@ For headless environments, the ARENA library `Scene(host="myhost.com")` will pro
 browser anywhere, ask you for an account to authenticate you with, and show you a code you can enter on the command line,
 before opening a client MQTT connection.
 
+## Scripts
+Some helper script aliases have been added in this library to help you manage authentication and quick command-line (CLI) publish and subscribe to the ARENA.
+
 ### Sign-Out
 ```bash
 arena-py-signout
@@ -56,6 +59,23 @@ arena-py-signout
 ### Show Permissions
 ```bash
 arena-py-permissions
+```
+### CLI Subscribe to Scene Messages
+```bash
+arena-py-sub -mh arenaxr.org -s example
+```
+### CLI Subscribe to Custom Topic
+```bash
+arena-py-sub -mh arenaxr.org -t realm/g/a
+```
+### CLI Publish a Scene Object Message
+```bash
+arena-py-pub -mh arenaxr.org -s example -m '{"object_id": "gltf-model_Earth", "action": "create", "type": "object", "data": {"object_type": "gltf-model", "position": {"x":0, "y": 0.1, "z": 0}, "url": "store/models/Earth.glb", "scale": {"x": 5, "y": 5, "z": 5}}}'
+```
+### CLI Help
+```bash
+arena-py-pub --help
+arena-py-sub --help
 ```
 
 ## Changelog

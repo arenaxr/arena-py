@@ -4,7 +4,7 @@ ARENA-py
 Draw objects and run programs in the ARENA using Python!
 """
 
-__version__     = "0.1.38"
+__version__     = "0.1.39"
 __author__      = "CONIX Research Center"
 
 __license__     = "BSD 3-Clause"

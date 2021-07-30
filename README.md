@@ -37,17 +37,13 @@ message protocol: JSON messages described in more detail at https://github.com/c
 That forms a layer, in turn, on top of [A-Frame](https://aframe.io/) and [THREE.js](http://threejs.org/) javascript libraries.
 
 ## Authentication
-We are adding protection to the ARENA MQTT broker, eventually to host an ACL list to limit access to change your scenes.
-As a first step, we are requiring Python programs to supply authentication through a Google account.
+We have added protection to the ARENA MQTT broker to limit access to change your scenes, which requires Python programs to supply authentication through a Google account.
 
 ### Sign-In Desktop OS
-If you have a web browser available, the ARENA library `Scene(host="myhost.com")` will launch a web browser the first time
-and ask you for an account to authenticate you with, before opening a client MQTT connection.
+If you have a web browser available, the ARENA-py library `Scene(host="myhost.com")` will launch a web browser the first time and ask you for an account to authenticate you with, before opening a client MQTT connection.
 
 ### Sign-In Server/Headless OS
-For headless environments, the ARENA library `Scene(host="myhost.com")` will provide you with a url to cut and paste in a
-browser anywhere, ask you for an account to authenticate you with, and show you a code you can enter on the command line,
-before opening a client MQTT connection.
+For headless environments, the ARENA-py library `Scene(host="myhost.com")` will provide you with a url to cut and paste in a browser anywhere, ask you for an account to authenticate you with, and show you a code you can enter on the command line, before opening a client MQTT connection.
 
 ## Scripts
 Some helper script aliases have been added in this library to help you manage authentication and quick command-line (CLI) publish and subscribe to the ARENA.

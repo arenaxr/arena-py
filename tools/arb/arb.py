@@ -1084,6 +1084,10 @@ def clipboard_callback(_scene, event, msg):
     if not camname:
         return
     position = event.data.position
+    clickPos = event.data.clickPos
+    if clickPos.x == 0 and clickPos.y == 0 and clickPos.z == 0:
+        print('Invalid click position: event clickPos is uninitialized! Ignoring.')
+        return
     if USERS[camname].mode == Mode.CREATE or USERS[camname].mode == Mode.MODEL:
         create_obj(camname, USERS[camname].get_clipboard(), position)
     elif USERS[camname].mode == Mode.MOVE:
@@ -1205,7 +1209,6 @@ def scene_callback(_scene, event, msg):
         msg_type = msg["type"]
     if "data" in msg and "object_type" in msg["data"]:
         object_type = msg["data"]["object_type"]
-    # print(f'{object_type} {action} {msg_type} {object_id}')
 
     if object_type == "camera":
         # camera updates define users present

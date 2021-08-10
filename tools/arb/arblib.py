@@ -424,7 +424,8 @@ def occlude_obj(scene: Scene, object_id, occlude):
         # NOTE: transparency does not allow occlusion so remove transparency here.
         scene.update_object(scene.all_objects[object_id],
                             **{"material-extras": {"transparentOccluder": (occlude != BOOLS[1])}},
-                            material=Material(transparent=False, opacity=1))
+                            #material=Material(transparent=False, opacity=1)
+                            )
         print(f"Occluded {object_id}")
 
 

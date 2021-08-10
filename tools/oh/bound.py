@@ -13,8 +13,8 @@ scene = Scene(host="arenaxr.org", realm="realm", scene="example")
    @param r:        radius from center to edge of boundaries
    @param pos:      user's position
 '''
-def check_out_bounds(center,r, pos):
-    cx = center[0] 
+def check_out_bounds(center, r, pos):
+    cx = center[0]
     cy = center[1]
     px = pos[0]
     py = pos[1]
@@ -26,17 +26,14 @@ def bound(center, radius):
         x = pos['x']
         z = pos['z']
         if check_out_bounds((0,0),10,(x,z)):
-            print("teleported!")
             scene.manipulate_camera(
                 user,
                 position= center
-
             )
+
 @scene.run_forever(interval_ms=1000)
 def main():
-  global scene
-  bound(Position(0,2,0), 1)
-    
+    global scene
+    bound(Position(0,2,0), 1)
 
 scene.run_tasks()
-

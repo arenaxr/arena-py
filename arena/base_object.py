@@ -1,14 +1,10 @@
-import json
+import orjson
 
-class BaseObjectJSONEncoder(json.JSONEncoder):
-    """
-    Custom JSON encoder for nested BaseObjects.
-    """
-    def default(self, obj):
-        if isinstance(obj, (tuple,list,dict)):
-            return obj
-        else:
-            return vars(obj)
+def default(obj):
+    if isinstance(obj, (tuple,list,dict)):
+        return obj
+    else:
+        return vars(obj)
 
 class BaseObject(object):
     """
@@ -34,7 +30,7 @@ class BaseObject(object):
         self.__dict__[name] = attr
 
     def json_encode(self, d):
-        return json.dumps(d, cls=BaseObjectJSONEncoder)
+        return orjson.dumps(d, default=default)
 
     def json(self, **kwargs): # kwargs are for additional param to add to json, like "action":"create"
         res = vars(self).copy()

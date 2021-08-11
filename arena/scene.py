@@ -1,5 +1,5 @@
 import asyncio
-import json
+import orjson
 import os
 import random
 import re
@@ -280,7 +280,7 @@ class Scene(object):
             # extract payload
             try:
                 payload_str = msg.payload.decode("utf-8", "ignore")
-                payload = json.loads(payload_str)
+                payload = orjson.loads(payload_str)
             except Exception as e:
                 print("Malformed payload, ignoring:")
                 print(e)
@@ -508,12 +508,12 @@ class Scene(object):
             payload = obj
             payload["action"] = "delete"
             payload["timestamp"] = d
-            payload = json.dumps(payload)
+            payload = orjson.dumps(payload)
         elif action == "dispatch_animation":
             payload = obj
             payload["action"] = "update"
             payload["timestamp"] = d
-            payload = json.dumps(payload)
+            payload = orjson.dumps(payload)
         else:
             payload = obj.json(action=action, timestamp=d)
 
@@ -530,7 +530,7 @@ class Scene(object):
         else:
             # pass token to persist
             data = auth.urlopen(url=f"{self.persist_url}/{object_id}", creds=True)
-            output = json.loads(data)
+            output = orjson.loads(data)
             if len(output) > 0:
                 output = output[0]
 
@@ -549,7 +549,7 @@ class Scene(object):
         objs = {}
         # pass token to persist
         data = auth.urlopen(url=self.persist_url, creds=True)
-        output = json.loads(data)
+        output = orjson.loads(data)
         for obj in output:
             if obj["type"] == Object.object_type or obj["type"] == Object.type:
                 object_id = obj["object_id"]
@@ -573,7 +573,7 @@ class Scene(object):
         scene_opts_url = f"{self.persist_url}?type=scene-options"
         # pass token to persist
         data = auth.urlopen(url=scene_opts_url, creds=True )
-        output = json.loads(data)
+        output = orjson.loads(data)
         return output
 
     def get_writable_scenes(self):

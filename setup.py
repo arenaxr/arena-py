@@ -21,6 +21,7 @@ setuptools.setup(
         'scripts/arena-py-pub',
     ],
     install_requires=[
+        "orjson~=3.6.1",
         "aiohttp>=3.7.4",
         "paho-mqtt~=1.5.0",
         "requests~=2.23.0",

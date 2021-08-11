@@ -5,7 +5,7 @@ Usage: python3 -m arena -s <scene> -a <pub/sub> ...
 """
 
 import argparse
-import json
+import orjson
 
 from arena import *
 
@@ -31,7 +31,7 @@ def send_msg(scene, topic, msg):
     if topic is None:
         # use object topic name if possible
         try:
-            json_msg = json.loads(msg)
+            json_msg = orjson.loads(msg)
             obj_topic = f"{scene.root_topic}/{json_msg['object_id']}"
         except:
             obj_topic = scene.root_topic

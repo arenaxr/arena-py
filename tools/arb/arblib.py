@@ -21,8 +21,6 @@ GRIDLEN = 20  # meters
 SCL_HUD = 0.1  # meters
 PANEL_RADIUS = 1  # meters
 CLIP_RADIUS = PANEL_RADIUS + 0.25  # meters
-LOCK_XOFF = 0  # quaternion vector
-LOCK_YOFF = 0.7  # quaternion vector
 CLR_HUDTEXT = Color(128, 128, 128)  # gray
 CLR_NUDGE = Color(255, 255, 0)  # yellow
 CLR_SCALE = Color(0, 0, 255)  # blue
@@ -144,8 +142,8 @@ class User:
         self.position_last = self.rotation_last = None
         self.gesturing = False
         self.target_style = self.typetext = ""
-        self.locky = LOCK_YOFF
-        self.lockx = LOCK_XOFF
+        self.lock_rx = 0
+        self.lock_ry = 0
         self.wloc_start = self.wloc_end = None
         self.wrot_start = self.wrot_end = None
         self.lamp = None
@@ -426,7 +424,8 @@ def occlude_obj(scene: Scene, object_id, occlude):
         # NOTE: transparency does not allow occlusion so remove transparency here.
         scene.update_object(scene.all_objects[object_id],
                             **{"material-extras": {"transparentOccluder": (occlude != BOOLS[1])}},
-                            material=Material(transparent=False, opacity=1))
+                            #material=Material(transparent=False, opacity=1)
+                            )
         print(f"Occluded {object_id}")
 
 
@@ -482,6 +481,11 @@ def temp_loc_marker(position, color):
 def temp_rot_marker(position, rotation):
     return Box(ttl=120, rotation=rotation, material=Material(color=Color(255, 255, 255)),
                position=position, scale=Scale(0.02, 0.01, 0.15), clickable=True)
+
+
+def rotation_quat2radian(quat):
+    rotq = scipy.spatial.transform.Rotation.from_quat(list(quat))
+    return tuple(rotq.as_euler('xyz', degrees=False))
 
 
 def rotation_quat2euler(quat):

@@ -3,7 +3,7 @@ from .attribute import Attribute
 class TextInput(Attribute):
     """
     TextInput Attribute.
-    Usage: goto_url=TextInput(...)
+    Usage: textinput=TextInput(...)
     """
     def __init__(self,
                 title="Text Input",

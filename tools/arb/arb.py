@@ -6,7 +6,6 @@
 # pylint: disable=missing-docstring
 
 # TODO: highlight mouseenter to avoid click
-# TODO: fix follow unlock position relative, not default
 # TODO: handle click-listener objects with 1.1 x scale shield?
 # TODO: add easy doc overlay for each button operation
 
@@ -1085,6 +1084,10 @@ def clipboard_callback(_scene, event, msg):
     if not camname:
         return
     position = event.data.position
+    clickPos = event.data.clickPos
+    if clickPos.x == 0 and clickPos.y == 0 and clickPos.z == 0:
+        print('Invalid click position: event clickPos is uninitialized! Ignoring.')
+        return
     if USERS[camname].mode == Mode.CREATE or USERS[camname].mode == Mode.MODEL:
         create_obj(camname, USERS[camname].get_clipboard(), position)
     elif USERS[camname].mode == Mode.MOVE:
@@ -1206,7 +1209,6 @@ def scene_callback(_scene, event, msg):
         msg_type = msg["type"]
     if "data" in msg and "object_type" in msg["data"]:
         object_type = msg["data"]["object_type"]
-    # print(f'{object_type} {action} {msg_type} {object_id}')
 
     if object_type == "camera":
         # camera updates define users present
@@ -1225,21 +1227,54 @@ def scene_callback(_scene, event, msg):
                                            msg["data"]["rotation"]["z"],
                                            msg["data"]["rotation"]["w"])
 
-        rx = msg["data"]["rotation"]["x"]
-        ry = msg["data"]["rotation"]["y"]
+        try:
+            rotrad = arblib.rotation_quat2radian((
+                msg["data"]["rotation"]["x"],
+                msg["data"]["rotation"]["y"],
+                msg["data"]["rotation"]["z"],
+                msg["data"]["rotation"]["w"]))
+        except ValueError as error:
+            print(f"Rotation error: {error}")
+            return
 
         # floating controller
+        rx = rotrad[0]
+        ry = rotrad[1]
+        rz = rotrad[2]
         if not USERS[camname].follow_lock:
-            ty = -(ry + USERS[camname].locky) / 0.7 * math.pi / 2
-            tx = -(rx + USERS[camname].lockx) / 0.7 * math.pi / 2
-            px = arblib.PANEL_RADIUS * -math.cos(ty)
-            py = arblib.PANEL_RADIUS * math.sin(tx)
-            pz = arblib.PANEL_RADIUS * math.sin(ty)
-            scene.update_object(USERS[camname].follow,
-                                position=Position(px, py, pz))
-        # else: # TODO: panel lock position drop is inaccurate
-            # users[camname].lockx = rx + arblib.LOCK_XOFF
-            # users[camname].locky = -(ry * math.pi) - arblib.LOCK_YOFF
+            # where:
+            # radius: r >= 0
+            # inclination (theta): inc >= 0 and inc <= pi
+            # azimuth (epsilon): azi >= 0 and azi <= 2pi
+            # TODO: handle VR lock position offset
+            if abs(rx) >= (math.pi/2) and abs(rz) >= (math.pi/2):
+                azi = (math.pi*1.5) + ry + USERS[camname].lock_ry
+            else:
+                azi = (math.pi/2) - ry + USERS[camname].lock_ry
+            if abs(rx) >= (math.pi/2) and abs(rz) >= (math.pi/2):
+                inc = (math.pi*1.5) - rx - USERS[camname].lock_rx
+            else:
+                inc = (math.pi/2) + rx - USERS[camname].lock_rx
+
+            # derive cartesian coordinates x,y,z from spherical coordinates r,epsilon,theta
+            px = (arblib.PANEL_RADIUS * math.cos(azi) * math.sin(inc))
+            py = (arblib.PANEL_RADIUS * math.cos(inc))
+            pz = -(arblib.PANEL_RADIUS * math.sin(azi) * math.sin(inc))
+            pos = Position(px, py, pz)
+            scene.update_object(USERS[camname].follow, position=pos)
+
+            # TODO: remove this debug
+            if event["displayName"] == "user1":
+                print([math.floor(math.degrees(rx)), math.floor(
+                    math.degrees(ry)), math.floor(math.degrees(rz))])
+                print([math.floor(math.degrees(USERS[camname].lock_ry)),
+                       math.floor(math.degrees(USERS[camname].lock_rx))])
+                print([math.floor(math.degrees(azi)),
+                       math.floor(math.degrees(inc))])
+        else:
+            # save rotation of azimuth/inclination for next lock release
+            USERS[camname].lock_ry = ry
+            USERS[camname].lock_rx = rx
 
         # handle gesturing two-finger touch as clickline camera match-moves
         if USERS[camname].gesturing and not USERS[camname].slider:

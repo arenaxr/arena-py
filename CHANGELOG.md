@@ -2,6 +2,14 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.1.41] - 2021-09-08
+### Changed
+- Revert using orjson library.
+
+## [0.1.40] - 2021-08-20
+### Changed
+- Use orjson library for faster JSON parsing.
+
 ## [0.1.39] - 2021-07-28
 ### Added
 - Attribute `jitsi-video`.
@@ -171,29 +179,3 @@ specify both to bypass auth.
 ### Changed
 - `Arena` class renamed to `Scene`, but using `Arena` is still allowed. Updated examples to reflect this.
 - Tiny bug fix with `update_objects`.
-
-[0.1.35]: https://github.com/conix-center/ARENA-py/tree/461e5808b745068ebb77898776fa4e3e15f1574d
-[0.1.34]: https://github.com/conix-center/ARENA-py/tree/e3a74d04ba564f1f40dcc26cf9c95c0e966f527b
-[0.1.33]: https://github.com/conix-center/ARENA-py/tree/4fac2d9c206c0ccb6710d288a642528cd184274e
-[0.1.32]: https://github.com/conix-center/ARENA-py/tree/68f08513fd54ee7d97753aec92814b33dfe7391d
-[0.1.31]: https://github.com/conix-center/ARENA-py/tree/724e14f4e37112b96d90e94d9e521800bdea0997
-[0.1.30]: https://github.com/conix-center/ARENA-py/tree/625355e515539a7fb40e17f6b0668a2488176d4d
-[0.1.29]: https://github.com/conix-center/ARENA-py/tree/bd364bec29109c8dd12cce35e612df50f8cfb9e0
-[0.1.28]: https://github.com/conix-center/ARENA-py/tree/5b9273747f68f538d6130427da877541daa02d32
-[0.1.27]: https://github.com/conix-center/ARENA-py/tree/5e5150dd8e723915abbaaec68183a16a00cef852
-[0.1.26]: https://github.com/conix-center/ARENA-py/tree/be42141a15c62f14312cc51e6c3813e990aedce1
-[0.1.25]: https://github.com/conix-center/ARENA-py/tree/f12c50e990dd645875be3ae31be5840feb8a98aa
-[0.1.24]: https://github.com/conix-center/ARENA-py/tree/619be18bd16178fc40b9e670c313f578789845ea
-[0.1.23]: https://github.com/conix-center/ARENA-py/tree/53c0ac608db99d8df0c0ad775cdc4f67df55558b
-[0.1.23]: https://github.com/conix-center/ARENA-py/tree/53c0ac608db99d8df0c0ad775cdc4f67df55558b
-[0.1.22]: https://github.com/conix-center/ARENA-py/tree/ed54a9d33b0be93d6cc51ed2db7cd5de0248735d
-[0.1.21]: https://github.com/conix-center/ARENA-py/tree/c5e561285ddd6135aa03974ab8b686ba74299520
-[0.1.20]: https://github.com/conix-center/ARENA-py/tree/a8a2d11ea6718740e0fdaf299d1297ebd37c632f
-[0.1.19]: https://github.com/conix-center/ARENA-py/tree/985111ab1e146c95b177338141760fafc909c1a0
-[0.1.18]: https://github.com/conix-center/ARENA-py/tree/120b675928e7c8f215f3910e4157890944d0b2e8
-[0.1.17]: https://github.com/conix-center/ARENA-py/tree/0a7897c89bd4a08c03c0c626601e4686cacc368c
-[0.1.16]: https://github.com/conix-center/ARENA-py/tree/8e42dac35a9de7a6b610a1b6663606d1adf1a17e
-[0.1.15]: https://github.com/conix-center/ARENA-py/tree/e8182f476ebdb9c2878e16cefea9671a6f5c49f6
-[0.1.14]: https://github.com/conix-center/ARENA-py/tree/d4c2d6627f38bd05264dd2a2da3f852648e5ee39
-[0.1.13]: https://github.com/conix-center/ARENA-py/tree/589f095dab1f31acd3662b1283af7cded2197b08
-[0.1.12]: https://github.com/conix-center/ARENA-py/tree/1c66c37a8fb8c37a15650bc26924ae7a44606903

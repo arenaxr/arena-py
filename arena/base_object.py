@@ -1,10 +1,14 @@
-import orjson
+import json
 
-def default(obj):
-    if isinstance(obj, (tuple,list,dict)):
-        return obj
-    else:
-        return vars(obj)
+class BaseObjectJSONEncoder(json.JSONEncoder):
+    """
+    Custom JSON encoder for nested BaseObjects.
+    """
+    def default(self, obj):
+        if isinstance(obj, (tuple,list,dict)):
+            return obj
+        else:
+            return vars(obj)
 
 class BaseObject(object):
     """
@@ -30,7 +34,7 @@ class BaseObject(object):
         self.__dict__[name] = attr
 
     def json_encode(self, d):
-        return orjson.dumps(d, default=default)
+        return json.dumps(d, cls=BaseObjectJSONEncoder)
 
     def json(self, **kwargs): # kwargs are for additional param to add to json, like "action":"create"
         res = vars(self).copy()

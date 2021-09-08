@@ -1,3 +1,4 @@
+import json
 from .arena_object import Object
 from ..attributes import Morph
 

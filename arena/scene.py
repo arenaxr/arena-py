@@ -5,6 +5,7 @@ import random
 import re
 import socket
 import sys
+import urllib.request
 from datetime import datetime
 from inspect import signature
 
@@ -102,14 +103,23 @@ class Scene(object):
 
         self.mqttc_id = "pyClient-" + self.generate_client_id()
 
+        # fetch host config
+        print("Fetching ARENA configuration...")
+        self.config_url = f"https://{self.host}/conf/defaults.json"
+        with urllib.request.urlopen(self.config_url) as url:
+            self.config_data = json.loads(url.read().decode())
+        self.jitsi_host = self.config_data["ARENADefaults"]["jitsiHost"]
+        self.persist_host = self.config_data["ARENADefaults"]["persistHost"]
+        self.persist_path = self.config_data["ARENADefaults"]["persistPath"]
+
         # set up scene variables
         self.namespaced_scene =  f"{self.namespace}/{self.scene}"
 
         self.root_topic = f"{self.realm}/s/{self.namespaced_scene}"
         self.scene_topic = f"{self.root_topic}/#"   # main topic for entire scene
-        self.persist_url = f"https://{self.host}/persist/{self.namespaced_scene}"
+        self.persist_url = f"https://{self.persist_host}{self.persist_path}{self.namespaced_scene}"
 
-        self.latency_topic = "$NETWORK/latency"     # network graph latency update
+        self.latency_topic = self.config_data["ARENADefaults"]["latencyTopic"] # network graph latency update
         self.ignore_topic = f"{self.root_topic}/{self.mqttc_id}/#" # ignore own messages
 
         self.mqttc = mqtt.Client(

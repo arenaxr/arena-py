@@ -20,7 +20,8 @@ setuptools.setup(
             'arena-py-permissions=arena.scripts.arena_py_permissions:main',
             'arena-py-pub=arena.scripts.arena_py_pub:main',
             'arena-py-signout=arena.scripts.arena_py_signout:main',
-            'arena-py-sub=arena.scripts.arena_py_sub:main'
+            'arena-py-sub=arena.scripts.arena_py_sub:main',
+            'arena-py-token=arena.scripts.arena_py_token:main'
         ],
     },
     install_requires=[

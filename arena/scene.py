@@ -76,28 +76,28 @@ class Scene(object):
 
         print("=====")
         # do user auth
-        username = None
+        self.username = None
         token = None
         self.remote_auth_token = {}  # provide reference for downloaded token
         if os.environ.get("ARENA_USERNAME") and os.environ.get("ARENA_PASSWORD"):
             # auth 1st: use passed in env var
-            username = os.environ["ARENA_USERNAME"]
+            self.username = os.environ["ARENA_USERNAME"]
             token = os.environ["ARENA_PASSWORD"]
-            auth.store_environment_auth(username, token)
+            auth.store_environment_auth(self.username, token)
         else:
             local = auth.check_local_auth()
             if local and 'username' in local and 'token' in local:
                 # auth 2nd: use locally saved token
-                username = local["username"]
+                self.username = local["username"]
                 token = local["token"]
             else:
                 # auth 3rd: use the user account online
-                username = auth.authenticate_user(self.host)
+                self.username = auth.authenticate_user(self.host)
 
         if os.environ.get("NAMESPACE"):
             self.namespace = os.environ["NAMESPACE"]
         elif "namespace" not in kwargs or ("namespace" in kwargs and kwargs["namespace"] is None):
-            self.namespace = username
+            self.namespace = self.username
         else:
             self.namespace = kwargs["namespace"]
 
@@ -127,14 +127,14 @@ class Scene(object):
         )
 
         # do scene auth
-        if username is None or token is None:
+        if self.username is None or token is None:
             data = auth.authenticate_scene(
-                self.host, self.realm, self.namespaced_scene, username, video)
+                self.host, self.realm, self.namespaced_scene, self.username, video)
             if 'username' in data and 'token' in data:
-                username = data["username"]
+                self.username = data["username"]
                 token = data["token"]
                 self.remote_auth_token = data
-        self.mqttc.username_pw_set(username=username, password=token)
+        self.mqttc.username_pw_set(username=self.username, password=token)
         print("=====")
 
         # set up callbacks

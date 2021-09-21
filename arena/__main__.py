@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 ARENA-py CLI
 
@@ -66,7 +67,7 @@ def main(mqtth, realm, scene, namespace, action, topic, message):
     scene.run_tasks()
 
 
-if __name__ == "__main__":
+def cli():
     parser = argparse.ArgumentParser(description=("ARENA-py MQTT CLI"))
 
     parser.add_argument("-mh", "--mqtth",
@@ -100,3 +101,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(**vars(args))
+
+
+if __name__ == "__main__":
+    cli()

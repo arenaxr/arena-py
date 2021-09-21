@@ -14,12 +14,15 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/conix-center/ARENA-py",
     packages=setuptools.find_packages(),
-    scripts=[
-        'scripts/arena-py-signout',
-        'scripts/arena-py-sub',
-        'scripts/arena-py-permissions',
-        'scripts/arena-py-pub',
-    ],
+    entry_points = {
+        'console_scripts': [
+            'arena=arena.__main__:cli',
+            'arena-py-signout=arena.scripts.arena_py_signout:main',
+            'arena-py-sub=arena.scripts.arena-py-sub:main',
+            'arena-py-permissions=arena.scripts.arena-py-permissions:main',
+            'arena-py-pub=arena.scripts.arena-py-pub:main'
+        ],
+    },
     install_requires=[
         "aiohttp>=3.7.4",
         "paho-mqtt~=1.5.0",

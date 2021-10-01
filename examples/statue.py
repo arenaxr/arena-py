@@ -4,15 +4,21 @@
 '''
 from arena import *
 
-arena = Scene(host="arenaxr.org", realm="realm", namespace="npereira", scene="statue")
+arena = Scene(host="arenaxr.org", realm="realm",
+              namespace="wiselab", scene="ismar")
+# arena = Scene(host="arenaxr.org", realm="realm",
+#               namespace="npereira", scene="statue")
 
 statue = None
 started_rotate = False
 
 statue_start_scale = (.05, .05, .05)
 statue_scale = (.05, .05, .05)
-statue_position = (0, .6, 0)
-button_position = (0, 0, 0)
+# statue_position = (0, .6, 0)
+# button_position = (0, 0, 0)
+statue_position = (11, .6, -10)
+button_position = (11, 0, -10)
+
 
 def start_click(scene, evt, msg):
     global arena
@@ -30,10 +36,10 @@ def start_click(scene, evt, msg):
             return
 
         statue = GLTF(
-                object_id="gltf-les_bourgeois_de_calais_by_rodin",
-                scale=(.0001, .0001, .0001),
-                position=statue_position,
-                url="/store/users/wiselab/models/les_bourgeois_de_calais_by_rodin/les_bourgeois_de_calais_by_rodin.gltf"
+            object_id="gltf-les_bourgeois_de_calais_by_rodin",
+            scale=(.0001, .0001, .0001),
+            position=statue_position,
+            url="/store/users/wiselab/models/les_bourgeois_de_calais_by_rodin/les_bourgeois_de_calais_by_rodin.gltf"
         )
 
         arena.add_object(statue)
@@ -53,6 +59,7 @@ def start_click(scene, evt, msg):
 
         arena.update_object(statue, clickable=True, evt_handler=start_rotate)
 
+
 def start_rotate(scene, evt, msg):
     global started_rotate
     global statue
@@ -65,7 +72,7 @@ def start_rotate(scene, evt, msg):
                 property="rotation",
                 pauseEvents="mouseleave",
                 resumeEvents="mouseenter",
-                end=(0,360,0),
+                end=(0, 360, 0),
                 loop=True,
                 dur=20000,
                 easing="linear"
@@ -74,29 +81,40 @@ def start_rotate(scene, evt, msg):
         )
         started_rotate = True
 
+
 @arena.run_once
 def main():
     global statue
 
     # Create models
     start_btn = GLTF(
-            object_id="gltf-start_btn",
-            position=button_position,
-            scale=(.3, .3, .3),
-            url="/store/users/wiselab/models/button-lowpoly/button.gltf",
-            persist=True
-        )
+        object_id="gltf-start_btn",
+        position=button_position,
+        scale=(.3, .3, .3),
+        url="/store/users/wiselab/models/button-lowpoly/button.gltf",
+        persist=True
+    )
+    start_txt = Text(
+        object_id="gltf-start_txt",
+        position=(button_position[0], button_position[1] +
+                  0.1, button_position[2]-0.5),
+        scale=(.3, .3, .3),
+        text="Click the button circle to run some interactive networked Python code.",
+        persist=True
+    )
 
     arena.add_object(start_btn)
+    arena.add_object(start_txt)
     arena.update_object(start_btn, clickable=True, evt_handler=start_click)
 
     statue = GLTF(
-            object_id="gltf-les_bourgeois_de_calais_by_rodin",
-            scale=(.0001, .0001, .0001),
-            position=(0, -10, 0),
-            url="/store/users/wiselab/models/les_bourgeois_de_calais_by_rodin/les_bourgeois_de_calais_by_rodin.gltf"
+        object_id="gltf-les_bourgeois_de_calais_by_rodin",
+        scale=(.0001, .0001, .0001),
+        position=(0, -10, 0),
+        url="/store/users/wiselab/models/les_bourgeois_de_calais_by_rodin/les_bourgeois_de_calais_by_rodin.gltf"
     )
 
     arena.add_object(statue)
+
 
 arena.run_tasks()

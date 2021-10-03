@@ -2,27 +2,19 @@
 """ Sample scene: Toggle button with 3d model.
     Example of setting up and activating interactive animation.
 """
-import argparse
+from arena import *
 
-from arena import GLTF, Animation, Scene, Text
 
-# general defaults
-MQTTH = "arenaxr.org"  # -r hostname
-NSPACE = "npereira"  # -n namespace
-SCENE = "statue"  # -s scenename
-POSITION = (0, 0, -2)  # -p pos.x pos.y pos.z
-ROTATION = (0, 0, 0)  # -r rot.x rot.y rot.z
+def end_program_callback(scene: Scene):
+    global statue, start_btn, start_txt
+    scene.delete_object(statue)
+    scene.delete_object(start_btn)
+
 
 # command line options
-parser = argparse.ArgumentParser()
-parser.add_argument("-p", "--position", nargs=3, type=int, default=POSITION)
-parser.add_argument("-r", "--rotation", nargs=3, type=int, default=ROTATION)
-parser.add_argument("-mh", "--mqtth", type=str, default=MQTTH)
-parser.add_argument("-s", "--scene", type=str, default=SCENE)
-parser.add_argument("-n", "--namespace", type=str, default=NSPACE)
-args = parser.parse_args()
-app_position = tuple(args.position)
-app_rotation = tuple(args.rotation)
+arena = Scene(cli_args=True, end_program_callback=end_program_callback)
+app_position = arena.args["position"]
+app_rotation = arena.args["rotation"]
 
 # app variables
 statue = None
@@ -36,21 +28,6 @@ statue_position = (app_position[0], app_position[1]+.6, app_position[2])
 statue_hide_position = (app_position[0], app_position[1]-10, app_position[2])
 statue_hide_scale = (.0001, .0001, .0001)
 text_position_child = (0, .5, -1)
-
-
-def end_program_callback(scene: Scene):
-    global statue, start_btn, start_txt
-    scene.delete_object(statue)
-    scene.delete_object(start_btn)
-    scene.delete_object(start_txt)
-
-
-arena = Scene(
-    host=args.mqtth,
-    namespace=args.namespace,
-    scene=args.scene,
-    end_program_callback=end_program_callback,
-)
 
 
 def start_click(scene: Scene, evt, msg):
@@ -120,7 +97,7 @@ def main():
     start_btn = GLTF(
         object_id="gltf-start_btn",
         position=button_position,
-        rotation=args.rotation,
+        rotation=app_rotation,
         scale=button_scale,
         url="/store/users/wiselab/models/button-lowpoly/button.gltf",
         persist=True
@@ -142,7 +119,7 @@ def main():
         object_id="gltf-les_bourgeois_de_calais_by_rodin",
         scale=statue_hide_scale,
         position=statue_hide_position,
-        rotation=args.rotation,
+        rotation=app_rotation,
         url="/store/users/wiselab/models/les_bourgeois_de_calais_by_rodin/les_bourgeois_de_calais_by_rodin.gltf"
     )
     arena.add_object(statue)

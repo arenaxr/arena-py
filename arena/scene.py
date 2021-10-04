@@ -196,17 +196,17 @@ class Scene(object):
         """
         Reusable command-line options to give apps flexible options to avoid hard-coding locations.
         """
-        parser = argparse.ArgumentParser()
+        parser = argparse.ArgumentParser(description=("ARENA-py Application CLI"))
         parser.add_argument("-mh", "--mqtth", type=str,
-                            help="-mh hostname")
+                            help="MQTT host to connect to")
         parser.add_argument("-n", "--namespace", type=str,
-                            help="-n namespace")
+                            help="Namespace of scene")
         parser.add_argument("-s", "--scene", type=str,
-                            help="-s scenename")
+                            help="Scene to publish and listen to")
         parser.add_argument("-p", "--position", nargs=3, type=int, default=(0, 0, 0),
-                            help="-p cartesian.x cartesian.y cartesian.z")
+                            help="App position as cartesian.x cartesian.y cartesian.z")
         parser.add_argument("-r", "--rotation", nargs=3, type=int, default=(0, 0, 0),
-                            help="-r euler.x euler.y euler.z")
+                            help="App rotation as euler.x euler.y euler.z")
         args = parser.parse_args()
         app_position = tuple(args.position)
         app_rotation = tuple(args.rotation)
@@ -217,6 +217,7 @@ class Scene(object):
             "position": app_position,
             "rotation": app_rotation,
         }
+
 
     def generate_client_id(self):
         """Returns a random 6 digit id"""

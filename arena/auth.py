@@ -23,9 +23,12 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 _scopes = ["openid",
            "https://www.googleapis.com/auth/userinfo.profile",
            "https://www.googleapis.com/auth/userinfo.email"]
-_user_gauth_path = f'{str(Path.home())}/.arena_google_auth'
-_user_mqtt_path = f'{str(Path.home())}/.arena_mqtt_auth'
-_local_mqtt_path = f'.arena_mqtt_auth'
+_gauth_file = '.arena_google_auth'
+_mqtt_token_file = '.arena_mqtt_auth'
+_arena_user_dir = f'{str(Path.home())}/.arena'
+_user_gauth_path = f'{_arena_user_dir}/{_gauth_file}'
+_user_mqtt_path = f'{_arena_user_dir}/{_mqtt_token_file}'
+_local_mqtt_path = f'{_mqtt_token_file}'
 _csrftoken = None
 _mqtt_token = None
 _id_token = None
@@ -42,6 +45,9 @@ def authenticate_user(host):
     print("Signing in to the ARENA...")
     gauth_json = _get_gauthid(host)
     creds = None
+
+    if not os.path.exists(_arena_user_dir):
+        os.mkdir(_arena_user_dir)
 
     # store the user's access and refresh tokens
     if os.path.exists(_user_gauth_path):
@@ -185,15 +191,19 @@ def store_environment_auth(username, token):
 def check_local_auth():
     """
     Check for local mqtt_token and save to local memory.
+    TODO: remove local check after ARTS supports mqtt_token passing
     """
     global _mqtt_token
-    # TODO: remove local check after ARTS supports mqtt_token passing
+    # 4 Oct 2021 remove deprecated user home creds path
+    _remove_credentials(str(Path.home()))
+    # check token expiration
+    _remove_credentials(str(Path.cwd()), expire=True)
+    # load local token if valid
     if os.path.exists(_local_mqtt_path):
         print("Using local MQTT token.")
         f = open(_local_mqtt_path, "r")
         mqtt_json = f.read()
         f.close()
-        # TODO: check token expiration
         _mqtt_token = json.loads(mqtt_json)
         _log_token()
         return _mqtt_token
@@ -302,10 +312,7 @@ def urlopen(url, data=None, creds=False, csrf=None):
 
 
 def signout():
-    if os.path.exists(_user_gauth_path):
-        os.remove(_user_gauth_path)
-    if os.path.exists(_user_mqtt_path):
-        os.remove(_user_mqtt_path)
+    _remove_credentials(_arena_user_dir)
     print("Signed out of the ARENA.")
 
 
@@ -346,6 +353,30 @@ def permissions():
         _print_mqtt_token(mqtt_claims)
     else:
         print("Not signed into the ARENA.")
+
+
+def _remove_credentials(cred_dir, expire=False):
+    """
+    Helper to remove credentials in path with expiration option.
+    """
+    test_gauth_path = f'{cred_dir}/{_gauth_file}'
+    test_mqtt_path = f'{cred_dir}/{_mqtt_token_file}'
+    if os.path.exists(test_gauth_path):
+        f = open(test_mqtt_path, "r")
+        mqtt_json = f.read()
+        f.close()
+        mqtt_token = json.loads(mqtt_json)
+        mqtt_claims = jwt.decode(mqtt_token["token"], options={
+            "verify_signature": False})
+        exp = float(mqtt_claims["exp"])
+        now = time.time()
+        if expire and now < exp:
+            return  # exit if expire request is still good
+        # otherwise remove
+        os.remove(test_gauth_path)
+        if os.path.exists(test_mqtt_path):
+            os.remove(test_mqtt_path)
+
 
 if __name__ == '__main__':
     globals()[sys.argv[1]]()

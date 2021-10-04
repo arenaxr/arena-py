@@ -2,6 +2,14 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.1.42] - 2021-10-04
+### Changed
+- Improved auth flow when CWD is Home.
+- Check for expired local MQTT token.
+
+### Added
+- CLI option for all apps: `Scene(cli-args=True)`.
+
 ## [0.1.41] - 2021-09-08
 ### Changed
 - Revert using orjson library.

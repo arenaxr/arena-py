@@ -49,7 +49,6 @@ class Scene(object):
             ):
         if cli_args:
             self.args = self.parse_cli()
-            print(self.args)
             if self.args["mqtth"]:
                 kwargs["host"] = self.args["mqtth"]
             if self.args["namespace"]:
@@ -98,7 +97,7 @@ class Scene(object):
             auth.store_environment_auth(self.username, token)
         else:
             local = auth.check_local_auth()
-            if local and 'username' in local and 'token' in local:
+            if local and "username" in local and "token" in local:
                 # auth 2nd: use locally saved token
                 self.username = local["username"]
                 token = local["token"]
@@ -142,7 +141,7 @@ class Scene(object):
         if self.username is None or token is None:
             data = auth.authenticate_scene(
                 self.host, self.realm, self.namespaced_scene, self.username, video)
-            if 'username' in data and 'token' in data:
+            if "username" in data and "token" in data:
                 self.username = data["username"]
                 token = data["token"]
                 self.remote_auth_token = data

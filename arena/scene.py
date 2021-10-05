@@ -203,9 +203,9 @@ class Scene(object):
                             help="Namespace of scene")
         parser.add_argument("-s", "--scene", type=str,
                             help="Scene to publish and listen to")
-        parser.add_argument("-p", "--position", nargs=3, type=int, default=(0, 0, 0),
+        parser.add_argument("-p", "--position", nargs=3, type=float, default=(0, 0, 0),
                             help="App position as cartesian.x cartesian.y cartesian.z")
-        parser.add_argument("-r", "--rotation", nargs=3, type=int, default=(0, 0, 0),
+        parser.add_argument("-r", "--rotation", nargs=3, type=float, default=(0, 0, 0),
                             help="App rotation as euler.x euler.y euler.z")
         args = parser.parse_args()
         app_position = tuple(args.position)

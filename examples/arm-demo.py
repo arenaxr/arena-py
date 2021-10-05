@@ -5,8 +5,8 @@ from arena import *
 
 
 def end_program_callback(scene: Scene):
-    global arm_model
-    scene.delete_object(arm_model)
+    global sceneParent
+    scene.delete_object(sceneParent)
 
 
 # command line options
@@ -16,18 +16,7 @@ app_rotation = arena.args["rotation"]
 
 # variables
 arm_scale = 0.01
-start_position_child = ((app_position[0]+0.5)/arm_scale,
-                        (app_position[1])/arm_scale,
-                        (app_position[2]+6)/arm_scale)
-stop_position_child = ((app_position[0]-0.5)/arm_scale,
-                       (app_position[1])/arm_scale,
-                       (app_position[2]+6)/arm_scale)
-text_position_child = ((app_position[0])/arm_scale,
-                       (app_position[1]+0.25)/arm_scale,
-                       (app_position[2]+5.25)/arm_scale)
-button_scale_child = (0.5/arm_scale, 0.1/arm_scale, 0.5/arm_scale)
-text_scale_child = (1/arm_scale, 1/arm_scale, 1/arm_scale)
-text_rotation_child = (app_rotation[0], app_rotation[1], app_rotation[2])
+button_scale = (0.5, 0.1, 0.5)
 
 
 def draw_ray(clickPos, position):
@@ -69,48 +58,56 @@ def arm_click_handler(scene, evt, msg):
 
 @arena.run_once
 def main():
-    global arm_model
+    global arm_model, sceneParent
+    # make a parent scene object
+    sceneParent = Box(
+        persist=True,
+        object_id="arm-sceneParent",
+        position=app_position,
+        rotation=app_rotation,
+        material=Material(transparent=True, opacity=0),
+    )
+    arena.add_object(sceneParent)
+
     arm_model = GLTF(
         object_id="arm_model",
         url="/store/models/factory_robot_arm/scene.gltf",
-        rotation=app_rotation,
-        position=app_position,
+        position=(0, 0, 0),
         scale=(arm_scale, arm_scale, arm_scale),
         clickable=True,
+        parent=sceneParent.object_id,
         persist=True,
-        evt_handler=arm_click_handler
+        evt_handler=arm_click_handler,
     )
     arena.add_object(arm_model)
     arm_start_button = Box(
         object_id="arm_start_button",
-        position=start_position_child,
-        scale=button_scale_child,
+        position=(0.5, 0, 2),
+        scale=button_scale,
         clickable=True,
         color=(0, 255, 0),
-        parent=arm_model.object_id,
+        parent=sceneParent.object_id,
         persist=True,
-        evt_handler=start_handler
+        evt_handler=start_handler,
     )
     arena.add_object(arm_start_button)
     arm_stop_button = Box(
         object_id="arm_stop_button",
-        position=stop_position_child,
-        scale=button_scale_child,
+        position=(-0.5, 0, 2),
+        scale=button_scale,
         clickable=True,
         color=(255, 0, 0),
-        parent=arm_model.object_id,
+        parent=sceneParent.object_id,
         persist=True,
-        evt_handler=stop_handler
+        evt_handler=stop_handler,
     )
     arena.add_object(arm_stop_button)
     arm_start_txt = Text(
         object_id="arm_start_txt",
-        # rotation=text_rotation_child,
-        position=text_position_child,
-        scale=text_scale_child,
-        parent=arm_model.object_id,
+        position=(0, 0.5, 1.5),
+        parent=sceneParent.object_id,
         text="Red and green buttons will run some interactive networked Python code.",
-        persist=True
+        persist=True,
     )
     arena.add_object(arm_start_txt)
 

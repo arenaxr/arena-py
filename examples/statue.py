@@ -5,10 +5,9 @@
 from arena import *
 
 
-def end_program_callback(scene: Scene):
-    global statue, start_btn, start_txt
-    scene.delete_object(statue)
-    scene.delete_object(start_btn)
+def end_program_callback(scene):
+    global sceneParent
+    scene.delete_object(sceneParent)
 
 
 # command line options
@@ -22,17 +21,13 @@ started_rotate = False
 statue_start_scale = (.05, .05, .05)
 statue_scale = (.05, .05, .05)
 button_scale = (.3, .3, .3)
-text_scale_child = (1, 1, 1)
-button_position = app_position
-statue_position = (app_position[0], app_position[1]+.6, app_position[2])
-statue_hide_position = (app_position[0], app_position[1]-10, app_position[2])
+statue_position = (0, .6, 0)
+statue_hide_position = (0, -10, 0)
 statue_hide_scale = (.0001, .0001, .0001)
-text_position_child = (0, .5, -1)
 
 
-def start_click(scene: Scene, evt, msg):
-    global statue
-    global started_rotate
+def start_click(scene, evt, msg):
+    global statue, started_rotate
 
     if evt.type == "mouseup":
         if started_rotate:
@@ -44,13 +39,11 @@ def start_click(scene: Scene, evt, msg):
             started_rotate = False
             return
 
-        statue = GLTF(
-            object_id="gltf-les_bourgeois_de_calais_by_rodin",
+        scene.update_object(
+            statue,
             scale=statue_hide_scale,
             position=statue_position,
-            url="/store/users/wiselab/models/les_bourgeois_de_calais_by_rodin/les_bourgeois_de_calais_by_rodin.gltf"
         )
-        scene.add_object(statue)
 
         scene.update_object(
             statue,
@@ -68,9 +61,8 @@ def start_click(scene: Scene, evt, msg):
         scene.update_object(statue, clickable=True, evt_handler=start_rotate)
 
 
-def start_rotate(scene: Scene, evt, msg):
-    global started_rotate
-    global statue
+def start_rotate(scene, evt, msg):
+    global started_rotate, statue
 
     if not started_rotate:
         scene.update_object(
@@ -91,36 +83,44 @@ def start_rotate(scene: Scene, evt, msg):
 
 @arena.run_once
 def main():
-    global statue, start_btn, start_txt
+    global sceneParent, statue, start_btn, start_txt
+    # make a parent scene object
+    sceneParent = Box(
+        persist=True,
+        object_id="statue-sceneParent",
+        position=app_position,
+        rotation=app_rotation,
+        material=Material(transparent=True, opacity=0),
+    )
+    arena.add_object(sceneParent)
 
     # Create models
     start_btn = GLTF(
-        object_id="gltf-start_btn",
-        position=button_position,
-        rotation=app_rotation,
+        object_id="statue-start_btn",
+        position=(0, 0, 1.5),
         scale=button_scale,
         url="/store/users/wiselab/models/button-lowpoly/button.gltf",
-        persist=True
+        parent=sceneParent.object_id,
+        persist=True,
     )
     arena.add_object(start_btn)
     arena.update_object(start_btn, clickable=True, evt_handler=start_click)
 
     start_txt = Text(
-        object_id="gltf-start_txt",
-        position=text_position_child,
-        parent=start_btn.object_id,
-        scale=text_scale_child,
+        object_id="statue-start_txt",
+        position=(0, .25, 1),
         text="Click and hover on the button to run some interactive networked Python code.",
-        persist=True
+        persist=True,
+        parent=sceneParent.object_id,
     )
     arena.add_object(start_txt)
 
     statue = GLTF(
-        object_id="gltf-les_bourgeois_de_calais_by_rodin",
+        object_id="statue-gltf-les_bourgeois_de_calais_by_rodin",
         scale=statue_hide_scale,
         position=statue_hide_position,
-        rotation=app_rotation,
-        url="/store/users/wiselab/models/les_bourgeois_de_calais_by_rodin/les_bourgeois_de_calais_by_rodin.gltf"
+        url="/store/users/wiselab/models/les_bourgeois_de_calais_by_rodin/les_bourgeois_de_calais_by_rodin.gltf",
+        parent=sceneParent.object_id,
     )
     arena.add_object(statue)
 

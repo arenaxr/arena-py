@@ -118,7 +118,7 @@ def drop_cube(x, y):
 def launch_cube(x, y):
     arena.update_object(cubes[(x, y)], physics=Physics(type="dynamic"))
     arena.generate_click_event(cubes[(x, y)], type="mouseup")
-    # (0, 0, 0), "guacprogram"
+    # cubes[(x, y)].fireEvent(arena.EventType.mouseup, (0, 0, 0), "guacprogram")
 
 
 def deleteAvocado():
@@ -154,9 +154,9 @@ def draw_hud(score):
         persist=True,
         object_id="guac-hudText",
         text="red:"+str(reds)+" blue:"+str(blues)+" draw:"+str(draws),
-        position=(0, 0.4, -0.5),
-        parent="myCamera",
-        scale=(0.2, 0.2, 0.2),
+        position=(2, 4, -3),
+        scale=(1, 1, 1),
+        parent=sceneParent.object_id,
     )
     arena.add_object(hud)
 
@@ -165,18 +165,20 @@ def animateAvocado():
     global avocado
     deleteAvocado()
     drawAvocado()
-    arena.update_object(avocado, animation=Animation(
+    avocado.dispatch_animation(AnimationMixer(
         clip="Recuperate", loop="pingpong", repetitions=2, timeScale=4)
     )
+    arena.run_animations(avocado)
 
 
 def animateAvocado2():
     global avocado
     deleteAvocado()
     drawAvocado()
-    arena.update_object(avocado, animation=Animation(
+    avocado.dispatch_animation(AnimationMixer(
         clip="Walking", loop="pingpong", repetitions=2)
     )
+    arena.run_animations(avocado)
 
 
 def draw_board():

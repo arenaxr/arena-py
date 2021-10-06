@@ -296,6 +296,7 @@ def main():
     print("starting main loop")
     draw_board()
 
+    # title
     title_txt = Text(
         object_id="guac-title_txt",
         position=(2, 4.3, -3),
@@ -305,6 +306,29 @@ def main():
         parent=sceneParent.object_id,
     )
     arena.add_object(title_txt)
+
+    # source
+    guac_src_img = Plane(
+        object_id="guac-src_img",
+        position=(5, 1, -6),
+        scale=(1.75, 0.5, 1),
+        parent=sceneParent.object_id,
+        color="#ffffff",
+        clickable=True,
+        goto_url=GotoUrl(dest="newtab", on="mousedown",
+                         url="https://github.com/conix-center/ARENA-py/blob/master/examples/guac.py"),
+        persist=True,
+    )
+    arena.add_object(guac_src_img)
+    guac_src_txt = Text(
+        object_id="guac-src_txt",
+        position=(5, 1, -6),
+        parent=sceneParent.object_id,
+        text="Click for source",
+        color="#555555",
+        persist=True,
+    )
+    arena.add_object(guac_src_txt)
 
 
 arena.run_tasks()

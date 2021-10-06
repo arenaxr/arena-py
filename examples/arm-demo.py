@@ -112,5 +112,28 @@ def main():
     )
     arena.add_object(arm_start_txt)
 
+    # source
+    arm_src_img = Plane(
+        object_id="arm_src_img",
+        position=(3, 1, -2),
+        scale=(1.75, 0.5, 1),
+        parent=sceneParent.object_id,
+        color="#ffffff",
+        clickable=True,
+        goto_url=GotoUrl(dest="newtab", on="mousedown",
+                         url="https://github.com/conix-center/ARENA-py/blob/master/examples/arm-demo.py"),
+        persist=True,
+    )
+    arena.add_object(arm_src_img)
+    arm_src_txt = Text(
+        object_id="arm_src_txt",
+        position=(3, 1, -2),
+        parent=sceneParent.object_id,
+        text="Click for source",
+        color="#555555",
+        persist=True,
+    )
+    arena.add_object(arm_src_txt)
+
 
 arena.run_tasks()

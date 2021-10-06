@@ -97,7 +97,7 @@ def main():
     # Create models
     start_btn = GLTF(
         object_id="statue-start_btn",
-        position=(0, 0, 1.5),
+        position=(0, .1, 1.5),
         scale=button_scale,
         url="/store/users/wiselab/models/button-lowpoly/button.gltf",
         parent=sceneParent.object_id,
@@ -108,8 +108,9 @@ def main():
 
     start_txt = Text(
         object_id="statue-start_txt",
-        position=(0, .25, 1),
+        position=(0, .75, 1),
         text="Click and hover on the button to run some interactive networked Python code.",
+        color="#555555",
         persist=True,
         parent=sceneParent.object_id,
     )

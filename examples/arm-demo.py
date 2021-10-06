@@ -104,9 +104,10 @@ def main():
     arena.add_object(arm_stop_button)
     arm_start_txt = Text(
         object_id="arm_start_txt",
-        position=(0, 0.5, 1.5),
+        position=(0, 0.75, 1.5),
         parent=sceneParent.object_id,
         text="Red and green buttons will run some interactive networked Python code.",
+        color="#555555",
         persist=True,
     )
     arena.add_object(arm_start_txt)

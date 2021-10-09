@@ -5,6 +5,7 @@ persist: True
 arena:
   host: arenaxr.org # default: arenaxr.org
   realm: realm # default: realm
+  #namespace: somenamespace # not mandatory default: user namespace
   scenename: ececapstone # one of the scenes defined below
 
 # where is the input data: google spreadsheet id and cell range of the table

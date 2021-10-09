@@ -4,7 +4,7 @@ import time
 import sys
 import math
 
-scene = Scene(host="arenaxr.org", scene="example")
+scene = Scene(host="arena-dev1.conix.io", namespace="public", scene="cic-lobby")
 
 color = (0, 255, 0)
 

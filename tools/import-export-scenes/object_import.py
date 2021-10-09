@@ -18,13 +18,11 @@ class ARENAObjectImport():
 
     def __init__(self, realm='realm', mqtt_host='arenaxr.org', mqtt_port=8883):
         self.realm = realm;
-        debug=False
-        username = auth.authenticate_user(mqtt_host, debug)
+        username = auth.authenticate_user(mqtt_host)
         password = None
         data = auth.authenticate_scene(
                 mqtt_host, realm,
-                None, username,
-                debug
+                None, username
         )
         if 'username' in data and 'token' in data:
             username = data["username"]

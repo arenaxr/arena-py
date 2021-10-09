@@ -7,9 +7,12 @@ import math
 import yaml
 import time
 import re
+import urllib
 from arena.attributes.landmark import Landmark # manually import Landmark, while arena-py does not do it
 
 DFT_CONFIG_FILENAME='./config.yaml'
+
+DFT_LAYOUT={"layout": "ROWCOL", "layout_args": { "row_dist": 20, "col_dist": 20, "row_off": 20, "col_off": -50}}
 
 def parse_button(button_markup):
     '''Parse a button markup in the form:
@@ -40,7 +43,27 @@ def parse_color(dict, key, default):
     color_string = dict.get(key, default)
     return tuple(map(int, color_string.split(',')))
 
-def make_wall(name_suffix, position, rotation, wall_data, config):
+def get_mapped_kv(dict, key, raise_exception=True):
+    '''Checks if there is a key mapping for given key and returns value from dict dictionary
+    '''
+    mkey=config.get('key_mappings', {}).get(key, key)
+    value = dict.get(mkey)
+    if (value == None and raise_exception): raise KeyError(f'No {key}')
+    return value
+
+    '''
+
+    if (value == None):
+        mkey = config.get('key_mappings', {}).get(key);
+        if (mkey):
+            value = wall_data.get(mkey)
+            if (value == None and raise_exception): raise KeyError(f'No {key} or {mkey}')
+        else:
+            if (raise_exception): raise KeyError(f'No {key} or {mkey}')
+    return value
+    '''
+
+def make_wall(name_suffix, position, rotation, wall_data):
     '''Create a demo wall
     args:
     name_suffix
@@ -59,15 +82,14 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
     # default persit to False
     persist = config.get('persist', False)
 
-    # to save file to gdrive
-    gcw = GoogleClientWrapper();
-
     # get wall config
     wall_config         = config.get('wall', {})
-    wall_width          = wall_config.get('width', 9)
-    wall_height         = wall_config.get('height', 6)
+    wall_width          = wall_config.get('width', 7)
+    wall_height         = wall_config.get('height', 7.5)
     wall_depth          = wall_config.get('depth', 1)
-    img_height          = wall_config.get('img_height', 2.6)
+    img_pos_height      = wall_config.get('img_pos_height', 2.5)
+    img_scale_width     = wall_config.get('img_scale_width', 3*1.15)  # posters are 3x4
+    img_scale_height    = wall_config.get('img_scale_height', 4*1.15) # posters are 3x4
     wall_color          = parse_color(wall_config, 'color', '151, 171, 216')
     img_btn_color       = parse_color(wall_config, 'img_btn_color', '255, 255, 255')
     img_btn_text_color  = parse_color(wall_config, 'img_btn_text_color', '0, 0, 0')
@@ -85,10 +107,13 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
     lbl_authors_name    = f'poster_lblauthors_{name_suffix}'
     lbl_back_name       = f'poster_lblback_{name_suffix}'
     lbl_back_title_name = f'poster_lblbacktitle_{name_suffix}'
-    lbl_btn1            = f'poster_lblbutton1_{name_suffix}'
-    lbl_btn2            = f'poster_lblbutton2_{name_suffix}'
-    b1_name             = f'poster_button1_{name_suffix}'
-    b2_name             = f'poster_button2_{name_suffix}'
+
+    # init landmark title
+    try:
+        title_cut = get_mapped_kv(wall_data, 'title') # raise expection if no title
+        if len(title_cut) > title_maxlen: title_cut = f'{title[0:title_maxlen]}...'
+    except Exception as err:
+        print(f'Could not get wall title: {err}')
 
     # invisible root object; all other objects are children of this object
     root = Object(
@@ -97,7 +122,8 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
         persist=persist,
         position=position,
         rotation=rotation,
-        material=Material(transparent=True)
+        material=Material(transparent=True),
+        landmark=Landmark(label=title_cut, offsetPosition="0 0 4")
     )
     scene.add_object(root)
 
@@ -114,39 +140,31 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
     scene.add_object(wall)
 
     # title
-    title_cut = f'Poster_{name_suffix}' # init to a default value; used as landmark title if getting title from dictionary fails
-    try:
-        title_cut = f'{wall_data["title"][0:title_maxlen]}' # cut title; raise exception if key does not exist
-        if len(wall_data["title"]) > title_maxlen: title_cut = title_cut + '...'
+    lbltitle = Text(
+        object_id=lbl_title_name,
+        parent=root_name,
+        persist=persist,
+        position=Position(0, wall_height-1.4, 0.510),
+        text=title_cut,
+        color=text_color,
+        font=text_font,
+        width=5
+    )
+    scene.add_object(lbltitle)
 
-        lbltitle = Text(
-            object_id=lbl_title_name,
-            parent=root_name,
-            persist=persist,
-            position=Position(0, wall_height-.6, 0.510),
-            text=title_cut,
-            color=text_color,
-            font=text_font,
-            width=5
-        )
-        scene.add_object(lbltitle)
-
-        # title, back
-        lbltitleb = Text(
-            object_id=lbl_back_title_name,
-            parent=root_name,
-            persist=persist,
-            position=Position(0, wall_height/2, -0.55),
-            rotation=Rotation(0, 180, 0),
-            text=title_cut,
-            color=back_text_color,
-            font=text_font,
-            width=8
-        )
-        scene.add_object(lbltitleb)
-
-    except Exception as err:
-        print(f'Could not add wall title: {err}')
+    # title, back
+    lbltitleb = Text(
+        object_id=lbl_back_title_name,
+        parent=root_name,
+        persist=persist,
+        position=Position(0, wall_height/2, -0.55),
+        rotation=Rotation(0, 180, 0),
+        text=title_cut,
+        color=back_text_color,
+        font=text_font,
+        width=8
+    )
+    scene.add_object(lbltitleb)
 
     try:
         # authors
@@ -154,8 +172,8 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
             object_id=lbl_authors_name,
             parent=root_name,
             persist=persist,
-            position=Position(0, wall_height-1.1, 0.510),
-            text=f'{wall_data["authors"][0:100]}', # raise exception if key does not exist
+            position=Position(0, wall_height-2, 0.510),
+            text=f'{get_mapped_kv(wall_data, "authors")[0:100]}', # raise exception if key does not exist
             color=text_color,
             font=text_font,
             wrapCount=100,
@@ -166,30 +184,25 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
         print(f'Could not add wall authors: {err}')
 
     try:
-        img_url = wall_data.get('image_url') # deal with previous verions of the spreadsheet
-        if not img_url:
-            img_url=wall_data['image_url_1'] # raise exception if key does not exist
+        img_url=get_mapped_kv(wall_data,'image_url_1') # raise exception if key does not exist
 
         # image on the wall
         img = Image(object_id=img_name,
             parent=root_name,
             persist=persist,
-            position=Position(0, img_height, 0.510),
-            scale=Scale(7.2,4.05,1),
-            url=img_url,
-            landmark=Landmark(label=title_cut)
+            position=Position(0, img_pos_height, 0.510),
+            scale=Scale(img_scale_width,img_scale_height,1),
+            url=img_url
         )
 
         scene.add_object(img)
     except Exception as err:
         print(f'Could not add wall image: {err}')
 
-
-
     # get list of additional images
     img_btns = {}
     for img_key in ['image_url_1', 'image_url_2', 'image_url_3', 'image_url_4']:
-        img = wall_data.get(img_key)
+        img = get_mapped_kv(wall_data, img_key, False)
         if img:
             btn_name = f'poster_imgbtn_{name_suffix}_{img_key}'
             img_btns[btn_name] = {'img_object_id': img_name, 'img_url': img}
@@ -197,12 +210,12 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
 
     if len(img_btns) > 1:
         # add buttons to scroll between additional images
-        i=0
-        for btn in img_btns:
+        for i in range(len(img_btns)):
+            btn = img_btns[i]
             img_btn = Image(object_id=btn,
                 parent=root_name,
                 persist=persist,
-                position=Position(-(wall_width/2)+.45, img_height + (len(img_btns)-1) * .8 / 2 - i * .8, 0.510),
+                position=Position(-(wall_width/2)+.45, img_pos_height + (len(img_btns)-1) * .8 / 2 - i * .8, 0.510),
                 heigh=.5,
                 width=.5,
                 scale=Scale(.5, .5, 1),
@@ -221,76 +234,51 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
                 width=10
             )
             scene.add_object(lblbtn_img)
-            i = i + 1
 
-    try:
-        if len(wall_data['button1']) > 0:
-            (bicon, btext, burl) = parse_button(wall_data['button1']) # raise exception if failed to parse
+    # get list of existing buttons (to know how many exist, up to 4)
+    btn_list = []
+    for btn_key in ['button1', 'button2', 'button3', 'button4']:
+        btn_data = get_mapped_kv(wall_data, btn_key, False)
+        if btn_data: btn_list.append(btn_data)
 
+    # add buttons
+    btn_start_height = img_pos_height + .8 * (len(btn_list) / 2)
+    for i in range(len(btn_list)):
+        try:
+            (bicon, btext, burl) = parse_button(btn_list[i]) # raise exception if failed to parse
             iconpath = f'{config["icons"][bicon]}' # raise exception if key does not exist
+            btn_name = f'poster_btn{i+1}_{name_suffix}'
+            btnlbl_name = f'poster_btnlbl{i+1}_{name_suffix}'
 
-            # button1
-            videolink = Image(
-                object_id=b1_name,
+            # button
+            btn = Image(
+                object_id=btn_name,
                 parent=root_name,
                 persist=persist,
-                position=Position(4, img_height + .3, 0.510),
+                position=Position(img_scale_width/2 + (wall_width/2 - img_scale_width/2) /2, btn_start_height - .8 * i, 0.510),
                 scale=Scale(.5, .5, 1),
                 url=iconpath,
                 clickable=True,
                 goto_url=GotoUrl(dest='popup', on='mousedown', url=burl)
             );
-            scene.add_object(videolink)
+            scene.add_object(btn)
 
             # button text
-            lblb1 = Text(
-                object_id=lbl_btn1,
-                parent=b1_name,
+            lblbtn = Text(
+                object_id=btnlbl_name,
+                parent=btn_name,
                 persist=persist,
-                position=Position(0, -.35, 0),
-                text=btext[0:10],
+                position=Position(0, -0.3, 0),
+                text=btext[0:15],
                 color=(255, 255, 255),
                 font=text_font,
-                width=4
+                width=3.5
             )
-            scene.add_object(lblb1)
-    except Exception as err:
-        print(f'Could not add button1: {err}')
+            scene.add_object(lblbtn)
+        except Exception as err:
+            print(f'Could not add button {btn_key}: {err}')
 
-    try:
-        if len(wall_data['button2']) > 0:
-            (bicon, btext, burl) = parse_button(wall_data['button2']) # raise exception if failed to parse
-
-            iconpath = f'{config["icons"][bicon]}' # raise exception if key does not exist
-
-            # button2
-            videolink = Image(
-                object_id=b2_name,
-                parent=root_name,
-                persist=persist,
-                position=Position(4, img_height - .3, 0.510),
-                scale=Scale(.5, .5, 1),
-                url=iconpath,
-                clickable=True,
-                goto_url=GotoUrl(dest='popup', on='mousedown', url=burl)
-            );
-            scene.add_object(videolink)
-
-            # button text
-            lblb2 = Text(
-                object_id=lbl_btn2,
-                parent=b2_name,
-                persist=persist,
-                position=Position(0, -.35, 0),
-                text=btext[0:10],
-                color=(255, 255, 255),
-                font=text_font,
-                width=4
-            )
-            scene.add_object(lblb2)
-    except Exception as err:
-        print(f'Could not add button2: {err}')
-
+    print(f'Added {title_cut} ({name_suffix})')
 
     # return list of img buttons added to this wall
     return img_btns
@@ -298,14 +286,24 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
 def make_walls():
     # get data from google spreadsheet table
     print('Getting data...')
-    gcw = GoogleClientWrapper();
-    data = gcw.gs_aslist(config['input_table']['spreadsheetid'], config['input_table']['named_range'])
+
+    data = {}
+    json_url = config['input_table'].get('json_url')
+    if (json_url):
+        with urllib.request.urlopen(json_url) as url:
+            response = url.read()
+            data = json.loads(response)
+    else:
+        gcw = GoogleClientWrapper();
+        data = gcw.gs_aslist(config['input_table']['spreadsheet']['spreadsheetid'], config['input_table']['spreadsheet']['named_range'])
 
     # filter by scenename in config
-    filtered = list(filter(lambda v: v['scene'] == config['arena']['scenename'], data))
+    scene_key = config.get('key_mappings', {}).get('scene', 'scene') # check if we have a mapping for scene
+    filtered = list(filter(lambda v: v[scene_key] == config['arena']['scenename'], data))
 
     # get layout coordinates
-    t = Layout(getattr(Layout, config[config['arena']['scenename']]['layout']), filtered).get_transforms(**(config[config['arena']['scenename']]['layout_args']))
+    scene_params = config.get(config['arena']['scenename'], DFT_LAYOUT)
+    t = Layout(getattr(Layout, scene_params['layout']), filtered).get_transforms(**(scene_params['layout_args']))
 
     btns = {}
     for i in range(len(filtered)):
@@ -313,15 +311,14 @@ def make_walls():
             filtered[i]['id'], # use id as a suffix for the objects of each wall
             Position(t[i]['x'], t[i]['y'], t[i]['z']), # position as given by the layout
             Rotation(t[i]['rx'],t[i]['ry'],t[i]['rz']), # rotation as given by layout
-            filtered[i],
-            config,
+            filtered[i]
         )
 
         btns.update(wall_btns)
 
     # save buttons data on gdrive
-    gcw.gd_save_json(config['links_config']['fileid'], btns, f'{config["input_table"]["spreadsheetid"]}.json');
-
+    #gcw.gd_save_json(config['links_config']['fileid'], btns, f'{config["input_table"]["spreadsheetid"]}.json');
+    print(f'Added {len(filtered)} posters.')
     print('\nDone. Press Ctrl+C to disconnect.')
 
 if __name__ == '__main__':
@@ -357,21 +354,26 @@ if __name__ == '__main__':
         print("Config missing 'input_table' section")
         exit(1)
 
-    if (config['input_table'].get('spreadsheetid') == None):
-        print("Config missing 'input_table.spreadsheetid'.")
-        exit(1)
+    if (config['input_table'].get('json_url') == None):
+        if (config['input_table'].get('spreadsheet') == None):
+            print("Config missing 'input_table.json_url' or 'input_table.spreadsheet'")
+            exit(1)
 
-    if (config['input_table'].get('named_range') == None):
-        print("Config missing 'input_table.named_range'.")
-        exit(1)
+        if (config['input_table']['spreadsheet'].get('spreadsheetid') == None):
+            print("Config missing 'input_table.spreadsheetid'.")
+            exit(1)
+
+        if (config['input_table']['spreadsheet'].get('named_range') == None):
+            print("Config missing 'input_table.named_range'.")
+            exit(1)
 
     if (config.get('icons') == None):
         print("Config missing 'icons' section")
         exit(1)
 
     # init the ARENA library
-    scene = Scene(host=config['arena']['host'], realm=config['arena']['realm'], scene=config['arena']['scenename'])
-
+    #scene = Scene(host=config['arena']['host'], realm=config['arena']['realm'], namespace=config['arena']['namespace'], scene=config['arena']['scenename'])
+    scene = Scene(host=config['arena']['host'], realm=config['arena']['realm'], namespace=config['arena']['namespace'], scene='room1')
     # add and start tasks
     scene.run_once(make_walls)
     scene.run_tasks()

@@ -20,10 +20,10 @@ requests-oauthlib
 rsa
 scipy
 six
-urllib3
 webcolors
 yarl
 google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
 googledrivedownloader
+urllib3

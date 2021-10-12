@@ -1,4 +1,6 @@
 .arena*
+token.json
+credentials.json
 
 # Source for the following rules: https://raw.githubusercontent.com/github/gitignore/master/Python.gitignore
 # Byte-compiled / optimized / DLL files
@@ -24,3 +26,5 @@ dist/
 
 # virtualenv
 env
+venv
+.venv

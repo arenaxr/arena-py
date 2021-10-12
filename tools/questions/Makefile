@@ -1,9 +1,9 @@
 run: venv
-	$(VENV)/python badges.py $(ARGS)
+	$(VENV)/python questions.py $(ARGS)
 
 # shows how to force a scene by defining a SCENE env variable
 run-test-scene: venv
-	(SCENE=test $(VENV)/python badges.py $(ARGS))
+	(SCENE=test $(VENV)/python questions.py $(ARGS))
 
 show-req: venv
 		$(VENV)/pip freeze

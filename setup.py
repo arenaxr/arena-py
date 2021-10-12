@@ -5,7 +5,7 @@ with open("README.md", "r") as readme:
 
 setuptools.setup(
     name="arena-py",
-    version="0.1.35",
+    version="0.1.42",
     author="Conix Research Center",
     author_email="info@conix.io",
     license="BSD 3-clause \"New\" or \"Revised License\"",
@@ -14,12 +14,23 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/conix-center/ARENA-py",
     packages=setuptools.find_packages(),
+    entry_points = {
+        'console_scripts': [
+            'arena=arena.__main__:cli',
+            'arena-py-permissions=arena.scripts.arena_py_permissions:main',
+            'arena-py-pub=arena.scripts.arena_py_pub:main',
+            'arena-py-signout=arena.scripts.arena_py_signout:main',
+            'arena-py-sub=arena.scripts.arena_py_sub:main',
+            'arena-py-token=arena.scripts.arena_py_token:main'
+        ],
+    },
     install_requires=[
         "aiohttp>=3.7.4",
         "paho-mqtt~=1.5.0",
         "requests~=2.23.0",
         "webcolors~=1.3",
-        "google_auth_oauthlib~=0.4.2",
+        "google_auth_oauthlib~=0.4.4",
+        "google-auth~=1.32.1",
         "PyJWT~=2.0.0",
         "numpy>=1.19.5",
         "scipy>=1.5.4"

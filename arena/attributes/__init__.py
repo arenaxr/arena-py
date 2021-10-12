@@ -5,6 +5,7 @@ from .color import Color
 from .data import Data
 from .goto_url import GotoUrl
 from .impulse import Impulse
+from .jitsi_video import JitsiVideo
 from .material import Material
 from .morph import Morph
 from .physics import Physics
@@ -23,6 +24,7 @@ ATTRIBUTE_TYPE_MAP = {
     "data": Data,
     "goto_url": GotoUrl,
     "impulse": Impulse,
+    "jitsi_video": JitsiVideo,
     "material": Material,
     "morph": Morph,
     "physics": Physics,

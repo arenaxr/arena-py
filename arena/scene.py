@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import json
 import os
@@ -5,6 +6,7 @@ import random
 import re
 import socket
 import sys
+import urllib.request
 from datetime import datetime
 from inspect import signature
 
@@ -40,9 +42,20 @@ class Scene(object):
                 user_left_callback = None,
                 delete_obj_callback = None,
                 end_program_callback = None,
+                video = False,
                 debug = False,
+                cli_args = False,
                 **kwargs
             ):
+        if cli_args:
+            self.args = self.parse_cli()
+            if self.args["mqtth"]:
+                kwargs["host"] = self.args["mqtth"]
+            if self.args["namespace"]:
+                kwargs["namespace"] = self.args["namespace"]
+            if self.args["scene"]:
+                kwargs["scene"] = self.args["scene"]
+
         if os.environ.get("MQTTH"):
             self.host = os.environ["MQTTH"]
         elif "host" in kwargs and kwargs["host"]:
@@ -74,40 +87,50 @@ class Scene(object):
 
         print("=====")
         # do user auth
-        username = None
-        password = None
+        self.username = None
+        token = None
+        self.remote_auth_token = {}  # provide reference for downloaded token
         if os.environ.get("ARENA_USERNAME") and os.environ.get("ARENA_PASSWORD"):
             # auth 1st: use passed in env var
-            username = os.environ["ARENA_USERNAME"]
-            password = os.environ["ARENA_PASSWORD"]
-            auth.store_environment_auth(username, password)
+            self.username = os.environ["ARENA_USERNAME"]
+            token = os.environ["ARENA_PASSWORD"]
+            auth.store_environment_auth(self.username, token)
         else:
             local = auth.check_local_auth()
-            if local and 'username' in local and 'token' in local:
+            if local and "username" in local and "token" in local:
                 # auth 2nd: use locally saved token
-                username = local["username"]
-                password = local["token"]
+                self.username = local["username"]
+                token = local["token"]
             else:
                 # auth 3rd: use the user account online
-                username = auth.authenticate_user(self.host)
+                self.username = auth.authenticate_user(self.host)
 
         if os.environ.get("NAMESPACE"):
             self.namespace = os.environ["NAMESPACE"]
         elif "namespace" not in kwargs or ("namespace" in kwargs and kwargs["namespace"] is None):
-            self.namespace = username
+            self.namespace = self.username
         else:
             self.namespace = kwargs["namespace"]
 
         self.mqttc_id = "pyClient-" + self.generate_client_id()
+
+        # fetch host config
+        print("Fetching ARENA configuration...")
+        self.config_url = f"https://{self.host}/conf/defaults.json"
+        with urllib.request.urlopen(self.config_url) as url:
+            self.config_data = json.loads(url.read().decode())
+        self.jitsi_host = self.config_data["ARENADefaults"]["jitsiHost"]
+        self.persist_host = self.config_data["ARENADefaults"]["persistHost"]
+        self.persist_path = self.config_data["ARENADefaults"]["persistPath"]
 
         # set up scene variables
         self.namespaced_scene =  f"{self.namespace}/{self.scene}"
 
         self.root_topic = f"{self.realm}/s/{self.namespaced_scene}"
         self.scene_topic = f"{self.root_topic}/#"   # main topic for entire scene
-        self.persist_url = f"https://{self.host}/persist/{self.namespaced_scene}"
+        self.persist_url = f"https://{self.persist_host}{self.persist_path}{self.namespaced_scene}"
 
-        self.latency_topic = "$NETWORK/latency"     # network graph latency update
+        self.latency_topic = self.config_data["ARENADefaults"]["latencyTopic"] # network graph latency update
         self.ignore_topic = f"{self.root_topic}/{self.mqttc_id}/#" # ignore own messages
 
         self.mqttc = mqtt.Client(
@@ -115,15 +138,14 @@ class Scene(object):
         )
 
         # do scene auth
-        if username is None or password is None:
+        if self.username is None or token is None:
             data = auth.authenticate_scene(
-                            self.host, self.realm,
-                            self.namespaced_scene, username
-                        )
-            if 'username' in data and 'token' in data:
-                username = data["username"]
-                password = data["token"]
-        self.mqttc.username_pw_set(username=username, password=password)
+                self.host, self.realm, self.namespaced_scene, self.username, video)
+            if "username" in data and "token" in data:
+                self.username = data["username"]
+                token = data["token"]
+                self.remote_auth_token = data
+        self.mqttc.username_pw_set(username=self.username, password=token)
         print("=====")
 
         # set up callbacks
@@ -169,6 +191,33 @@ class Scene(object):
         self.mqttc.socket().setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
 
         print(f"Loading: https://{self.host}/{self.namespace}/{self.scene}, realm={self.realm}")
+
+    def parse_cli(self):
+        """
+        Reusable command-line options to give apps flexible options to avoid hard-coding locations.
+        """
+        parser = argparse.ArgumentParser(description=("ARENA-py Application CLI"))
+        parser.add_argument("-mh", "--mqtth", type=str,
+                            help="MQTT host to connect to")
+        parser.add_argument("-n", "--namespace", type=str,
+                            help="Namespace of scene")
+        parser.add_argument("-s", "--scene", type=str,
+                            help="Scene to publish and listen to")
+        parser.add_argument("-p", "--position", nargs=3, type=float, default=(0, 0, 0),
+                            help="App position as cartesian.x cartesian.y cartesian.z")
+        parser.add_argument("-r", "--rotation", nargs=3, type=float, default=(0, 0, 0),
+                            help="App rotation as euler.x euler.y euler.z")
+        args = parser.parse_args()
+        app_position = tuple(args.position)
+        app_rotation = tuple(args.rotation)
+        return {
+            "mqtth": args.mqtth,
+            "namespace": args.namespace,
+            "scene": args.scene,
+            "position": app_position,
+            "rotation": app_rotation,
+        }
+
 
     def generate_client_id(self):
         """Returns a random 6 digit id"""
@@ -322,6 +371,7 @@ class Scene(object):
                                         )
                             elif self.delete_obj_callback:
                                 self.callback_wrapper(self.delete_obj_callback, obj, payload)
+                            Object.remove(obj)
                             continue
 
                         else: # create/update

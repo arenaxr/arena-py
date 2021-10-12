@@ -212,6 +212,7 @@ class User:
             self.panel[pbutton.button.object_id] = pbutton
 
         # set panel state from scene-options
+        self.scene_options = None
         options = scene.get_persisted_scene_option()
         if options:
             self.scene_options = options[0]

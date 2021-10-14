@@ -286,6 +286,10 @@ def panel_callback(_scene, event, msg):
         USERS[camname].set_lamp(active)
     elif mode == Mode.SLIDER:
         USERS[camname].slider = active
+    elif mode == Mode.EDIT:
+        # TODO: migrate to shared-scene setting
+        USERS[camname].set_clickableOnlyEvents(active)
+        USERS[camname].set_textright("SCENE-OPTIONS changed: RELOAD")
     # active buttons
     if mode == Mode.CREATE:
         update_dropdown(camname, objid, mode, arblib.SHAPES, 2, shape_callback)
@@ -487,7 +491,6 @@ def show_redpill_scene(enabled):
                     position=position,
                     rotation=rotation,
                     scale=scale,
-                    clickable=True,
                     url=url,
                     material=Material(
                         color=color, transparent=True, opacity=0.5),
@@ -1073,7 +1076,7 @@ def create_obj(camname, clipboard, position):
         material=Material(color=clipboard.data.material.color,
                           transparent=False),
         url=clipboard.data.url,
-        clickable=True)
+    )
     scene.add_object(new_obj)
     USERS[camname].target_id = new_obj.object_id
     print("Created " + new_obj.object_id)
@@ -1183,7 +1186,6 @@ def make_wall(camname):
     randstr = str(random.randrange(0, 1000000))
     new_wall = Box(
         persist=True,
-        clickable=True,
         object_id=f"wall_{randstr}",
         position=pos,
         rotation=rot,
@@ -1226,6 +1228,9 @@ def scene_callback(_scene, event, msg):
                                            msg["data"]["rotation"]["y"],
                                            msg["data"]["rotation"]["z"],
                                            msg["data"]["rotation"]["w"])
+
+        # TODO: ignore camera updates when position/rotation does not change
+        # and therefore not republish panel position
 
         try:
             rotrad = arblib.rotation_quat2radian((
@@ -1295,6 +1300,12 @@ def scene_callback(_scene, event, msg):
         camname = msg["data"]["source"]
         if camname not in USERS:
             USERS[camname] = arblib.User(scene, camname, panel_callback)
+
+        # only persisted objects should handle clicks
+        if object_id in _scene.all_objects:
+            obj = _scene.all_objects[object_id]
+            if not obj.persist:
+                return
 
         # show objects with events
         if msg_type == EVT_MOUSEENTER:

@@ -503,12 +503,12 @@ def delete_obj(scene: Scene, object_id):
 
 def temp_loc_marker(position, color):
     return Sphere(ttl=120, material=Material(color=color, transparent=True, opacity=0.5),
-                  position=position, scale=Scale(0.02, 0.02, 0.02), clickable=True)
+                  position=position, scale=Scale(0.02, 0.02, 0.02))
 
 
 def temp_rot_marker(position, rotation):
     return Box(ttl=120, rotation=rotation, material=Material(color=Color(255, 255, 255)),
-               position=position, scale=Scale(0.02, 0.01, 0.15), clickable=True)
+               position=position, scale=Scale(0.02, 0.01, 0.15))
 
 
 def rotation_quat2radian(quat):

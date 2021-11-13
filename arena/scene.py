@@ -20,11 +20,9 @@ from .objects import *
 from .utils import *
 
 
-class Scene(object):
+class ArenaMQTT(object):
     """
-    Gives access to an ARENA scene.
     Wrapper around Paho MQTT client and EventLoop.
-    Can create and execute various user-defined functions/tasks.
 
     :param str host: Hostname of the MQTT broker (required).
     :param str realm: Reserved topic fork for future use (optional).
@@ -37,16 +35,13 @@ class Scene(object):
                 realm = "realm",
                 network_latency_interval = 10000,  # run network latency update every 10s
                 on_msg_callback = None,
-                new_obj_callback = None,
-                user_join_callback = None,
-                user_left_callback = None,
-                delete_obj_callback = None,
                 end_program_callback = None,
                 video = False,
                 debug = False,
                 cli_args = False,
                 **kwargs
             ):
+        print("Main __init__")
         if cli_args:
             self.args = self.parse_cli()
             if self.args["mqtth"]:
@@ -55,6 +50,8 @@ class Scene(object):
                 kwargs["namespace"] = self.args["namespace"]
             if self.args["scene"]:
                 kwargs["scene"] = self.args["scene"]
+            if self.args["device"]:
+                kwargs["device"] = self.args["device"]
 
         if os.environ.get("MQTTH"):
             self.host = os.environ["MQTTH"]
@@ -119,16 +116,12 @@ class Scene(object):
         self.config_url = f"https://{self.host}/conf/defaults.json"
         with urllib.request.urlopen(self.config_url) as url:
             self.config_data = json.loads(url.read().decode())
-        self.jitsi_host = self.config_data["ARENADefaults"]["jitsiHost"]
-        self.persist_host = self.config_data["ARENADefaults"]["persistHost"]
-        self.persist_path = self.config_data["ARENADefaults"]["persistPath"]
 
         # set up scene variables
         self.namespaced_scene =  f"{self.namespace}/{self.scene}"
 
         self.root_topic = f"{self.realm}/s/{self.namespaced_scene}"
         self.scene_topic = f"{self.root_topic}/#"   # main topic for entire scene
-        self.persist_url = f"https://{self.persist_host}{self.persist_path}{self.namespaced_scene}"
 
         self.latency_topic = self.config_data["ARENADefaults"]["latencyTopic"] # network graph latency update
         self.ignore_topic = f"{self.root_topic}/{self.mqttc_id}/#" # ignore own messages
@@ -150,16 +143,7 @@ class Scene(object):
 
         # set up callbacks
         self.on_msg_callback = on_msg_callback
-        self.new_obj_callback = new_obj_callback
-        self.delete_obj_callback = delete_obj_callback
-        self.user_join_callback = user_join_callback
-        self.user_left_callback = user_left_callback
         self.end_program_callback = end_program_callback
-
-        self.unspecified_object_ids = set() # objects that exist in the scene,
-                                          # but this scene instance does not
-                                          # have a reference to
-        self.users = {} # dict of all users
 
         self.event_loop = EventLoop(self.disconnect)
 
@@ -190,7 +174,6 @@ class Scene(object):
             self.mqttc.connect(self.host, port=8883)
         self.mqttc.socket().setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
 
-        print(f"Loading: https://{self.host}/{self.namespace}/{self.scene}, realm={self.realm}")
 
     def parse_cli(self):
         """
@@ -203,6 +186,8 @@ class Scene(object):
                             help="Namespace of scene")
         parser.add_argument("-s", "--scene", type=str,
                             help="Scene to publish and listen to")
+        parser.add_argument("-d", "--device", type=str,
+                            help="Device to publish and listen to")
         parser.add_argument("-p", "--position", nargs=3, type=float, default=(0, 0, 0),
                             help="App position as cartesian.x cartesian.y cartesian.z")
         parser.add_argument("-r", "--rotation", nargs=3, type=float, default=(0, 0, 0),
@@ -214,6 +199,7 @@ class Scene(object):
             "mqtth": args.mqtth,
             "namespace": args.namespace,
             "scene": args.scene,
+            "device": args.device,
             "position": app_position,
             "rotation": app_rotation,
         }
@@ -297,6 +283,7 @@ class Scene(object):
 
     def on_connect(self, client, userdata, flags, rc):
         """Paho MQTT client on_connect callback"""
+        print("Main on_connect")
         if rc == 0:
             self.mqtt_connect_evt.set()
 
@@ -304,14 +291,14 @@ class Scene(object):
             client.subscribe(self.scene_topic)
             client.message_callback_add(self.scene_topic, self.on_message)
 
-            # create ARENA-py Objects from persist server
-            # no need to return anything here
-            self.get_persisted_objs()
-
             print("Connected!")
             print("=====")
         else:
             print(f"Connection error! Result code: {rc}")
+
+    async def process_message(self):
+        """Main message processing function"""
+        print("Main process_message")
 
     def on_message(self, client, userdata, msg):
         # ignore own messages
@@ -320,8 +307,97 @@ class Scene(object):
 
         self.msg_queue.put_nowait(msg)
 
+    def on_disconnect(self, client, userdata, rc):
+        """Paho MQTT client on_disconnect callback"""
+        if rc == 0:
+            print("Disconnected from the ARENA!")
+        else:
+            print(f"Disconnect error! Result code: {rc}")
+
+    def disconnect(self):
+        """Disconnects Paho MQTT client"""
+        if self.end_program_callback:
+            self.end_program_callback(self)
+        self.mqttc.disconnect()
+
+    def message_callback_add(self, sub, callback):
+        """Subscribes to new topic and adds callback"""
+        self.mqttc.subscribe(sub)
+        self.mqttc.message_callback_add(sub, callback)
+
+    def message_callback_remove(self, sub):
+        """Unsubscribes to topic and removes callback"""
+        self.mqttc.unsubscribe(sub)
+        self.mqttc.message_callback_remove(sub)
+
+
+class Scene(ArenaMQTT):
+    """
+    Gives access to an ARENA scene.
+    Can create and execute various user-defined functions/tasks.
+
+    :param str host: Hostname of the MQTT broker (required).
+    :param str realm: Reserved topic fork for future use (optional).
+    :param str namespace: Username of authenticated user or other namespace (automatic).
+    :param str scene: The name of the scene, without namespace (required).
+    """
+
+    def __init__(
+                self,
+                realm = "realm",
+                network_latency_interval = 10000,  # run network latency update every 10s
+                on_msg_callback = None,
+                new_obj_callback = None,
+                user_join_callback = None,
+                user_left_callback = None,
+                delete_obj_callback = None,
+                end_program_callback = None,
+                video = False,
+                debug = False,
+                cli_args = False,
+                **kwargs
+            ):
+        super().__init__(
+            realm,
+            network_latency_interval,
+            on_msg_callback,
+            end_program_callback,
+            video,
+            debug,
+            cli_args,
+            **kwargs
+        )
+        print("Scene __init__")
+
+        self.jitsi_host = self.config_data["ARENADefaults"]["jitsiHost"]
+        self.persist_host = self.config_data["ARENADefaults"]["persistHost"]
+        self.persist_path = self.config_data["ARENADefaults"]["persistPath"]
+
+        self.persist_url = f"https://{self.persist_host}{self.persist_path}{self.namespaced_scene}"
+
+        # set up callbacks
+        self.new_obj_callback = new_obj_callback
+        self.delete_obj_callback = delete_obj_callback
+        self.user_join_callback = user_join_callback
+        self.user_left_callback = user_left_callback
+
+        self.unspecified_object_ids = set() # objects that exist in the scene,
+                                          # but this scene instance does not
+                                          # have a reference to
+        self.users = {} # dict of all users
+
+        print(f"Loading: https://{self.host}/{self.namespace}/{self.scene}, realm={self.realm}")
+
+    def on_connect(self, client, userdata, flags, rc):
+        super().on_connect(client, userdata, flags, rc)
+        print("Scene on_connect")
+        if rc == 0:
+            # create ARENA-py Objects from persist server
+            # no need to return anything here
+            self.get_persisted_objs()
+
     async def process_message(self):
-        """Main message processing function"""
+        print("Scene process_message")
         while True:
             msg = await self.msg_queue.get()
 
@@ -415,19 +491,6 @@ class Scene(object):
             func(arg)
         else:
             func(self, arg, msg)
-
-    def on_disconnect(self, client, userdata, rc):
-        """Paho MQTT client on_disconnect callback"""
-        if rc == 0:
-            print("Disconnected from the ARENA!")
-        else:
-            print(f"Disconnect error! Result code: {rc}")
-
-    def disconnect(self):
-        """Disconnects Paho MQTT client"""
-        if self.end_program_callback:
-            self.end_program_callback(self)
-        self.mqttc.disconnect()
 
     def generate_custom_event(self, evt, action="clientEvent"):
         """Publishes an custom event. Could be user or library defined"""
@@ -630,16 +693,6 @@ class Scene(object):
         """
         return auth.get_writable_scenes(host=self.host)
 
-    def message_callback_add(self, sub, callback):
-        """Subscribes to new topic and adds callback"""
-        self.mqttc.subscribe(sub)
-        self.mqttc.message_callback_add(sub, callback)
-
-    def message_callback_remove(self, sub):
-        """Unsubscribes to topic and removes callback"""
-        self.mqttc.unsubscribe(sub)
-        self.mqttc.message_callback_remove(sub)
-
     def get_user_list(self):
         """Returns a list of users"""
         return self.users.values()
@@ -648,3 +701,47 @@ class Arena(Scene):
     """
     Another name for Scene.
     """
+
+
+class Device(ArenaMQTT):
+
+    def __init__(
+                self,
+                realm = "realm",
+                network_latency_interval = 10000,  # run network latency update every 10s
+                on_msg_callback = None,
+                end_program_callback = None,
+                debug = False,
+                **kwargs
+            ):
+        super().__init__(
+            realm,
+            network_latency_interval,
+            on_msg_callback,
+            end_program_callback,
+            debug,
+            **kwargs
+        )
+        print("Device __init__")
+        print(f"Ready: {self.realm}/{self.namespace}/{self.device}, host={self.host}")
+
+    async def process_message(self):
+        print("Device process_message")
+        while True:
+            msg = await self.msg_queue.get()
+
+            # extract payload
+            try:
+                payload_str = msg.payload.decode("utf-8", "ignore")
+                payload = json.loads(payload_str)
+            except Exception as e:
+                print("Malformed payload, ignoring:")
+                print(e)
+                return
+
+    def _publish(self, topic, payload):
+        """Publishes to mqtt broker."""
+        payload = json.dumps(payload)
+        self.mqttc.publish(topic, payload, qos=0)
+        if self.debug: print("[publish]", topic, payload)
+        return payload

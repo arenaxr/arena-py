@@ -25,7 +25,7 @@ def on_second_publ_message():
     d = datetime.now().isoformat()[:-3]+"Z"
     payload["timestamp"] = d
     payload = json.dumps(payload)
-    device._publish(CUSTOM_TOPIC, payload)
+    device.publish(CUSTOM_TOPIC, payload)
 
 
 device.run_tasks()

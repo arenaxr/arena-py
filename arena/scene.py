@@ -748,7 +748,7 @@ class Device(ArenaMQTT):
                 print(e)
                 return
 
-    def _publish(self, topic, payload_obj):
+    def publish(self, topic, payload_obj):
         """Publishes to mqtt broker."""
         payload = json.dumps(payload_obj)
         self.mqttc.publish(topic, payload, qos=0)

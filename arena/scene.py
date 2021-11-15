@@ -23,12 +23,10 @@ from .utils import *
 class ArenaMQTT(object):
     """
     Wrapper around Paho MQTT client and EventLoop.
-
-    :param str host: Hostname of the MQTT broker (required).
-    :param str realm: Reserved topic fork for future use (optional).
-    :param str namespace: Username of authenticated user or other namespace (automatic).
-    :param str scene: The name of the scene, without namespace (required).
     """
+
+    scene = None
+    device = None
 
     def __init__(
                 self,
@@ -41,7 +39,6 @@ class ArenaMQTT(object):
                 cli_args = False,
                 **kwargs
             ):
-        print("Main __init__")
         if cli_args:
             self.args = self.parse_cli()
             if self.args["mqtth"]:
@@ -70,16 +67,6 @@ class ArenaMQTT(object):
             # Use default "realm" until multiple realms exist, avoids user confusion.
             self.realm = realm
 
-        if os.environ.get("SCENE"):
-            self.scene = os.environ["SCENE"]
-        elif "scene" in kwargs and kwargs["scene"]:
-            if re.search("/", kwargs["scene"]):
-                sys.exit("scene argument (scene) cannot include '/', aborting...")
-            self.scene = kwargs["scene"]
-            print("Cannot find SCENE environmental variable, using input parameter instead.")
-        else:
-            sys.exit("scene argument (scene) is unspecified or None, aborting...")
-
         self.debug = debug
 
         print("=====")
@@ -93,7 +80,11 @@ class ArenaMQTT(object):
             token = os.environ["ARENA_PASSWORD"]
             auth.store_environment_auth(self.username, token)
         else:
-            local = auth.check_local_auth()
+            if self.device:
+                mqtt_auth = input(f"Paste auth MQTT JSON here for device '{self.device}':")
+                local = json.loads(mqtt_auth)
+            else:
+                local = auth.check_local_auth()
             if local and "username" in local and "token" in local:
                 # auth 2nd: use locally saved token
                 self.username = local["username"]
@@ -117,12 +108,14 @@ class ArenaMQTT(object):
         with urllib.request.urlopen(self.config_url) as url:
             self.config_data = json.loads(url.read().decode())
 
-        # set up scene variables
-        self.namespaced_scene =  f"{self.namespace}/{self.scene}"
-
-        self.root_topic = f"{self.realm}/s/{self.namespaced_scene}"
-        self.scene_topic = f"{self.root_topic}/#"   # main topic for entire scene
-
+        # set up topic variables
+        if self.scene:
+            self.namespaced_target =  f"{self.namespace}/{self.scene}"
+            self.root_topic = f"{self.realm}/s/{self.namespaced_target}"
+        elif self.device:
+            self.namespaced_target =  f"{self.namespace}/{self.device}"
+            self.root_topic = f"{self.realm}/d/{self.namespaced_target}"
+        self.subscribe_topic = f"{self.root_topic}/#"   # main topic for entire target
         self.latency_topic = self.config_data["ARENADefaults"]["latencyTopic"] # network graph latency update
         self.ignore_topic = f"{self.root_topic}/{self.mqttc_id}/#" # ignore own messages
 
@@ -130,10 +123,10 @@ class ArenaMQTT(object):
             self.mqttc_id, clean_session=True
         )
 
-        # do scene auth
         if self.username is None or token is None:
+            # do scene auth by user
             data = auth.authenticate_scene(
-                self.host, self.realm, self.namespaced_scene, self.username, video)
+                self.host, self.realm, self.namespaced_target, self.username, video)
             if "username" in data and "token" in data:
                 self.username = data["username"]
                 token = data["token"]
@@ -283,22 +276,17 @@ class ArenaMQTT(object):
 
     def on_connect(self, client, userdata, flags, rc):
         """Paho MQTT client on_connect callback"""
-        print("Main on_connect")
         if rc == 0:
             self.mqtt_connect_evt.set()
 
             # listen to all messages in scene
-            client.subscribe(self.scene_topic)
-            client.message_callback_add(self.scene_topic, self.on_message)
+            client.subscribe(self.subscribe_topic)
+            client.message_callback_add(self.subscribe_topic, self.on_message)
 
             print("Connected!")
             print("=====")
         else:
             print(f"Connection error! Result code: {rc}")
-
-    async def process_message(self):
-        """Main message processing function"""
-        print("Main process_message")
 
     def on_message(self, client, userdata, msg):
         # ignore own messages
@@ -357,6 +345,15 @@ class Scene(ArenaMQTT):
                 cli_args = False,
                 **kwargs
             ):
+        if os.environ.get("SCENE"):
+            self.scene = os.environ["SCENE"]
+        elif "scene" in kwargs and kwargs["scene"]:
+            if re.search("/", kwargs["scene"]):
+                sys.exit("scene argument (scene) cannot include '/', aborting...")
+            self.scene = kwargs["scene"]
+            print("Cannot find SCENE environmental variable, using input parameter instead.")
+        else:
+            sys.exit("scene argument (scene) is unspecified or None, aborting...")
         super().__init__(
             realm,
             network_latency_interval,
@@ -367,13 +364,12 @@ class Scene(ArenaMQTT):
             cli_args,
             **kwargs
         )
-        print("Scene __init__")
 
         self.jitsi_host = self.config_data["ARENADefaults"]["jitsiHost"]
         self.persist_host = self.config_data["ARENADefaults"]["persistHost"]
         self.persist_path = self.config_data["ARENADefaults"]["persistPath"]
 
-        self.persist_url = f"https://{self.persist_host}{self.persist_path}{self.namespaced_scene}"
+        self.persist_url = f"https://{self.persist_host}{self.persist_path}{self.namespaced_target}"
 
         # set up callbacks
         self.new_obj_callback = new_obj_callback
@@ -390,14 +386,12 @@ class Scene(ArenaMQTT):
 
     def on_connect(self, client, userdata, flags, rc):
         super().on_connect(client, userdata, flags, rc)
-        print("Scene on_connect")
         if rc == 0:
             # create ARENA-py Objects from persist server
             # no need to return anything here
             self.get_persisted_objs()
 
     async def process_message(self):
-        print("Scene process_message")
         while True:
             msg = await self.msg_queue.get()
 
@@ -704,6 +698,15 @@ class Arena(Scene):
 
 
 class Device(ArenaMQTT):
+    """
+    Gives access to an ARENA device.
+    Can create and execute various user-defined functions/tasks.
+
+    :param str host: Hostname of the MQTT broker (required).
+    :param str realm: Reserved topic fork for future use (optional).
+    :param str namespace: Username of authenticated user or other namespace (automatic).
+    :param str device: The name of the device, without namespace (required).
+    """
 
     def __init__(
                 self,
@@ -714,6 +717,15 @@ class Device(ArenaMQTT):
                 debug = False,
                 **kwargs
             ):
+        if os.environ.get("DEVICE"):
+            self.device = os.environ["DEVICE"]
+        elif "device" in kwargs and kwargs["device"]:
+            if re.search("/", kwargs["device"]):
+                sys.exit("device argument (device) cannot include '/', aborting...")
+            self.device = kwargs["device"]
+            print("Cannot find DEVICE environmental variable, using input parameter instead.")
+        else:
+            sys.exit("device argument (device) is unspecified or None, aborting...")
         super().__init__(
             realm,
             network_latency_interval,
@@ -722,14 +734,11 @@ class Device(ArenaMQTT):
             debug,
             **kwargs
         )
-        print("Device __init__")
-        print(f"Ready: {self.realm}/{self.namespace}/{self.device}, host={self.host}")
+        print(f"Device ready: {self.realm}/{self.namespaced_target}, host={self.host}")
 
     async def process_message(self):
-        print("Device process_message")
         while True:
             msg = await self.msg_queue.get()
-
             # extract payload
             try:
                 payload_str = msg.payload.decode("utf-8", "ignore")
@@ -739,9 +748,9 @@ class Device(ArenaMQTT):
                 print(e)
                 return
 
-    def _publish(self, topic, payload):
+    def _publish(self, topic, payload_obj):
         """Publishes to mqtt broker."""
-        payload = json.dumps(payload)
+        payload = json.dumps(payload_obj)
         self.mqttc.publish(topic, payload, qos=0)
         if self.debug: print("[publish]", topic, payload)
         return payload

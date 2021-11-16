@@ -346,7 +346,11 @@ def urlopen(url, data=None, creds=False, csrf=None):
 
 
 def signout():
-    _remove_credentials(_arena_user_dir)
+    for root, dirs, files in os.walk(_arena_user_dir):
+        if _mqtt_token_file in files:
+            _remove_credentials(root)
+    if os.path.exists(_local_mqtt_path):
+        _remove_credentials(_local_mqtt_path)
     print("Signed out of the ARENA.")
 
 
@@ -385,7 +389,7 @@ def permissions():
         mqtt_claims = jwt.decode(mqtt_token["token"], options={
             "verify_signature": False})
         _print_mqtt_token(mqtt_path, mqtt_claims)
-    if token_paths.count == 0:
+    if len(token_paths) == 0:
         print("Not signed into the ARENA.")
 
 
@@ -395,7 +399,7 @@ def _remove_credentials(cred_dir, expire=False):
     """
     test_gauth_path = f"{cred_dir}/{_gauth_file}"
     test_mqtt_path = f"{cred_dir}/{_mqtt_token_file}"
-    if os.path.exists(test_gauth_path):
+    if os.path.exists(test_mqtt_path):
         f = open(test_mqtt_path, "r")
         mqtt_json = f.read()
         f.close()
@@ -407,9 +411,9 @@ def _remove_credentials(cred_dir, expire=False):
         if expire and now < exp:
             return  # exit if expire request is still good
         # otherwise remove
+        os.remove(test_mqtt_path)
+    if os.path.exists(test_gauth_path):
         os.remove(test_gauth_path)
-        if os.path.exists(test_mqtt_path):
-            os.remove(test_mqtt_path)
 
 
 if __name__ == "__main__":

@@ -138,28 +138,31 @@ def authenticate_scene(host, realm, scene, username, video=False):
 
 
 def authenticate_device(host):
+    """
+    Check for device mqtt_token, ask for a missing one, and save to local memory.
+    """
     global _mqtt_token
 
-    _device_mqtt_dir = f"{_arena_user_dir}/python/{host}/d"
-    _device_mqtt_path = f"{_device_mqtt_dir}/{_mqtt_token_file}"
+    device_mqtt_dir = f"{_arena_user_dir}/python/{host}/d"
+    device_mqtt_path = f"{device_mqtt_dir}/{_mqtt_token_file}"
     # check token expiration
-    _remove_credentials(_device_mqtt_dir, expire=True)
+    _remove_credentials(device_mqtt_dir, expire=True)
     # load device token if valid
-    if os.path.exists(_device_mqtt_path):
+    if os.path.exists(device_mqtt_path):
         print("Using user long-term device MQTT token.")
-        f = open(_device_mqtt_path, "r")
+        f = open(device_mqtt_path, "r")
         mqtt_json = f.read()
         f.close()
     else:
-        if not os.path.exists(_device_mqtt_dir):
-            os.makedirs(_device_mqtt_dir)
+        if not os.path.exists(device_mqtt_dir):
+            os.makedirs(device_mqtt_dir)
         print(
             f"Generate a token for this device at https://{host}/user/profile")
         mqtt_json = input(f"Paste auth MQTT full JSON here for this device: ")
         # save mqtt_token
-        with open(_device_mqtt_path, mode="w") as d:
+        with open(device_mqtt_path, mode="w") as d:
             d.write(mqtt_json)
-        os.chmod(_device_mqtt_path, 0o600)  # set user-only perms.
+        os.chmod(device_mqtt_path, 0o600)  # set user-only perms.
 
     _mqtt_token = json.loads(mqtt_json)
     _log_token()
@@ -347,9 +350,10 @@ def signout():
     print("Signed out of the ARENA.")
 
 
-def _print_mqtt_token(mqtt_claims):
-    print("ARENA MQTT/Video Permissions")
+def _print_mqtt_token(mqtt_path, mqtt_claims):
+    print("\nARENA MQTT/Video Permissions")
     print("----------------------")
+    print(f"Path: {mqtt_path}")
     print(f"User: {mqtt_claims['sub']}")
     exp_str = time.strftime("%c", time.localtime(mqtt_claims["exp"]))
     print(f"Expires: {exp_str}")
@@ -366,23 +370,22 @@ def _print_mqtt_token(mqtt_claims):
 
 
 def permissions():
-    mqtt_path = None
-    # check for local mqtt_token first
+    token_paths = []
+    for root, dirs, files in os.walk(_arena_user_dir):
+        if _mqtt_token_file in files:
+            token_paths.append(os.path.join(root, _mqtt_token_file))
     if os.path.exists(_local_mqtt_path):
-        print("Using local MQTT token.")
-        mqtt_path = _local_mqtt_path
-    elif os.path.exists(_user_mqtt_path):
-        print("Using user MQTT token.")
-        mqtt_path = _user_mqtt_path
-    if mqtt_path:
+        token_paths.append(_local_mqtt_path)
+
+    for mqtt_path in token_paths:
         f = open(mqtt_path, "r")
         mqtt_json = f.read()
         f.close()
         mqtt_token = json.loads(mqtt_json)
         mqtt_claims = jwt.decode(mqtt_token["token"], options={
             "verify_signature": False})
-        _print_mqtt_token(mqtt_claims)
-    else:
+        _print_mqtt_token(mqtt_path, mqtt_claims)
+    if token_paths.count == 0:
         print("Not signed into the ARENA.")
 
 

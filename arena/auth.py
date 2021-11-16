@@ -2,6 +2,7 @@
 auth.py - Authentication methods for accessing the ARENA.
 """
 
+import datetime
 import json
 import os
 import pickle
@@ -47,7 +48,7 @@ def authenticate_user(host):
     creds = None
 
     if not os.path.exists(_arena_user_dir):
-        os.mkdir(_arena_user_dir)
+        os.makedirs(_arena_user_dir)
 
     # store the user's access and refresh tokens
     if os.path.exists(_user_gauth_path):
@@ -136,6 +137,35 @@ def authenticate_scene(host, realm, scene, username, video=False):
     return _mqtt_token
 
 
+def authenticate_device(host):
+    global _mqtt_token
+
+    _device_mqtt_dir = f"{_arena_user_dir}/python/{host}/d"
+    _device_mqtt_path = f"{_device_mqtt_dir}/{_mqtt_token_file}"
+    # check token expiration
+    _remove_credentials(_device_mqtt_dir, expire=True)
+    # load device token if valid
+    if os.path.exists(_device_mqtt_path):
+        print("Using user long-term device MQTT token.")
+        f = open(_device_mqtt_path, "r")
+        mqtt_json = f.read()
+        f.close()
+    else:
+        if not os.path.exists(_device_mqtt_dir):
+            os.makedirs(_device_mqtt_dir)
+        print(
+            f"Generate a token for this device at https://{host}/user/profile")
+        mqtt_json = input(f"Paste auth MQTT full JSON here for this device: ")
+        # save mqtt_token
+        with open(_device_mqtt_path, mode="w") as d:
+            d.write(mqtt_json)
+        os.chmod(_device_mqtt_path, 0o600)  # set user-only perms.
+
+    _mqtt_token = json.loads(mqtt_json)
+    _log_token()
+    return _mqtt_token
+
+
 def get_writable_scenes(host):
     """ Request list of scene names for logged in user that user has publish permission for.
     host: The hostname of the ARENA webserver.
@@ -173,7 +203,8 @@ def _log_token():
     now = time.time()
     tok = jwt.decode(_mqtt_token["token"], options={"verify_signature": False})
     exp = float(tok["exp"])
-    dur_str = time.strftime("%H:%M:%S", time.gmtime(exp - now))
+    delta = (exp - now)
+    dur_str = str(datetime.timedelta(milliseconds=delta*1000))
     print(f"ARENA Token valid for: {dur_str}h")
 
 

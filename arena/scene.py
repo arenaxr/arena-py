@@ -80,18 +80,18 @@ class ArenaMQTT(object):
             token = os.environ["ARENA_PASSWORD"]
             auth.store_environment_auth(self.username, token)
         else:
-            if self.device:
-                mqtt_auth = input(f"Paste auth MQTT JSON here for device '{self.device}':")
-                local = json.loads(mqtt_auth)
-            else:
+            if self.scene:
                 local = auth.check_local_auth()
+            elif self.device:
+                local = auth.authenticate_device(self.host)
             if local and "username" in local and "token" in local:
                 # auth 2nd: use locally saved token
                 self.username = local["username"]
                 token = local["token"]
             else:
-                # auth 3rd: use the user account online
-                self.username = auth.authenticate_user(self.host)
+                if self.scene:
+                    # auth 3rd: use the user account online
+                    self.username = auth.authenticate_user(self.host)
 
         if os.environ.get("NAMESPACE"):
             self.namespace = os.environ["NAMESPACE"]
@@ -123,7 +123,7 @@ class ArenaMQTT(object):
             self.mqttc_id, clean_session=True
         )
 
-        if self.username is None or token is None:
+        if self.scene and (not self.username or not token):
             # do scene auth by user
             data = auth.authenticate_scene(
                 self.host, self.realm, self.namespaced_target, self.username, video)

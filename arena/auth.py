@@ -27,8 +27,6 @@ _scopes = ["openid",
 _gauth_file = ".arena_google_auth"
 _mqtt_token_file = ".arena_mqtt_auth"
 _arena_user_dir = f"{str(Path.home())}/.arena"
-_user_gauth_path = f"{_arena_user_dir}/{_gauth_file}"
-_user_mqtt_path = f"{_arena_user_dir}/{_mqtt_token_file}"
 _local_mqtt_path = f"{_mqtt_token_file}"
 _csrftoken = None
 _mqtt_token = None
@@ -46,13 +44,15 @@ def authenticate_user(host):
     print("Signing in to the ARENA...")
     gauth_json = _get_gauthid(host)
     creds = None
+    scene_auth_dir = _get_scene_auth_path(host)
+    scene_gauth_path = f"{scene_auth_dir}/{_gauth_file}"
 
-    if not os.path.exists(_arena_user_dir):
-        os.makedirs(_arena_user_dir)
+    if not os.path.exists(scene_auth_dir):
+        os.makedirs(scene_auth_dir)
 
     # store the user's access and refresh tokens
-    if os.path.exists(_user_gauth_path):
-        with open(_user_gauth_path, "rb") as token:
+    if os.path.exists(scene_gauth_path):
+        with open(scene_gauth_path, "rb") as token:
             creds = pickle.load(token)
         session = AuthorizedSession(creds)
         id_claims = gJWT.decode(creds.id_token, verify=False)
@@ -95,10 +95,10 @@ def authenticate_user(host):
                 # creds = flow.credentials
 
             session = flow.authorized_session()
-        with open(_user_gauth_path, "wb") as token:
+        with open(scene_gauth_path, "wb") as token:
             # save the credentials for the next run
             pickle.dump(creds, token)
-        os.chmod(_user_gauth_path, 0o600)  # set user-only perms.
+        os.chmod(scene_gauth_path, 0o600)  # set user-only perms.
 
     username = None
     _id_token = creds.id_token
@@ -124,13 +124,15 @@ def authenticate_scene(host, realm, scene, username, video=False):
     Returns: username and mqtt_token from arena-account.
     """
     global _id_token, _mqtt_token
+    scene_auth_dir = _get_scene_auth_path(host)
+    scene_mqtt_path = f"{scene_auth_dir}/{_mqtt_token_file}"
 
     print("Using remote-authenticated MQTT token.")
     mqtt_json = _get_mqtt_token(host, realm, scene, username, _id_token, video)
     # save mqtt_token
-    with open(_user_mqtt_path, mode="w") as d:
+    with open(scene_mqtt_path, mode="w") as d:
         d.write(mqtt_json)
-    os.chmod(_user_mqtt_path, 0o600)  # set user-only perms.
+    os.chmod(scene_mqtt_path, 0o600)  # set user-only perms.
 
     _mqtt_token = json.loads(mqtt_json)
     _log_token()
@@ -143,10 +145,10 @@ def authenticate_device(host):
     """
     global _mqtt_token
 
-    device_mqtt_dir = f"{_arena_user_dir}/python/{host}/d"
-    device_mqtt_path = f"{device_mqtt_dir}/{_mqtt_token_file}"
+    device_auth_dir = _get_device_auth_path(host)
+    device_mqtt_path = f"{device_auth_dir}/{_mqtt_token_file}"
     # check token expiration
-    _remove_credentials(device_mqtt_dir, expire=True)
+    _remove_credentials(device_auth_dir, expire=True)
     # load device token if valid
     if os.path.exists(device_mqtt_path):
         print("Using user long-term device MQTT token.")
@@ -154,11 +156,11 @@ def authenticate_device(host):
         mqtt_json = f.read()
         f.close()
     else:
-        if not os.path.exists(device_mqtt_dir):
-            os.makedirs(device_mqtt_dir)
+        if not os.path.exists(device_auth_dir):
+            os.makedirs(device_auth_dir)
         print(
             f"Generate a token for this device at https://{host}/user/profile")
-        mqtt_json = input(f"Paste auth MQTT full JSON here for this device: ")
+        mqtt_json = input("Paste auth MQTT full JSON here for this device: ")
         # save mqtt_token
         with open(device_mqtt_path, mode="w") as d:
             d.write(mqtt_json)
@@ -167,6 +169,14 @@ def authenticate_device(host):
     _mqtt_token = json.loads(mqtt_json)
     _log_token()
     return _mqtt_token
+
+
+def _get_scene_auth_path(host):
+    return f"{_arena_user_dir}/python/{host}/s"
+
+
+def _get_device_auth_path(host):
+    return f"{_arena_user_dir}/python/{host}/d"
 
 
 def get_writable_scenes(host):
@@ -354,10 +364,10 @@ def signout():
     print("Signed out of the ARENA.")
 
 
-def _print_mqtt_token(mqtt_path, mqtt_claims):
+def _print_mqtt_token(storage_str, mqtt_claims):
     print("\nARENA MQTT/Video Permissions")
     print("----------------------")
-    print(f"Path: {mqtt_path}")
+    print(f"Storage: {storage_str}")
     print(f"User: {mqtt_claims['sub']}")
     exp_str = time.strftime("%c", time.localtime(mqtt_claims["exp"]))
     print(f"Expires: {exp_str}")
@@ -374,13 +384,20 @@ def _print_mqtt_token(mqtt_path, mqtt_claims):
 
 
 def permissions():
+    mqtt_claims = None
+    # env storage auth
+    if os.environ.get("ARENA_USERNAME") and os.environ.get("ARENA_PASSWORD"):
+        mqtt_token = os.environ["ARENA_PASSWORD"]
+        mqtt_claims = jwt.decode(mqtt_token["token"], options={
+            "verify_signature": False})
+        _print_mqtt_token("environment variable 'ARENA_PASSWORD'", mqtt_claims)
+    # file storage auth
     token_paths = []
     for root, dirs, files in os.walk(_arena_user_dir):
         if _mqtt_token_file in files:
             token_paths.append(os.path.join(root, _mqtt_token_file))
     if os.path.exists(_local_mqtt_path):
         token_paths.append(_local_mqtt_path)
-
     for mqtt_path in token_paths:
         f = open(mqtt_path, "r")
         mqtt_json = f.read()
@@ -389,7 +406,8 @@ def permissions():
         mqtt_claims = jwt.decode(mqtt_token["token"], options={
             "verify_signature": False})
         _print_mqtt_token(mqtt_path, mqtt_claims)
-    if len(token_paths) == 0:
+    # no permissions
+    if not mqtt_claims:
         print("Not signed into the ARENA.")
 
 

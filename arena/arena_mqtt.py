@@ -153,11 +153,15 @@ class ArenaMQTT(object):
         self.msg_queue = asyncio.Queue()
 
         # connect to mqtt broker
-        self.mqttc.tls_set()
         if "port" in kwargs:
-            self.mqttc.connect(self.host, kwargs["port"])
+            port = kwargs["port"]
         else:
-            self.mqttc.connect(self.host, port=8883)
+            port = 8883 # ARENA broker TLS 1.2 connection port
+            self.mqttc.tls_set()
+        try:
+            self.mqttc.connect(self.host, port=port)
+        except Exception as err:
+            print(f'MQTT connect error to {self.host}, port={port}: {err}')
         self.mqttc.socket().setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
 
 

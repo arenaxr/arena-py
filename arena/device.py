@@ -43,7 +43,7 @@ class Device(ArenaMQTT):
             debug,
             **kwargs
         )
-        print(f"Device ready: {self.realm}/{self.namespaced_target}, host={self.host}")
+        print(f"Device topic ready: {self.realm}/d/{self.namespace}/{self.device}, host={self.host}")
 
     async def process_message(self):
         while True:

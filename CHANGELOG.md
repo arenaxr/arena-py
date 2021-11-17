@@ -2,6 +2,11 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.1.43] - 2021-11-17
+### Added
+- Device sensor connections: `device=Device(host="arena.org", device="robot1")`.
+- More error handling for network configuration issues.
+
 ## [0.1.42] - 2021-10-04
 ### Changed
 - Improved auth flow when CWD is Home.

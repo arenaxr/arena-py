@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 
-from arena import Device
+from arena.device import Device
 
 device = Device(host="arenaxr.org", device="robot1", debug=True)
 CUSTOM_TOPIC = f"{device.realm}/d/{device.namespace}/{device.device}/rtc1"

@@ -336,7 +336,7 @@ def urlopen(url, data=None, creds=False, csrf=None):
         if isinstance(err, HTTPError) and round(err.code, -2) == 400:
             # user not authorized on website yet, they don"t have an ARENA username
             base_url = "{0.scheme}://{0.netloc}".format(urlsplit(url))
-            print(f"Login with this this account on the website first:")
+            print("Login with this this account on the website first:")
             print(f"Trying to open login page: {base_url}/user")
             try:
                 webbrowser.open_new_tab(f"{base_url}/user")

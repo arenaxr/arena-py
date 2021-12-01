@@ -29,20 +29,8 @@ class ArenaMQTT(object):
                 end_program_callback = None,
                 video = False,
                 debug = False,
-                cli_args = False,
                 **kwargs
             ):
-        if cli_args:
-            self.args = self.parse_cli()
-            if self.args["mqtth"]:
-                kwargs["host"] = self.args["mqtth"]
-            if self.args["namespace"]:
-                kwargs["namespace"] = self.args["namespace"]
-            if self.args["scene"]:
-                kwargs["scene"] = self.args["scene"]
-            if self.args["device"]:
-                kwargs["device"] = self.args["device"]
-
         if os.environ.get("MQTTH"):
             self.host = os.environ["MQTTH"]
         elif "host" in kwargs and kwargs["host"]:

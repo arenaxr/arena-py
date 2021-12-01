@@ -24,8 +24,18 @@ class Device(ArenaMQTT):
                 on_msg_callback = None,
                 end_program_callback = None,
                 debug = False,
+                cli_args = False,
                 **kwargs
             ):
+        if cli_args:
+            self.args = self.parse_cli()
+            if self.args["mqtth"]:
+                kwargs["host"] = self.args["mqtth"]
+            if self.args["namespace"]:
+                kwargs["namespace"] = self.args["namespace"]
+            if self.args["device"]:
+                kwargs["device"] = self.args["device"]
+
         if os.environ.get("DEVICE"):
             self.device = os.environ["DEVICE"]
         elif "device" in kwargs and kwargs["device"]:

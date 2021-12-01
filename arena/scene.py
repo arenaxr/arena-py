@@ -39,6 +39,15 @@ class Scene(ArenaMQTT):
                 cli_args = False,
                 **kwargs
             ):
+        if cli_args:
+            self.args = self.parse_cli()
+            if self.args["mqtth"]:
+                kwargs["host"] = self.args["mqtth"]
+            if self.args["namespace"]:
+                kwargs["namespace"] = self.args["namespace"]
+            if self.args["scene"]:
+                kwargs["scene"] = self.args["scene"]
+
         if os.environ.get("SCENE"):
             self.scene = os.environ["SCENE"]
         elif "scene" in kwargs and kwargs["scene"]:
@@ -55,7 +64,6 @@ class Scene(ArenaMQTT):
             end_program_callback,
             video,
             debug,
-            cli_args,
             **kwargs
         )
 

@@ -111,14 +111,14 @@ def delete_cube(x, y):
     arena.delete_object(cubes[(x, y)])
 
 
-# def drop_cube(x, y):
-#     arena.update_object(cubes[(x, y)], physics=Physics(type="dynamic"))
+def drop_cube(x, y):
+    arena.update_object(cubes[(x, y)], physics=Physics(type="dynamic"))
 
 
-# def launch_cube(x, y):
-#     arena.update_object(cubes[(x, y)], physics=Physics(type="dynamic"))
-#     arena.generate_click_event(cubes[(x, y)], type="mouseup")
-#     # old: cubes[(x, y)].fireEvent(arena.EventType.mouseup, (0, 0, 0), "guacprogram")
+def launch_cube(x, y):
+    arena.update_object(cubes[(x, y)], physics=Physics(type="dynamic"))
+    arena.generate_click_event(cubes[(x, y)], type="mousedown")
+    # old: cubes[(x, y)].fireEvent(arena.EventType.mouseup, (0, 0, 0), "guacprogram")
 
 
 def deleteAvocado():
@@ -164,8 +164,8 @@ def draw_hud(score):
 
 def animateAvocado():
     global avocado
-    # deleteAvocado()
-    # drawAvocado()
+    deleteAvocado()
+    drawAvocado()
     avocado.dispatch_animation(AnimationMixer(
         clip="Recuperate", loop="pingpong", repetitions=2, timeScale=4)
     )
@@ -174,8 +174,8 @@ def animateAvocado():
 
 def animateAvocado2():
     global avocado
-    # deleteAvocado()
-    # drawAvocado()
+    deleteAvocado()
+    drawAvocado()
     avocado.dispatch_animation(AnimationMixer(
         clip="Walking", loop="pingpong", repetitions=2)
     )
@@ -193,16 +193,16 @@ def draw_board():
             initCube(x, y, (127, 127, 127))
 
 
-# def launch_cubes():
-#     for x in Xcoords:
-#         for y in Ycoords:
-#             launch_cube(x, y)
+def launch_cubes():
+    for x in Xcoords:
+        for y in Ycoords:
+            launch_cube(x, y)
 
 
-# def drop_cubes():
-#     for x in Xcoords:
-#         for y in Ycoords:
-#             drop_cube(x, y)
+def drop_cubes():
+    for x in Xcoords:
+        for y in Ycoords:
+            drop_cube(x, y)
 
 
 def delete_cubes():
@@ -212,14 +212,14 @@ def delete_cubes():
 
 
 def animate_win():
-    # launch_cubes()
+    launch_cubes()
     animateAvocado()
     time.sleep(5)
     delete_cubes()
 
 
 def animate_loss():
-    # drop_cubes()
+    drop_cubes()
     animateAvocado2()
     time.sleep(5)
     delete_cubes()

@@ -1076,6 +1076,7 @@ def create_obj(camname, clipboard, position):
         material=Material(color=clipboard.data.material.color,
                           transparent=False),
         url=clipboard.data.url,
+        clickable=True, # TODO: remove when AR target mousedown/up ignores parents
     )
     scene.add_object(new_obj)
     USERS[camname].target_id = new_obj.object_id
@@ -1192,6 +1193,7 @@ def make_wall(camname):
         scale=sca,
         material=Material(color=Color(200, 200, 200),
                           transparent=True, opacity=0.5),
+        clickable=True, # TODO: remove when AR target mousedown/up ignores parents
     )
     scene.add_object(new_wall)
     USERS[camname].target_id = new_wall.object_id

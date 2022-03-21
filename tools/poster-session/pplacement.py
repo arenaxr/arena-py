@@ -60,7 +60,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
     persist = config.get('persist', False)
 
     # to save file to gdrive
-    gcw = GoogleClientWrapper();
+    gcw = GoogleClientWrapper()
 
     # get wall config
     wall_config         = config.get('wall', {})
@@ -123,7 +123,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
             object_id=lbl_title_name,
             parent=root_name,
             persist=persist,
-            position=Position(0, wall_height-.6, 0.510),
+            position=Position(0, wall_height-.6, wall_depth/2+0.010),
             text=title_cut,
             color=text_color,
             font=text_font,
@@ -136,7 +136,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
             object_id=lbl_back_title_name,
             parent=root_name,
             persist=persist,
-            position=Position(0, wall_height/2, -0.55),
+            position=Position(0, wall_height/2, wall_depth/2-0.05),
             rotation=Rotation(0, 180, 0),
             text=title_cut,
             color=back_text_color,
@@ -154,7 +154,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
             object_id=lbl_authors_name,
             parent=root_name,
             persist=persist,
-            position=Position(0, wall_height-1.1, 0.510),
+            position=Position(0, wall_height-1.1, wall_depth/2+0.010),
             text=f'{wall_data["authors"][0:100]}', # raise exception if key does not exist
             color=text_color,
             font=text_font,
@@ -166,7 +166,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
         print(f'Could not add wall authors: {err}')
 
     try:
-        img_url = wall_data.get('image_url') # deal with previous verions of the spreadsheet
+        img_url = wall_data.get('image_url') # deal with previous versions of the spreadsheet
         if not img_url:
             img_url=wall_data['image_url_1'] # raise exception if key does not exist
 
@@ -174,7 +174,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
         img = Image(object_id=img_name,
             parent=root_name,
             persist=persist,
-            position=Position(0, img_height, 0.510),
+            position=Position(0, img_height, wall_depth/2+0.010),
             scale=Scale(7.2,4.05,1),
             url=img_url,
             landmark=Landmark(label=title_cut)
@@ -202,7 +202,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
             img_btn = Image(object_id=btn,
                 parent=root_name,
                 persist=persist,
-                position=Position(-(wall_width/2)+.45, img_height + (len(img_btns)-1) * .8 / 2 - i * .8, 0.510),
+                position=Position(-(wall_width/2)+.45, img_height + (len(img_btns)-1) * .8 / 2 - i * .8, wall_depth/2+0.010),
                 heigh=.5,
                 width=.5,
                 scale=Scale(.5, .5, 1),
@@ -234,12 +234,12 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
                 object_id=b1_name,
                 parent=root_name,
                 persist=persist,
-                position=Position(4, img_height + .3, 0.510),
+                position=Position(4, img_height + .3, wall_depth/2+0.010),
                 scale=Scale(.5, .5, 1),
                 url=iconpath,
                 clickable=True,
                 goto_url=GotoUrl(dest='popup', on='mousedown', url=burl)
-            );
+            )
             scene.add_object(videolink)
 
             # button text
@@ -268,12 +268,12 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
                 object_id=b2_name,
                 parent=root_name,
                 persist=persist,
-                position=Position(4, img_height - .3, 0.510),
+                position=Position(4, img_height - .3, wall_depth/2+0.010),
                 scale=Scale(.5, .5, 1),
                 url=iconpath,
                 clickable=True,
                 goto_url=GotoUrl(dest='popup', on='mousedown', url=burl)
-            );
+            )
             scene.add_object(videolink)
 
             # button text
@@ -298,7 +298,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
 def make_walls():
     # get data from google spreadsheet table
     print('Getting data...')
-    gcw = GoogleClientWrapper();
+    gcw = GoogleClientWrapper()
     data = gcw.gs_aslist(config['input_table']['spreadsheetid'], config['input_table']['named_range'])
 
     # filter by scenename in config
@@ -320,7 +320,7 @@ def make_walls():
         btns.update(wall_btns)
 
     # save buttons data on gdrive
-    gcw.gd_save_json(config['links_config']['fileid'], btns, f'{config["input_table"]["spreadsheetid"]}.json');
+    gcw.gd_save_json(config['links_config']['fileid'], btns, f'{config["input_table"]["spreadsheetid"]}.json')
 
     print('\nDone. Press Ctrl+C to disconnect.')
 

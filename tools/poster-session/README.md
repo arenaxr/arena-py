@@ -34,8 +34,10 @@ The script accepts the following optional arguments:
                         The configuration file. Default is ./config.yaml
   -n NAMESPACE          Namespace of the poster session (e.g. wiselab, conix)
   -s SCENENAME          Scenename of the poster session (e.g. theme1, theme2)
-  --keep-pose, --no-keep-pose
-                        Keep position and rotation from other layout
+  --keep-pose           Keep position and rotation from other layout
+  --no-wall             Remove backing wall behind the poster
+  --no-text             Remove front and back title/author text
+  --flip-y              Rotate the poster 180, requires --keep-pose
 ```
 
 To pass arguments to the script, add the ARGS variable when invoking Make, e.g.:

@@ -40,7 +40,7 @@ def parse_color(dict, key, default):
     color_string = dict.get(key, default)
     return tuple(map(int, color_string.split(',')))
 
-def make_wall(name_suffix, position, rotation, wall_data, config):
+def make_wall(name_suffix, position, rotation, wall_data, config, args):
     '''Create a demo wall
     args:
     name_suffix
@@ -77,7 +77,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
     title_maxlen        = wall_config.get('title_maxlen', 150)
 
     # these will be the name of the objects in the scene
-    root_name           = f'poster_root_{name_suffix}'
+    root_name           = f'{name_suffix}'
     wall_name           = f'poster_wall_{name_suffix}'
     img_name            = f'poster_img_{name_suffix}'
     light_name          = f'poster_light_{name_suffix}'
@@ -106,7 +106,9 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
     z = radius * math.sin(angle)
     landmark = Landmark(
         label=title_cut,
-        offsetPosition={"x": round(-x, 3), "y": 0, "z": round(z, 3)},
+        offsetPosition={"x": round(-x, 3), "y": 1.6, "z": round(z, 3)},
+        randomRadiusMin=0,
+        randomRadiusMax=0,
         lookAtLandmark=True)
 
     # invisible root object; all other objects are children of this object
@@ -122,65 +124,73 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
     scene.add_object(root)
 
     # back wall
-    wall = Box(
-        object_id=wall_name,
-        parent=root_name,
-        persist=persist,
-        position=Position(0, wall_height/2, 0),
-        width=wall_width,
-        height=wall_height,
-        depth=wall_depth,
-        color=wall_color
-    )
-    scene.add_object(wall)
+    if args.no_wall:
+        delete(wall_name)
+    else:
+        wall = Box(
+            object_id=wall_name,
+            parent=root_name,
+            persist=persist,
+            position=Position(0, wall_height/2, 0),
+            width=wall_width,
+            height=wall_height,
+            depth=wall_depth,
+            color=wall_color
+        )
+        scene.add_object(wall)
 
     # title
-    try:
-        lbltitle = Text(
-            object_id=lbl_title_name,
-            parent=root_name,
-            persist=persist,
-            position=Position(0, wall_height-.6, (wall_depth/2)+.010),
-            text=title_cut,
-            color=text_color,
-            font=text_font,
-            width=5
-        )
-        scene.add_object(lbltitle)
+    if args.no_text:
+        delete(lbl_title_name)
+        delete(lbl_back_title_name)
+        delete(lbl_authors_name)
+    else:
+        try:
+            lbltitle = Text(
+                object_id=lbl_title_name,
+                parent=root_name,
+                persist=persist,
+                position=Position(0, wall_height-.6, (wall_depth/2)+.010),
+                text=title_cut,
+                color=text_color,
+                font=text_font,
+                width=5
+            )
+            scene.add_object(lbltitle)
 
-        # title, back
-        lbltitleb = Text(
-            object_id=lbl_back_title_name,
-            parent=root_name,
-            persist=persist,
-            position=Position(0, wall_height/2, -(wall_depth/2)-.05),
-            rotation=Rotation(0, 180, 0),
-            text=title_cut,
-            color=back_text_color,
-            font=text_font,
-            width=8
-        )
-        scene.add_object(lbltitleb)
+            # title, back
+            lbltitleb = Text(
+                object_id=lbl_back_title_name,
+                parent=root_name,
+                persist=persist,
+                position=Position(0, wall_height/2, -(wall_depth/2)-.05),
+                rotation=Rotation(0, 180, 0),
+                text=title_cut,
+                color=back_text_color,
+                font=text_font,
+                width=8
+            )
+            scene.add_object(lbltitleb)
 
-    except Exception as err:
-        print(f'Could not add wall title: {err}')
+        except Exception as err:
+            print(f'Could not add wall title: {err}')
 
-    try:
-        # authors
-        lbl = Text(
-            object_id=lbl_authors_name,
-            parent=root_name,
-            persist=persist,
-            position=Position(0, wall_height-1.1, wall_depth/2+.010),
-            text=f'{wall_data["authors"][0:100]}', # raise exception if key does not exist
-            color=text_color,
-            font=text_font,
-            wrapCount=100,
-            width=8
-        )
-        scene.add_object(lbl)
-    except Exception as err:
-        print(f'Could not add wall authors: {err}')
+        try:
+            # authors
+            lbl = Text(
+                object_id=lbl_authors_name,
+                parent=root_name,
+                persist=persist,
+                position=Position(0, wall_height-1.1, wall_depth/2+.010),
+                text=f'{wall_data["authors"][0:100]}', # raise exception if key does not exist
+                color=text_color,
+                font=text_font,
+                wrapCount=100,
+                width=8
+            )
+            scene.add_object(lbl)
+        except Exception as err:
+            print(f'Could not add wall authors: {err}')
 
     try:
         img_url = wall_data.get('image_url') # deal with previous versions of the spreadsheet
@@ -314,7 +324,12 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
     # return list of img buttons added to this wall
     return img_btns
 
-def make_walls(keep_pose):
+def delete(object_id):
+    if object_id in scene.all_objects:
+        scene.delete_object(scene.all_objects[object_id])
+
+
+def make_walls(args):
     # get data from google spreadsheet table
     print('Getting data...')
     gcw = GoogleClientWrapper()
@@ -329,11 +344,16 @@ def make_walls(keep_pose):
     scene.get_persisted_objs() # force update
     btns = {}
     for i in range(len(filtered)):
-        root_name = f"poster_root_{filtered[i]['id']}"
-        if (keep_pose and root_name in scene.all_objects):
+        # if args.fit:
+        #     root_name = f"{filtered[i]['id']}"
+        # else:
+        root_name = f"{filtered[i]['id']}"
+        if (args.keep_pose and root_name in scene.all_objects):
             persist_obj = scene.all_objects[root_name]
             position = persist_obj.data.position # keep last position from persist
             rotation = persist_obj.data.rotation # keep last rotation from persist
+            if args.flip_y:
+                rotation.y += 180
         else:
             position = Position(t[i]['x'], t[i]['y'], t[i]['z']) # position as given by the layout
             rotation = Rotation(t[i]['rx'],t[i]['ry'],t[i]['rz']) # rotation as given by layout
@@ -344,6 +364,7 @@ def make_walls(keep_pose):
             rotation,
             filtered[i],
             config,
+            args,
         )
 
         btns.update(wall_btns)
@@ -365,8 +386,16 @@ if __name__ == '__main__':
                         help='Namespace of the poster session (e.g. wiselab, conix)')
     parser.add_argument('-s', dest='scenename', default=None,
                         help='Scenename of the poster session (e.g. theme1, theme2)')
-    parser.add_argument('--keep-pose', action=argparse.BooleanOptionalAction,
+
+    parser.add_argument('--keep-pose', action='store_true',
                         help='Keep position and rotation from other layout')
+    parser.add_argument('--no-wall', action='store_true',
+                        help='Remove backing wall behind the poster')
+    parser.add_argument('--no-text', action='store_true',
+                        help='Remove front and back title/author text')
+    parser.add_argument('--flip-y', action='store_true',
+                        help='Rotate the poster 180, requires --keep-pose')
+
     args = parser.parse_args()
 
     # load config
@@ -376,8 +405,8 @@ if __name__ == '__main__':
     # save scenename in config
     if args.scenename is not None:
         config['arena']['scenename'] = args.scenename
-    if args.scenename is not None:
-        config['arena']['scenename'] = args.scenename
+    if args.namespace is not None:
+        config['arena']['namespace'] = args.namespace
 
     # check config
     if (config.get('arena') == None):
@@ -406,7 +435,7 @@ if __name__ == '__main__':
 
     # init the ARENA library
     kwargs = {}
-    if config['arena']['scenename']: kwargs["namespace"] = config['arena']['scenename']
+    if config['arena']['namespace']: kwargs["namespace"] = config['arena']['namespace']
     scene = Scene(
         host=config['arena']['host'],
         realm=config['arena']['realm'],
@@ -414,5 +443,5 @@ if __name__ == '__main__':
         **kwargs)
 
     # add and start tasks
-    scene.run_once(make_walls(args.keep_pose))
+    scene.run_once(make_walls(args))
     scene.run_tasks()

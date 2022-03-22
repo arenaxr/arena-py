@@ -100,16 +100,19 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
 
     # TODO: (mwfarb) move this offsetPosition calc to landmark.js perhaps?
     # calc offsetPosition in world coordinates to match rotation
-    radius = 4
-    angle = (rotation.y+90) * (math.pi/180)
-    x = radius * math.cos(angle)
-    z = radius * math.sin(angle)
-    landmark = Landmark(
-        label=title_cut,
-        offsetPosition={"x": round(-x, 3), "y": 1.6, "z": round(z, 3)},
-        randomRadiusMin=0,
-        randomRadiusMax=0,
-        lookAtLandmark=True)
+    if len(title_cut) == 0:
+        landmark=None
+    else:
+        radius = 4
+        angle = (rotation.y+90) * (math.pi/180)
+        x = radius * math.cos(angle)
+        z = radius * math.sin(angle)
+        landmark = Landmark(
+            label=title_cut,
+            offsetPosition={"x": round(-x, 3), "y": 1.6, "z": round(z, 3)},
+            randomRadiusMin=0,
+            randomRadiusMax=0,
+            lookAtLandmark=True)
 
     # invisible root object; all other objects are children of this object
     root = Object(

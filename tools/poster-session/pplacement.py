@@ -361,6 +361,8 @@ if __name__ == '__main__':
         "Generate a poster session layout in a given scene"))
     parser.add_argument('-c', '--conf', dest='configfile', default=DFT_CONFIG_FILENAME, action='store', type=str,
             help=f'The configuration file. Default is {DFT_CONFIG_FILENAME}')
+    parser.add_argument('-n', dest='namespace', default=None,
+                        help='Namespace of the poster session (e.g. wiselab, conix)')
     parser.add_argument('-s', dest='scenename', default=None,
                         help='Scenename of the poster session (e.g. theme1, theme2)')
     parser.add_argument('--keep-pose', action=argparse.BooleanOptionalAction,
@@ -372,6 +374,8 @@ if __name__ == '__main__':
         config = yaml.load(file, Loader=yaml.FullLoader)
 
     # save scenename in config
+    if args.scenename is not None:
+        config['arena']['scenename'] = args.scenename
     if args.scenename is not None:
         config['arena']['scenename'] = args.scenename
 
@@ -401,7 +405,13 @@ if __name__ == '__main__':
         exit(1)
 
     # init the ARENA library
-    scene = Scene(host=config['arena']['host'], realm=config['arena']['realm'], scene=config['arena']['scenename'])
+    kwargs = {}
+    if config['arena']['scenename']: kwargs["namespace"] = config['arena']['scenename']
+    scene = Scene(
+        host=config['arena']['host'],
+        realm=config['arena']['realm'],
+        scene=config['arena']['scenename'],
+        **kwargs)
 
     # add and start tasks
     scene.run_once(make_walls(args.keep_pose))

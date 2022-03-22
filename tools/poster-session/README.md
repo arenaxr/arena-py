@@ -32,6 +32,7 @@ The script accepts the following optional arguments:
   -h, --help            show this help message and exit
   -c CONFIGFILE, --conf CONFIGFILE
                         The configuration file. Default is ./config.yaml
+  -n NAMESPACE          Namespace of the poster session (e.g. wiselab, conix)
   -s SCENENAME          Scenename of the poster session (e.g. theme1, theme2)
   --keep-pose, --no-keep-pose
                         Keep position and rotation from other layout

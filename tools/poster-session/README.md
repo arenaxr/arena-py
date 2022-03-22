@@ -19,7 +19,7 @@ You need to have [Make](https://www.gnu.org/software/make/) installed. The Makef
 Before running, you also need to create a config file (default `config.yaml`). The repository includes a `config_example.yaml` that you can rename to `config.yaml` and adapt.
 
 ### Google Apps Script API
-The script uses the google apps script API to get the spreadsheet data. Make sure to follow these google python library pre-requisites:						
+The script uses the google apps script API to get the spreadsheet data. Make sure to follow these google python library pre-requisites:
 1. A Google Cloud Platform project with *Google Sheets API* and *Google Drive API* enabled. See how to [create a project](https://developers.google.com/workspace/guides/create-project)
 2. Authorization credentials for a desktop application (pasted into 'credentials.json'). See how to [create credentials](https://developers.google.com/workspace/guides/create-credentials).
 
@@ -33,6 +33,8 @@ The script accepts the following optional arguments:
   -c CONFIGFILE, --conf CONFIGFILE
                         The configuration file. Default is ./config.yaml
   -s SCENENAME          Scenename of the poster session (e.g. theme1, theme2)
+  --keep-pose, --no-keep-pose
+                        Keep position and rotation from other layout
 ```
 
 To pass arguments to the script, add the ARGS variable when invoking Make, e.g.:
@@ -146,7 +148,7 @@ The layouts supported and their options are shown below.
 - row_axis='z': which axis is used as the row axis
 - fixed_axis='y': axis that defines the plane where the walls are laid out
 
-#### CIRLE: arrange walls around a circle
+#### CIRCLE: arrange walls around a circle
 ##### Parameters:
 - radius=50: radius of the circle (will try to layout the walls evenly spaced)
 - a1_off=0: center of the circle offset from 0 in axis 1 (see axis1 param)

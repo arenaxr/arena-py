@@ -90,6 +90,25 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
     b1_name             = f'poster_button1_{name_suffix}'
     b2_name             = f'poster_button2_{name_suffix}'
 
+    # title
+    title_cut = f'Poster_{name_suffix}' # init to a default value; used as landmark title if getting title from dictionary fails
+    try:
+        title_cut = f'{wall_data["title"][0:title_maxlen]}' # cut title; raise exception if key does not exist
+        if len(wall_data["title"]) > title_maxlen: title_cut = title_cut + '...'
+    except Exception as err:
+        print(f'Could not get wall title: {err}')
+
+    # TODO: (mwfarb) move this offsetPosition calc to landmark.js perhaps?
+    # calc offsetPosition in world coordinates to match rotation
+    radius = 4
+    angle = (rotation.y+90) * (math.pi/180)
+    x = radius * math.cos(angle)
+    z = radius * math.sin(angle)
+    landmark = Landmark(
+        label=title_cut,
+        offsetPosition={"x": round(-x, 3), "y": 0, "z": round(z, 3)},
+        lookAtLandmark=True)
+
     # invisible root object; all other objects are children of this object
     root = Object(
         object_id=root_name,
@@ -97,15 +116,17 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
         persist=persist,
         position=position,
         rotation=rotation,
-        material=Material(transparent=True)
+        material=Material(transparent=True),
+        landmark=landmark
     )
     scene.add_object(root)
 
     # back wall
-    wall = Box(object_id=wall_name,
+    wall = Box(
+        object_id=wall_name,
         parent=root_name,
         persist=persist,
-        position=Position(0, 2.75, 0),
+        position=Position(0, wall_height/2, 0),
         width=wall_width,
         height=wall_height,
         depth=wall_depth,
@@ -114,16 +135,12 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
     scene.add_object(wall)
 
     # title
-    title_cut = f'Poster_{name_suffix}' # init to a default value; used as landmark title if getting title from dictionary fails
     try:
-        title_cut = f'{wall_data["title"][0:title_maxlen]}' # cut title; raise exception if key does not exist
-        if len(wall_data["title"]) > title_maxlen: title_cut = title_cut + '...'
-
         lbltitle = Text(
             object_id=lbl_title_name,
             parent=root_name,
             persist=persist,
-            position=Position(0, wall_height-.6, wall_depth/2+0.010),
+            position=Position(0, wall_height-.6, (wall_depth/2)+.010),
             text=title_cut,
             color=text_color,
             font=text_font,
@@ -136,7 +153,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
             object_id=lbl_back_title_name,
             parent=root_name,
             persist=persist,
-            position=Position(0, wall_height/2, wall_depth/2-0.05),
+            position=Position(0, wall_height/2, -(wall_depth/2)-.05),
             rotation=Rotation(0, 180, 0),
             text=title_cut,
             color=back_text_color,
@@ -154,7 +171,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
             object_id=lbl_authors_name,
             parent=root_name,
             persist=persist,
-            position=Position(0, wall_height-1.1, wall_depth/2+0.010),
+            position=Position(0, wall_height-1.1, wall_depth/2+.010),
             text=f'{wall_data["authors"][0:100]}', # raise exception if key does not exist
             color=text_color,
             font=text_font,
@@ -171,13 +188,13 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
             img_url=wall_data['image_url_1'] # raise exception if key does not exist
 
         # image on the wall
-        img = Image(object_id=img_name,
+        img = Image(
+            object_id=img_name,
             parent=root_name,
             persist=persist,
-            position=Position(0, img_height, wall_depth/2+0.010),
-            scale=Scale(7.2,4.05,1),
-            url=img_url,
-            landmark=Landmark(label=title_cut)
+            position=Position(0, img_height, wall_depth/2+.010),
+            scale=Scale(wall_width*.80,wall_height*.675,1),
+            url=img_url
         )
 
         scene.add_object(img)
@@ -199,10 +216,11 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
         # add buttons to scroll between additional images
         i=0
         for btn in img_btns:
-            img_btn = Image(object_id=btn,
+            img_btn = Image(
+                object_id=btn,
                 parent=root_name,
                 persist=persist,
-                position=Position(-(wall_width/2)+.45, img_height + (len(img_btns)-1) * .8 / 2 - i * .8, wall_depth/2+0.010),
+                position=Position(-(wall_width/2)+.3, img_height + (len(img_btns)-1) * .8 / 2 - i * .8, wall_depth/2+.010),
                 heigh=.5,
                 width=.5,
                 scale=Scale(.5, .5, 1),
@@ -211,7 +229,8 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
             scene.add_object(img_btn)
 
             # button text
-            lblbtn_img = Text(object_id=f'{btn}_text',
+            lblbtn_img = Text(
+                object_id=f'{btn}_text',
                 parent=btn,
                 persist=persist,
                 position=Position(0, 0, 0),
@@ -234,7 +253,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
                 object_id=b1_name,
                 parent=root_name,
                 persist=persist,
-                position=Position(4, img_height + .3, wall_depth/2+0.010),
+                position=Position((wall_width/2)-.3, img_height + .3, wall_depth/2+.010),
                 scale=Scale(.5, .5, 1),
                 url=iconpath,
                 clickable=True,
@@ -268,7 +287,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
                 object_id=b2_name,
                 parent=root_name,
                 persist=persist,
-                position=Position(4, img_height - .3, wall_depth/2+0.010),
+                position=Position((wall_width/2)-.3, img_height - .3, wall_depth/2+.010),
                 scale=Scale(.5, .5, 1),
                 url=iconpath,
                 clickable=True,
@@ -295,7 +314,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config):
     # return list of img buttons added to this wall
     return img_btns
 
-def make_walls():
+def make_walls(keep_pose):
     # get data from google spreadsheet table
     print('Getting data...')
     gcw = GoogleClientWrapper()
@@ -307,12 +326,22 @@ def make_walls():
     # get layout coordinates
     t = Layout(getattr(Layout, config[config['arena']['scenename']]['layout']), filtered).get_transforms(**(config[config['arena']['scenename']]['layout_args']))
 
+    scene.get_persisted_objs() # force update
     btns = {}
     for i in range(len(filtered)):
+        root_name = f"poster_root_{filtered[i]['id']}"
+        if (keep_pose and root_name in scene.all_objects):
+            persist_obj = scene.all_objects[root_name]
+            position = persist_obj.data.position # keep last position from persist
+            rotation = persist_obj.data.rotation # keep last rotation from persist
+        else:
+            position = Position(t[i]['x'], t[i]['y'], t[i]['z']) # position as given by the layout
+            rotation = Rotation(t[i]['rx'],t[i]['ry'],t[i]['rz']) # rotation as given by layout
+
         wall_btns = make_wall(
             filtered[i]['id'], # use id as a suffix for the objects of each wall
-            Position(t[i]['x'], t[i]['y'], t[i]['z']), # position as given by the layout
-            Rotation(t[i]['rx'],t[i]['ry'],t[i]['rz']), # rotation as given by layout
+            position,
+            rotation,
             filtered[i],
             config,
         )
@@ -334,6 +363,8 @@ if __name__ == '__main__':
             help=f'The configuration file. Default is {DFT_CONFIG_FILENAME}')
     parser.add_argument('-s', dest='scenename', default=None,
                         help='Scenename of the poster session (e.g. theme1, theme2)')
+    parser.add_argument('--keep-pose', action=argparse.BooleanOptionalAction,
+                        help='Keep position and rotation from other layout')
     args = parser.parse_args()
 
     # load config
@@ -373,5 +404,5 @@ if __name__ == '__main__':
     scene = Scene(host=config['arena']['host'], realm=config['arena']['realm'], scene=config['arena']['scenename'])
 
     # add and start tasks
-    scene.run_once(make_walls)
+    scene.run_once(make_walls(args.keep_pose))
     scene.run_tasks()

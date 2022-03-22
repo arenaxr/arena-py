@@ -60,7 +60,7 @@ wall:
 #               col_axis='x': which axis is used as the col axis
 #               row_axis='z': which axis is used as the row axis
 #               fixed_axis='y': axis that defines the plane where the walls are laid out
-#      CIRLE - arrange in a circle; parameters:
+#      CIRCLE - arrange in a circle; parameters:
 #               radius=50: radius of the circle (will try to layout the walls evenly spaced)
 #               a1_off=0: center of the circle offset from 0 in axis 1 (see axis1 param)
 #               a2_off=0: center of the circle offset from 0 in axis 2 (see axis2 param)

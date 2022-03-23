@@ -207,7 +207,9 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
             persist=persist,
             position=Position(0, img_height, wall_depth/2+.010),
             scale=Scale(wall_width*.80,wall_height*.675,1),
-            url=img_url
+            url=img_url,
+            material=Material(shader="flat"),
+            clickable=True,
         )
 
         scene.add_object(img)

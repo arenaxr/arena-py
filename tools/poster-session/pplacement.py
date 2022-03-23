@@ -155,11 +155,11 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
                 object_id=lbl_title_name,
                 parent=root_name,
                 persist=persist,
-                position=Position(0, wall_height-.6, (wall_depth/2)+.010),
+                position=Position(0, wall_height*1.1, (wall_depth/2)+.010),
                 text=title_cut,
                 color=text_color,
                 font=text_font,
-                width=5
+                width=wall_width,
             )
             scene.add_object(lbltitle)
 
@@ -173,7 +173,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
                 text=title_cut,
                 color=back_text_color,
                 font=text_font,
-                width=8
+                width=wall_width,
             )
             scene.add_object(lbltitleb)
 
@@ -186,12 +186,12 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
                 object_id=lbl_authors_name,
                 parent=root_name,
                 persist=persist,
-                position=Position(0, wall_height-1.1, wall_depth/2+.010),
+                position=Position(0, wall_height, wall_depth/2+.010),
                 text=f'{wall_data["authors"][0:100]}', # raise exception if key does not exist
                 color=text_color,
                 font=text_font,
-                wrapCount=100,
-                width=8
+                #wrapCount=100,
+                width=wall_width*.8,
             )
             scene.add_object(lbl)
         except Exception as err:

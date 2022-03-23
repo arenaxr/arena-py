@@ -124,6 +124,14 @@ ececapstone:
 ```
 **Note**: The scenename command line argument overrides the config file scenename.
 
+
+## Converting Poster PDFs
+
+ARENA requires a image type to render as a poster. You can convert a folder of PDFs using the **ImageMagik** command `mogrify` to upsample PDFs before converting down to fit into a consistent size:
+```shell
+mogrify -density 400% -resize 2000x2000 -format png *.pdf
+```
+
 ## Poster Wall Layouts for Each Scene
 
 You can add a section in the config file to define how the posters are arranged in each scene. To do this, add a section (to `config.yaml`) with the scene name and define the layout parameters. For example, the section below will define a line arrangement for the poster walls of scene `test`:

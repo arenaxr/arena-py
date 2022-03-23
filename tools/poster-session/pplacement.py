@@ -128,8 +128,9 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
         landmark = Landmark(
             label=title_cut,
             offsetPosition={"x": round(-x, 3), "y": 0, "z": round(z, 3)},
-            randomRadiusMin=0,
-            randomRadiusMax=0,
+            randomRadiusMin=.5,
+            randomRadiusMax=1,
+            constrainToNavMesh="coplanar",
             lookAtLandmark=True)
 
     # invisible root object; all other objects are children of this object

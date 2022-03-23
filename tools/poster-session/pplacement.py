@@ -25,11 +25,11 @@ def parse_button(button_markup):
 
     return result.groups()
 
-def parse_color(dict, key, default):
-    '''Get a string with a color (as 'red, gree, blue') from a dictionary passed as argument
+def parse_int(dict, key, default):
+    '''Get a string with a color (as 'red, green, blue') from a dictionary passed as argument
        Parse the string and return a (red, green, blue) tuple
     dict:
-      the dictionary with the color string (as 'red, gree, blue')
+      the dictionary with the color string (as 'red, green, blue')
     key:
       key where the color string is
     default:
@@ -37,8 +37,23 @@ def parse_color(dict, key, default):
 
     Returns a (red, green, blue) tuple
     '''
-    color_string = dict.get(key, default)
-    return tuple(map(int, color_string.split(',')))
+    str = dict.get(key, default)
+    return tuple(map(int, str.split(',')))
+
+def parse_float(dict, key, default):
+    '''Get a string with a position (as '0, 0, 0') from a dictionary passed as argument
+       Parse the string and return a (0, 0, 0) tuple
+    dict:
+      the dictionary with the position string (as '0, 0, 0')
+    key:
+      key where the position string is
+    default:
+      default position string value, if key does not exist
+
+    Returns a (0, 0, 0) tuple
+    '''
+    str = dict.get(key, default)
+    return tuple(map(float, str.split(',')))
 
 def make_wall(name_suffix, position, rotation, wall_data, config, args):
     '''Create a demo wall
@@ -68,14 +83,15 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
     wall_height         = wall_config.get('height', 6)
     wall_depth          = wall_config.get('depth', 1)
     img_height          = wall_config.get('img_height', 2.6)
-    wall_color          = parse_color(wall_config, 'color', '151, 171, 216')
-    img_btn_color       = parse_color(wall_config, 'img_btn_color', '255, 255, 255')
-    img_btn_text_color  = parse_color(wall_config, 'img_btn_text_color', '0, 0, 0')
-    text_color          = parse_color(wall_config, 'text_color', '0, 66, 117')
-    back_text_color     = parse_color(wall_config, 'back_text_color', '96, 122, 163')
+    wall_color          = parse_int(wall_config, 'color', '151, 171, 216')
+    img_btn_color       = parse_int(wall_config, 'img_btn_color', '255, 255, 255')
+    img_btn_text_color  = parse_int(wall_config, 'img_btn_text_color', '0, 0, 0')
+    text_color          = parse_int(wall_config, 'text_color', '0, 66, 117')
+    back_text_color     = parse_int(wall_config, 'back_text_color', '96, 122, 163')
     text_font           = wall_config.get('text_font', 'exo2bold')
     title_maxlen        = wall_config.get('title_maxlen', 150)
     landmark_offset_dist= wall_config.get('landmark_offset_dist', 4)
+    wall_offset         = parse_float(wall_config, 'wall_offset', '0, 0, 0')
     btn_scale           = Scale(wall_width/15, wall_width/15, 1)
 
     # these will be the name of the objects in the scene
@@ -136,7 +152,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
             object_id=wall_name,
             parent=root_name,
             persist=persist,
-            position=Position(0, wall_height/2, 0),
+            position=Position(wall_offset[0], (wall_height/2)+wall_offset[1], wall_offset[2]),
             width=wall_width,
             height=wall_height,
             depth=wall_depth,
@@ -155,11 +171,11 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
                 object_id=lbl_title_name,
                 parent=root_name,
                 persist=persist,
-                position=Position(0, wall_height*1.1, (wall_depth/2)+.010),
+                position=Position(wall_offset[0], wall_offset[1]+(wall_height*1.1), wall_offset[2]+(wall_depth/2)+.010),
                 text=title_cut,
                 color=text_color,
                 font=text_font,
-                width=wall_width,
+                width=wall_width*.9,
             )
             scene.add_object(lbltitle)
 
@@ -168,12 +184,12 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
                 object_id=lbl_back_title_name,
                 parent=root_name,
                 persist=persist,
-                position=Position(0, wall_height/2, -(wall_depth/2)-.05),
+                position=Position(wall_offset[0], wall_offset[1]+(wall_height/2), wall_offset[2]-(wall_depth/2)-.05),
                 rotation=Rotation(0, 180, 0),
                 text=title_cut,
                 color=back_text_color,
                 font=text_font,
-                width=wall_width,
+                width=wall_width*.9,
             )
             scene.add_object(lbltitleb)
 
@@ -186,7 +202,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
                 object_id=lbl_authors_name,
                 parent=root_name,
                 persist=persist,
-                position=Position(0, wall_height, wall_depth/2+.010),
+                position=Position(wall_offset[0], wall_offset[1]+wall_height, wall_offset[2]+(wall_depth/2)+.010),
                 text=f'{wall_data["authors"][0:100]}', # raise exception if key does not exist
                 color=text_color,
                 font=text_font,
@@ -207,7 +223,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
             object_id=img_name,
             parent=root_name,
             persist=persist,
-            position=Position(0, img_height, wall_depth/2+.010),
+            position=Position(wall_offset[0], wall_offset[1]+img_height, wall_offset[2]+(wall_depth/2)+.010),
             scale=Scale(wall_width*.80,wall_height*.675,1),
             url=img_url,
             material=Material(shader="flat"),
@@ -237,7 +253,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
                 object_id=btn,
                 parent=root_name,
                 persist=persist,
-                position=Position(-(wall_width/2)+(btn_scale.x/2.1), img_height + (len(img_btns)-1) * .8 / 2 - i * .8, wall_depth/2+.010),
+                position=Position(wall_offset[0]-(wall_width/2)+(btn_scale.x/2.1), wall_offset[1]+img_height + (len(img_btns)-1) * .8 / 2 - i * .8, wall_offset[2]+(wall_depth/2)+.010),
                 heigh=.5,
                 width=.5,
                 scale=btn_scale,
@@ -271,7 +287,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
                 object_id=b1_name,
                 parent=root_name,
                 persist=persist,
-                position=Position((wall_width/2)-(btn_scale.x/2.1), img_height + .3, wall_depth/2+.010),
+                position=Position(wall_offset[0]+(wall_width/2)-(btn_scale.x/2.1),wall_offset[1]+img_height + .3, wall_offset[2]+(wall_depth/2)+.010),
                 scale=btn_scale,
                 url=iconpath,
                 clickable=True,
@@ -309,7 +325,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
                 object_id=b2_name,
                 parent=root_name,
                 persist=persist,
-                position=Position((wall_width/2)-(btn_scale.x/2.1), img_height - .3, wall_depth/2+.010),
+                position=Position(wall_offset[0]+(wall_width/2)-(btn_scale.x/2.1), wall_offset[1]+img_height - .3, wall_offset[2]+(wall_depth/2)+.010),
                 scale=btn_scale,
                 url=iconpath,
                 clickable=True,

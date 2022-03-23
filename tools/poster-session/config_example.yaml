@@ -47,6 +47,7 @@ wall:
   text_font: 'exo2bold'
   title_maxlen: 150 # will add '...' after this amount of characters; default: 150
   landmark_offset_dist: 4 # default: 4
+  wall_offset: 0, 0, 0 # default: 0, 0, 0
 
 # ** Scene layout definitions **
 # Configure the layouts for each scene

@@ -75,6 +75,8 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
     back_text_color     = parse_color(wall_config, 'back_text_color', '96, 122, 163')
     text_font           = wall_config.get('text_font', 'exo2bold')
     title_maxlen        = wall_config.get('title_maxlen', 150)
+    landmark_offset_dist= wall_config.get('landmark_offset_dist', 4)
+    btn_scale           = Scale(wall_width/15, wall_width/15, 1)
 
     # these will be the name of the objects in the scene
     root_name           = f'{name_suffix}'
@@ -103,13 +105,13 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
     if len(title_cut) == 0:
         landmark=None
     else:
-        radius = 4
+        radius = landmark_offset_dist
         angle = (rotation.y+90) * (math.pi/180)
         x = radius * math.cos(angle)
         z = radius * math.sin(angle)
         landmark = Landmark(
             label=title_cut,
-            offsetPosition={"x": round(-x, 3), "y": 1.6, "z": round(z, 3)},
+            offsetPosition={"x": round(-x, 3), "y": 0, "z": round(z, 3)},
             randomRadiusMin=0,
             randomRadiusMax=0,
             lookAtLandmark=True)
@@ -209,7 +211,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
             scale=Scale(wall_width*.80,wall_height*.675,1),
             url=img_url,
             material=Material(shader="flat"),
-            clickable=True,
+            clickable=(len(title_cut) is not 0),
         )
 
         scene.add_object(img)
@@ -235,11 +237,12 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
                 object_id=btn,
                 parent=root_name,
                 persist=persist,
-                position=Position(-(wall_width/2)+.3, img_height + (len(img_btns)-1) * .8 / 2 - i * .8, wall_depth/2+.010),
+                position=Position(-(wall_width/2)+(btn_scale.x/2.1), img_height + (len(img_btns)-1) * .8 / 2 - i * .8, wall_depth/2+.010),
                 heigh=.5,
                 width=.5,
-                scale=Scale(.5, .5, 1),
-                color=img_btn_color
+                scale=btn_scale,
+                clickable=True,
+                material=Material(shader="flat", color=img_btn_color),
             )
             scene.add_object(img_btn)
 
@@ -268,11 +271,12 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
                 object_id=b1_name,
                 parent=root_name,
                 persist=persist,
-                position=Position((wall_width/2)-.3, img_height + .3, wall_depth/2+.010),
-                scale=Scale(.5, .5, 1),
+                position=Position((wall_width/2)-(btn_scale.x/2.1), img_height + .3, wall_depth/2+.010),
+                scale=btn_scale,
                 url=iconpath,
                 clickable=True,
-                goto_url=GotoUrl(dest='popup', on='mousedown', url=burl)
+                goto_url=GotoUrl(dest='popup', on='mousedown', url=burl),
+                material=Material(shader="flat", color=img_btn_color),
             )
             scene.add_object(videolink)
 
@@ -283,11 +287,14 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
                 persist=persist,
                 position=Position(0, -.35, 0),
                 text=btext[0:10],
-                color=(255, 255, 255),
+                color=img_btn_text_color,
                 font=text_font,
                 width=4
             )
             scene.add_object(lblb1)
+        else:
+            delete(lbl_btn1)
+            delete(b1_name)
     except Exception as err:
         print(f'Could not add button1: {err}')
 
@@ -302,11 +309,12 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
                 object_id=b2_name,
                 parent=root_name,
                 persist=persist,
-                position=Position((wall_width/2)-.3, img_height - .3, wall_depth/2+.010),
-                scale=Scale(.5, .5, 1),
+                position=Position((wall_width/2)-(btn_scale.x/2.1), img_height - .3, wall_depth/2+.010),
+                scale=btn_scale,
                 url=iconpath,
                 clickable=True,
-                goto_url=GotoUrl(dest='popup', on='mousedown', url=burl)
+                goto_url=GotoUrl(dest='popup', on='mousedown', url=burl),
+                material=Material(shader="flat", color=img_btn_color),
             )
             scene.add_object(videolink)
 
@@ -317,11 +325,14 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
                 persist=persist,
                 position=Position(0, -.35, 0),
                 text=btext[0:10],
-                color=(255, 255, 255),
+                color=img_btn_text_color,
                 font=text_font,
                 width=4
             )
             scene.add_object(lblb2)
+        else:
+            delete(lbl_btn2)
+            delete(b2_name)
     except Exception as err:
         print(f'Could not add button2: {err}')
 

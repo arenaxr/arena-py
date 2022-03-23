@@ -46,6 +46,7 @@ wall:
   back_text_color: 96, 122, 163 # default: 0, 66, 117
   text_font: 'exo2bold'
   title_maxlen: 150 # will add '...' after this amount of characters; default: 150
+  landmark_offset_dist: 4 # default: 4
 
 # ** Scene layout definitions **
 # Configure the layouts for each scene

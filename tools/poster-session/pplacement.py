@@ -184,7 +184,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
                 object_id=lbl_back_title_name,
                 parent=root_name,
                 persist=persist,
-                position=Position(wall_offset[0], wall_offset[1]+(wall_height/2), wall_offset[2]-(wall_depth/2)-.05),
+                position=Position(wall_offset[0], wall_offset[1]+(wall_height*.75), wall_offset[2]-(wall_depth/2)-.05),
                 rotation=Rotation(0, 180, 0),
                 text=title_cut,
                 color=back_text_color,

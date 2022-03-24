@@ -3,7 +3,7 @@
         {
             "name": "avocado",
             "url_gltf": "store/models/Avocado.glb",
-            "scale": 5
+            "scale": 1
         },
         {
             "name": "shuttle",

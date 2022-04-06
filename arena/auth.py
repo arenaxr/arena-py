@@ -258,9 +258,8 @@ def _get_csrftoken(host):
     # get the csrftoken for django
     global _csrftoken
     csrf_url = f"https://{host}/user/login"
-    verify = host != "localhost"
     client = requests.session()
-    client.get(csrf_url, verify=verify)  # sets cookie
+    client.get(csrf_url, verify=verify(host))  # sets cookie
     if "csrftoken" in client.cookies:
         _csrftoken = client.cookies["csrftoken"]
     elif "csrf" in client.cookies:
@@ -316,6 +315,10 @@ def _get_mqtt_token(host, realm, scene, username, id_token, video):
     return urlopen(url, data=data, csrf=_csrftoken)
 
 
+def verify(host):
+    return host != "localhost"
+
+
 def urlopen(url, data=None, creds=False, csrf=None):
     """ urlopen is for ARENA URL connections.
     url: the url to POST/GET.
@@ -325,7 +328,6 @@ def urlopen(url, data=None, creds=False, csrf=None):
     """
     global _mqtt_token
     urlparts = urlsplit(url)
-    verify = urlparts.netloc != "localhost"
     try:
         req = request.Request(url)
         if creds:
@@ -333,7 +335,7 @@ def urlopen(url, data=None, creds=False, csrf=None):
         if csrf:
             req.add_header("Cookie", f"csrftoken={csrf}")
             req.add_header("X-CSRFToken", csrf)
-        if verify:
+        if verify(urlparts.netloc):
             res = request.urlopen(req, data=data)
         else:
             context = ssl.create_default_context()

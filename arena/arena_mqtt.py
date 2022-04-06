@@ -4,8 +4,8 @@ import json
 import os
 import random
 import socket
+import ssl
 import sys
-import urllib.request
 
 import paho.mqtt.client as mqtt
 
@@ -86,8 +86,7 @@ class ArenaMQTT(object):
         # fetch host config
         print("Fetching ARENA configuration...")
         self.config_url = f"https://{self.host}/conf/defaults.json"
-        with urllib.request.urlopen(self.config_url) as url:
-            self.config_data = json.loads(url.read().decode())
+        self.config_data = json.loads(auth.urlopen(self.config_url))
 
         # set up topic variables
         if self.scene:
@@ -145,7 +144,11 @@ class ArenaMQTT(object):
             port = kwargs["port"]
         else:
             port = 8883 # ARENA broker TLS 1.2 connection port
+        if auth.verify(self.host):
             self.mqttc.tls_set()
+        else:
+            self.mqttc.tls_set_context(ssl._create_unverified_context())
+            self.mqttc.tls_insecure_set(True)
         try:
             self.mqttc.connect(self.host, port=port)
         except Exception as err:

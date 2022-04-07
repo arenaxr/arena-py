@@ -1,3 +1,7 @@
+# sound-control.py
+''' Demonstrate controlling the sound file play/pause/stop events of an object (earth model, playing Earth, Wind, & Fire).
+'''
+
 from arena import *
 
 scene = Scene(cli_args=True, debug=True)

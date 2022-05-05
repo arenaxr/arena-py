@@ -412,6 +412,15 @@ def permissions():
     if not mqtt_claims:
         print("Not signed into the ARENA.")
 
+def get_token_ttl(from_time_epoch):
+    """
+    Examines the JWT future expiration in seconds from from_time_epoch (sec).
+    """
+    global _mqtt_token
+    tok = jwt.decode(_mqtt_token["token"], options={"verify_signature": False})
+    exp = float(tok["exp"])
+    delta = (exp - from_time_epoch)
+    return delta
 
 def _remove_credentials(cred_dir, expire=False):
     """

@@ -160,9 +160,9 @@ class ArenaMQTT(object):
 
         #auth.permissions()
         # after successful connection, set token refresh timer -1 minute from expiration
-        interval_s = auth.get_token_ttl(time.time())-60
-        dur_str = str(datetime.timedelta(milliseconds=interval_s*1000))
-        print(f"ARENA Token valid for: {dur_str}h")
+        interval_s = auth.get_token_ttl(time.time())#-60
+        #dur_str = str(datetime.timedelta(milliseconds=interval_s*1000))
+        #print(f"ARENA Token valid for: {dur_str}h")
         refresher = LazyWorker(self.event_loop, self.refresh_user_auth,
                                self.mqtt_connect_evt, interval_s*1000)
         self.event_loop.add_task(refresher)
@@ -170,23 +170,25 @@ class ArenaMQTT(object):
     def refresh_user_auth(self):
         """Requests new JWT and reconnects Paho MQTT client"""
         # token has expired, attempt to use only automated process we have, user oauth token
-        data = auth.authenticate_scene(
-            self.host, self.realm, self.namespaced_target, self.username, self.video)
-        if "username" in data and "token" in data:
-            self.username = data["username"]
-            token = data["token"]
-            self.remote_auth_token = data
-        self.mqttc.username_pw_set(username=self.username, password=token)
-        self.mqttc.reconnect()
+        print("ARENA Token expired!!!")
 
-        #auth.permissions()
-        # after successful re-connection, set token refresh timer -1 minute from new expiration
-        interval_s = auth.get_token_ttl(time.time())-60
-        dur_str = str(datetime.timedelta(milliseconds=interval_s*1000))
-        print(f"ARENA Token valid for: {dur_str}h")
-        refresher = LazyWorker(self.event_loop, self.refresh_user_auth,
-                               self.mqtt_connect_evt, interval_s*1000)
-        self.event_loop.add_task(refresher)
+    #     data = auth.authenticate_scene(
+    #         self.host, self.realm, self.namespaced_target, self.username, self.video)
+    #     if "username" in data and "token" in data:
+    #         self.username = data["username"]
+    #         token = data["token"]
+    #         self.remote_auth_token = data
+    #     self.mqttc.username_pw_set(username=self.username, password=token)
+    #     self.mqttc.reconnect()
+
+    #     #auth.permissions()
+    #     # after successful re-connection, set token refresh timer -1 minute from new expiration
+    #     interval_s = auth.get_token_ttl(time.time())-60
+    #     dur_str = str(datetime.timedelta(milliseconds=interval_s*1000))
+    #     print(f"ARENA Token valid for: {dur_str}h")
+    #     refresher = LazyWorker(self.event_loop, self.refresh_user_auth,
+    #                            self.mqtt_connect_evt, interval_s*1000)
+    #     self.event_loop.add_task(refresher)
 
 
     def parse_cli(self):

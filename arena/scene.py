@@ -5,7 +5,6 @@ import sys
 from datetime import datetime
 from inspect import signature
 
-# from . import auth
 from .arena_mqtt import ArenaMQTT
 from .attributes import *
 from .events import *

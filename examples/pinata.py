@@ -8,7 +8,12 @@ from arena import *
 import random
 import time
 
-scene = Scene(host="arenaxr.org", scene="pinata")
+def end_program_callback(scene: Scene):
+    global pinata
+    scene.delete_object(pinata)
+
+
+scene = Scene(host="arenaxr.org", scene="pinata", end_program_callback=end_program_callback)
 
 # Constants used to define operations
 RESPAWN_X_MIN = -50

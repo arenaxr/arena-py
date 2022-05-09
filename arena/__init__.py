@@ -11,3 +11,4 @@ __license__     = "BSD 3-Clause"
 __maintainer__  = "WiSE Lab, Carnegie Mellon University"
 
 from .scene import *
+from .device import *

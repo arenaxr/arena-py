@@ -5,7 +5,7 @@ import sys
 from datetime import datetime
 from inspect import signature
 
-from . import auth
+# from . import auth
 from .arena_mqtt import ArenaMQTT
 from .attributes import *
 from .events import *
@@ -336,7 +336,7 @@ class Scene(ArenaMQTT):
             obj.persist = True
         else:
             # pass token to persist
-            data = auth.urlopen(url=f"{self.persist_url}/{object_id}", creds=True)
+            data = self.auth.urlopen(url=f"{self.persist_url}/{object_id}", creds=True)
             output = json.loads(data)
             if len(output) > 0:
                 output = output[0]
@@ -355,7 +355,7 @@ class Scene(ArenaMQTT):
         """Returns a dictionary of persisted objects. [TODO] check object_type"""
         objs = {}
         # pass token to persist
-        data = auth.urlopen(url=self.persist_url, creds=True)
+        data = self.auth.urlopen(url=self.persist_url, creds=True)
         output = json.loads(data)
         for obj in output:
             if obj["type"] == Object.object_type or obj["type"] == Object.type:
@@ -379,7 +379,7 @@ class Scene(ArenaMQTT):
         """Returns a dictionary for scene-options. [TODO] wrap the output as a BaseObject"""
         scene_opts_url = f"{self.persist_url}?type=scene-options"
         # pass token to persist
-        data = auth.urlopen(url=scene_opts_url, creds=True )
+        data = self.auth.urlopen(url=scene_opts_url, creds=True )
         output = json.loads(data)
         return output
 
@@ -387,7 +387,7 @@ class Scene(ArenaMQTT):
         """ Request list of scene names for logged in user account that user has publish permission for.
         Returns: list of scenes.
         """
-        return auth.get_writable_scenes(host=self.host)
+        return self.auth.get_writable_scenes(host=self.host)
 
     def get_user_list(self):
         """Returns a list of users"""

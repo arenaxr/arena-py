@@ -13,6 +13,7 @@ def end_program_callback(scene: Scene):
 arena = Scene(cli_args=True, end_program_callback=end_program_callback)
 app_position = arena.args["position"]
 app_rotation = arena.args["rotation"]
+app_scale = arena.args["scale"]
 
 # variables
 arm_scale = 0.01

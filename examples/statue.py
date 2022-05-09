@@ -14,6 +14,7 @@ def end_program_callback(scene):
 arena = Scene(cli_args=True, end_program_callback=end_program_callback)
 app_position = arena.args["position"]
 app_rotation = arena.args["rotation"]
+app_scale = arena.args["scale"]
 
 # app variables
 statue = None

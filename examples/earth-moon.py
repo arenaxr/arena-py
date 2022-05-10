@@ -6,7 +6,9 @@ from arena import *
 
 
 def end_program_callback(scene: Scene):
-    global sceneParent
+    global sceneParent, earth, moon
+    scene.delete_object(moon)
+    scene.delete_object(earth)
     scene.delete_object(sceneParent)
 
 
@@ -19,7 +21,7 @@ app_scale = scene.args["scale"]
 
 @scene.run_once
 def main():
-    global sceneParent
+    global sceneParent, earth, moon
     # make a parent scene object
     sceneParent = Box(
         object_id="earth-sceneParent",

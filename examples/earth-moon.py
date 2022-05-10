@@ -23,6 +23,7 @@ def main():
     # make a parent scene object
     sceneParent = Box(
         object_id="earth-sceneParent",
+        persist=True,
         position=app_position,
         rotation=app_rotation,
         scale=app_scale,
@@ -33,25 +34,11 @@ def main():
     # Create models
     earth = GLTF(
         object_id="gltf-model_Earth",
+        persist=True,
         position=(0, 0.1, 0),
         scale=(10, 10, 10),
         url="store/users/wiselab/models/Earth.glb",
         parent=sceneParent.object_id,
-    )
-    moon = GLTF(
-        object_id="gltf-model_Moon",
-        position=(0, 0.05, 0.6),
-        scale=(0.05, 0.05, 0.05),
-        url="store/users/wiselab/models/Moon.glb",
-        parent="gltf-model_Earth",
-    )
-
-    scene.add_object(earth)
-    scene.add_object(moon)
-
-    # Define animation and movement
-    scene.update_object(
-        earth,
         animation=Animation(
             property="rotation",
             end=(0, 360, 0),
@@ -60,8 +47,13 @@ def main():
             easing="linear"
         )
     )
-    scene.update_object(
-        moon,
+    moon = GLTF(
+        object_id="gltf-model_Moon",
+        persist=True,
+        position=(0, 0.05, 0.6),
+        scale=(0.05, 0.05, 0.05),
+        url="store/users/wiselab/models/Moon.glb",
+        parent="gltf-model_Earth",
         animation=Animation(
             property="scale",
             start=(0.05, 0.05, 0.05),
@@ -72,8 +64,11 @@ def main():
             dir="alternate",
             easing="easeInOutCirc"
         ),
-        clickable=True
     )
+
+    scene.add_object(earth)
+    scene.add_object(moon)
+
     print(earth.json())
 
     # Create marker objects

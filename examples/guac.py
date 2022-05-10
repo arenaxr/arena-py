@@ -291,6 +291,7 @@ def main():
         object_id="guac-sceneParent",
         position=app_position,
         rotation=app_rotation,
+        scale=app_scale,
         material=Material(transparent=True, opacity=0),
     )
     arena.add_object(sceneParent)

@@ -20,6 +20,7 @@ def end_program_callback(scene: Scene):
 arena = Scene(cli_args=True, end_program_callback=end_program_callback)
 app_position = arena.args["position"]
 app_rotation = arena.args["rotation"]
+app_scale = arena.args["scale"]
 
 # variables
 cubes = {}  # dict of cube objects to be indexed by tuple (x,y)
@@ -290,6 +291,7 @@ def main():
         object_id="guac-sceneParent",
         position=app_position,
         rotation=app_rotation,
+        scale=app_scale,
         material=Material(transparent=True, opacity=0),
     )
     arena.add_object(sceneParent)

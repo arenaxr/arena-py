@@ -175,9 +175,12 @@ class ArenaMQTT(object):
                             help="App position as cartesian.x cartesian.y cartesian.z")
         parser.add_argument("-r", "--rotation", nargs=3, type=float, default=(0, 0, 0),
                             help="App rotation as euler.x euler.y euler.z")
+        parser.add_argument("-c", "--scale", nargs=3, type=float, default=(1, 1, 1),
+                            help="App scale in meters")
         args = parser.parse_args()
         app_position = tuple(args.position)
         app_rotation = tuple(args.rotation)
+        app_scale = tuple(args.scale)
         return {
             "mqtth": args.mqtth,
             "namespace": args.namespace,
@@ -185,6 +188,7 @@ class ArenaMQTT(object):
             "device": args.device,
             "position": app_position,
             "rotation": app_rotation,
+            "scale": app_scale,
         }
 
 

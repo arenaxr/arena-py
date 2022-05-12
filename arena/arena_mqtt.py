@@ -9,7 +9,7 @@ import sys
 
 import paho.mqtt.client as mqtt
 
-from . import auth
+from .auth import ArenaAuth
 from .event_loop import *
 
 
@@ -20,6 +20,7 @@ class ArenaMQTT(object):
 
     scene = None
     device = None
+    auth = None
 
     def __init__(
                 self,
@@ -55,16 +56,17 @@ class ArenaMQTT(object):
         self.username = None
         token = None
         self.remote_auth_token = {}  # provide reference for downloaded token
+        self.auth = ArenaAuth()
         if os.environ.get("ARENA_USERNAME") and os.environ.get("ARENA_PASSWORD"):
             # auth 1st: use passed in env var
             self.username = os.environ["ARENA_USERNAME"]
             token = os.environ["ARENA_PASSWORD"]
-            auth.store_environment_auth(self.username, token)
+            self.auth.store_environment_auth(self.username, token)
         else:
             if self.scene:
-                local = auth.check_local_auth()
+                local = self.auth.check_local_auth()
             elif self.device:
-                local = auth.authenticate_device(self.host)
+                local = self.auth.authenticate_device(self.host)
             if local and "username" in local and "token" in local:
                 # auth 2nd: use locally saved token
                 self.username = local["username"]
@@ -72,7 +74,7 @@ class ArenaMQTT(object):
             else:
                 if self.scene:
                     # auth 3rd: use the user account online
-                    self.username = auth.authenticate_user(self.host)
+                    self.username = self.auth.authenticate_user(self.host)
 
         if os.environ.get("NAMESPACE"):
             self.namespace = os.environ["NAMESPACE"]
@@ -86,7 +88,7 @@ class ArenaMQTT(object):
         # fetch host config
         print("Fetching ARENA configuration...")
         self.config_url = f"https://{self.host}/conf/defaults.json"
-        self.config_data = json.loads(auth.urlopen(self.config_url))
+        self.config_data = json.loads(self.auth.urlopen(self.config_url))
 
         # set up topic variables
         if self.scene:
@@ -105,7 +107,7 @@ class ArenaMQTT(object):
 
         if self.scene and (not self.username or not token):
             # do scene auth by user
-            data = auth.authenticate_scene(
+            data = self.auth.authenticate_scene(
                 self.host, self.realm, self.namespaced_target, self.username, video)
             if "username" in data and "token" in data:
                 self.username = data["username"]
@@ -144,7 +146,7 @@ class ArenaMQTT(object):
             port = kwargs["port"]
         else:
             port = 8883 # ARENA broker TLS 1.2 connection port
-        if auth.verify(self.host):
+        if self.auth.verify(self.host):
             self.mqttc.tls_set()
         else:
             self.mqttc.tls_set_context(ssl._create_unverified_context())

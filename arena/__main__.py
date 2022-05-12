@@ -51,7 +51,7 @@ def main(mqtth, realm, scene, namespace, action, topic, message):
 
     if action == SUBSCRIBE:
         if topic is None:
-            print(f"Subscribing to topic: <{scene.scene_topic}>... ", end="")
+            print(f"Subscribing to topic: <{scene.subscribe_topic}>... ", end="")
             scene.on_msg_callback = on_msg_callback
         else:
             print(f"Subscribing to topic: <{topic}>... ", end="")

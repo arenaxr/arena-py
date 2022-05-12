@@ -1,23 +1,16 @@
+"""
+device-scene.py
+Demonstrate starting two connections, for a scene and a device, and communicating between them.
+"""
 import json
 import random
 from datetime import datetime
 
 from arena import Box, Device, Material, Scene
 
-# export MQTTH=$host
-# export NAMESPACE=$namespace
-# export SCENE=$scene
-
 box = Box(object_id="box", position=(0, 2, -1), rotation=(0, 0, 0),
           scale=(2, 2, 2), material=Material(transparent=True, opacity=1))
 
-# may need to make sure we don't load a token from storage...
-
-# ok
-# device = Device(host="arenaxr.org", device="robot1", debug=True)
-# scene = Scene(host="arenaxr.org", scene="test", debug=True)
-
-# fail
 scene = Scene(host="arenaxr.org", scene="test", debug=True)
 device = Device(host="arenaxr.org", device="robot1", debug=True)
 

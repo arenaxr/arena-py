@@ -2,7 +2,7 @@ from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")
 
-image_url = "https://raw.githubusercontent.com/conix-center/ARENA-core/master/images/conix-face-white.jpg"
+image_url = "store/users/wiselab/images/conix-face-white.jpg"
 
 @scene.run_once
 def make_im():

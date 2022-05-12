@@ -12,4 +12,3 @@ __maintainer__  = "WiSE Lab, Carnegie Mellon University"
 
 from .device import *
 from .scene import *
-from .device import *

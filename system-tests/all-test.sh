@@ -20,6 +20,50 @@ python3 -c "from arena import *; \
 
 declare -a tests
 
+# attribute example tests
+tests+=("python3 examples/attributes/animation.py")
+tests+=("python3 examples/attributes/animation_mixer.py")
+tests+=("python3 examples/attributes/clickable.py")
+tests+=("python3 examples/attributes/color.py")
+tests+=("python3 examples/attributes/goto_url.py")
+tests+=("python3 examples/attributes/material.py")
+tests+=("python3 examples/attributes/morph.py")
+tests+=("python3 examples/attributes/physics_impulse.py")
+tests+=("python3 examples/attributes/position.py")
+tests+=("python3 examples/attributes/rotation.py")
+tests+=("python3 examples/attributes/scale.py")
+tests+=("python3 examples/attributes/sound.py")
+tests+=("python3 examples/attributes/text_input.py")
+
+# object example tests
+tests+=("python3 examples/objects/box.py")
+tests+=("python3 examples/objects/circle.py")
+tests+=("python3 examples/objects/cone.py")
+tests+=("python3 examples/objects/cylinder.py")
+tests+=("python3 examples/objects/dodecahedron.py")
+tests+=("python3 examples/objects/gltf.py")
+tests+=("python3 examples/objects/icosahedron.py")
+tests+=("python3 examples/objects/image.py")
+tests+=("python3 examples/objects/landmarks.py")
+tests+=("python3 examples/objects/light.py")
+tests+=("python3 examples/objects/line.py")
+tests+=("python3 examples/objects/octahedron.py")
+tests+=("python3 examples/objects/plane.py")
+tests+=("python3 examples/objects/ring.py")
+tests+=("python3 examples/objects/sphere.py")
+tests+=("python3 examples/objects/tetrahedron.py")
+tests+=("python3 examples/objects/text.py")
+tests+=("python3 examples/objects/thickline.py")
+tests+=("python3 examples/objects/torus.py")
+tests+=("python3 examples/objects/torus_knot.py")
+tests+=("python3 examples/objects/triangle.py")
+
+# tutorial example tests
+tests+=("python3 examples/tutorial/advanced.py")
+tests+=("python3 examples/tutorial/beginner.py")
+tests+=("python3 examples/tutorial/intermediate.py")
+tests+=("python3 examples/tutorial/novice.py")
+
 # example apps
 tests+=("python3 examples/addtopic.py")
 tests+=("python3 examples/anim-test.py")
@@ -58,6 +102,14 @@ tests+=("python3 system-tests/scene-callbacks.py")
 tests+=("python3 system-tests/tasks.py")
 tests+=("python3 system-tests/trans-cubes.py")
 tests+=("python3 system-tests/user-callbacks.py")
+
+# helper scripts
+tests+=("arena-py-pub --help")
+tests+=("arena-py-sub -mh $host -n $namespace -s $scene")
+#tests+=($"arena-py-pub -mh $host -n $namespace -s $scene -m '{"object_id": "gltf-model_Earth", "action": "create", "type": "object", "data": {"object_type": "gltf-model", "position": {"x":0, "y": 0.1, "z": 0}, "url": "store/models/Earth.glb", "scale": {"x": 5, "y": 5, "z": 5}}}'")
+tests+=("arena-py-permissions")
+tests+=("arena-py-signout")
+
 
 logfile="system-tests/all-test.log"
 rm -f $logfile

@@ -8,11 +8,11 @@ import json
 
 TOPIC = "$NETWORK"
 
-def objects_callback(event):
-    print("Object message: "+str(event))
+def objects_callback(scene, obj, msg):
+    print("Object message: "+str(msg))
 
 
-def secondary_callback(msg):
+def secondary_callback(scene, obj, msg):
     print("-----")
     print(f"Secondary message:\nTopic: {str(msg.topic)}\nPayload: {json.loads(msg.payload)}")
     print("-----")
@@ -24,7 +24,7 @@ scene = Scene(host="arenaxr.org", scene="example", on_msg_callback=objects_callb
 @scene.run_async
 async def test():
     # subscribe to secondary (in this case the network graph!)
-    scene.add_topic(TOPIC, secondary_callback)
+    scene.message_callback_add(TOPIC, secondary_callback)
     print(f"Subscribed to {TOPIC}")
     print()
 
@@ -32,7 +32,7 @@ async def test():
     await scene.sleep(5000)
 
     # unsubscribe to secondary
-    scene.remove_topic(TOPIC)
+    scene.message_callback_remove(TOPIC)
     print()
     print(f"Unsubscribed to {TOPIC}")
     print()

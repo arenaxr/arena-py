@@ -2,6 +2,14 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.1.44] - 2022-06-06
+### Added
+- Scale param to `cli_args`.
+- Support for `Device` and `Scene` in the same script.
+### Changed
+- Refactored auth with data encapsulation.
+- Fixed several small bugs.
+
 ## [0.1.43] - 2021-11-17
 ### Added
 - Device sensor connections: `device=Device(host="arena.org", device="robot1")`.

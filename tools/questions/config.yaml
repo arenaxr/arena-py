@@ -1,6 +1,6 @@
 # arena related definitions
 arena:
-  host: arenaxr.org # default: arenaxr.org
+  host: mqtt.arenaxr.org # default: mqtt.arenaxr.org
   realm: realm # default: realm
   scenename: questions-example # one of the scenes defined below
 

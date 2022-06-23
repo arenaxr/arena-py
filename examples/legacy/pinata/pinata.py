@@ -25,9 +25,9 @@ kill_flag = 0
 
 click_objects = [""]
 # To run in ARTS, these parameters are passed in as environmental variables.
-# export HOST=arenaxr.org
+# export HOST=mqtt.arenaxr.org
 # export REALM=realm
-# export MQTTH=arenaxr.org
+# export MQTTH=mqtt.arenaxr.org
 
 gravity_enabled = False
 GRAVITY = -25.0

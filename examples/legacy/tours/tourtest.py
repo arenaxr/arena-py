@@ -6,7 +6,7 @@ import arena
 import re
 import math
 
-HOST = "arenaxr.org"
+HOST = "mqtt.arenaxr.org"
 SCENE = "roomtest5"
 
 sign_links =  ['Link 1','https://3dwarehouse.sketchup.com/model/f2991e0c12644c9ff87d99a411d2b1c5/University-of-Southern-California-USC-Tower?hl=en','Link 2','https://www.f1.com','Link 3','https://www.eet.com']

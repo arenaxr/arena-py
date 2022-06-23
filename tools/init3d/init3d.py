@@ -14,7 +14,7 @@ from module import Module
 
 CFG_FILE = 'config.json'
 PRG_FILE = 'programs.json'
-HOST = "arenaxr.org"
+HOST = "mqtt.arenaxr.org"
 REALM = "realm"
 NAMESPACE = None
 SCENE = None

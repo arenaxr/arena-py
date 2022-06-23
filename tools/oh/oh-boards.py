@@ -25,7 +25,7 @@ from arena import *
 from question_board import QBoard
 from config import *
 
-scene = Scene(host="arenaxr.org", realm="realm", scene="officehours")
+scene = Scene(host="mqtt.arenaxr.org", realm="realm", scene="officehours")
 
 #TA board label
 ta_label = Text(

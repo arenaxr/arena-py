@@ -8,9 +8,9 @@ import os
 import json
 import sys
 
-# export HOST=arenaxr.org
+# export HOST=mqtt.arenaxr.org
 # export REALM=realm
-# export MQTTH=arenaxr.org
+# export MQTTH=mqtt.arenaxr.org
 # export MID=MID_1234
 # Optional:
 # export LINKS = "Link1,https://www.duckduckgo.com,Link 2,https:www.f1.com,Link 3,https://www.eet.com"

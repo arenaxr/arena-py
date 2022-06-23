@@ -7,7 +7,7 @@ from arena import *
 import random
 import sys
 
-HOST = "arenaxr.org"
+HOST = "mqtt.arenaxr.org"
 SCENE = "test"
 
 if len(sys.argv) > 1:

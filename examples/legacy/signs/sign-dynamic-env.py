@@ -10,9 +10,9 @@ import sys
 #import base64
 from urllib.parse import unquote
 
-# export HOST=arenaxr.org
+# export HOST=mqtt.arenaxr.org
 # export REALM=realm
-# export MQTTH=arenaxr.org
+# export MQTTH=mqtt.arenaxr.org
 # export MID=MID_1234
 
 # export LINKS = "Link1,https://www.duckduckgo.com,Link 2,https:www.f1.com,Link 3,https://www.eet.com"

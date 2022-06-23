@@ -9,7 +9,7 @@ import collections  # From Python standard library.
 import bson
 
 DFT_CONFIG_FILENAME='./config.yaml'
-DFT_HOST='arenaxr.org'
+DFT_HOST='mqtt.arenaxr.org'
 DFT_PORT=8883
 DFT_REALM='realm'
 

@@ -5,7 +5,7 @@ bound.py
 from arena import *
 import math
 
-scene = Scene(host="arenaxr.org", realm="realm", scene="example")
+scene = Scene(host="mqtt.arenaxr.org", realm="realm", scene="example")
 
 '''
    Determines whether or not user is within bounds

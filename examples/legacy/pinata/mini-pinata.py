@@ -29,7 +29,7 @@ TXT_HIGHT = 2.0
 
 delete_object_queue = [""]
 # To run in ARTS, these parameters are passed in as environmental variables.
-# export HOST=arenaxr.org
+# export HOST=mqtt.arenaxr.org
 # export REALM=realm
 # export MQTTH=arenaxr.org
 

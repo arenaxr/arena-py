@@ -1,7 +1,7 @@
 This program creates 3D directories with clickable links.
 
 You configure it with environmental variables like this:
-export MQTTH=arenaxr.org
+export MQTTH=mqtt.arenaxr.org
 export REALM=realm
 export SCENE=myScene
 export JSONCFG=directory_cfg.json

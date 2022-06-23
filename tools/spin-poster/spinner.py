@@ -1,7 +1,7 @@
 from arena import *
 import time
 
-scene = Scene(host="arenaxr.org",scene="spin-poster")
+scene = Scene(host="mqtt.arenaxr.org",scene="spin-poster")
 
 rot_state=0
 start_rot=0

@@ -22,7 +22,7 @@ import arblib
 from arblib import (EVT_MOUSEDOWN, EVT_MOUSEENTER, EVT_MOUSELEAVE, ButtonType,
                     Mode)
 
-BROKER = "arenaxr.org"
+BROKER = "mqtt.arenaxr.org"
 PORT = None
 REALM = "realm"
 NAMESPACE = None

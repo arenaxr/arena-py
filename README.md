@@ -22,7 +22,7 @@ python hello.py
 ```python
 from arena import *
 
-scene = Scene(host="arenaxr.org", scene="example")
+scene = Scene(host="mqtt.arenaxr.org", scene="example")
 
 @scene.run_once
 def make_box():
@@ -58,15 +58,15 @@ arena-py-permissions
 ```
 ### CLI Subscribe to Scene Messages
 ```bash
-arena-py-sub -mh arenaxr.org -s example
+arena-py-sub -mh mqtt.arenaxr.org -s example
 ```
 ### CLI Subscribe to Custom Topic
 ```bash
-arena-py-sub -mh arenaxr.org -t realm/g/a
+arena-py-sub -mh mqtt.arenaxr.org -t realm/g/a
 ```
 ### CLI Publish a Scene Object Message
 ```bash
-arena-py-pub -mh arenaxr.org -s example -m '{"object_id": "gltf-model_Earth", "action": "create", "type": "object", "data": {"object_type": "gltf-model", "position": {"x":0, "y": 0.1, "z": 0}, "url": "store/models/Earth.glb", "scale": {"x": 5, "y": 5, "z": 5}}}'
+arena-py-pub -mh mqtt.arenaxr.org -s example -m '{"object_id": "gltf-model_Earth", "action": "create", "type": "object", "data": {"object_type": "gltf-model", "position": {"x":0, "y": 0.1, "z": 0}, "url": "store/models/Earth.glb", "scale": {"x": 5, "y": 5, "z": 5}}}'
 ```
 ### CLI Help
 ```bash

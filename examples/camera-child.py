@@ -3,7 +3,7 @@
 '''
 from arena import *
 
-scene = Scene(host="arenaxr.org", scene="example")
+scene = Scene(host="mqtt.arenaxr.org", scene="example")
 
 def user_join_callback(scene, cam, msg):
     if "camera" in cam.object_id:

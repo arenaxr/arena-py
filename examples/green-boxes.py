@@ -3,7 +3,7 @@ import random
 import time
 import sys
 
-scene = Scene(host="arenaxr.org", scene="example")
+scene = Scene(host="mqtt.arenaxr.org", scene="example")
 
 color = (0, 255, 0)
 

@@ -11,7 +11,7 @@ import json
 from arena import *
 
 # define defaults
-DEFAULT_MQTT_HOST = "arenaxr.org"
+DEFAULT_MQTT_HOST = "mqtt.arenaxr.org"
 PUBLISH = "pub"
 SUBSCRIBE = "sub"
 

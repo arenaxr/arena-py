@@ -13,7 +13,7 @@ def end_program_callback(scene: Scene):
     scene.delete_object(pinata)
 
 
-scene = Scene(host="mqtt.arenaxr.org", scene="pinata", end_program_callback=end_program_callback)
+scene = Scene(host="mqtt.arenaxr.org", auth_host="arenaxr.org", scene="pinata", end_program_callback=end_program_callback)
 
 # Constants used to define operations
 RESPAWN_X_MIN = -50

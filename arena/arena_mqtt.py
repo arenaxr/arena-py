@@ -47,6 +47,7 @@ class ArenaMQTT(object):
             print("Cannot find AUTHH environmental variable, using input parameter instead.")
         else:
             # Default to same as mqtt host
+            print("Defaulting auth host to same as mqtt host")
             self.auth_host = self.host
 
         if os.environ.get("REALM"):

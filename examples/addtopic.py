@@ -19,7 +19,7 @@ def secondary_callback(scene, obj, msg):
 
 
 # subscribe to objects
-scene = Scene(host="mqtt.arenaxr.org", scene="example", on_msg_callback=objects_callback)
+scene = Scene(host="mqtt.arenaxr.org", auth_host="arenaxr.org", scene="example", on_msg_callback=objects_callback)
 
 @scene.run_async
 async def test():

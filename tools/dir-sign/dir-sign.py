@@ -18,7 +18,7 @@ title_text_font_width = 5
 link_text_font_width = 4
 
 
-scene = Scene(host="mqtt.arenaxr.org",scene="example")
+scene = Scene(host="mqtt.arenaxr.org", auth_host="arenaxr.org",scene="example")
 
 print( "Starting up")
 

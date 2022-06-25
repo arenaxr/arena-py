@@ -45,7 +45,7 @@ def user_join_callback(scene, cam, msg):
     cam_state = CameraState(cam)
     cam_states += [cam_state]
 
-scene = Scene(host="mqtt.arenaxr.org", scene="example")
+scene = Scene(host="mqtt.arenaxr.org", auth_host="arenaxr.org", scene="example")
 scene.user_join_callback = user_join_callback
 
 @scene.run_forever(interval_ms=200)

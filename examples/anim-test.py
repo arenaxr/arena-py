@@ -1,6 +1,6 @@
 from arena import *
 
-scene = Scene(host="mqtt.arenaxr.org",scene="example")
+scene = Scene(host="mqtt.arenaxr.org", auth_host="arenaxr.org",scene="example")
 
 x=0
 

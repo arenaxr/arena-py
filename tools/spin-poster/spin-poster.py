@@ -1,6 +1,6 @@
 from arena import *
 
-scene = Scene(host="mqtt.arenaxr.org",scene="spin-poster")
+scene = Scene(host="mqtt.arenaxr.org", auth_host="arenaxr.org",scene="spin-poster")
 
 rot=0
 start_rot=0

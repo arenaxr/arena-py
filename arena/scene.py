@@ -42,6 +42,8 @@ class Scene(ArenaMQTT):
             self.args = self.parse_cli()
             if self.args["mqtth"]:
                 kwargs["host"] = self.args["mqtth"]
+            if self.args["authh"]:
+                kwargs["auth_host"] = self.args["authh"]
             if self.args["namespace"]:
                 kwargs["namespace"] = self.args["namespace"]
             if self.args["scene"]:
@@ -83,7 +85,7 @@ class Scene(ArenaMQTT):
                                           # have a reference to
         self.users = {} # dict of all users
 
-        print(f"Loading: https://{self.host}/{self.namespace}/{self.scene}, realm={self.realm}")
+        print(f"Loading: https://{self.auth_host}/{self.namespace}/{self.scene}, realm={self.realm}")
 
     def on_connect(self, client, userdata, flags, rc):
         super().on_connect(client, userdata, flags, rc)
@@ -386,7 +388,7 @@ class Scene(ArenaMQTT):
         """ Request list of scene names for logged in user account that user has publish permission for.
         Returns: list of scenes.
         """
-        return self.auth.get_writable_scenes(host=self.host)
+        return self.auth.get_writable_scenes(host=self.auth_host)
 
     def get_user_list(self):
         """Returns a list of users"""

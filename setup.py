@@ -26,12 +26,12 @@ setuptools.setup(
     },
     install_requires=[
         "aiohttp>=3.7.4",
-        "paho-mqtt~=1.5.0",
-        "requests~=2.23.0",
+        "paho-mqtt~=1.6.1",
+        "requests~=2.28.1",
         "webcolors~=1.3",
-        "google_auth_oauthlib~=0.4.4",
-        "google-auth~=1.32.1",
-        "PyJWT~=2.0.0",
+        "google_auth_oauthlib~=0.5.2",
+        "google-auth~=1.35.0",
+        "PyJWT~=2.4.0",
         "numpy>=1.19.5",
         "scipy>=1.5.4"
     ],

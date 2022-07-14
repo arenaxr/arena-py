@@ -32,7 +32,7 @@ setuptools.setup(
         "google_auth_oauthlib~=0.5.2",
         "google-auth~=1.35.0",
         "PyJWT~=2.4.0",
-        "numpy>=1.19.5",
+        "numpy>=1.22",
         "scipy>=1.5.4"
     ],
     classifiers=[

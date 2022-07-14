@@ -1,5 +1,5 @@
 arena-py
 h5py==2.10.0
-numpy~=1.18.1
+numpy>=1.22
 tensorflow
 scipy

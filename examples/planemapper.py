@@ -1,6 +1,7 @@
 from arena import *
 import open3d as o3d
 import numpy as np
+import signal
 
 # from numba import jit
 
@@ -76,7 +77,8 @@ def process_geometry(msg):
         vis.add_geometry(mesh)
         vis.poll_events()
         vis.update_renderer()
-        print(len(meshes.items()))
+        if DEBUG:
+            print(len(meshes.items()))
 
     if action == "update":
         mesh = meshes.get(uid)
@@ -106,7 +108,8 @@ def process_geometry(msg):
         vis.update_geometry(mesh)
         vis.poll_events()
         vis.update_renderer()
-        print(len(meshes.items()))
+        if DEBUG:
+            print(len(meshes.items()))
 
     if action == "delete":
         if uid in meshes:
@@ -121,12 +124,30 @@ scene = Scene(
     scene="blank",
 )
 
+
+def handler(signum, frame):
+    mesh_list = list(meshes.values())
+    combined_mesh = o3d.geometry.TriangleMesh()
+    for i in mesh_list:
+        # TODO: Combine to single mesh
+        o3d.io.write_triangle_mesh("plane_meshes_" + i + ".gltf", mesh_list[i])
+        combined_mesh += mesh_list[i]
+    o3d.io.write_triangle_mesh("combined_plane_meshes.gltf", combined_mesh)
+    vis.destroy_window()
+    sys.exit(0)
+
+
+signal.signal(signal.SIGINT, handler)
+
 scene.message_callback_add(LISTEN_TOPIC, msg_callback)
 o3d.utility.set_verbosity_level(o3d.utility.VerbosityLevel.Debug)
 vis = o3d.visualization.VisualizerWithEditing()
 vis.create_window()
 
 scene.run_tasks()
+
+
+
 
 # vis.destroy_window()
 # o3d.utility.set_verbosity_level(o3d.utility.VerbosityLevel.Info)

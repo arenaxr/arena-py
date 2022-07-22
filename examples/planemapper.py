@@ -47,7 +47,8 @@ def process_geometry(msg):
         np_transform = np.array(list(transform.values())).reshape((4, 4), order="F") # col to row
         mesh.transform(np_transform)
 
-        mesh.paint_uniform_color(np.random.rand(3))
+        mesh.compute_triangle_normals()
+        mesh.paint_uniform_color(mesh.triangle_normals[0]/2 + 0.5)
 
 
         meshes[uid] = mesh
@@ -77,7 +78,8 @@ def process_geometry(msg):
         np_transform = np.array(list(transform.values())).reshape((4, 4), order="F") # col to row
         mesh.transform(np_transform)
 
-        mesh.paint_uniform_color(np.random.rand(3))
+        mesh.compute_triangle_normals()
+        mesh.paint_uniform_color(mesh.triangle_normals[0]/2 + 0.5)
 
         vis.update_geometry(mesh)
         vis.poll_events()

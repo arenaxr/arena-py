@@ -25,7 +25,7 @@ def msg_callback(client, userdata, msg):
 
 
 def process_geometry(msg):
-    global vis
+    # global vis
 
     uid = msg.get("uid")
     action = msg.get("action")
@@ -74,9 +74,9 @@ def process_geometry(msg):
 
         meshes[uid] = mesh
 
-        vis.add_geometry(mesh)
-        vis.poll_events()
-        vis.update_renderer()
+        # vis.add_geometry(mesh)
+        # vis.poll_events()
+        # vis.update_renderer()
         if DEBUG:
             print(len(meshes.items()))
 
@@ -110,18 +110,18 @@ def process_geometry(msg):
 
         mesh.paint_uniform_color(np.random.rand(3))
 
-        vis.update_geometry(mesh)
-        vis.poll_events()
-        vis.update_renderer()
+        # vis.update_geometry(mesh)
+        # vis.poll_events()
+        # vis.update_renderer()
         if DEBUG:
             print(len(meshes.items()))
 
     if action == "delete":
         if uid in meshes:
-            vis.remove_geometry(meshes[uid])
+            # vis.remove_geometry(meshes[uid])
             del meshes[uid]
-            vis.poll_events()
-            vis.update_renderer()
+            # vis.poll_events()
+            # vis.update_renderer()
 
 
 def write_meshes(scene):
@@ -135,7 +135,7 @@ def write_meshes(scene):
         i+=1
         combined_mesh += m
     o3d.io.write_triangle_mesh("meshes/combined_plane_meshes.gltf", combined_mesh)
-    vis.destroy_window()
+    # vis.destroy_window()
 
 
 scene = Scene(
@@ -147,7 +147,7 @@ scene = Scene(
 
 scene.message_callback_add(LISTEN_TOPIC, msg_callback)
 o3d.utility.set_verbosity_level(o3d.utility.VerbosityLevel.Debug)
-vis = o3d.visualization.VisualizerWithEditing()
-vis.create_window()
+# vis = o3d.visualization.VisualizerWithEditing()
+# vis.create_window()
 
 scene.run_tasks()

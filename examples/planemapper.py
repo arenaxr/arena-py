@@ -65,7 +65,7 @@ def process_geometry(msg):
         np_triangles = np.reshape(np_triangles, (-1, 3))
         mesh.triangles = o3d.utility.Vector3iVector(np_triangles)
 
-        np_transform = np.array(transform).reshape((4, 4), order="F") # col to row
+        np_transform = np.array(list(transform.values())).reshape((4, 4), order="F") # col to row
         mesh.transform(np_transform)
 
         mesh.paint_uniform_color(np.random.rand(3))
@@ -97,7 +97,7 @@ def process_geometry(msg):
             np_triangles = np.reshape(np_triangles, (-1, 3))
             mesh.triangles = o3d.utility.Vector3iVector(np_triangles)
 
-        np_transform = np.array(transform).reshape((4, 4), order="F") # col to row
+        np_transform = np.array(list(transform.values())).reshape((4, 4), order="F") # col to row
         mesh.transform(np_transform)
 
         mesh.compute_vertex_normals()

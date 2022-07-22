@@ -29,9 +29,9 @@ def process_geometry(msg):
 
     uid = msg.get("uid")
     action = msg.get("action")
+    transform = msg.get("modelMatrix")
     vertex_positions = msg.get("vertexPositions")
     triangle_indices = msg.get("triangleIndices")
-    vertex_normals = msg.get("vertexNormals")
 
     # mesh = o3d.geometry.TriangleMesh()
     # np_vertices = np.array([[0.05494517460465431, 2.2637174129486084, 0],
@@ -65,12 +65,12 @@ def process_geometry(msg):
         np_triangles = np.reshape(np_triangles, (-1, 3))
         mesh.triangles = o3d.utility.Vector3iVector(np_triangles)
 
-        np_normals = np.array(list(vertex_normals.values()))
-        np_normals = np.reshape(np_normals, (-1, 3))
-        # np_normals[:, [2, 1]] = np_normals[:, [1, 2]]
-        mesh.vertex_normals = o3d.utility.Vector3dVector(np_normals)
+        np_transform = np.array(transform).reshape((4, 4), order="F") # col to row
+        mesh.transform(np_transform)
 
         mesh.paint_uniform_color(np.random.rand(3))
+
+        mesh.compute_vertex_normals()
 
         meshes[uid] = mesh
 
@@ -97,11 +97,16 @@ def process_geometry(msg):
             np_triangles = np.reshape(np_triangles, (-1, 3))
             mesh.triangles = o3d.utility.Vector3iVector(np_triangles)
 
-        if vertex_normals:
-            np_normals = np.array(list(vertex_normals.values()))
-            np_normals = np.reshape(np_normals, (-1, 3))
-            # np_normals[:, [2, 1]] = np_normals[:, [1, 2]]
-            mesh.vertex_normals = o3d.utility.Vector3dVector(np_normals)
+        np_transform = np.array(transform).reshape((4, 4), order="F") # col to row
+        mesh.transform(np_transform)
+
+        mesh.compute_vertex_normals()
+
+        # if vertex_normals:
+        #     np_normals = np.array(list(vertex_normals.values()))
+        #     np_normals = np.reshape(np_normals, (-1, 3))
+        #     # np_normals[:, [2, 1]] = np_normals[:, [1, 2]]
+        #     mesh.vertex_normals = o3d.utility.Vector3dVector(np_normals)
 
         mesh.paint_uniform_color(np.random.rand(3))
 
@@ -133,11 +138,11 @@ def write_meshes(scene):
     vis.destroy_window()
 
 
- scene = Scene(
+scene = Scene(
      host="arena-dev1.conix.io",
      scene="blank",
      end_program_callback=write_meshes
- )
+)
 
 
 scene.message_callback_add(LISTEN_TOPIC, msg_callback)

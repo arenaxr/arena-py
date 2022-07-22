@@ -119,25 +119,26 @@ def process_geometry(msg):
             vis.update_renderer()
 
 
-scene = Scene(
-    host="arena-dev1.conix.io",
-    scene="blank",
-)
-
-
-def handler(signum, frame):
+def write_meshes(scene):
     mesh_list = list(meshes.values())
+    print("Writing", len(mesh_list), "meshes")
     combined_mesh = o3d.geometry.TriangleMesh()
-    for i in mesh_list:
+    i = 0;
+    for m in mesh_list:
         # TODO: Combine to single mesh
-        o3d.io.write_triangle_mesh("plane_meshes_" + i + ".gltf", mesh_list[i])
-        combined_mesh += mesh_list[i]
-    o3d.io.write_triangle_mesh("combined_plane_meshes.gltf", combined_mesh)
+        o3d.io.write_triangle_mesh("meshes/plane_meshes_" + str(i) + ".gltf", m, write_ascii=True)
+        i+=1
+        combined_mesh += m
+    o3d.io.write_triangle_mesh("meshes/combined_plane_meshes.gltf", combined_mesh)
     vis.destroy_window()
-    sys.exit(0)
 
 
-signal.signal(signal.SIGINT, handler)
+ scene = Scene(
+     host="arena-dev1.conix.io",
+     scene="blank",
+     end_program_callback=write_meshes
+ )
+
 
 scene.message_callback_add(LISTEN_TOPIC, msg_callback)
 o3d.utility.set_verbosity_level(o3d.utility.VerbosityLevel.Debug)
@@ -145,9 +146,3 @@ vis = o3d.visualization.VisualizerWithEditing()
 vis.create_window()
 
 scene.run_tasks()
-
-
-
-
-# vis.destroy_window()
-# o3d.utility.set_verbosity_level(o3d.utility.VerbosityLevel.Info)

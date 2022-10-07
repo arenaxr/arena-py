@@ -258,7 +258,7 @@ class Scene(ArenaMQTT):
     def add_objects(self, objs):
         """Public function to create multiple objects in a list"""
         for obj in objs:
-            self.add_objects(obj)
+            self.add_object(obj)
         return len(objs)
 
     def update_object(self, obj, **kwargs):

@@ -3,7 +3,7 @@ from datetime import datetime
 
 from arena.device import Device
 
-device = Device(host="mqtt.arenaxr.org", device="robot1", debug=True)
+device = Device(host="arenaxr.org", device="robot1", debug=True)
 CUSTOM_TOPIC = f"{device.realm}/d/{device.namespace}/{device.device}/rtc1"
 
 

@@ -49,7 +49,7 @@ class Teleporter(Object):
         self.scene.add_object(self.dest_text)
 
 
-scene = Scene(host="mqtt.arenaxr.org", scene="example")
+scene = Scene(host="arenaxr.org", scene="example")
 
 teleporter = Teleporter(
                     scene=scene,

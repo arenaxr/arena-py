@@ -1,7 +1,7 @@
 from arena import *
 import random
 
-scene = Scene(host="mqtt.arenaxr.org", scene="test")
+scene = Scene(host="arenaxr.org", scene="test")
 
 def click(scene, evt, msg):
     if evt.type == "mousedown":

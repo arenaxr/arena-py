@@ -1,5 +1,5 @@
 export REALM=realm
-export HOST=mqtt.arenaxr.org
+export HOST=arenaxr.org
 export MID=1234
 export JSONCFG=theme.json
 export SCENE=theme1; python3 sign.py

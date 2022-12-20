@@ -2,6 +2,11 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.1.45] - 2022-12-20
+### Changed
+- Account for `arenaxr.org` as hostname for legacy applications.
+- Fixed some small bugs.
+
 ## [0.1.44] - 2022-06-06
 ### Added
 - Scale param to `cli_args`.

@@ -9,9 +9,9 @@ import json
 
 
 # To run in ARTS, these parameters are passed in as environmental variables.
-# export HOST=mqtt.arenaxr.org
+# export HOST=arenaxr.org
 # export REALM=realm
-# export MQTTH=mqtt.arenaxr.org
+# export MQTTH=arenaxr.org
 
 # This function draws a line when a user clicks
 def draw_ray(click_pos, position):

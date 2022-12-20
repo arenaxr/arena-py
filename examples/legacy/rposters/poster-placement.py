@@ -30,7 +30,7 @@ dirz = -1  # 1 or -1 to define direction of the grid
 # To run in ARTS, these parameters are passed in as environmental variables.
 # export SCENE=thescene
 # export REALM=realm
-# export MQTTH=mqtt.arenaxr.org
+# export MQTTH=arenaxr.org
 
 def agent_handler(event=None):
     global agent1
@@ -51,7 +51,7 @@ def agent_handler(event=None):
 
 SCENE = "theme" + str(theme)
 REALM = 'realm'
-MQTTH = 'mqtt.arenaxr.org'
+MQTTH = 'arenaxr.org'
 
 # init the ARENA library
 

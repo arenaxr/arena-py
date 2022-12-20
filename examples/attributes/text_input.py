@@ -1,6 +1,6 @@
 from arena import *
 
-scene = Scene(host="mqtt.arenaxr.org", scene="example")
+scene = Scene(host="arenaxr.org", scene="example")
 
 def evt_handler(scene, evt, msg):
     if evt.type == "textinput":

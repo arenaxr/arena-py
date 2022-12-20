@@ -3,7 +3,7 @@ import json
 import paho.mqtt.publish as publish
 import time
 
-mqtt_host = "mqtt.arenaxr.org"
+mqtt_host = "arenaxr.org"
 scene_path = "realm/s/theme"
 
 def delete_obj(obj_name, topic):

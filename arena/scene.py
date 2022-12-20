@@ -79,11 +79,12 @@ class Scene(ArenaMQTT):
         self.user_left_callback = user_left_callback
 
         self.unspecified_object_ids = set() # objects that exist in the scene,
-                                          # but this scene instance does not
-                                          # have a reference to
+                                            # but this scene instance does not
+                                            # have a reference to
         self.users = {} # dict of all users
 
-        print(f"Loading: https://{self.host}/{self.namespace}/{self.scene}, realm={self.realm}")
+        host = self.host.replace("mqtt.", "")
+        print(f"Loading: https://{host}/{self.namespace}/{self.scene}, realm={self.realm}")
 
     def on_connect(self, client, userdata, flags, rc):
         super().on_connect(client, userdata, flags, rc)

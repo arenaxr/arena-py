@@ -5,14 +5,14 @@ with open("README.md", "r") as readme:
 
 setuptools.setup(
     name="arena-py",
-    version="0.1.45",
+    version="0.1.46",
     author="Conix Research Center",
     author_email="info@conix.io",
     license="BSD 3-clause \"New\" or \"Revised License\"",
     description="Draw objects and run programs in the ARENA using Python!",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/conix-center/ARENA-py",
+    url="https://github.com/arenaxr/ARENA-py",
     packages=setuptools.find_packages(),
     entry_points = {
         'console_scripts': [

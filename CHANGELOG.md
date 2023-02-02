@@ -2,6 +2,13 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.2.0](https://github.com/arenaxr/arena-py/compare/v0.1.46...v0.2.0) (2023-02-02)
+
+
+### Features
+
+* **mqtt:** always publish quaternions on wire format to avoid persist euler-&gt;quat merges ([4a582d4](https://github.com/arenaxr/arena-py/commit/4a582d4ff8286c91b43594bb1eac24f850e18c00))
+
 ## [0.1.46] - 2022-13-20
 ### Changed
 - Fixed some small bugs.

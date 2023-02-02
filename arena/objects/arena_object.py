@@ -139,13 +139,8 @@ class Object(BaseObject):
             # rotation should be in quaternions
             elif "rotation" == k:
                 rot = data["rotation"]
-                if rot.is_quaternion:
-                    json_data["rotation"] = rot
-                else:
-                    # remove w if euler
-                    rot_json = vars(rot).copy()
-                    del rot_json["w"]
-                    json_data["rotation"] = rot_json
+                # always publish quaternions on wire format to avoid persist euler->quat merges
+                json_data["rotation"] = rot.quaternion
 
             # handle special case where "physics" should be "dynamic-body"
             elif "physics" == k or "dynamic_body" == k:

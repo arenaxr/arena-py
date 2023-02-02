@@ -1,5 +1,5 @@
 """
-*TL;DR Wrapper to acess google sheets and google drive
+*TL;DR Wrapper to access google sheets and google drive
 
 You need the following:
 1. A Google Cloud Platform project with the *Google Sheets API* and *Google Drive API* enabled: https://developers.google.com/workspace/guides/create-project
@@ -18,7 +18,7 @@ import json
 import uuid
 
 class GoogleClientWrapper:
-    """Wrapper to acess google sheets and google drive
+    """Wrapper to access google sheets and google drive
        Based on: https://developers.google.com/sheets/api/quickstart/python, https://developers.google.com/drive/api/v3/quickstart/python
     """
     # If modifying these scopes, delete the file token.json.

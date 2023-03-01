@@ -135,12 +135,14 @@ class Scene(ArenaMQTT):
 
                         elif action == "delete":
                             if Camera.object_type in object_id: # object is a camera
-                                if object_id in self.users and self.user_left_callback:
-                                    self.callback_wrapper(
-                                            self.user_left_callback,
-                                            self.users[object_id],
-                                            payload
-                                        )
+                                if object_id in self.users:
+                                    if self.user_left_callback:
+                                        self.callback_wrapper(
+                                                self.user_left_callback,
+                                                self.users[object_id],
+                                                payload
+                                            )
+                                    del self.users[object_id]
                             elif self.delete_obj_callback:
                                 self.callback_wrapper(self.delete_obj_callback, obj, payload)
                             Object.remove(obj)

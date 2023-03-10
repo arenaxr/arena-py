@@ -8,7 +8,7 @@ def make_text():
         object_id="my_text",
         text="Hello World!",
         align="center",
-        font="mozillavr", # https://aframe.io/docs/1.2.0/components/text.html#stock-fonts
+        font="mozillavr", # https://aframe.io/docs/1.4.0/components/text.html#stock-fonts
         position=(0,2,-3),
         scale=(1.5,1.5,1.5),
         color=(100,255,255),

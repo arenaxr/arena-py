@@ -3,7 +3,7 @@ Draw objects and run programs in the ARENA using Python!
 
 ## Documentation
 The ARENA Python library user guide and tutorials:
-[ARENA Documentation: Python](https://arena.conix.io/content/python/).
+[ARENA Documentation: Python](https://docs.arenaxr.org/content/python/).
 
 ## Setup
 Install package using pip:
@@ -80,7 +80,7 @@ Changelog can be found [here](https://github.com/conix-center/ARENA-py/tree/mast
 ## ARENA-py Repository Files
 - [arena/](https://github.com/conix-center/ARENA-py/tree/master/arena/): The ARENA Python library.
 
-- [examples/](https://github.com/conix-center/ARENA-py/tree/master/examples/): Canonical examples of ARENA functions from the [documentation](https://arena.conix.io/content/python/).
+- [examples/](https://github.com/conix-center/ARENA-py/tree/master/examples/): Canonical examples of ARENA functions from the [documentation](https://docs.arenaxr.org/content/python/).
 - [examples/objects](https://github.com/conix-center/ARENA-py/tree/master/examples/objects): Examples on how to create various ARENA-py objects.
 - [examples/attributes](https://github.com/conix-center/ARENA-py/tree/master/examples/attributes): Examples on how to declare an add various ARENA-py object attributes.
 

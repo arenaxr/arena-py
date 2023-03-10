@@ -311,7 +311,7 @@ class Scene(ArenaMQTT):
     def _publish(self, obj, action):
         """Publishes to mqtt broker with "action":action"""
         topic = f"{self.root_topic}/{self.mqttc_id}/{obj['object_id']}"
-        d = datetime.now().isoformat()[:-3]+"Z"
+        d = datetime.utcnow().isoformat()[:-3]+"Z"
 
         if action == "delete":
             payload = obj

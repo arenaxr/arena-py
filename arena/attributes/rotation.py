@@ -50,5 +50,5 @@ class Rotation(Attribute):
     @classmethod
     def e2q(cls, e):
         """euler to quaternions"""
-        rot = R.from_euler('xyz', e, degrees=False)
+        rot = R.from_euler('xyz', e, degrees=True)
         return rot.as_quat()

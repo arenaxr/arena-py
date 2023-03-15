@@ -2,6 +2,20 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.2.1](https://github.com/arenaxr/arena-py/compare/v0.2.0...v0.2.1) (2023-03-15)
+
+
+### Bug Fixes
+
+* **mqtt:** use proper UTC timestamp for Zulu ([057e535](https://github.com/arenaxr/arena-py/commit/057e5358e9b11441851b108b4fa7566efa681789))
+* remove deleted users from scene.users dict ([d962acd](https://github.com/arenaxr/arena-py/commit/d962acd15a46e13df6b48eb92f6d348c2224ac31))
+* **rotation:** fixed euler 2 quat conversion ([41cdc50](https://github.com/arenaxr/arena-py/commit/41cdc5020d2e3dfd27c6935333898d111249222d))
+
+
+### Documentation
+
+* update a-frame links to 1.4.0 docs ([b3ee05e](https://github.com/arenaxr/arena-py/commit/b3ee05e5a503e0d275937d18a582850c71b80fa6))
+
 ## [0.2.0](https://github.com/arenaxr/arena-py/compare/v0.1.46...v0.2.0) (2023-02-02)
 
 

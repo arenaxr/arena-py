@@ -33,7 +33,8 @@ setuptools.setup(
         "google-auth~=1.35.0",
         "PyJWT~=2.4.0",
         "numpy>=1.22",
-        "scipy>=1.5.4"
+        "scipy>=1.5.4",
+        "GitPython>=3.1.31"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

@@ -15,6 +15,7 @@ from urllib import parse, request
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 
+import git
 import jwt
 import requests
 from google.auth import jwt as gJWT
@@ -224,6 +225,15 @@ class ArenaAuth:
             self._mqtt_token = {"username": username, "token": token}
             self._log_token()
 
+
+    def is_git_repo(self, path):
+        try:
+            _ = git.Repo(path).git_dir
+            return True
+        except git.exc.InvalidGitRepositoryError:
+            return False
+
+
     def check_local_auth(self):
         """
         Check for local mqtt_token and save to local memory.
@@ -236,6 +246,9 @@ class ArenaAuth:
         # load local token if valid
         if os.path.exists(_local_mqtt_path):
             print("Using local MQTT token.")
+
+            #is_git_repo(_local_mqtt_path)
+
             f = open(_local_mqtt_path, "r")
             mqtt_json = f.read()
             f.close()

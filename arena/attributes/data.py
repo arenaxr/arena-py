@@ -45,7 +45,7 @@ class Data(Attribute):
                 dash_words += [k]
                 k = "video_control"
                 if isinstance(v, dict):
-                    data[k] = GotoUrl(**v)
+                    data[k] = VideoControl(**v)
                 else:
                     data[k] = v
 

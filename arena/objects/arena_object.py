@@ -163,6 +163,9 @@ class Object(BaseObject):
             elif "animation_mixer" == k:
                 json_data["animation-mixer"] = v
 
+            elif "video_control" == k:
+                json_data["video-control"] = v
+
             # for animation, replace "start" and "end" with "from" and "to"
             elif isinstance(k, str) and "animation" == k[:len("animation")]:
                 animation = vars(v).copy()

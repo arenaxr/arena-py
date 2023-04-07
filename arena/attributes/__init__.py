@@ -14,6 +14,7 @@ from .rotation import Rotation
 from .scale import Scale
 from .sound import Sound
 from .text_input import TextInput
+from .video_control import VideoControl
 
 # [TODO]: do something with this
 ATTRIBUTE_TYPE_MAP = {
@@ -32,4 +33,5 @@ ATTRIBUTE_TYPE_MAP = {
     "rotation": Rotation,
     "scale": Scale,
     "sound": Sound,
+    "video_control": VideoControl,
 }

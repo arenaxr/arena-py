@@ -4,11 +4,12 @@
 '''
 from arena import *
 
-persist=True
+persist = True
 
 MARKER_SCALE = 0.15
-OPC_ON=0.85
-OPC_OFF=0.25
+OPC_ON = 0.85
+OPC_OFF = 0.25
+
 
 def end_program_callback(scene: Scene):
     global sceneParent
@@ -28,7 +29,7 @@ def main():
 
 def addobjects():
     global sceneParent, origin_marker
-    # make a parent scene object
+    # parent scene object
     sceneParent = Entity(
         persist=persist,
         object_id="callibrateParent",
@@ -36,6 +37,7 @@ def addobjects():
     )
     scene.add_object(sceneParent)
 
+    # marker gltf
     origin_marker = GLTF(
         persist=persist,
         object_id="origin-marker",
@@ -44,7 +46,6 @@ def addobjects():
         rotation=Rotation(w=0.70711, x=-0.70711, y=0, z=0),
         scale=Scale(MARKER_SCALE, MARKER_SCALE, MARKER_SCALE),
     )
-    # scene.add_object(origin_marker)
     armarker = {
         "markerid": 0,
         "markertype": "apriltag_36h11",
@@ -54,26 +55,61 @@ def addobjects():
     }
     scene.update_object(origin_marker, armarker=armarker)
 
+    add_pos("x")
+    add_pos("y")
+    add_pos("z")
+
+
+def get_color(direction):
+    if direction == "x":
+        return Color(0, 255, 0)
+    elif direction == "y":
+        return Color(0, 0, 255)
+    elif direction == "z":
+        return Color(255, 0, 0)
+
+
+def add_pos(direction):
+    if direction == "x":
+        position = Position(MARKER_SCALE/2, 0, 0)
+        rotation = Rotation(0, 0, -90)
+    elif direction == "y":
+        position = Position(0, MARKER_SCALE/2, 0)
+        rotation = Rotation(0, 0, 0)
+    elif direction == "z":
+        position = Position(0,  0, MARKER_SCALE/2)
+        rotation = Rotation(90, 0, 0)
+    click = Entity(
+        persist=persist,
+        object_id=f"click-{direction}",
+        parent=sceneParent.object_id,
+        rotation=rotation,
+        position=position,
+        height=MARKER_SCALE/10,
+        radiusBottom=MARKER_SCALE/10/2,
+    )
+    scene.add_object(click)
+    # position cones
     cone_scale = Scale(MARKER_SCALE/10, MARKER_SCALE/10*2, MARKER_SCALE/10)
     scene.add_object(Cone(
         persist=persist,
-        object_id="click-position-y-pos",
-        parent=sceneParent.object_id,
+        object_id=f"click-position-{direction}-pos",
+        parent=click.object_id,
         rotation=Rotation(0, 0, 0),
         scale=cone_scale,
-        position=Position(0, MARKER_SCALE+(MARKER_SCALE/10), 0),
-        material=Material(color=Color(0, 0, 255), opacity=OPC_OFF),
+        position=Position(0, (MARKER_SCALE/2)+(MARKER_SCALE/10), 0),
+        material=Material(color=get_color(direction), opacity=OPC_OFF),
         clickable=True,
         evt_handler=mouse_position_handler,
     ))
     scene.add_object(Cone(
         persist=persist,
-        object_id="click-position-y-neg",
-        parent=sceneParent.object_id,
+        object_id=f"click-position-{direction}-neg",
+        parent=click.object_id,
         rotation=Rotation(180, 0, 0),
         scale=cone_scale,
-        position=Position(0, MARKER_SCALE-(MARKER_SCALE/10), 0),
-        material=Material(color=Color(0, 0, 255), opacity=OPC_OFF),
+        position=Position(0, (MARKER_SCALE/2)-(MARKER_SCALE/10), 0),
+        material=Material(color=get_color(direction), opacity=OPC_OFF),
         clickable=True,
         evt_handler=mouse_position_handler,
     ))
@@ -83,17 +119,26 @@ def mouse_position_handler(scene, evt, msg):
 
     obj = scene.all_objects[evt.object_id]
     parts = evt.object_id.split("-")
+    direction = parts[2]
+    axis = parts[3]
     if evt.type == "mouseenter":
-        scene.update_object(obj, material=Material(color=Color(0, 0, 255), opacity=OPC_ON))
+        scene.update_object(obj, material=Material(
+            color=get_color(direction), opacity=OPC_ON))
     elif evt.type == "mouseleave":
-        scene.update_object(obj, material=Material(color=Color(0, 0, 255), opacity=OPC_OFF))
+        scene.update_object(obj, material=Material(
+            color=get_color(direction), opacity=OPC_OFF))
     elif evt.type == "mousedown":
-        camera_position_updater(cam_id=evt.data.source, dir=parts[3], axis=parts[2])
+        camera_position_updater(evt.data.source, direction, axis)
 
 
-def camera_position_updater(cam_id, dir, axis):
+def camera_position_updater(cam_id, direction, axis):
     # publish something here
-    print(f'logged position request :{cam_id}:{dir}:{axis}:')
+    print(f'logged position request :{cam_id}:{direction}:{axis}:')
+
+
+def camera_rotation_updater(cam_id, direction, axis):
+    # publish something here
+    print(f'logged rotation request :{cam_id}:{direction}:{axis}:')
 
 
 scene.run_tasks()

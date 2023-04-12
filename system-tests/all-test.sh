@@ -34,6 +34,7 @@ tests+=("python3 examples/attributes/rotation.py")
 tests+=("python3 examples/attributes/scale.py")
 tests+=("python3 examples/attributes/sound.py")
 tests+=("python3 examples/attributes/text_input.py")
+tests+=("python3 examples/attributes/video_control.py")
 
 # object example tests
 tests+=("python3 examples/objects/box.py")

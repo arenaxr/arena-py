@@ -2,6 +2,19 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.3.0](https://github.com/arenaxr/arena-py/compare/v0.2.1...v0.3.0) (2023-04-12)
+
+
+### Features
+
+* added scene.delete_attributes() to null attribute(s) ([50f8ae6](https://github.com/arenaxr/arena-py/commit/50f8ae6bd2f18556714f95a5bdc924b3ade570a4))
+* added VideoControl attribute binding ([9f3bb2b](https://github.com/arenaxr/arena-py/commit/9f3bb2befc771ab9edf092714be1093fd36c9728))
+
+
+### Bug Fixes
+
+* future-proof more attributes, allowing arbitrary parameters ([c61e551](https://github.com/arenaxr/arena-py/commit/c61e551e7b9700556639fc42d538e4df3db14e8d))
+
 ## [0.2.1](https://github.com/arenaxr/arena-py/compare/v0.2.0...v0.2.1) (2023-03-15)
 
 

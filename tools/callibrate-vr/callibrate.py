@@ -1,6 +1,5 @@
-# earth-moon.py
-''' Sample scene: Earth and Moon with Markers.
-    Example of setting up and activating interactive animation.
+# callibrate.py
+''' A tool to calibrate the user's camera rig.
 '''
 from arena import *
 
@@ -17,9 +16,7 @@ def end_program_callback(scene: Scene):
 
 
 # command line options
-#scene = Scene(cli_args=True, end_program_callback=end_program_callback)
-scene = Scene(
-    cli_args=True, end_program_callback=end_program_callback, debug=True)
+scene = Scene(cli_args=True, end_program_callback=end_program_callback)
 
 
 @scene.run_once

@@ -124,7 +124,7 @@ def add_axis(axis):
         thetaLength=180.0,
         position=Position(0, 0, 0),
         material=Material(color=get_color(axis),
-                          opacity=OPC_OFF, side="double", src=""),
+                          opacity=OPC_OFF, side="double", src="/src/icons/images/up-arrow.png"),
         clickable=True,
         evt_handler=mouse_handler,
     ))

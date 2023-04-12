@@ -7,7 +7,7 @@ class Impulse(Attribute):
     Impulse Attribute.
     Usage: impulse=Impulse(...)
     """
-    def __init__(self, on="mousedown", force=Position(0,0,0), position=Position(0,0,0)):
+    def __init__(self, on="mousedown", force=Position(0,0,0), position=Position(0,0,0), **kwargs):
         if isinstance(force, Position):
             force = force.to_str()
         elif isinstance(force, tuple) or isinstance(force, list):
@@ -18,4 +18,4 @@ class Impulse(Attribute):
         elif isinstance(position, tuple) or isinstance(position, list):
             position = Utils.tuple_to_string(position)
 
-        super().__init__(on=on, force=force, position=position)
+        super().__init__(on=on, force=force, position=position, **kwargs)

@@ -33,5 +33,6 @@ ATTRIBUTE_TYPE_MAP = {
     "rotation": Rotation,
     "scale": Scale,
     "sound": Sound,
+    "text_input": TextInput,
     "video_control": VideoControl,
 }

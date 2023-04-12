@@ -1,4 +1,3 @@
-from ..utils import Utils
 from .attribute import Attribute
 
 class Material(Attribute):

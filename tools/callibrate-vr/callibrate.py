@@ -22,7 +22,7 @@ scene = Scene(
 def main():
     global sceneParent, origin_marker
     # make a parent scene object
-    sceneParent = Box(
+    sceneParent = Entity(
         persist=True,
         object_id="callibrateParent",
         material=Material(transparent=True, opacity=0),
@@ -48,8 +48,26 @@ def main():
     }
     scene.update_object(origin_marker, armarker=armarker)
 
-    # scene.add_object(Cylinder(
+    scene.add_object(Cone(
+        persist=True,
+        object_id="click-position-y-pos",
+        parent=sceneParent.object_id,
+        rotation=Rotation(0,0,0),
+        scale=Scale(marker_scale/10, marker_scale/10*2, marker_scale/10),
+        position=Position(0, marker_scale+(marker_scale/10), 0),
+        material=Material(color=Color(0,0,255), transparent=False, opacity=0.5),
+        clickable=True,
+    ))
+    scene.add_object(Cone(
+        persist=True,
+        object_id="click-position-y-neg",
+        parent=sceneParent.object_id,
+        rotation=Rotation(180,0,0),
+        scale=Scale(marker_scale/10, marker_scale/10*2, marker_scale/10),
+        position=Position(0, marker_scale-(marker_scale/10), 0),
+        material=Material(color=Color(0,0,255), transparent=False, opacity=0.5),
+        clickable=True,
+    ))
 
-    # ))
 
 scene.run_tasks()

@@ -1,15 +1,16 @@
+from .arena_object import Object
 from .box import Box
 from .camera import Camera
 from .circle import Circle
 from .cone import Cone
 from .cylinder import Cylinder
 from .dodecahedron import Dodecahedron
+from .entity import Entity
 from .gltf import GLTF
 from .icosahedron import Icosahedron
 from .image import Image
 from .light import Light
 from .line import Line
-from .arena_object import Object
 from .octahedron import Octahedron
 from .particle import Particle
 from .plane import Plane
@@ -24,19 +25,19 @@ from .triangle import Triangle
 
 OBJECT_TYPE_MAP = {
     "box": Box,
-    "cube": Box,
     "camera": Camera,
     "circle": Circle,
     "cone": Cone,
+    "cube": Box,
     "cylinder": Cylinder,
     "dodecahedron": Dodecahedron,
+    "entity": Entity,
     "gltf-model": GLTF,
     "icosahedron": Icosahedron,
     "image": Image,
     "light": Light,
     "line": Line,
     "object": Object,
-    "entity": Object,
     "octahedron": Octahedron,
     "particle": Particle,
     "plane": Plane,

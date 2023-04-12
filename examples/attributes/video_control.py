@@ -12,7 +12,7 @@ video_control = VideoControl(
 
 
 @scene.run_once
-def make_music_box():
+def make_video_box():
     my_box = Box(
         object_id="square_vid1",
         position=Position(

@@ -284,7 +284,21 @@ class Scene(ArenaMQTT):
             "object_id": obj.object_id
         }
         Object.remove(obj)
-        return self._publish(payload, "delete")
+        return self._publish(payload, "delete", custom_payload=True)
+
+    def delete_attributes(self, obj, attributes=None):
+        """Public function to delete a list of 'attributes' as a string[], updating each to null"""
+        updated_data = {}
+        for attr in attributes:
+            obj.data[attr] = None  # remove from large internal storage
+            updated_data[attr] = None # remove from small external publish
+        payload = {
+            "object_id": obj.object_id,
+            "type": obj.type,
+            "persist": obj.persist,
+            "data": updated_data  # dashes handled from string array
+        }
+        return self._publish(payload, "update", custom_payload=True)
 
     def run_animations(self, obj):
         """Runs all dispatched animations"""
@@ -306,21 +320,16 @@ class Scene(ArenaMQTT):
                     Utils.dict_key_replace(anim, "start", "from")
                     Utils.dict_key_replace(anim, "end", "to")
             obj.clear_animations()
-            return self._publish(payload, "dispatch_animation")
+            return self._publish(payload, "update", custom_payload=True)
 
-    def _publish(self, obj, action):
+    def _publish(self, obj, action, custom_payload=False):
         """Publishes to mqtt broker with "action":action"""
         topic = f"{self.root_topic}/{self.mqttc_id}/{obj['object_id']}"
         d = datetime.utcnow().isoformat()[:-3]+"Z"
 
-        if action == "delete":
+        if custom_payload:
             payload = obj
-            payload["action"] = "delete"
-            payload["timestamp"] = d
-            payload = json.dumps(payload)
-        elif action == "dispatch_animation":
-            payload = obj
-            payload["action"] = "update"
+            payload["action"] = action
             payload["timestamp"] = d
             payload = json.dumps(payload)
         else:

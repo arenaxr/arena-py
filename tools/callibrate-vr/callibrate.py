@@ -54,34 +54,34 @@ def addobjects():
         "dynamic": False
     }
     scene.update_object(origin_marker, armarker=armarker)
+    add_axis("x")
+    add_axis("y")
+    add_axis("z")
 
-    add_pos("x")
-    add_pos("y")
-    add_pos("z")
 
-
-def get_color(direction):
-    if direction == "x":
+def get_color(axis):
+    if axis == "x":
         return Color(0, 255, 0)
-    elif direction == "y":
+    elif axis == "y":
         return Color(0, 0, 255)
-    elif direction == "z":
+    elif axis == "z":
         return Color(255, 0, 0)
 
 
-def add_pos(direction):
-    if direction == "x":
+def add_axis(axis):
+    if axis == "x":
         position = Position(MARKER_SCALE/2, 0, 0)
         rotation = Rotation(0, 0, -90)
-    elif direction == "y":
+    elif axis == "y":
         position = Position(0, MARKER_SCALE/2, 0)
         rotation = Rotation(0, 0, 0)
-    elif direction == "z":
+    elif axis == "z":
         position = Position(0,  0, MARKER_SCALE/2)
         rotation = Rotation(90, 0, 0)
+    # click root
     click = Entity(
         persist=persist,
-        object_id=f"click-{direction}",
+        object_id=f"click-{axis}",
         parent=sceneParent.object_id,
         rotation=rotation,
         position=position,
@@ -89,54 +89,73 @@ def add_pos(direction):
         radiusBottom=MARKER_SCALE/10/2,
     )
     scene.add_object(click)
-    # position cones
+    # position
     cone_scale = Scale(MARKER_SCALE/10, MARKER_SCALE/10*2, MARKER_SCALE/10)
     scene.add_object(Cone(
         persist=persist,
-        object_id=f"click-position-{direction}-pos",
+        object_id=f"click-position-{axis}-pos",
         parent=click.object_id,
         rotation=Rotation(0, 0, 0),
         scale=cone_scale,
         position=Position(0, (MARKER_SCALE/2)+(MARKER_SCALE/10), 0),
-        material=Material(color=get_color(direction), opacity=OPC_OFF),
+        material=Material(color=get_color(axis), opacity=OPC_OFF),
         clickable=True,
-        evt_handler=mouse_position_handler,
+        evt_handler=mouse_handler,
     ))
     scene.add_object(Cone(
         persist=persist,
-        object_id=f"click-position-{direction}-neg",
+        object_id=f"click-position-{axis}-neg",
         parent=click.object_id,
         rotation=Rotation(180, 0, 0),
         scale=cone_scale,
         position=Position(0, (MARKER_SCALE/2)-(MARKER_SCALE/10), 0),
-        material=Material(color=get_color(direction), opacity=OPC_OFF),
+        material=Material(color=get_color(axis), opacity=OPC_OFF),
         clickable=True,
-        evt_handler=mouse_position_handler,
+        evt_handler=mouse_handler,
+    ))
+    # rotation
+    circ_scale = Scale(MARKER_SCALE/10, MARKER_SCALE/10, MARKER_SCALE/10)
+    scene.add_object(Circle(
+        persist=persist,
+        object_id=f"click-rotation-{axis}-pos",
+        parent=click.object_id,
+        rotation=Rotation(90, 0, 0),
+        scale=circ_scale,
+        thetaLength=180.0,
+        position=Position(0, 0, 0),
+        material=Material(color=get_color(axis),
+                          opacity=OPC_OFF, side="double", src=""),
+        clickable=True,
+        evt_handler=mouse_handler,
     ))
 
 
-def mouse_position_handler(scene, evt, msg):
+def mouse_handler(scene, evt, msg):
 
     obj = scene.all_objects[evt.object_id]
     parts = evt.object_id.split("-")
-    direction = parts[2]
-    axis = parts[3]
+    attribute = parts[1]
+    axis = parts[2]
+    direction = parts[3]
     if evt.type == "mouseenter":
         scene.update_object(obj, material=Material(
-            color=get_color(direction), opacity=OPC_ON))
+            color=get_color(axis), opacity=OPC_ON))
     elif evt.type == "mouseleave":
         scene.update_object(obj, material=Material(
-            color=get_color(direction), opacity=OPC_OFF))
+            color=get_color(axis), opacity=OPC_OFF))
     elif evt.type == "mousedown":
-        camera_position_updater(evt.data.source, direction, axis)
+        if attribute == "position":
+            camera_position_updater(evt.data.source, axis, direction)
+        elif attribute == "rotation":
+            camera_rotation_updater(evt.data.source, axis, direction)
 
 
-def camera_position_updater(cam_id, direction, axis):
+def camera_position_updater(cam_id, axis, direction):
     # publish something here
     print(f'logged position request :{cam_id}:{direction}:{axis}:')
 
 
-def camera_rotation_updater(cam_id, direction, axis):
+def camera_rotation_updater(cam_id, axis, direction):
     # publish something here
     print(f'logged rotation request :{cam_id}:{direction}:{axis}:')
 

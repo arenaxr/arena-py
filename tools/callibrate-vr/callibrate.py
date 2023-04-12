@@ -71,7 +71,7 @@ def get_color(axis):
 def add_axis(axis):
     if axis == "x":
         position = Position(MARKER_SCALE/2, 0, 0)
-        rotation = Rotation(0, 0, -90)
+        rotation = Rotation(0, 90, -90)
     elif axis == "y":
         position = Position(0, MARKER_SCALE/2, 0)
         rotation = Rotation(0, 0, 0)
@@ -95,10 +95,11 @@ def add_axis(axis):
         persist=persist,
         object_id=f"click-position-{axis}-pos",
         parent=click.object_id,
-        rotation=Rotation(0, 0, 0),
         scale=cone_scale,
+        rotation=Rotation(0, 0, 0),
         position=Position(0, (MARKER_SCALE/2)+(MARKER_SCALE/10), 0),
-        material=Material(color=get_color(axis), opacity=OPC_OFF),
+        material=Material(color=get_color(
+            axis), opacity=OPC_OFF),
         clickable=True,
         evt_handler=mouse_handler,
     ))
@@ -106,25 +107,36 @@ def add_axis(axis):
         persist=persist,
         object_id=f"click-position-{axis}-neg",
         parent=click.object_id,
-        rotation=Rotation(180, 0, 0),
         scale=cone_scale,
+        rotation=Rotation(180, 0, 0),
         position=Position(0, (MARKER_SCALE/2)-(MARKER_SCALE/10), 0),
-        material=Material(color=get_color(axis), opacity=OPC_OFF),
+        material=Material(color=get_color(
+            axis), opacity=OPC_OFF),
         clickable=True,
         evt_handler=mouse_handler,
     ))
     # rotation
-    circ_scale = Scale(MARKER_SCALE/10, MARKER_SCALE/10, MARKER_SCALE/10)
-    scene.add_object(Circle(
+    scene.add_object(Cone(
         persist=persist,
         object_id=f"click-rotation-{axis}-pos",
         parent=click.object_id,
+        scale=cone_scale,
         rotation=Rotation(90, 0, 0),
-        scale=circ_scale,
-        thetaLength=180.0,
-        position=Position(0, 0, 0),
+        position=Position(MARKER_SCALE/10, 0, 0),
         material=Material(color=get_color(axis),
-                          opacity=OPC_OFF, side="double", src="/src/icons/images/up-arrow.png"),
+                          opacity=OPC_OFF),
+        clickable=True,
+        evt_handler=mouse_handler,
+    ))
+    scene.add_object(Cone(
+        persist=persist,
+        object_id=f"click-rotation-{axis}-neg",
+        parent=click.object_id,
+        scale=cone_scale,
+        rotation=Rotation(-90, 0, 0),
+        position=Position(-MARKER_SCALE/10, 0, 0),
+        material=Material(color=get_color(axis),
+                          opacity=OPC_OFF),
         clickable=True,
         evt_handler=mouse_handler,
     ))

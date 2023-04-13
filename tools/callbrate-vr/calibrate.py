@@ -15,12 +15,16 @@ MARKER_SCALE = 0.15
 OPC_ON = 0.85
 OPC_OFF = 0.25
 CONE_SCALE = Scale(MARKER_SCALE / 10, MARKER_SCALE / 10 * 2, MARKER_SCALE / 10)
+parents = []
 user_rigs = {}
 
 
 def end_program_callback(_scene: Scene):
-    global sceneParent
-    scene.delete_object(sceneParent)
+    global parents
+    # reverse parental order allows for branch to trunk deletion
+    parents.reverse()
+    for parent in parents:
+        scene.delete_object(parent)
 
 
 # command line options
@@ -48,7 +52,7 @@ def main():
 
 
 def addobjects():
-    global sceneParent, origin_marker
+    global sceneParent, parents
     # parent scene object
     sceneParent = Entity(
         persist=persist,
@@ -56,6 +60,7 @@ def addobjects():
         position=Position(0, 0, 0),
     )
     scene.add_object(sceneParent)
+    parents.append(sceneParent)
 
     # marker gltf
     origin_marker = GLTF(
@@ -105,6 +110,7 @@ def get_color(axis):
 
 
 def add_axis(axis):
+    global sceneParent
     if axis == "x":
         position = Position(MARKER_SCALE / 2, 0, 0)
         rotation = Rotation(0, 90, -90)
@@ -123,6 +129,8 @@ def add_axis(axis):
         position=position,
     )
     scene.add_object(click)
+    parents.append(click)
+
     # position we don't apply to y-axis
     if axis != "y":
         add_position_clicks(click.object_id, axis, "pos")

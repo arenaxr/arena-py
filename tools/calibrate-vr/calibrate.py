@@ -169,7 +169,7 @@ def add_rotation_clicks(parent, axis, direction):
             parent=parent,
             scale=CONE_SCALE,
             rotation=Rotation(x * 90, 0, 0),
-            position=Position(x * MARKER_SCALE / 10, 0, 0),
+            position=Position(x * MARKER_SCALE / 5, 0, 0),
             material=Material(color=get_color(axis), opacity=OPC_OFF),
             clickable=True,
             evt_handler=mouse_handler,

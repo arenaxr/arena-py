@@ -145,6 +145,7 @@ def add_axis(axis):
 
 def add_position_clicks(parent, axis, direction):
     py = 1 if direction == "pos" else -1
+    py2 = 1 if direction == "pos" else -3
     rx = 0 if direction == "pos" else 180
     scene.add_object(
         Cone(
@@ -153,7 +154,7 @@ def add_position_clicks(parent, axis, direction):
             parent=parent,
             scale=CONE_SCALE,
             rotation=Rotation(rx, 0, 0),
-            position=Position(0, (MARKER_SCALE / 2) + (py * MARKER_SCALE / 5), 0),
+            position=Position(0, (py2 * MARKER_SCALE / 2) + (py * MARKER_SCALE / 5), 0),
             material=Material(color=get_color(axis), opacity=OPC_OFF),
             clickable=True,
             evt_handler=mouse_handler,

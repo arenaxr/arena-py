@@ -121,8 +121,6 @@ def add_axis(axis):
         parent=sceneParent.object_id,
         rotation=rotation,
         position=position,
-        height=MARKER_SCALE / 10,
-        radiusBottom=MARKER_SCALE / 10 / 2,
     )
     scene.add_object(click)
     # position we don't apply to y-axis

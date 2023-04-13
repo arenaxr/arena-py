@@ -61,7 +61,7 @@ def addobjects():
     sceneParent = Entity(
         persist=persist,
         object_id="callibrateParent",
-        position=Position(0, 0.1, 0),
+        position=Position(0, 0.0, 0),
     )
     scene.add_object(sceneParent)
     parents.append(sceneParent)
@@ -92,7 +92,7 @@ def addobjects():
         persist=persist,
         object_id="click-ground-plane",
         parent=sceneParent.object_id,
-        position=Position(0, -0.2, 0),
+        position=Position(0, -0.01, 0),
         rotation=Rotation(-90, 0, 0),
         width=20,
         height=20,

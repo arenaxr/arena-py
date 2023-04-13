@@ -3,11 +3,14 @@
 A tool to calibrate the user's camera rig.
 """
 from arena import *
+import json
+import time
 
-POSITION_INC = 0.1
+POSITION_INC = 0.01
 POSITION_INC_BIG = 0.5  # TODO: handle press-and-hold larger increments
 ROTATION_INC = 1
 ROTATION_INC_BIG = 5  # TODO: handle press-and-hold larger increments
+BIG_INC_THRESHOLD = 0.75  # seconds
 
 persist = True
 
@@ -36,6 +39,7 @@ def user_join_callback(_scene, cam, _msg):
     user_rigs[cam.object_id] = {
         "position": Position(0, 0, 0),
         "rotation": Rotation(0, 0, 0),
+        "last_click": 0,
     }
 
 
@@ -57,7 +61,7 @@ def addobjects():
     sceneParent = Entity(
         persist=persist,
         object_id="callibrateParent",
-        position=Position(0, 0, 0),
+        position=Position(0, 0.1, 0),
     )
     scene.add_object(sceneParent)
     parents.append(sceneParent)
@@ -88,14 +92,13 @@ def addobjects():
         persist=persist,
         object_id="click-ground-plane",
         parent=sceneParent.object_id,
-        position=Position(0, -0.01, 0),
-        rotation=Rotation(90, 0, 0),
+        position=Position(0, -0.2, 0),
+        rotation=Rotation(-90, 0, 0),
         width=20,
         height=20,
-        color=Color(64, 64, 64),
-        opacity=OPC_ON,
+        material=Material(color=(128,128,128), opacity=OPC_OFF),
         clickable=True,
-        click_handler=ground_click_handler,
+        evt_handler=ground_click_handler,
     )
     scene.add_object(groundPlane)
 
@@ -199,18 +202,26 @@ def publish_rig_offset(user_id):
     rig = user_rigs.get(user_id)
     obj_topic = f"{scene.root_topic}/{user_id}"
     if rig:
-        scene.mqttc.publish(
-            obj_topic,
-            {
+        quat = rig["rotation"].quaternion
+        msg = {
                 "object_id": user_id,
                 "type": "rig",
                 "action": "update",
                 "data": {
-                    position: rig["position"],
-                    rotation: rig["rotation"].quaternion,
+                    "position": {
+                        "x": rig["position"].x,
+                        "y": rig["position"].y,
+                        "z": rig["position"].z,
+                    },
+                   "rotation": {
+                        "x": quat.x,
+                        "y": quat.y,
+                        "z": quat.z,
+                        "w": quat.w,
+                    }
                 },
-            },
-        )
+        }
+        scene.mqttc.publish(obj_topic, json.dumps(msg))
 
 
 def ground_click_handler(_scene, evt, _msg):
@@ -224,8 +235,9 @@ def ground_click_handler(_scene, evt, _msg):
         return
     global user_rigs
     rig = user_rigs.get(evt.data.source)
-    rig["position"].x = -evt.data.x
-    rig["position"].z = -evt.data.z
+    rig["position"].x = -evt.data.clickPos.x
+    rig["position"].z = -evt.data.clickPos.z
+    # print(f'Ground click: {evt.data.clickPos.x}, {evt.data.clickPos.z}')
     publish_rig_offset(evt.data.source)
 
 
@@ -235,14 +247,15 @@ def camera_position_updater(cam_id, axis, direction):
     offset is what is actually being modified, we once again apply the inverse value.
     We shouldn't be nudging y position, but we'll leave it in for now.
     """
+    # print(f'Camera position updater: {cam_id}, {axis}, {direction}')
     global user_rigs
     rig = user_rigs.get(cam_id)
     if axis == "x":
-        rig["position"].x -= POSITION_INC if direction == "pos" else POSITION_INC
+        rig["position"].x += -POSITION_INC if direction == "pos" else POSITION_INC
     elif axis == "y":
-        rig["position"].y -= POSITION_INC if direction == "pos" else POSITION_INC
+        rig["position"].y += -POSITION_INC if direction == "pos" else POSITION_INC
     elif axis == "z":
-        rig["position"].z -= POSITION_INC if direction == "pos" else POSITION_INC
+        rig["position"].z += -POSITION_INC if direction == "pos" else POSITION_INC
     publish_rig_offset(cam_id)
 
 
@@ -252,14 +265,18 @@ def camera_rotation_updater(cam_id, axis, direction):
     offset is what is actually being modified, we once again apply the inverse value.
     We shouldn't be nudging x or z rotation, but we'll leave it in for now.
     """
+    # print(f'Camera rotation updater: {cam_id}, {axis}, {direction}')
     global user_rigs
     rig = user_rigs.get(cam_id)
+    now = time.time()
+    inc = ROTATION_INC_BIG if (now - rig["last_click"]) < BIG_INC_THRESHOLD else ROTATION_INC
+    rig["last_click"] = now
     if axis == "x":
-        rig["rotation"].x -= ROTATION_INC if direction == "pos" else ROTATION_INC
+        rig["rotation"].x += -inc if direction == "pos" else inc
     elif axis == "y":
-        rig["rotation"].y -= ROTATION_INC if direction == "pos" else ROTATION_INC
+        rig["rotation"].y += -inc if direction == "pos" else inc
     elif axis == "z":
-        rig["rotation"].z -= ROTATION_INC if direction == "pos" else ROTATION_INC
+        rig["rotation"].z += -inc if direction == "pos" else inc
     publish_rig_offset(cam_id)
 
 

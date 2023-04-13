@@ -65,6 +65,7 @@ def addobjects():
         rotation=Rotation(w=0.70711, x=-0.70711, y=0, z=0),
         scale=Scale(MARKER_SCALE, MARKER_SCALE, MARKER_SCALE),
     )
+    scene.add_object(origin_marker)
     armarker = {
         "markerid": 0,
         "markertype": "apriltag_36h11",

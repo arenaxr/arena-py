@@ -235,8 +235,11 @@ def ground_click_handler(_scene, evt, _msg):
         return
     global user_rigs
     rig = user_rigs.get(evt.data.source)
-    rig["position"].x = -evt.data.clickPos.x
-    rig["position"].z = -evt.data.clickPos.z
+    prev_rig_pos = rig["position"]
+    new_x = prev_rig_pos.x - evt.data.position.x
+    new_z = prev_rig_pos.z - evt.data.position.z
+    rig["position"].x = new_x
+    rig["position"].z = new_z
     # print(f'Ground click: {evt.data.clickPos.x}, {evt.data.clickPos.z}')
     publish_rig_offset(evt.data.source)
 

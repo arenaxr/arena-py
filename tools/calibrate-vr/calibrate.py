@@ -6,7 +6,7 @@ from arena import *
 import json
 import time
 import numpy as np
-from scipy.spatial.transform import Rotation
+from scipy.spatial.transform import Rotation as spRotation
 
 # Position Vector3 indices
 X = 0
@@ -55,16 +55,13 @@ MARKER_SCALE = 0.15
 OPC_ON = 0.85
 OPC_OFF = 0.25
 CONE_SCALE = Scale(MARKER_SCALE / 5, MARKER_SCALE / 5 * 2, MARKER_SCALE / 5)
-parents = []
+calibrateparents = []
 user_rigs = {}
 
 
 def end_program_callback(_scene: Scene):
-    global parents
-    # reverse parental order allows for branch to trunk deletion
-    parents.reverse()
-    for parent in parents:
-        scene.delete_object(parent)
+    remove_obj_onoff()
+    remove_obj_calibrate()
 
 
 # command line options
@@ -91,27 +88,27 @@ def user_left_callback(_scene, cam, _msg):
 
 @scene.run_once
 def main():
-    addobjects()
+    add_obj_onoff()
     scene.user_join_callback = user_join_callback
     scene.user_left_callback = user_left_callback
 
 
-def addobjects():
-    global sceneParent, parents
+def add_obj_calibrate():
+    global calibrateParent, calibrateparents, ground_plane
     # parent scene object
-    sceneParent = Entity(
+    calibrateParent = Entity(
         persist=persist,
-        object_id="callibrateParent",
+        object_id="calibrateParent",
         position=Position(0, 0.0, 0),
     )
-    scene.add_object(sceneParent)
-    parents.append(sceneParent)
+    scene.add_object(calibrateParent)
+    calibrateparents.append(calibrateParent)
 
     # marker gltf
     origin_marker = GLTF(
         persist=persist,
         object_id="origin-marker",
-        parent=sceneParent.object_id,
+        parent=calibrateParent.object_id,
         url="/store/public/armarker.glb",
         rotation=Rotation(w=0.70711, x=-0.70711, y=0, z=0),
         scale=Scale(MARKER_SCALE, MARKER_SCALE, MARKER_SCALE),
@@ -132,7 +129,7 @@ def addobjects():
     ground_plane = Plane(
         persist=persist,
         object_id="click-ground-plane",
-        parent=sceneParent.object_id,
+        parent=calibrateParent.object_id,
         position=Position(0, -0.01, 0),
         rotation=Rotation(-90, 0, 0),
         width=20,
@@ -142,6 +139,64 @@ def addobjects():
         evt_handler=ground_click_handler,
     )
     scene.add_object(ground_plane)
+
+
+def remove_obj_calibrate():
+    global calibrateparents
+    # reverse parental order allows for branch to trunk deletion
+    calibrateparents.reverse()
+    for parent in calibrateparents:
+        scene.delete_object(parent)
+    scene.delete_object(ground_plane)
+
+
+def add_obj_onoff():
+    global onoffParent
+    # parent scene object
+    onoffParent = Entity(
+        persist=persist,
+        object_id="onoffParent",
+        position=Position(0, 0, -1),
+    )
+    scene.add_object(onoffParent)
+
+    scene.add_object(Cylinder(
+        persist=persist,
+        object_id="button-off",
+        parent=onoffParent.object_id,
+        position=Position(0.5,0,0),
+        height=0.5,
+        radius=0.25,
+        segmentsRadial=8,
+        material=Material(color=Color(255,0,0)),
+        clickable=True,
+        evt_handler=off_handler,
+    ))
+    scene.add_object(Cone(
+        persist=persist,
+        object_id="button-on",
+        parent=onoffParent.object_id,
+        position=Position(-0.5,0,0),
+        rotation=Rotation(90,0,0),
+        scale=Scale(0.1,0.5,0.1),
+        material=Material(color=Color(0,0,255)),
+        clickable=True,
+        evt_handler=on_handler,
+    ))
+
+def remove_obj_onoff():
+    global onoffParent
+    scene.delete_object(onoffParent)
+
+
+def on_handler(_scene, evt, _msg):
+    if evt.type == "mousedown":
+        add_obj_calibrate()
+
+
+def off_handler(_scene, evt, _msg):
+    if evt.type == "mousedown":
+        remove_obj_calibrate()
 
 
 def get_color(axis):
@@ -154,7 +209,7 @@ def get_color(axis):
 
 
 def add_axis(axis):
-    global sceneParent
+    global calibrateParent
     if axis == "x":
         position = Position(MARKER_SCALE / 2, 0, 0)
         rotation = Rotation(0, 90, -90)
@@ -168,12 +223,12 @@ def add_axis(axis):
     click = Entity(
         persist=persist,
         object_id=f"click-{axis}",
-        parent=sceneParent.object_id,
+        parent=calibrateParent.object_id,
         rotation=rotation,
         position=position,
     )
     scene.add_object(click)
-    parents.append(click)
+    calibrateparents.append(click)
 
     # position we don't apply to y-axis
     if axis != "y":
@@ -247,7 +302,7 @@ def publish_rig_offset(user_id):
     rig = user_rigs.get(user_id)
     obj_topic = f"{scene.root_topic}/{user_id}"
     if rig:
-        rotation_matrix = Rotation.from_matrix(rig["rotation"])
+        rotation_matrix = spRotation.from_matrix(rig["rotation"])
         qw, qx, qy, qz = rotation_matrix.as_quat()
         msg = {
             "object_id": user_id,

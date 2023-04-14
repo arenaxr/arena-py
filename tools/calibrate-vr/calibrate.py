@@ -295,13 +295,13 @@ def add_axis(axis):
     calibrateparents.append(click)
 
     # position we don't apply to y-axis
-    if axis != "y":
-        add_position_clicks(click.object_id, axis, "pos")
-        add_position_clicks(click.object_id, axis, "neg")
+    #if axis != "y":
+    add_position_clicks(click.object_id, axis, "pos")
+    add_position_clicks(click.object_id, axis, "neg")
     # rotation, we ONLY apply to y-axis
-    if axis == "y":
-        add_rotation_clicks(click.object_id, axis, "pos")
-        add_rotation_clicks(click.object_id, axis, "neg")
+    #if axis == "y":
+    add_rotation_clicks(click.object_id, axis, "pos")
+    add_rotation_clicks(click.object_id, axis, "neg")
 
 
 def add_position_clicks(parent, axis, direction):
@@ -331,8 +331,8 @@ def add_rotation_clicks(parent, axis, direction):
             object_id=f"click-rotation-{axis}-{direction}",
             parent=parent,
             scale=CONE_SCALE,
-            rotation=Rotation(90, 0, 0),
-            position=Position(x * MARKER_SCALE / 5, 0, 0),
+            rotation=Rotation(-90, 0, 0),
+            position=Position(x * MARKER_SCALE / 5, MARKER_SCALE / 10, -MARKER_SCALE / 2),
             material=Material(color=get_color(axis), opacity=OPC_OFF),
             clickable=True,
             evt_handler=mouse_handler,

@@ -60,13 +60,20 @@ user_rigs = {}
 
 
 def end_program_callback(_scene: Scene):
-    remove_obj_onoff()
-    remove_obj_calibrate()
+    try:
+        remove_obj_onoff()
+        remove_obj_calibrate()
+    except:
+        pass
 
 
 # command line options
 scene = Scene(cli_args=True, end_program_callback=end_program_callback)
 
+onoffParent = None
+calibrateParent = None
+ground_plane = None
+ground_plane_mask = None
 
 def user_join_callback(_scene, cam, _msg):
     global user_rigs
@@ -157,9 +164,10 @@ def add_obj_calibrate():
 def remove_obj_calibrate():
     global calibrateparents
     # reverse parental order allows for branch to trunk deletion
-    calibrateparents.reverse()
-    for parent in calibrateparents:
-        scene.delete_object(parent)
+    if calibrateparents is not None:
+        calibrateparents.reverse()
+        for parent in calibrateparents:
+            scene.delete_object(parent)
     scene.delete_object(ground_plane)
     scene.delete_object(ground_plane_mask)
 
@@ -319,10 +327,12 @@ def mouse_handler(_scene, evt, _msg):
 def publish_rig_offset(user_id):
     global user_rigs
     rig = user_rigs.get(user_id)
+    if rig is None:
+        return
     obj_topic = f"{scene.root_topic}/{user_id}"
     if rig:
         rotation_matrix = spRotation.from_matrix(rig["rotation"])
-        qw, qx, qy, qz = rotation_matrix.as_quat()
+        qx, qy, qz, qw = rotation_matrix.as_quat()
         msg = {
             "object_id": user_id,
             "type": "rig",
@@ -355,6 +365,8 @@ def ground_click_handler(_scene, evt, _msg):
         return
     global user_rigs
     rig = user_rigs.get(evt.data.source)
+    if rig is None:
+        return
     prev_rig_pos = rig["position"]
     new_x = prev_rig_pos[X] - evt.data.position.x
     new_z = prev_rig_pos[Z] - evt.data.position.z
@@ -373,6 +385,8 @@ def camera_position_updater(cam_id, axis, direction):
     # print(f'Camera position updater: {cam_id}, {axis}, {direction}')
     global user_rigs
     rig = user_rigs.get(cam_id)
+    if rig is None:
+        return
     if axis == "x":
         rig["position"][X] += -POSITION_INC if direction == "pos" else POSITION_INC
     elif axis == "y":
@@ -395,6 +409,8 @@ def camera_rotation_updater(cam_id, axis, direction):
         return
     global user_rigs
     rig = user_rigs.get(cam_id)
+    if rig is None:
+        return
     now = time.time()
     inc = (
         ROTATION_INC_BIG
@@ -407,7 +423,9 @@ def camera_rotation_updater(cam_id, axis, direction):
         else ROTATION_DEC
     )
     rig["last_click"] = now
-    rig["matrix"] = rig["matrix"] @ dec if direction == "pos" else inc
+    rig["matrix"] = inc @ rig["matrix"] if direction == "pos" else dec @ rig["matrix"]
+    rig["rotation"] = rig["matrix"][:3, :3]
+    rig["position"] = rig["matrix"][:3, 3]
     publish_rig_offset(cam_id)
 
 

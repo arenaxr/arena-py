@@ -94,7 +94,7 @@ def main():
 
 
 def add_obj_calibrate():
-    global calibrateParent, calibrateparents, ground_plane
+    global calibrateParent, calibrateparents, ground_plane, ground_plane_mask
     # parent scene object
     calibrateParent = Entity(
         persist=persist,
@@ -132,13 +132,26 @@ def add_obj_calibrate():
         parent=calibrateParent.object_id,
         position=Position(0, -0.01, 0),
         rotation=Rotation(-90, 0, 0),
-        width=20,
-        height=20,
+        width=10,
+        height=10,
         material=Material(color=(128, 128, 128), opacity=OPC_OFF),
         clickable=True,
         evt_handler=ground_click_handler,
     )
     scene.add_object(ground_plane)
+
+    ground_plane_mask = Plane(
+        persist=persist,
+        object_id="click-ground-plane-mask",
+        parent=calibrateParent.object_id,
+        position=Position(0, -0.00, 0),
+        rotation=Rotation(-90, 0, 0),
+        width=0.5,
+        height=0.5,
+        material=Material(color=(64, 64, 64), opacity=0.01),
+        clickable=True,
+    )
+    scene.add_object(ground_plane_mask)
 
 
 def remove_obj_calibrate():
@@ -148,6 +161,7 @@ def remove_obj_calibrate():
     for parent in calibrateparents:
         scene.delete_object(parent)
     scene.delete_object(ground_plane)
+    scene.delete_object(ground_plane_mask)
 
 
 def add_obj_onoff():
@@ -160,29 +174,34 @@ def add_obj_onoff():
     )
     scene.add_object(onoffParent)
 
-    scene.add_object(Cylinder(
-        persist=persist,
-        object_id="button-off",
-        parent=onoffParent.object_id,
-        position=Position(0.5,0,0),
-        height=0.5,
-        radius=0.25,
-        segmentsRadial=8,
-        material=Material(color=Color(255,0,0)),
-        clickable=True,
-        evt_handler=off_handler,
-    ))
-    scene.add_object(Cone(
-        persist=persist,
-        object_id="button-on",
-        parent=onoffParent.object_id,
-        position=Position(-0.5,0,0),
-        rotation=Rotation(90,0,0),
-        scale=Scale(0.1,0.5,0.1),
-        material=Material(color=Color(0,0,255)),
-        clickable=True,
-        evt_handler=on_handler,
-    ))
+    scene.add_object(
+        Cylinder(
+            persist=persist,
+            object_id="button-off",
+            parent=onoffParent.object_id,
+            position=Position(0.5, 0, 0),
+            height=0.5,
+            radius=0.25,
+            segmentsRadial=8,
+            material=Material(color=Color(255, 0, 0)),
+            clickable=True,
+            evt_handler=off_handler,
+        )
+    )
+    scene.add_object(
+        Cone(
+            persist=persist,
+            object_id="button-on",
+            parent=onoffParent.object_id,
+            position=Position(-0.5, 0, 0),
+            rotation=Rotation(90, 0, 0),
+            scale=Scale(0.1, 0.5, 0.1),
+            material=Material(color=Color(0, 0, 255)),
+            clickable=True,
+            evt_handler=on_handler,
+        )
+    )
+
 
 def remove_obj_onoff():
     global onoffParent

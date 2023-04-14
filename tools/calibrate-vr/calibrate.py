@@ -310,9 +310,9 @@ def publish_rig_offset(user_id):
             "action": "update",
             "data": {
                 "position": {
-                    "x": rig["position"].x,
-                    "y": rig["position"].y,
-                    "z": rig["position"].z,
+                    "x": rig["position"][X],
+                    "y": rig["position"][Y],
+                    "z": rig["position"][Z],
                 },
                 "rotation": {
                     "x": qx,

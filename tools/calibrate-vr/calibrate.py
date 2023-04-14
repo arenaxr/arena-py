@@ -1,15 +1,52 @@
-# callibrate.py
+# calibrate.py
 """
 A tool to calibrate the user's camera rig.
 """
 from arena import *
 import json
 import time
+import numpy as np
+from scipy.spatial.transform import Rotation
 
-POSITION_INC = 0.01
-POSITION_INC_BIG = 0.5  # TODO: handle press-and-hold larger increments
-ROTATION_INC = 1
-ROTATION_INC_BIG = 5  # TODO: handle press-and-hold larger increments
+# Position Vector3 indices
+X = 0
+Y = 1
+Z = 2
+
+POSITION_INC = 0.01  # 1 cm
+
+# 1 degree positive rotation on Y-axis
+ROTATION_INC = [
+    [0.9998477, 0.0000000, 0.0174524, 0],
+    [0.0000000, 1.0000000, 0.0000000, 0],
+    [-0.0174524, 0.0000000, 0.9998477, 0],
+    [0, 0, 0, 1],
+]
+
+# 1 degree negative rotation on Y-axis
+ROTATION_DEC = [
+    [0.9998477, 0.0000000, -0.0174524, 0],
+    [0.0000000, 1.0000000, 0.0000000, 0],
+    [0.0174524, 0.0000000, 0.9998477, 0],
+    [0, 0, 0, 1],
+]
+
+# 5 degree positive rotation on Y-axis
+ROTATION_INC_BIG = [
+    [0.9961947, 0.0000000, 0.0871557, 0],
+    [0.0000000, 1.0000000, 0.0000000, 0],
+    [-0.0871557, 0.0000000, 0.9961947, 0],
+    [0, 0, 0, 1],
+]
+
+# 5 degree negative rotation on Y-axis
+ROTATION_DEC_BIG = [
+    [0.9961947, 0.0000000, -0.0871557, 0],
+    [0.0000000, 1.0000000, 0.0000000, 0],
+    [0.0871557, 0.0000000, 0.9961947, 0],
+    [0, 0, 0, 1],
+]
+
 BIG_INC_THRESHOLD = 0.75  # seconds
 
 persist = True
@@ -36,9 +73,13 @@ scene = Scene(cli_args=True, end_program_callback=end_program_callback)
 
 def user_join_callback(_scene, cam, _msg):
     global user_rigs
+    rig_matrix = np.identity(4)
+    rig_pos = rig_matrix[:3, 3]
+    rig_rot = rig_matrix[:3, :3]
     user_rigs[cam.object_id] = {
-        "position": Position(0, 0, 0),
-        "rotation": Rotation(0, 0, 0),
+        "matrix": rig_matrix,
+        "position": rig_pos,
+        "rotation": rig_rot,
         "last_click": 0,
     }
 
@@ -88,7 +129,7 @@ def addobjects():
     add_axis("y")
     add_axis("z")
 
-    groundPlane = Plane(
+    ground_plane = Plane(
         persist=persist,
         object_id="click-ground-plane",
         parent=sceneParent.object_id,
@@ -96,11 +137,11 @@ def addobjects():
         rotation=Rotation(-90, 0, 0),
         width=20,
         height=20,
-        material=Material(color=(128,128,128), opacity=OPC_OFF),
+        material=Material(color=(128, 128, 128), opacity=OPC_OFF),
         clickable=True,
         evt_handler=ground_click_handler,
     )
-    scene.add_object(groundPlane)
+    scene.add_object(ground_plane)
 
 
 def get_color(axis):
@@ -143,6 +184,7 @@ def add_axis(axis):
         add_rotation_clicks(click.object_id, axis, "pos")
         add_rotation_clicks(click.object_id, axis, "neg")
 
+
 def add_position_clicks(parent, axis, direction):
     py = 1 if direction == "pos" else -1
     py2 = 1 if direction == "pos" else -3
@@ -161,6 +203,7 @@ def add_position_clicks(parent, axis, direction):
         )
     )
 
+
 def add_rotation_clicks(parent, axis, direction):
     x = 1 if direction == "pos" else -1
     scene.add_object(
@@ -176,6 +219,7 @@ def add_rotation_clicks(parent, axis, direction):
             evt_handler=mouse_handler,
         )
     )
+
 
 def mouse_handler(_scene, evt, _msg):
     obj = scene.all_objects[evt.object_id]
@@ -203,24 +247,25 @@ def publish_rig_offset(user_id):
     rig = user_rigs.get(user_id)
     obj_topic = f"{scene.root_topic}/{user_id}"
     if rig:
-        quat = rig["rotation"].quaternion
+        rotation_matrix = Rotation.from_matrix(rig["rotation"])
+        qw, qx, qy, qz = rotation_matrix.as_quat()
         msg = {
-                "object_id": user_id,
-                "type": "rig",
-                "action": "update",
-                "data": {
-                    "position": {
-                        "x": rig["position"].x,
-                        "y": rig["position"].y,
-                        "z": rig["position"].z,
-                    },
-                   "rotation": {
-                        "x": quat.x,
-                        "y": quat.y,
-                        "z": quat.z,
-                        "w": quat.w,
-                    }
+            "object_id": user_id,
+            "type": "rig",
+            "action": "update",
+            "data": {
+                "position": {
+                    "x": rig["position"].x,
+                    "y": rig["position"].y,
+                    "z": rig["position"].z,
                 },
+                "rotation": {
+                    "x": qx,
+                    "y": qy,
+                    "z": qz,
+                    "w": qw,
+                },
+            },
         }
         scene.mqttc.publish(obj_topic, json.dumps(msg))
 
@@ -229,18 +274,18 @@ def ground_click_handler(_scene, evt, _msg):
     """
     This handles clicks on the ground plane which indicate that a user is starting
     fairly far off from the origin marker. We ignore rotation completely and simply
-    apply an initial inverse translation of x and z to the camera offset rig (since
-    y is assumed always to be 0).
+    apply an initial inverse translation of x and z to the camera offset rig matrix,
+    (since y is assumed always to be 0).
     """
     if evt.type != "mousedown":
         return
     global user_rigs
     rig = user_rigs.get(evt.data.source)
     prev_rig_pos = rig["position"]
-    new_x = prev_rig_pos.x - evt.data.position.x
-    new_z = prev_rig_pos.z - evt.data.position.z
-    rig["position"].x = new_x
-    rig["position"].z = new_z
+    new_x = prev_rig_pos[X] - evt.data.position.x
+    new_z = prev_rig_pos[Z] - evt.data.position.z
+    rig["position"][X] = new_x
+    rig["position"][Z] = new_z
     # print(f'Ground click: {evt.data.clickPos.x}, {evt.data.clickPos.z}')
     publish_rig_offset(evt.data.source)
 
@@ -249,17 +294,17 @@ def camera_position_updater(cam_id, axis, direction):
     """
     We use this to nudge position of camera offset rig. Bearing in mind that the rig
     offset is what is actually being modified, we once again apply the inverse value.
-    We shouldn't be nudging y position, but we'll leave it in for now.
+    We shouldn't be nudging y position, but we'll leave that code in for now.
     """
     # print(f'Camera position updater: {cam_id}, {axis}, {direction}')
     global user_rigs
     rig = user_rigs.get(cam_id)
     if axis == "x":
-        rig["position"].x += -POSITION_INC if direction == "pos" else POSITION_INC
+        rig["position"][X] += -POSITION_INC if direction == "pos" else POSITION_INC
     elif axis == "y":
-        rig["position"].y += -POSITION_INC if direction == "pos" else POSITION_INC
+        rig["position"][Y] += -POSITION_INC if direction == "pos" else POSITION_INC
     elif axis == "z":
-        rig["position"].z += -POSITION_INC if direction == "pos" else POSITION_INC
+        rig["position"][Z] += -POSITION_INC if direction == "pos" else POSITION_INC
     publish_rig_offset(cam_id)
 
 
@@ -268,19 +313,27 @@ def camera_rotation_updater(cam_id, axis, direction):
     We use this to nudge rotation of camera offset rig. Bearing in mind that the rig
     offset is what is actually being modified, we once again apply the inverse value.
     We shouldn't be nudging x or z rotation, but we'll leave it in for now.
+    We apply this nudge by multiplying by either a small or slightly larger rotated
+    matrix (previously calculated) to the entire rig pose matrix.
     """
     # print(f'Camera rotation updater: {cam_id}, {axis}, {direction}')
+    if axis != "y":
+        return
     global user_rigs
     rig = user_rigs.get(cam_id)
     now = time.time()
-    inc = ROTATION_INC_BIG if (now - rig["last_click"]) < BIG_INC_THRESHOLD else ROTATION_INC
+    inc = (
+        ROTATION_INC_BIG
+        if (now - rig["last_click"]) < BIG_INC_THRESHOLD
+        else ROTATION_INC
+    )
+    dec = (
+        ROTATION_DEC_BIG
+        if (now - rig["last_click"]) < BIG_INC_THRESHOLD
+        else ROTATION_DEC
+    )
     rig["last_click"] = now
-    if axis == "x":
-        rig["rotation"].x += -inc if direction == "pos" else inc
-    elif axis == "y":
-        rig["rotation"].y += -inc if direction == "pos" else inc
-    elif axis == "z":
-        rig["rotation"].z += -inc if direction == "pos" else inc
+    rig["matrix"] = rig["matrix"] @ dec if direction == "pos" else inc
     publish_rig_offset(cam_id)
 
 

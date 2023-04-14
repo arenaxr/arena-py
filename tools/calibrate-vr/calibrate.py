@@ -294,7 +294,7 @@ def add_rotation_clicks(parent, axis, direction):
             object_id=f"click-rotation-{axis}-{direction}",
             parent=parent,
             scale=CONE_SCALE,
-            rotation=Rotation(x * 90, 0, 0),
+            rotation=Rotation(90, 0, 0),
             position=Position(x * MARKER_SCALE / 5, 0, 0),
             material=Material(color=get_color(axis), opacity=OPC_OFF),
             clickable=True,

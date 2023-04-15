@@ -188,8 +188,8 @@ def add_obj_calibrate():
         parent=calibrateParent.object_id,
         position=Position(0, -0.00, 0),
         rotation=Rotation(-90, 0, 0),
-        width=0.5,
-        height=0.5,
+        width=0.75,
+        height=0.75,
         material=Material(color=(64, 64, 64), opacity=0.01),
         clickable=True,
     )

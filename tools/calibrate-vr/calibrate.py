@@ -97,11 +97,8 @@ ROTATIONS = {
 
 
 def end_program_callback(_scene: Scene):
-    try:
         remove_obj_onoff()
         remove_obj_calibrate()
-    except:
-        pass
 
 
 # command line options
@@ -183,6 +180,7 @@ def add_obj_calibrate():
         evt_handler=ground_click_handler,
     )
     scene.add_object(ground_plane)
+    calibrateparents.append(ground_plane)
 
     ground_plane_mask = Plane(
         persist=persist,
@@ -196,6 +194,7 @@ def add_obj_calibrate():
         clickable=True,
     )
     scene.add_object(ground_plane_mask)
+    calibrateparents.append(ground_plane_mask)
 
 
 def remove_obj_calibrate():
@@ -204,9 +203,8 @@ def remove_obj_calibrate():
     if calibrateparents is not None:
         calibrateparents.reverse()
         for parent in calibrateparents:
-            scene.delete_object(parent)
-    scene.delete_object(ground_plane)
-    scene.delete_object(ground_plane_mask)
+            if parent.object_id in scene.all_objects:
+                scene.delete_object(parent)
 
 
 def add_obj_onoff():
@@ -224,8 +222,9 @@ def add_obj_onoff():
             persist=persist,
             object_id="button-off",
             parent=onoffParent.object_id,
-            position=Position(0.5, 0, 0),
-            height=0.5,
+            position=Position(0.25, 0, 0),
+            rotation=Rotation(0, 360 / 16, 0),
+            height=0.1,
             radius=0.25,
             segmentsRadial=8,
             material=Material(color=Color(255, 0, 0)),
@@ -234,14 +233,16 @@ def add_obj_onoff():
         )
     )
     scene.add_object(
-        Cone(
+        Cylinder(
             persist=persist,
             object_id="button-on",
             parent=onoffParent.object_id,
-            position=Position(-0.5, 0, 0),
-            rotation=Rotation(90, 0, 0),
-            scale=Scale(0.1, 0.5, 0.1),
-            material=Material(color=Color(0, 0, 255)),
+            position=Position(-0.25, 0, 0),
+            rotation=Rotation(0, -90 , 0),
+            height=0.1,
+            radius=0.25,
+            segmentsRadial=3,
+            material=Material(color=Color(0, 255, 0)),
             clickable=True,
             evt_handler=on_handler,
         )
@@ -306,7 +307,7 @@ def add_axis(axis):
 
 def add_position_clicks(parent, axis, direction):
     py = 1 if direction == "pos" else -1
-    py2 = 1 if direction == "pos" else -3
+    py2 = 2 if direction == "pos" else 1.5
     rx = 0 if direction == "pos" else 180
     scene.add_object(
         Cone(

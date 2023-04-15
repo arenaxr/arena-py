@@ -225,7 +225,7 @@ def add_obj_onoff():
             position=Position(0.25, 0, 0),
             rotation=Rotation(0, 360 / 16, 0),
             height=0.1,
-            radius=0.25,
+            radius=0.15,
             segmentsRadial=8,
             material=Material(color=Color(255, 0, 0)),
             clickable=True,

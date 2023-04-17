@@ -137,7 +137,7 @@ def main():
 def add_obj_calibrate():
     global calibrateParent, calibrateparents, ground_plane, ground_plane_mask
     # parent scene object
-    calibrateParent = Entity(
+    calibrateParent = Object(
         persist=persist,
         object_id="calibrateParent",
         position=Position(0, 0.0, 0),
@@ -210,7 +210,7 @@ def remove_obj_calibrate():
 def add_obj_onoff():
     global onoffParent
     # parent scene object
-    onoffParent = Entity(
+    onoffParent = Object(
         persist=persist,
         object_id="onoffParent",
         position=Position(0, 0, -1),
@@ -285,7 +285,7 @@ def add_axis(axis):
         position = Position(0, 0, MARKER_SCALE / 2)
         rotation = Rotation(90, 0, 0)
     # click root
-    click = Entity(
+    click = Object(
         persist=persist,
         object_id=f"click-{axis}",
         parent=calibrateParent.object_id,

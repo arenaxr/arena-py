@@ -166,6 +166,7 @@ def add_obj_calibrate():
     add_axis("x")
     add_axis("y")
     add_axis("z")
+    add_light()
 
     ground_plane = Plane(
         persist=persist,
@@ -271,6 +272,43 @@ def get_color(axis):
         return Color(0, 0, 255)
     elif axis == "z":
         return Color(255, 0, 0)
+
+
+def add_light():
+    global calibrateParent
+    calibrate_cone = Cone(
+        persist=persist,
+        object_id="calibrate_cone",
+        parent=calibrateParent.object_id,
+        rotation=Rotation(180, 0, 0),
+        position=Position(0, 3, 0),
+        radiusBottom=0.1,
+        height=0.2,
+        material=Material(color=Color(255, 165, 0), opacity=0.75),
+    )
+    scene.add_object(calibrate_cone)
+    animation = {
+        "dur": 1000,
+        "autoplay": True,
+        "to": "0",
+        "from": "360",
+        "loop": True,
+        "property": "rotation.x",
+        "easing": "linear",
+        "dir": "normal"
+    }
+    scene.update_object(calibrate_cone, animation=animation)
+    calibrateparents.append(calibrate_cone)
+
+    calibrate_light = Light(
+        persist=persist,
+        object_id="calibrate_light",
+        parent=calibrate_cone.object_id,
+        rotation=Rotation(90, 0, 0),
+        color=Color(255, 165, 0),
+        type="spot",
+    )
+    scene.add_object(calibrate_light)
 
 
 def add_axis(axis):

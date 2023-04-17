@@ -286,13 +286,12 @@ def guac_callback(scene, evt, msg):
 def main():
     global sceneParent
     # make a parent scene object
-    sceneParent = Box(
+    sceneParent = Object(
         persist=True,
         object_id="guac-sceneParent",
         position=app_position,
         rotation=app_rotation,
         scale=app_scale,
-        material=Material(transparent=True, opacity=0),
     )
     arena.add_object(sceneParent)
     print("starting main loop")

@@ -23,13 +23,12 @@ app_scale = scene.args["scale"]
 def main():
     global sceneParent, earth, moon
     # make a parent scene object
-    sceneParent = Box(
+    sceneParent = Object(
         object_id="earth-sceneParent",
         persist=True,
         position=app_position,
         rotation=app_rotation,
         scale=app_scale,
-        material=Material(transparent=True, opacity=0),
     )
     scene.add_object(sceneParent)
 

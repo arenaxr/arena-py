@@ -140,11 +140,10 @@ def populateControls(scene):
     global config, programs, init3d_root
     # render module controllers
     parent_id = "init3d_root"
-    init3d_root = Box(
+    init3d_root = Object(
         object_id=parent_id,
         position=Position(0, 0, 0),
         scale={"x": 1, "y": 1, "z": 1},
-        material=Material(transparent=True, opacity=0),
     )
     scene.delete_object(init3d_root)  # clear root
     scene.add_object(init3d_root)

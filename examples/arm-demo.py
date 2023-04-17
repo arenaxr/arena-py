@@ -61,13 +61,12 @@ def arm_click_handler(scene, evt, msg):
 def main():
     global arm_model, sceneParent
     # make a parent scene object
-    sceneParent = Box(
+    sceneParent = Object(
         persist=True,
         object_id="arm-sceneParent",
         position=app_position,
         rotation=app_rotation,
         scale=app_scale,
-        material=Material(transparent=True, opacity=0),
     )
     arena.add_object(sceneParent)
 

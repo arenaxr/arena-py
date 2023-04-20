@@ -22,52 +22,18 @@ import arblib
 from arblib import (EVT_MOUSEDOWN, EVT_MOUSEENTER, EVT_MOUSELEAVE, ButtonType,
                     Mode)
 
-BROKER = "mqtt.arenaxr.org"
-PORT = None
-REALM = "realm"
-NAMESPACE = None
-SCENE = None  # no default scene, arb works on any scene
 MANIFEST = arblib.DEF_MANIFEST
 MODELS = []
 USERS = {}  # dictionary of user instances
 CONTROLS = {}  # dictionary of active controls
-DEBUG = False
-scene = None  # the global scene connection object
 SCL_CLICK = 0.1  # meters
 
 
 def init_args():
-    global BROKER, PORT, REALM, NAMESPACE, SCENE, MODELS, MANIFEST, DEBUG
-    parser = argparse.ArgumentParser(description='ARENA AR Builder.')
-    parser.add_argument(
-        'scene', type=str, help='ARENA scene name')
-    parser.add_argument(
-        '-n', '--namespace', type=str, help='ARENA namespace', default=NAMESPACE)
-    parser.add_argument(
-        '-b', '--broker', type=str, help='MQTT message broker hostname', default=BROKER)
-    parser.add_argument(
-        '-p', '--port', type=int, help='MQTT message broker port')
-    parser.add_argument(
-        '-r', '--realm', type=str, help='ARENA realm name', default=REALM)
-    parser.add_argument(
-        '-m', '--models', type=str, help='JSON GLTF manifest')
-    parser.add_argument(
-        '-d', '--debug', action='store_true', help='Debug mode.', default=False)
-    args = parser.parse_args()
-    print(args)
-    SCENE = args.scene
-    if args.debug:
-        DEBUG = True
-    if args.broker is not None:
-        BROKER = args.broker
-    if args.port is not None:
-        PORT = args.port
-    if args.realm is not None:
-        REALM = args.realm
-    if args.namespace is not None:
-        NAMESPACE = args.namespace
-    if args.models is not None:
-        mfile = open(args.models)
+    global MODELS, MANIFEST
+    args_models = "arb-manifest.json"
+    if args_models is not None:
+        mfile = open(args_models)
         data = json.load(mfile)
         MODELS = []
         for i in data['models']:
@@ -1397,18 +1363,9 @@ def end_program_callback(_scene):
 # parse args and wait for events
 init_args()
 random.seed()
-kwargs = {}
-if PORT:
-    kwargs["port"] = PORT
-if NAMESPACE:
-    kwargs["namespace"] = NAMESPACE
-if DEBUG:
-    kwargs["debug"] = DEBUG
 scene = Scene(
-    host=BROKER,
-    realm=REALM,
-    scene=SCENE,
+    cli_args=True,
     on_msg_callback=scene_callback,
     end_program_callback=end_program_callback,
-    **kwargs)
+)
 scene.run_tasks()

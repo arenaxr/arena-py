@@ -153,7 +153,6 @@ def add_obj_calibrate():
     add_axis("x")
     add_axis("y")
     add_axis("z")
-    add_light()
 
     ground_plane = Plane(
         persist=persist,
@@ -254,11 +253,13 @@ def on_handler(_scene, evt, _msg):
             "rotation": rig_rot,
             "last_click": 0,
         }
+        add_light()
 
 
 def off_handler(_scene, evt, _msg):
     if evt.type == "mousedown":
         del user_rigs[evt.data.source]
+        remove_light()
 
 
 def get_color(axis):
@@ -271,7 +272,7 @@ def get_color(axis):
 
 
 def add_light():
-    global calibrateParent
+    global calibrateParent, calibrate_cone
     calibrate_cone = Cone(
         persist=persist,
         object_id="calibrate_cone",
@@ -294,7 +295,6 @@ def add_light():
         "dir": "normal"
     }
     scene.update_object(calibrate_cone, animation=animation)
-    calibrateparents.append(calibrate_cone)
 
     calibrate_light = Light(
         persist=persist,
@@ -305,6 +305,11 @@ def add_light():
         type="spot",
     )
     scene.add_object(calibrate_light)
+
+
+def remove_light():
+    global calibrate_cone
+    scene.delete_object(calibrate_cone)
 
 
 def add_axis(axis):

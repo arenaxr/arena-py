@@ -276,7 +276,7 @@ def add_light():
         persist=persist,
         object_id="calibrate_cone",
         parent=calibrateParent.object_id,
-        rotation=Rotation(180, 0, 0),
+        rotation=Rotation(0, 0, 0),
         position=Position(0, 3, 0),
         radiusBottom=0.1,
         height=0.2,
@@ -300,7 +300,7 @@ def add_light():
         persist=persist,
         object_id="calibrate_light",
         parent=calibrate_cone.object_id,
-        rotation=Rotation(90, 0, 0),
+        rotation=Rotation(-90, 0, 0),
         color=Color(255, 165, 0),
         type="spot",
     )

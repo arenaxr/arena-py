@@ -109,19 +109,6 @@ calibrateParent = None
 ground_plane = None
 ground_plane_mask = None
 
-def user_join_callback(_scene, cam, _msg):
-    global user_rigs
-    rig_matrix = np.identity(4)
-    rig_pos = rig_matrix[:3, 3]
-    rig_rot = rig_matrix[:3, :3]
-    user_rigs[cam.object_id] = {
-        "matrix": rig_matrix,
-        "position": rig_pos,
-        "rotation": rig_rot,
-        "last_click": 0,
-    }
-
-
 def user_left_callback(_scene, cam, _msg):
     global user_rigs
     del user_rigs[cam.object_id]
@@ -130,7 +117,7 @@ def user_left_callback(_scene, cam, _msg):
 @scene.run_once
 def main():
     add_obj_onoff()
-    scene.user_join_callback = user_join_callback
+    add_obj_calibrate()
     scene.user_left_callback = user_left_callback
 
 
@@ -256,13 +243,22 @@ def remove_obj_onoff():
 
 
 def on_handler(_scene, evt, _msg):
+    global user_rigs
     if evt.type == "mousedown":
-        add_obj_calibrate()
+        rig_matrix = np.identity(4)
+        rig_pos = rig_matrix[:3, 3]
+        rig_rot = rig_matrix[:3, :3]
+        user_rigs[evt.data.source] = {
+            "matrix": rig_matrix,
+            "position": rig_pos,
+            "rotation": rig_rot,
+            "last_click": 0,
+        }
 
 
 def off_handler(_scene, evt, _msg):
     if evt.type == "mousedown":
-        remove_obj_calibrate()
+        del user_rigs[evt.data.source]
 
 
 def get_color(axis):

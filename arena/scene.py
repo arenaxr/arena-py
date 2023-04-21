@@ -46,6 +46,8 @@ class Scene(ArenaMQTT):
                 kwargs["namespace"] = self.args["namespace"]
             if self.args["scene"]:
                 kwargs["scene"] = self.args["scene"]
+            if self.args["debug"]:
+                debug = self.args["debug"]
 
         if os.environ.get("SCENE"):
             self.scene = os.environ["SCENE"]

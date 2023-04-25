@@ -151,10 +151,9 @@ class User:
         init_origin(self.scene)
 
         # set HUD to each user
-        self.hud = Box(
+        self.hud = Object(
             object_id=f"hud_{camname}",
             parent=camname,
-            material=Material(transparent=True, opacity=0),
             position=Position(0, 0, 0),
             scale=Scale(SCL_HUD, SCL_HUD, SCL_HUD),
             rotation=Rotation(0, 0, 0, 1),
@@ -169,10 +168,9 @@ class User:
 
         # AR Control Panel
         self.follow_lock = False
-        self.follow = Box(
+        self.follow = Object(
             object_id=f"follow_{camname}",
             parent=camname,
-            material=Material(transparent=True, opacity=0),
             position=Position(0, 0, -PANEL_RADIUS * 0.1),
             scale=Scale(0.1, 0.01, 0.1),
             rotation=Rotation(0.7, 0, 0, 0.7),
@@ -459,8 +457,10 @@ def occlude_obj(scene: Scene, object_id, occlude):
 
 def color_obj(scene: Scene, object_id, color):
     if object_id in scene.all_objects:
-        scene.update_object(
-            scene.all_objects[object_id], material=Material(color=color))
+        obj = scene.all_objects[object_id]
+        if "color" in obj.data and obj.data.color is not None:
+            obj.data.color = None  # remove legacy
+        scene.update_object(obj, material=Material(color=color))
         print(f"Colored {object_id}")
 
 

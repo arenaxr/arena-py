@@ -35,6 +35,8 @@ class Device(ArenaMQTT):
                 kwargs["namespace"] = self.args["namespace"]
             if self.args["device"]:
                 kwargs["device"] = self.args["device"]
+            if self.args["debug"]:
+                debug = self.args["debug"]
 
         if os.environ.get("DEVICE"):
             self.device = os.environ["DEVICE"]

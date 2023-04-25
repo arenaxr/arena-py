@@ -180,6 +180,7 @@ class ArenaMQTT(object):
                             help="App rotation as euler.x euler.y euler.z")
         parser.add_argument("-c", "--scale", nargs=3, type=float, default=(1, 1, 1),
                             help="App scale in meters")
+        parser.add_argument("-D", "--debug", action='store_true', help='Debug mode.', default=False)
         args = parser.parse_args()
         app_position = tuple(args.position)
         app_rotation = tuple(args.rotation)
@@ -192,6 +193,7 @@ class ArenaMQTT(object):
             "position": app_position,
             "rotation": app_rotation,
             "scale": app_scale,
+            "debug": args.debug,
         }
 
 

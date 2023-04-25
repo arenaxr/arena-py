@@ -9,7 +9,6 @@
 # TODO: handle click-listener objects with 1.1 x scale shield?
 # TODO: add easy doc overlay for each button operation
 
-import argparse
 import json
 import math
 import random
@@ -848,9 +847,8 @@ def make_clickroot(objid, position, delim, rotation=None, move=False):
     else:
         rotation = Rotation(0, 0, 0, 1)
     if name not in CONTROLS[objid]:
-        CONTROLS[objid][name] = Box(
+        CONTROLS[objid][name] = Object(
             object_id=name,
-            material=Material(transparent=True, opacity=0),
             position=position,
             scale=Scale(SCL_CLICK, SCL_CLICK, SCL_CLICK),
             rotation=rotation,

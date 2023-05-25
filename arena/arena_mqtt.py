@@ -83,9 +83,7 @@ class ArenaMQTT(object):
         else:
             self.namespace = kwargs["namespace"]
 
-        # account for mqtt.arenaxr.org
-        if self.host == "arenaxr.org" and not "mqtt." in self.host:
-            self.host = "mqtt." + self.host
+        # Always use the the hostname specified by the user, or defaults.
         self.mqttc_id = "pyClient-" + self.generate_client_id()
 
         # fetch host config

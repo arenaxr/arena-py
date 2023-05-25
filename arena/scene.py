@@ -17,7 +17,7 @@ class Scene(ArenaMQTT):
     Gives access to an ARENA scene.
     Can create and execute various user-defined functions/tasks.
 
-    :param str host: Hostname of the MQTT broker (required).
+    :param str host: Hostname of the ARENA webserver (required).
     :param str realm: Reserved topic fork for future use (optional).
     :param str namespace: Username of authenticated user or other namespace (automatic).
     :param str scene: The name of the scene, without namespace (required).
@@ -40,8 +40,8 @@ class Scene(ArenaMQTT):
             ):
         if cli_args:
             self.args = self.parse_cli()
-            if self.args["mqtth"]:
-                kwargs["host"] = self.args["mqtth"]
+            if self.args["host"]:
+                kwargs["host"] = self.args["host"]
             if self.args["namespace"]:
                 kwargs["namespace"] = self.args["namespace"]
             if self.args["scene"]:
@@ -68,7 +68,6 @@ class Scene(ArenaMQTT):
             **kwargs
         )
 
-        self.jitsi_host = self.config_data["ARENADefaults"]["jitsiHost"]
         self.persist_host = self.config_data["ARENADefaults"]["persistHost"]
         self.persist_path = self.config_data["ARENADefaults"]["persistPath"]
 
@@ -86,7 +85,7 @@ class Scene(ArenaMQTT):
         self.users = {} # dict of all users
 
         # Always use the the hostname specified by the user, or defaults.
-        print(f"Loading: https://{self.host}/{self.namespace}/{self.scene}, realm={self.realm}")
+        print(f"Loading: https://{self.web_host}/{self.namespace}/{self.scene}, realm={self.realm}")
 
     def on_connect(self, client, userdata, flags, rc):
         super().on_connect(client, userdata, flags, rc)
@@ -400,7 +399,7 @@ class Scene(ArenaMQTT):
         """ Request list of scene names for logged in user account that user has publish permission for.
         Returns: list of scenes.
         """
-        return self.auth.get_writable_scenes(host=self.host)
+        return self.auth.get_writable_scenes(web_host=self.web_host)
 
     def get_user_list(self):
         """Returns a list of users"""

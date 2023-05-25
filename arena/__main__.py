@@ -11,7 +11,7 @@ import json
 from arena import *
 
 # define defaults
-DEFAULT_MQTT_HOST = "mqtt.arenaxr.org"
+DEFAULT_WEB_HOST = "arenaxr.org"
 PUBLISH = "pub"
 SUBSCRIBE = "sub"
 
@@ -46,8 +46,8 @@ def send_msg(scene, topic, msg):
     scene.stop_tasks()
 
 
-def main(mqtth, realm, scene, namespace, action, topic, message):
-    scene = Scene(host=mqtth, realm=realm, scene=scene, namespace=namespace)
+def main(host, realm, scene, namespace, action, topic, message):
+    scene = Scene(host=host, realm=realm, scene=scene, namespace=namespace)
 
     if action == SUBSCRIBE:
         if topic is None:
@@ -70,10 +70,10 @@ def main(mqtth, realm, scene, namespace, action, topic, message):
 def cli():
     parser = argparse.ArgumentParser(description=("ARENA-py MQTT CLI"))
 
-    parser.add_argument("-mh", "--mqtth",
+    parser.add_argument("-mh", "--host",
                         type=str,
-                        help="MQTT host to connect to",
-                        default=DEFAULT_MQTT_HOST)
+                        help="ARENA webserver main host to connect to",
+                        default=DEFAULT_WEB_HOST)
     parser.add_argument("-r", "--realm",
                         type=str,
                         help="Realm to listen to",

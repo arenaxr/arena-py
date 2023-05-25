@@ -11,7 +11,7 @@ class Device(ArenaMQTT):
     Gives access to an ARENA device.
     Can create and execute various user-defined functions/tasks.
 
-    :param str host: Hostname of the MQTT broker (required).
+    :param str host: Hostname of the ARENA webserver (required).
     :param str realm: Reserved topic fork for future use (optional).
     :param str namespace: Username of authenticated user or other namespace (automatic).
     :param str device: The name of the device, without namespace (required).
@@ -29,8 +29,8 @@ class Device(ArenaMQTT):
             ):
         if cli_args:
             self.args = self.parse_cli()
-            if self.args["mqtth"]:
-                kwargs["host"] = self.args["mqtth"]
+            if self.args["host"]:
+                kwargs["host"] = self.args["host"]
             if self.args["namespace"]:
                 kwargs["namespace"] = self.args["namespace"]
             if self.args["device"]:
@@ -55,7 +55,7 @@ class Device(ArenaMQTT):
             debug,
             **kwargs
         )
-        print(f"Device topic ready: {self.realm}/d/{self.namespace}/{self.device}, host={self.host}")
+        print(f"Device topic ready: {self.realm}/d/{self.namespace}/{self.device}, mqtt_host={self.mqtt_host}")
 
     async def process_message(self):
         while True:

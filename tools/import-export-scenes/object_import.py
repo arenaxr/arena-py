@@ -16,7 +16,7 @@ class ARENAObjectImport():
 
     """
 
-    def __init__(self, realm='realm', mqtt_host='mqtt.arenaxr.org', mqtt_port=8883):
+    def __init__(self, realm='realm', mqtt_host='arenaxr.org', mqtt_port=8883):
         self.realm = realm;
         debug=False
         username = auth.authenticate_user(mqtt_host, debug)

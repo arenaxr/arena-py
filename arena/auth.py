@@ -38,17 +38,17 @@ class ArenaAuth:
         self._mqtt_token = None
         self._id_token = None
 
-    def authenticate_user(self, host):
+    def authenticate_user(self, web_host):
         """
         Begins authentication flow, getting Google auth, opening web browser if
         needed, getting username and state from ARENA server.
-        host: The hostname of the ARENA webserver.
+        web_host: The hostname of the ARENA webserver.
         Returns: Username from arena-account, or None.
         """
         print("Signing in to the ARENA...")
-        gauth_json = self._get_gauthid(host)
+        gauth_json = self._get_gauthid(web_host)
         creds = None
-        scene_auth_dir = self._get_scene_auth_path(host)
+        scene_auth_dir = self._get_scene_auth_path(web_host)
         scene_gauth_path = f"{scene_auth_dir}/{_gauth_file}"
 
         if not os.path.exists(scene_auth_dir):
@@ -106,7 +106,7 @@ class ArenaAuth:
 
         username = None
         self._id_token = creds.id_token
-        user_info = self._get_user_state(host, self._id_token)
+        user_info = self._get_user_state(web_host, self._id_token)
         _user_info = json.loads(user_info)
         if "authenticated" in _user_info and "username" in _user_info:
             username = _user_info["username"]
@@ -116,22 +116,22 @@ class ArenaAuth:
             print(f"Authenticated Google account: {profile_info['email']}")
         return username
 
-    def authenticate_scene(self, host, realm, scene, username, video=False):
+    def authenticate_scene(self, web_host, realm, scene, username, video=False):
         """ End authentication flow, requesting permissions may change by owner
         or admin, for now, get a fresh mqtt_token each time.
-        host: The hostname of the ARENA webserver.
+        web_host: The hostname of the ARENA webserver.
         realm: The topic realm name.
         scene: The namespace/scene name combination.
         username: The ARENA username for the user.
         video: If Jitsi video conference is requested.
         Returns: username and mqtt_token from arena-account.
         """
-        scene_auth_dir = self._get_scene_auth_path(host)
+        scene_auth_dir = self._get_scene_auth_path(web_host)
         scene_mqtt_path = f"{scene_auth_dir}/{_mqtt_token_file}"
 
         print("Using remote-authenticated MQTT token.")
         mqtt_json = self._get_mqtt_token(
-            host, realm, scene, username, self._id_token, video)
+            web_host, realm, scene, username, self._id_token, video)
         # save mqtt_token
         with open(scene_mqtt_path, mode="w") as d:
             d.write(mqtt_json)
@@ -141,11 +141,11 @@ class ArenaAuth:
         self._log_token()
         return self._mqtt_token
 
-    def authenticate_device(self, host):
+    def authenticate_device(self, web_host):
         """
         Check for device mqtt_token, ask for a missing one, and save to local memory.
         """
-        device_auth_dir = self._get_device_auth_path(host)
+        device_auth_dir = self._get_device_auth_path(web_host)
         device_mqtt_path = f"{device_auth_dir}/{_mqtt_token_file}"
         # check token expiration
         _remove_credentials(device_auth_dir, expire=True)
@@ -159,7 +159,7 @@ class ArenaAuth:
             if not os.path.exists(device_auth_dir):
                 os.makedirs(device_auth_dir)
             print(
-                f"Generate a token for this device at https://{host}/user/profile")
+                f"Generate a token for this device at https://{web_host}/user/profile")
             mqtt_json = input(
                 "Paste auth MQTT full JSON here for this device: ")
             # save mqtt_token
@@ -171,18 +171,18 @@ class ArenaAuth:
         self._log_token()
         return self._mqtt_token
 
-    def _get_scene_auth_path(self, host):
-        return f"{_arena_user_dir}/python/{host}/s"
+    def _get_scene_auth_path(self, mqtt_host):
+        return f"{_arena_user_dir}/python/{mqtt_host}/s"
 
-    def _get_device_auth_path(self, host):
-        return f"{_arena_user_dir}/python/{host}/d"
+    def _get_device_auth_path(self, mqtt_host):
+        return f"{_arena_user_dir}/python/{mqtt_host}/d"
 
-    def get_writable_scenes(self, host):
+    def get_writable_scenes(self, web_host):
         """ Request list of scene names for logged in user that user has publish permission for.
-        host: The hostname of the ARENA webserver.
+        web_host: The hostname of the ARENA webserver.
         Returns: list of scenes.
         """
-        my_scenes = self._get_my_scenes(host, self._id_token)
+        my_scenes = self._get_my_scenes(web_host, self._id_token)
         return json.loads(my_scenes)
 
     def _is_headless_client(self):
@@ -244,11 +244,11 @@ class ArenaAuth:
             return self._mqtt_token
         return None
 
-    def _get_csrftoken(self, host):
+    def _get_csrftoken(self, web_host):
         # get the csrftoken for django
-        csrf_url = f"https://{host}/user/login"
+        csrf_url = f"https://{web_host}/user/login"
         client = requests.session()
-        client.get(csrf_url, verify=self.verify(host))  # sets cookie
+        client.get(csrf_url, verify=self.verify(web_host))  # sets cookie
         if "csrftoken" in client.cookies:
             self._csrftoken = client.cookies["csrftoken"]
         elif "csrf" in client.cookies:
@@ -257,32 +257,32 @@ class ArenaAuth:
             self._csrftoken = None
         return self._csrftoken
 
-    def _get_gauthid(self, host):
-        url = f"https://{host}/conf/gauth.json"
+    def _get_gauthid(self, web_host):
+        url = f"https://{web_host}/conf/gauth.json"
         return self.urlopen(url)
 
-    def _get_my_scenes(self, host, id_token):
-        url = f"https://{host}/user/my_scenes"
+    def _get_my_scenes(self, web_host, id_token):
+        url = f"https://{web_host}/user/my_scenes"
         if not self._csrftoken:
-            self._csrftoken = self._get_csrftoken(host)
+            self._csrftoken = self._get_csrftoken(web_host)
         params = {"id_token": id_token}
         query_string = parse.urlencode(params)
         data = query_string.encode("ascii")
         return self.urlopen(url, data=data, csrf=self._csrftoken)
 
-    def _get_user_state(self, host, id_token):
-        url = f"https://{host}/user/user_state"
+    def _get_user_state(self, web_host, id_token):
+        url = f"https://{web_host}/user/user_state"
         if not self._csrftoken:
-            self._csrftoken = self._get_csrftoken(host)
+            self._csrftoken = self._get_csrftoken(web_host)
         params = {"id_token": id_token}
         query_string = parse.urlencode(params)
         data = query_string.encode("ascii")
         return self.urlopen(url, data=data, csrf=self._csrftoken)
 
-    def _get_mqtt_token(self, host, realm, scene, username, id_token, video):
-        url = f"https://{host}/user/mqtt_auth"
+    def _get_mqtt_token(self, web_host, realm, scene, username, id_token, video):
+        url = f"https://{web_host}/user/mqtt_auth"
         if not self._csrftoken:
-            self._csrftoken = self._get_csrftoken(host)
+            self._csrftoken = self._get_csrftoken(web_host)
         params = {
             "id_auth": "google-installed",
             "username": username,
@@ -296,8 +296,8 @@ class ArenaAuth:
         data = query_string.encode("ascii")
         return self.urlopen(url, data=data, csrf=self._csrftoken)
 
-    def verify(self, host):
-        return host != "localhost"
+    def verify(self, web_host):
+        return web_host != "localhost"
 
     def urlopen(self, url, data=None, creds=False, csrf=None):
         """ urlopen is for ARENA URL connections.

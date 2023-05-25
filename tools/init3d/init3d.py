@@ -27,15 +27,7 @@ init3d_root = None
 
 
 def init_args():
-    global HOST, REALM, NAMESPACE, SCENE, TOPIC_ALL, config, programs
-    if os.getenv("MQTTH") is not None:
-        HOST = os.getenv("MQTTH")
-    if os.getenv("REALM") is not None:
-        REALM = os.getenv("REALM")
-    if os.getenv("NAMESPACE") is not None:
-        NAMESPACE = os.getenv("NAMESPACE")
-    if os.getenv("SCENE") is not None:
-        SCENE = os.getenv("SCENE")
+    global TOPIC_ALL, config, programs
 
     config = load_json_file(CFG_FILE)
     print(config)
@@ -280,23 +272,18 @@ def user_join_callback(scene, event, msg):
     populateControls(scene)
 
 
-def end_program_callback(scene, event, msg):
+def end_program_callback(_scene: Scene):
     global init3d_root
     scene.delete_object(init3d_root)  # clear root
 
 
 # setup and launch
 init_args()
-kwargs = {}
-if NAMESPACE:
-    kwargs["namespace"] = NAMESPACE
 scene = Scene(
-    host=HOST,
-    realm=REALM,
-    scene=SCENE,
+    cli_args=True,
     user_join_callback=user_join_callback,
     end_program_callback=end_program_callback,
-    **kwargs)
+)
 NAMESPACE = scene.namespace  # update actual
 scene.message_callback_add(TOPIC_ALL, runtime_callback)
 scene.run_after_interval(startup_state(scene), 1000)

@@ -1,7 +1,7 @@
 [
 	{
-		"name": "arena/py/moving-box",
-		"file": "box.py",
+		"name": "wiselab/calibrate-vr",
+		"file": "calibrate.py",
 		"args": "",
 		"env": "['NAMESPACE=${namespace}','SCENE=${scene}','MQTTH=${mqtth}','REALM=${realm}']",
 		"ch": ""

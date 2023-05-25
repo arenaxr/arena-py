@@ -2,6 +2,20 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.4.0](https://github.com/arenaxr/arena-py/compare/v0.3.0...v0.4.0) (2023-05-25)
+
+
+### Features
+
+* add calibrate vr helmet tool ([#133](https://github.com/arenaxr/arena-py/issues/133)) ([0bd1359](https://github.com/arenaxr/arena-py/commit/0bd135904574bb26425a253ed4e67a7c92fa2697))
+
+
+### Bug Fixes
+
+* add entity primitive ([9531be8](https://github.com/arenaxr/arena-py/commit/9531be849b32938ea694bafe9e8727e5da3268f0))
+* **cli:** add debug cmd to cli args ([0206452](https://github.com/arenaxr/arena-py/commit/0206452ba50f8bfcd7b5bf2d0806e89c8d34163a))
+* remove all rewriting of hostname ([eabb32d](https://github.com/arenaxr/arena-py/commit/eabb32d237749048294735b36128ebaad510b726))
+
 ## [0.3.0](https://github.com/arenaxr/arena-py/compare/v0.2.1...v0.3.0) (2023-04-12)
 
 

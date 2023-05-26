@@ -171,11 +171,11 @@ class ArenaAuth:
         self._log_token()
         return self._mqtt_token
 
-    def _get_scene_auth_path(self, mqtt_host):
-        return f"{_arena_user_dir}/python/{mqtt_host}/s"
+    def _get_scene_auth_path(self, web_host):
+        return f"{_arena_user_dir}/python/{web_host}/s"
 
-    def _get_device_auth_path(self, mqtt_host):
-        return f"{_arena_user_dir}/python/{mqtt_host}/d"
+    def _get_device_auth_path(self, web_host):
+        return f"{_arena_user_dir}/python/{web_host}/d"
 
     def get_writable_scenes(self, web_host):
         """ Request list of scene names for logged in user that user has publish permission for.

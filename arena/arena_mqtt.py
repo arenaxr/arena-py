@@ -34,17 +34,19 @@ class ArenaMQTT(object):
             ):
         if os.environ.get("MQTTH"):
             self.web_host = os.environ["MQTTH"]
+            print(f"Using Host from 'MQTTH' env variable: {self.web_host}")
         elif "host" in kwargs and kwargs["host"]:
             self.web_host = kwargs["host"]
-            print("Cannot find MQTTH environmental variable, using input parameter instead.")
+            print(f"Using Host from 'host' input parameter: {self.web_host}")
         else:
             sys.exit("ARENA webserver host argument (host) is unspecified or None, aborting...")
 
         if os.environ.get("REALM"):
             self.realm = os.environ["REALM"]
+            print(f"Using Realm from 'REALM' env variable: {self.realm}")
         elif "realm" in kwargs and kwargs["realm"]:
             self.realm = kwargs["realm"]
-            print("Cannot find REALM environmental variable, using input parameter instead.")
+            print(f"Using Realm from 'realm' input parameter: {self.realm}")
         else:
             # Use default "realm" until multiple realms exist, avoids user confusion.
             self.realm = realm

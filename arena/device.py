@@ -40,13 +40,15 @@ class Device(ArenaMQTT):
 
         if os.environ.get("DEVICE"):
             self.device = os.environ["DEVICE"]
+            print(f"Using Device from 'DEVICE' env variable: {self.device}")
         elif "device" in kwargs and kwargs["device"]:
             if re.search("/", kwargs["device"]):
-                sys.exit("device argument (device) cannot include '/', aborting...")
+                sys.exit("Device argument (device) cannot include '/', aborting...")
             self.device = kwargs["device"]
-            print("Cannot find DEVICE environmental variable, using input parameter instead.")
+            print(f"Using Device from 'device' input parameter: {self.device}")
         else:
-            sys.exit("device argument (device) is unspecified or None, aborting...")
+            sys.exit("Device argument (device) is unspecified or None, aborting...")
+
         super().__init__(
             realm,
             network_latency_interval,

@@ -46,6 +46,8 @@ class Scene(ArenaMQTT):
                 kwargs["namespace"] = self.args["namespace"]
             if self.args["scene"]:
                 kwargs["scene"] = self.args["scene"]
+            if self.args["debug"]:
+                debug = self.args["debug"]
 
         if os.environ.get("SCENE"):
             self.scene = os.environ["SCENE"]
@@ -83,8 +85,8 @@ class Scene(ArenaMQTT):
                                             # have a reference to
         self.users = {} # dict of all users
 
-        host = self.host.replace("mqtt.", "")
-        print(f"Loading: https://{host}/{self.namespace}/{self.scene}, realm={self.realm}")
+        # Always use the the hostname specified by the user, or defaults.
+        print(f"Loading: https://{self.host}/{self.namespace}/{self.scene}, realm={self.realm}")
 
     def on_connect(self, client, userdata, flags, rc):
         super().on_connect(client, userdata, flags, rc)

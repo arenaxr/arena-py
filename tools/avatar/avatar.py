@@ -13,7 +13,7 @@ from arena import *
 
 
 avatars = {}
-scene = Scene(host="mqtt.arenaxr.org", scene="avatar")
+scene = Scene(host="arenaxr.org", scene="avatar")
 
 
 def user_join_callback(scene, camera, msg):
@@ -28,8 +28,8 @@ def on_msg_callback(scene, obj, msg):
     global avatars
 
     user_id = extract_user_id(obj.object_id)
-    if user_id is None: 
-        return 
+    if user_id is None:
+        return
 
     if user_id in avatars:
         avatar = avatars[user_id]

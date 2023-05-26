@@ -11,7 +11,7 @@ class Device(ArenaMQTT):
     Gives access to an ARENA device.
     Can create and execute various user-defined functions/tasks.
 
-    :param str host: Hostname of the MQTT broker (required).
+    :param str host: Hostname of the ARENA webserver (required).
     :param str realm: Reserved topic fork for future use (optional).
     :param str namespace: Username of authenticated user or other namespace (automatic).
     :param str device: The name of the device, without namespace (required).
@@ -29,8 +29,8 @@ class Device(ArenaMQTT):
             ):
         if cli_args:
             self.args = self.parse_cli()
-            if self.args["mqtth"]:
-                kwargs["host"] = self.args["mqtth"]
+            if self.args["host"]:
+                kwargs["host"] = self.args["host"]
             if self.args["namespace"]:
                 kwargs["namespace"] = self.args["namespace"]
             if self.args["device"]:
@@ -40,13 +40,15 @@ class Device(ArenaMQTT):
 
         if os.environ.get("DEVICE"):
             self.device = os.environ["DEVICE"]
+            print(f"Using Device from 'DEVICE' env variable: {self.device}")
         elif "device" in kwargs and kwargs["device"]:
             if re.search("/", kwargs["device"]):
-                sys.exit("device argument (device) cannot include '/', aborting...")
+                sys.exit("Device argument (device) cannot include '/', aborting...")
             self.device = kwargs["device"]
-            print("Cannot find DEVICE environmental variable, using input parameter instead.")
+            print(f"Using Device from 'device' input parameter: {self.device}")
         else:
-            sys.exit("device argument (device) is unspecified or None, aborting...")
+            sys.exit("Device argument (device) is unspecified or None, aborting...")
+
         super().__init__(
             realm,
             network_latency_interval,
@@ -55,7 +57,7 @@ class Device(ArenaMQTT):
             debug,
             **kwargs
         )
-        print(f"Device topic ready: {self.realm}/d/{self.namespace}/{self.device}, host={self.host}")
+        print(f"Device topic ready: {self.realm}/d/{self.namespace}/{self.device}, mqtt_host={self.mqtt_host}")
 
     async def process_message(self):
         while True:

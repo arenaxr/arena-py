@@ -33,18 +33,20 @@ class ArenaMQTT(object):
                 **kwargs
             ):
         if os.environ.get("MQTTH"):
-            self.host = os.environ["MQTTH"]
+            self.web_host = os.environ["MQTTH"]
+            print(f"Using Host from 'MQTTH' env variable: {self.web_host}")
         elif "host" in kwargs and kwargs["host"]:
-            self.host = kwargs["host"]
-            print("Cannot find MQTTH environmental variable, using input parameter instead.")
+            self.web_host = kwargs["host"]
+            print(f"Using Host from 'host' input parameter: {self.web_host}")
         else:
-            sys.exit("mqtt host argument (host) is unspecified or None, aborting...")
+            sys.exit("ARENA webserver host argument (host) is unspecified or None, aborting...")
 
         if os.environ.get("REALM"):
             self.realm = os.environ["REALM"]
+            print(f"Using Realm from 'REALM' env variable: {self.realm}")
         elif "realm" in kwargs and kwargs["realm"]:
             self.realm = kwargs["realm"]
-            print("Cannot find REALM environmental variable, using input parameter instead.")
+            print(f"Using Realm from 'realm' input parameter: {self.realm}")
         else:
             # Use default "realm" until multiple realms exist, avoids user confusion.
             self.realm = realm
@@ -66,7 +68,7 @@ class ArenaMQTT(object):
             if self.scene:
                 local = self.auth.check_local_auth()
             elif self.device:
-                local = self.auth.authenticate_device(self.host)
+                local = self.auth.authenticate_device(self.web_host)
             if local and "username" in local and "token" in local:
                 # auth 2nd: use locally saved token
                 self.username = local["username"]
@@ -74,7 +76,7 @@ class ArenaMQTT(object):
             else:
                 if self.scene:
                     # auth 3rd: use the user account online
-                    self.username = self.auth.authenticate_user(self.host)
+                    self.username = self.auth.authenticate_user(self.web_host)
 
         if os.environ.get("NAMESPACE"):
             self.namespace = os.environ["NAMESPACE"]
@@ -88,8 +90,10 @@ class ArenaMQTT(object):
 
         # fetch host config
         print("Fetching ARENA configuration...")
-        self.config_url = f"https://{self.host}/conf/defaults.json"
+        self.config_url = f"https://{self.web_host}/conf/defaults.json"
         self.config_data = json.loads(self.auth.urlopen(self.config_url))
+
+        self.mqtt_host = self.config_data["ARENADefaults"]["mqttHost"]
 
         # set up topic variables
         if self.scene:
@@ -109,7 +113,7 @@ class ArenaMQTT(object):
         if self.scene and (not self.username or not token):
             # do scene auth by user
             data = self.auth.authenticate_scene(
-                self.host, self.realm, self.namespaced_target, self.username, video)
+                self.web_host, self.realm, self.namespaced_target, self.username, video)
             if "username" in data and "token" in data:
                 self.username = data["username"]
                 token = data["token"]
@@ -147,15 +151,15 @@ class ArenaMQTT(object):
             port = kwargs["port"]
         else:
             port = 8883 # ARENA broker TLS 1.2 connection port
-        if self.auth.verify(self.host):
+        if self.auth.verify(self.web_host):
             self.mqttc.tls_set()
         else:
             self.mqttc.tls_set_context(ssl._create_unverified_context())
             self.mqttc.tls_insecure_set(True)
         try:
-            self.mqttc.connect(self.host, port=port)
+            self.mqttc.connect(self.mqtt_host, port=port)
         except Exception as err:
-            print(f'MQTT connect error to {self.host}, port={port}: {err}')
+            print(f'MQTT connect error to {self.mqtt_host}, port={port}: {err}')
         self.mqttc.socket().setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
 
 
@@ -164,8 +168,8 @@ class ArenaMQTT(object):
         Reusable command-line options to give apps flexible options to avoid hard-coding locations.
         """
         parser = argparse.ArgumentParser(description=("ARENA-py Application CLI"))
-        parser.add_argument("-mh", "--mqtth", type=str,
-                            help="MQTT host to connect to")
+        parser.add_argument("-mh", "--host", type=str,
+                            help="ARENA webserver main host to connect to")
         parser.add_argument("-n", "--namespace", type=str,
                             help="Namespace of scene")
         parser.add_argument("-s", "--scene", type=str,
@@ -184,7 +188,7 @@ class ArenaMQTT(object):
         app_rotation = tuple(args.rotation)
         app_scale = tuple(args.scale)
         return {
-            "mqtth": args.mqtth,
+            "host": args.host,
             "namespace": args.namespace,
             "scene": args.scene,
             "device": args.device,

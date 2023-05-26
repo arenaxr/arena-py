@@ -77,7 +77,7 @@ persist: False
 
 # arena related definitions
 arena:
-  host: mqtt.arenaxr.org # default: mqtt.arenaxr.org
+  host: arenaxr.org # default: arenaxr.org
   realm: realm # default: realm
   scenename: ececapstone # one of the scenes defined below
 

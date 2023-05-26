@@ -253,13 +253,13 @@ def on_handler(_scene, evt, _msg):
             "rotation": rig_rot,
             "last_click": 0,
         }
-        add_light()
+        #add_light()
 
 
 def off_handler(_scene, evt, _msg):
     if evt.type == "mousedown":
         del user_rigs[evt.data.source]
-        remove_light()
+        #remove_light()
 
 
 def get_color(axis):

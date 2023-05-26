@@ -109,19 +109,6 @@ calibrateParent = None
 ground_plane = None
 ground_plane_mask = None
 
-def user_join_callback(_scene, cam, _msg):
-    global user_rigs
-    rig_matrix = np.identity(4)
-    rig_pos = rig_matrix[:3, 3]
-    rig_rot = rig_matrix[:3, :3]
-    user_rigs[cam.object_id] = {
-        "matrix": rig_matrix,
-        "position": rig_pos,
-        "rotation": rig_rot,
-        "last_click": 0,
-    }
-
-
 def user_left_callback(_scene, cam, _msg):
     global user_rigs
     del user_rigs[cam.object_id]
@@ -130,7 +117,7 @@ def user_left_callback(_scene, cam, _msg):
 @scene.run_once
 def main():
     add_obj_onoff()
-    scene.user_join_callback = user_join_callback
+    add_obj_calibrate()
     scene.user_left_callback = user_left_callback
 
 
@@ -255,13 +242,24 @@ def remove_obj_onoff():
 
 
 def on_handler(_scene, evt, _msg):
+    global user_rigs
     if evt.type == "mousedown":
-        add_obj_calibrate()
+        rig_matrix = np.identity(4)
+        rig_pos = rig_matrix[:3, 3]
+        rig_rot = rig_matrix[:3, :3]
+        user_rigs[evt.data.source] = {
+            "matrix": rig_matrix,
+            "position": rig_pos,
+            "rotation": rig_rot,
+            "last_click": 0,
+        }
+        #add_light()
 
 
 def off_handler(_scene, evt, _msg):
     if evt.type == "mousedown":
-        remove_obj_calibrate()
+        del user_rigs[evt.data.source]
+        #remove_light()
 
 
 def get_color(axis):
@@ -271,6 +269,47 @@ def get_color(axis):
         return Color(0, 0, 255)
     elif axis == "z":
         return Color(255, 0, 0)
+
+
+def add_light():
+    global calibrateParent, calibrate_cone
+    calibrate_cone = Cone(
+        persist=persist,
+        object_id="calibrate_cone",
+        parent=calibrateParent.object_id,
+        rotation=Rotation(0, 0, 0),
+        position=Position(0, 3, 0),
+        radiusBottom=0.1,
+        height=0.2,
+        material=Material(color=Color(255, 165, 0), opacity=0.75),
+    )
+    scene.add_object(calibrate_cone)
+    animation = {
+        "dur": 1000,
+        "autoplay": True,
+        "to": "0",
+        "from": "360",
+        "loop": True,
+        "property": "rotation.x",
+        "easing": "linear",
+        "dir": "normal"
+    }
+    scene.update_object(calibrate_cone, animation=animation)
+
+    calibrate_light = Light(
+        persist=persist,
+        object_id="calibrate_light",
+        parent=calibrate_cone.object_id,
+        rotation=Rotation(-90, 0, 0),
+        color=Color(255, 165, 0),
+        type="spot",
+    )
+    scene.add_object(calibrate_light)
+
+
+def remove_light():
+    global calibrate_cone
+    scene.delete_object(calibrate_cone)
 
 
 def add_axis(axis):

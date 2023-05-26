@@ -2,6 +2,13 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.4.1](https://github.com/arenaxr/arena-py/compare/v0.4.0...v0.4.1) (2023-05-26)
+
+
+### Bug Fixes
+
+* **mqtt:** Users should only define main WEB host, our backend supplies MQTT host ([#137](https://github.com/arenaxr/arena-py/issues/137)) ([4376842](https://github.com/arenaxr/arena-py/commit/43768424c4b48953166967594faee4e747eaff72))
+
 ## [0.4.0](https://github.com/arenaxr/arena-py/compare/v0.3.0...v0.4.0) (2023-05-25)
 
 

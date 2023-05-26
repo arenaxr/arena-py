@@ -30,7 +30,7 @@ class Landmarks(dict):
             "label": lbl
         })
 
-    def add_object(self, scene, realm='realm', mqtt_host="arenaxr.org", mqtt_port=8883):
+    def add_object(self, scene, realm='realm', mqtt_host="mqtt.arenaxr.org", mqtt_port=8883):
         # get mqtt credentials
         _user_mqtt_path = f'{str(Path.home())}/.arena_mqtt_auth'
         with open(_user_mqtt_path) as f:

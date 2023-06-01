@@ -50,7 +50,7 @@ class Utils(object):
         return pos, rotq, scale
 
     @classmethod
-    def getWorldPose(cls, obj, scene):
+    def get_world_pose(cls, obj, scene):
         current_obj = obj
         matrices = []
         while current_obj.data.get("parent") is not None:

@@ -4,9 +4,13 @@ A tool to calibrate the user's camera rig.
 """
 from arena import *
 import json
+import os
 import time
 import numpy as np
 from scipy.spatial.transform import Rotation as spRotation
+
+env_axis = os.environ.get("FULL_AXIS")
+fullAxis = bool(env_axis) if env_axis is not None else False
 
 # Position Vector3 indices
 X = 0
@@ -162,7 +166,7 @@ def add_obj_calibrate():
         rotation=Rotation(-90, 0, 0),
         width=10,
         height=10,
-        material=Material(color=(128, 128, 128), opacity=OPC_OFF),
+        material=Material(color=(0, 0, 0), opacity=0),
         clickable=True,
         evt_handler=ground_click_handler,
     )
@@ -177,7 +181,7 @@ def add_obj_calibrate():
         rotation=Rotation(-90, 0, 0),
         width=0.75,
         height=0.75,
-        material=Material(color=(64, 64, 64), opacity=0.01),
+        material=Material(color=(0, 0, 0), opacity=0),
         clickable=True,
     )
     scene.add_object(ground_plane_mask)
@@ -334,14 +338,12 @@ def add_axis(axis):
     scene.add_object(click)
     calibrateparents.append(click)
 
-    # position we don't apply to y-axis
-    #if axis != "y":
     add_position_clicks(click.object_id, axis, "pos")
     add_position_clicks(click.object_id, axis, "neg")
-    # rotation, we ONLY apply to y-axis
-    #if axis == "y":
-    add_rotation_clicks(click.object_id, axis, "pos")
-    add_rotation_clicks(click.object_id, axis, "neg")
+
+    if fullAxis or axis == "y":
+        add_rotation_clicks(click.object_id, axis, "pos")
+        add_rotation_clicks(click.object_id, axis, "neg")
 
 
 def add_position_clicks(parent, axis, direction):

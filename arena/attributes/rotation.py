@@ -1,6 +1,6 @@
+import math
 from ..utils import Utils
 from .attribute import Attribute
-from scipy.spatial.transform import Rotation as R
 
 class Rotation(Attribute):
     """
@@ -43,12 +43,47 @@ class Rotation(Attribute):
 
     @classmethod
     def q2e(cls, q):
-        """quaternions to euler"""
-        rot = R.from_quat(q)
-        return rot.as_euler('xyz', degrees=True)
+        """quaternions to euler (degrees)"""
+        x, y, z, w = quaternion
+
+        # Roll (x-axis rotation)
+        sinr_cosp = 2.0 * (w * x + y * z)
+        cosr_cosp = 1.0 - 2.0 * (x * x + y * y)
+        roll = math.atan2(sinr_cosp, cosr_cosp)
+
+        # Pitch (y-axis rotation)
+        sinp = 2.0 * (w * y - z * x)
+        if abs(sinp) >= 1:
+            pitch = math.copysign(math.pi / 2, sinp)  # Use 90 degrees if out of range
+        else:
+            pitch = math.asin(sinp)
+
+        # Yaw (z-axis rotation)
+        siny_cosp = 2.0 * (w * z + x * y)
+        cosy_cosp = 1.0 - 2.0 * (y * y + z * z)
+        yaw = math.atan2(siny_cosp, cosy_cosp)
+
+        return (math.degrees(roll), math.degrees(pitch), math.degrees(yaw))
 
     @classmethod
     def e2q(cls, e):
-        """euler to quaternions"""
-        rot = R.from_euler('xyz', e, degrees=True)
-        return rot.as_quat()
+        """euler (degrees) to quaternions"""
+        roll, pitch, yaw = e
+
+        roll_rad = math.radians(roll)
+        pitch_rad = math.radians(pitch)
+        yaw_rad = math.radians(yaw)
+
+        cy = math.cos(yaw_rad * 0.5)
+        sy = math.sin(yaw_rad * 0.5)
+        cp = math.cos(pitch_rad * 0.5)
+        sp = math.sin(pitch_rad * 0.5)
+        cr = math.cos(roll_rad * 0.5)
+        sr = math.sin(roll_rad * 0.5)
+
+        w = cy * cp * cr + sy * sp * sr
+        x = cy * cp * sr - sy * sp * cr
+        y = sy * cp * sr + cy * sp * cr
+        z = sy * cp * cr - cy * sp * sr
+
+        return (x, y, z, w)

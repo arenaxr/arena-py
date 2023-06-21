@@ -5,7 +5,7 @@ with open("README.md", "r") as readme:
 
 setuptools.setup(
     name="arena-py",
-    version="0.4.2",
+    version="0.4.3",
     author="Conix Research Center",
     author_email="info@conix.io",
     license="BSD 3-clause \"New\" or \"Revised License\"",
@@ -31,14 +31,12 @@ setuptools.setup(
         "webcolors~=1.3",
         "google_auth_oauthlib~=0.5.2",
         "google-auth~=1.35.0",
-        "PyJWT~=2.4.0",
-        "numpy>=1.22",
-        "scipy>=1.5.4"
+        "PyJWT~=2.4.0"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.8',
 )

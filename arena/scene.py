@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import re
@@ -327,8 +328,28 @@ class Scene(ArenaMQTT):
                         payload["data"][f"animation__{i}"] = anim
                     Utils.dict_key_replace(anim, "start", "from")
                     Utils.dict_key_replace(anim, "end", "to")
+                    self.create_delayed_task(obj, animation)
+                    # TODO: track tasks and cancel if object is deleted, or this
+                    # property is changed before the end of the animation. A dict of
+                    # props:tasks should be stored on the obj.
             obj.clear_animations()
             return self._publish(payload, "update", custom_payload=True)
+
+    def create_delayed_task(self, obj, anim):
+        """
+        Creates a delayed task to push the end state of an animation after the extected
+        duration. Uses async sleep to avoid blocking.
+        :param obj: arena object to update
+        :param anim: Animation to run
+        :return: created async task
+        """
+        duration = anim.duration
+
+        async def delayed_task():
+            await asyncio.sleep(duration)
+            self.update_object(obj, **{anim.property: anim.end})
+
+        return asyncio.create_task(delayed_task())
 
     def _publish(self, obj, action, custom_payload=False):
         """Publishes to mqtt broker with "action":action"""

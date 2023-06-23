@@ -343,11 +343,10 @@ class Scene(ArenaMQTT):
         :param anim: Animation to run
         :return: created async task
         """
-        duration = anim.duration
-
         async def delayed_task():
-            await asyncio.sleep(duration)
-            self.update_object(obj, **{anim.property: anim.end})
+            await asyncio.sleep(anim.dur / 1000) # convert ms to s
+            final_state = anim.start if (getattr(anim, 'dir', 'normal') == 'reverse') else anim.end
+            self.update_object(obj, **{anim.property: final_state})
 
         return asyncio.create_task(delayed_task())
 

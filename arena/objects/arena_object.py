@@ -76,6 +76,8 @@ class Object(BaseObject):
         # add current object to all_objects dict
         Object.add(self)
 
+        self.delayed_prop_tasks = {}  # dict of delayed property tasks
+
     def update_attributes(self, evt_handler=None, update_handler=None, **kwargs):
         if evt_handler:
             self.evt_handler = evt_handler
@@ -118,8 +120,8 @@ class Object(BaseObject):
 
     def json_preprocess(self, **kwargs):
         # kwargs are for additional param to add to json, like "action":"create"
-        json_payload = { k:v for k,v in vars(self).items() if k != "evt_handler" and \
-                                            k != "update_handler" and k != "animations" }
+        json_payload = {k: v for k, v in vars(self).items() if k != "evt_handler" and \
+                        k != "update_handler" and k != "animations" and k != "delayed_prop_tasks"}
         json_payload.update(kwargs)
         return json_payload
 
@@ -202,6 +204,8 @@ class Object(BaseObject):
     def remove(cls, obj):
         object_id = obj.object_id
         del Object.all_objects[object_id]
+        for task in obj.delayed_prop_tasks.values():  # Cancel all pending tasks
+            task.cancel()
 
     @classmethod
     def exists(cls, object_id):

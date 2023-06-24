@@ -277,6 +277,24 @@ class Scene(ArenaMQTT):
         """Public function to update an object"""
         if kwargs:
             obj.update_attributes(**kwargs)
+
+        # Check if any keys in kwargs are in delayed_prop_tasks, cancel the
+        # corresponding tasks if so. Maybe faster to iterate on delayed_prop_tasks
+        # but then we mutate the dict while iterating...
+        need_to_run_animations = False
+        if len(obj.delayed_prop_tasks) > 0:
+            for k in kwargs:
+                if str(k) in obj.delayed_prop_tasks:
+                    need_to_run_animations = True
+                    task_to_cancel = obj.delayed_prop_tasks[k]
+                    task_to_cancel.cancel()
+                    del task_to_cancel
+                    obj.dispatch_animation(
+                        Animation(property=k, enabled=False, dur=0)
+                    )
+            if need_to_run_animations:
+                self.run_animations(obj)
+
         res = self._publish(obj, "update")
         self.run_animations(obj)
         return res
@@ -322,33 +340,41 @@ class Scene(ArenaMQTT):
                     payload["data"][f"animation-mixer"] = vars(animation)
                 else:
                     anim = vars(animation).copy()
-                    if i == 0:
-                        payload["data"][f"animation"] = anim
-                    else:
-                        payload["data"][f"animation__{i}"] = anim
+                    payload["data"][f"animation__{anim['property']}"] = anim
                     Utils.dict_key_replace(anim, "start", "from")
                     Utils.dict_key_replace(anim, "end", "to")
-                    self.create_delayed_task(obj, animation)
-                    # TODO: track tasks and cancel if object is deleted, or this
-                    # property is changed before the end of the animation. A dict of
-                    # props:tasks should be stored on the obj.
+                    self.create_delayed_task(obj, anim)
             obj.clear_animations()
             return self._publish(payload, "update", custom_payload=True)
 
     def create_delayed_task(self, obj, anim):
         """
-        Creates a delayed task to push the end state of an animation after the extected
+        Creates a delayed task to push the end state of an animation after the expected
         duration. Uses async sleep to avoid blocking.
         :param obj: arena object to update
         :param anim: Animation to run
         :return: created async task
         """
-        async def delayed_task():
-            await asyncio.sleep(anim.dur / 1000) # convert ms to s
-            final_state = anim.start if (getattr(anim, 'dir', 'normal') == 'reverse') else anim.end
-            self.update_object(obj, **{anim.property: final_state})
 
-        return asyncio.create_task(delayed_task())
+        async def _delayed_task():
+            try:
+                await asyncio.sleep(anim.get('dur', 0) / 1000)  # convert ms to s
+                final_state = anim["from"] if anim.get("dir", "normal") == "reverse"\
+                    else anim["to"]
+                obj.update_attributes(**{anim["property"]: final_state})
+                self.update_object(obj)
+                obj.delayed_prop_tasks.pop(anim["property"], None)
+            except asyncio.CancelledError:
+                print("Animation end task cancelled for",
+                      obj.object_id + "." + anim["property"])
+
+        if anim.get("loop", 0) or anim.get("enabled", True) is False:
+            return None
+
+        delayed_task = asyncio.create_task(_delayed_task())
+        obj.delayed_prop_tasks[anim["property"]] = delayed_task
+        delayed_task.object_id = obj.object_id
+        return delayed_task
 
     def _publish(self, obj, action, custom_payload=False):
         """Publishes to mqtt broker with "action":action"""

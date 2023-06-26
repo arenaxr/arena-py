@@ -186,6 +186,8 @@ class Object(BaseObject):
             else:
                 json_data[k] = v
 
+        json_payload.pop("delayed_prop_tasks", None)
+
         json_payload["data"] = json_data
         self.json_postprocess(json_payload, json_data)
         return self.json_encode(json_payload)

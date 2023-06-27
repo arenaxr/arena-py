@@ -8,8 +8,10 @@ class ThickLine(Object):
     """
     object_type = "thickline"
 
-    def __init__(self, path=[Position(0,0,0), Position(10,10,10), Position(10,-10,10)], lineWidth=1, **kwargs):
+    def __init__(self, path=None, lineWidth=1, **kwargs):
         # path for thickline is a string, ie (1,2,3) -> "1 2 3"
+        if path is None:
+            path = [Position(0, 0, 0), Position(10, 10, 10), Position(10, -10, 10)]
         path_str = ""
         for p in path:
             if isinstance(p, Position):

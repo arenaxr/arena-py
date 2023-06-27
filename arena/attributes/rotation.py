@@ -44,7 +44,7 @@ class Rotation(Attribute):
     @classmethod
     def q2e(cls, q):
         """quaternions to euler (degrees)"""
-        x, y, z, w = quaternion
+        x, y, z, w = q
 
         # Roll (x-axis rotation)
         sinr_cosp = 2.0 * (w * x + y * z)

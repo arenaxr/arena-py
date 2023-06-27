@@ -278,11 +278,17 @@ class Scene(ArenaMQTT):
         if kwargs:
             obj.update_attributes(**kwargs)
 
-        # Check if any keys in kwargs are in delayed_prop_tasks, cancel the
-        # corresponding tasks if so. Maybe faster to iterate on delayed_prop_tasks
-        # but then we mutate the dict while iterating...
+        # Check if any keys in delayed_prop_tasks are pending new animations
+        # and cancel corresponding final update tasks or, if they are in
+        # kwarg property updates, cancel the task as well as the animation
         need_to_run_animations = False
         if len(obj.delayed_prop_tasks) > 0:
+            for anim in obj.animations:
+                if anim.property in obj.delayed_prop_tasks:
+                    task_to_cancel = obj.delayed_prop_tasks[anim.property]
+                    task_to_cancel.cancel()
+                    del task_to_cancel
+
             for k in kwargs:
                 if str(k) in obj.delayed_prop_tasks:
                     need_to_run_animations = True

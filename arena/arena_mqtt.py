@@ -157,9 +157,9 @@ class ArenaMQTT(object):
             self.mqttc.tls_set_context(ssl._create_unverified_context())
             self.mqttc.tls_insecure_set(True)
         try:
-            self.mqttc.connect(self.mqtt_host, port=port)
+            self.mqttc.connect(self.mqtt_host, port=port, keepalive=60)
         except Exception as err:
-            print(f'MQTT connect error to {self.mqtt_host}, port={port}: {err}')
+            print(f'MQTT connect error to {self.mqtt_host}, port={port}: Result Code={err}')
         self.mqttc.socket().setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
 
 
@@ -264,7 +264,7 @@ class ArenaMQTT(object):
 
     def run_tasks(self):
         """Run event loop"""
-        print("Connecting to the ARENA... ", end="")
+        print("Connecting to the ARENA... ", end="", flush=True)
         self.event_loop.run()
 
     def stop_tasks(self):
@@ -287,7 +287,7 @@ class ArenaMQTT(object):
             print("Connected!")
             print("=====")
         else:
-            print(f"Connection error! Result code: {rc}")
+            print(f"Connection error! Result code={rc}")
 
     def on_message(self, client, userdata, msg):
         # ignore own messages
@@ -304,7 +304,7 @@ class ArenaMQTT(object):
         if rc == 0:
             print("Disconnected from the ARENA!")
         else:
-            print(f"Disconnect error! Result code: {rc}")
+            print(f"Disconnected! Result code={rc}.")
 
     def disconnect(self):
         """Disconnects Paho MQTT client"""

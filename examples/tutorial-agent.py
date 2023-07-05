@@ -120,7 +120,7 @@ def main():
             scene.update_object(speech)
 
         if ticks == 270:
-            code += [f"scene = Scene(host=\"{scene.web_host}\", realm=\"{scene.realm}\", namespace=\"{scene.namespace}\", scene\"{scene.scene}\")"]
+            code += [f"scene = Scene(host=\"{scene.web_host}\", realm=\"{scene.realm}\", namespace=\"{scene.namespace}\", scene=\"{scene.scene}\")"]
             update_code()
 
         if ticks == 300:

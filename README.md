@@ -6,12 +6,12 @@ The ARENA Python library user guide and tutorials:
 [ARENA Documentation: Python](https://docs.arenaxr.org/content/python/).
 
 ## Setup
-Install package using pip:
+Install package using pip ([https://pypi.org/project/arena-py/](https://pypi.org/project/arena-py/)):
 ```shell
 pip3 install arena-py
 ```
 
-## Hello ARENA
+## Hello ARENA Example Program
 Run the `hello.py` example:
 ```shell
 cd examples

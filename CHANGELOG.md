@@ -16,6 +16,10 @@ ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ## [0.4.2](https://github.com/arenaxr/arena-py/compare/v0.4.1...v0.4.2) (2023-06-06)
 
+### Features
+
+* reconnect MQTT client after disconnecting ([#141](https://github.com/arenaxr/arena-py/issues/141))
+
 
 ### Bug Fixes
 

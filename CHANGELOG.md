@@ -2,13 +2,17 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
-## [0.4.3](https://github.com/arenaxr/arena-py/compare/v0.4.2...v0.4.3) (2023-07-05)
-
+## [0.4.4](https://github.com/arenaxr/arena-py/compare/v0.4.3...v0.4.4) (2023-07-05)
 
 ### Bug Fixes
 
-* mutable default arg for thickline ([68c5db2](https://github.com/arenaxr/arena-py/commit/68c5db23a5ddd30e47489fd6071de189f1573a15))
-* variable typo 'quaternion' ([db8fff8](https://github.com/arenaxr/arena-py/commit/db8fff863985bc229aa82fedc20ff79a620e407f))
+* fix reconnects on Macs ([d33a249](https://github.com/arenaxr/arena-py/commit/d33a249ded3b15266d96bcc23af2b27c52a74d36))
+
+## [0.4.3](https://github.com/arenaxr/arena-py/compare/v0.4.2...v0.4.3) (2023-07-05)
+
+### Features
+
+* reconnect MQTT client after disconnecting ([#141](https://github.com/arenaxr/arena-py/issues/141)) ([f8e5a7e](https://github.com/arenaxr/arena-py/commit/f8e5a7ee197238aa04ac2e064547ef272d9f0bf6))
 
 ## [0.4.2](https://github.com/arenaxr/arena-py/compare/v0.4.1...v0.4.2) (2023-06-06)
 
@@ -20,6 +24,8 @@ ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 ### Bug Fixes
 
 * **calibrate:** merge in user database branch ([#139](https://github.com/arenaxr/arena-py/issues/139)) ([b2d3210](https://github.com/arenaxr/arena-py/commit/b2d3210ecc0836e9a9f211b893ed14a4c519e8af))
+
+* **rotation:** stopped using scipy for euler<->quaternion conversions ([f7429b5](https://github.com/arenaxr/arena-py/commit/f7429b534af54d40cf1848c5b094c79911d306f3))
 
 ## [0.4.1](https://github.com/arenaxr/arena-py/compare/v0.4.0...v0.4.1) (2023-05-26)
 

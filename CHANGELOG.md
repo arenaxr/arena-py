@@ -20,7 +20,6 @@ ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 * reconnect MQTT client after disconnecting ([#141](https://github.com/arenaxr/arena-py/issues/141))
 
-
 ### Bug Fixes
 
 * **calibrate:** merge in user database branch ([#139](https://github.com/arenaxr/arena-py/issues/139)) ([b2d3210](https://github.com/arenaxr/arena-py/commit/b2d3210ecc0836e9a9f211b893ed14a4c519e8af))

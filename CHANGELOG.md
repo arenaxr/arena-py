@@ -2,6 +2,24 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.4.5](https://github.com/arenaxr/arena-py/compare/v0.4.2...v0.4.5) (2023-07-05)
+
+
+### Features
+
+* Reconnect MQTT client after disconnect ([7e2069a](https://github.com/arenaxr/arena-py/commit/7e2069a3513542f86f686390fe1454429d4db342))
+
+
+### Bug Fixes
+
+* mutable default arg for thickline ([68c5db2](https://github.com/arenaxr/arena-py/commit/68c5db23a5ddd30e47489fd6071de189f1573a15))
+* variable typo 'quaternion' ([db8fff8](https://github.com/arenaxr/arena-py/commit/db8fff863985bc229aa82fedc20ff79a620e407f))
+
+
+### Miscellaneous Chores
+
+* release 0.4.5 ([99b86d7](https://github.com/arenaxr/arena-py/commit/99b86d7619309320fabb452bb5d372241d82971c))
+
 ## [0.4.2](https://github.com/arenaxr/arena-py/compare/v0.4.1...v0.4.2) (2023-06-06)
 
 ### Bug Fixes

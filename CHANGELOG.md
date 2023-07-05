@@ -6,7 +6,7 @@ ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
-* reconnect MQTT client after disconnecting ([#141](https://github.com/arenaxr/arena-py/issues/141))
+* reconnect MQTT client after disconnecting ([#141](https://github.com/arenaxr/arena-py/issues/141)) ([f8e5a7e](https://github.com/arenaxr/arena-py/commit/f8e5a7ee197238aa04ac2e064547ef272d9f0bf6))
 
 ## [0.4.2](https://github.com/arenaxr/arena-py/compare/v0.4.1...v0.4.2) (2023-06-06)
 
@@ -15,7 +15,7 @@ ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 * **calibrate:** merge in user database branch ([#139](https://github.com/arenaxr/arena-py/issues/139)) ([b2d3210](https://github.com/arenaxr/arena-py/commit/b2d3210ecc0836e9a9f211b893ed14a4c519e8af))
 
-* **rotation:** stopped using scipy for euler<->quaternion conversions
+* **rotation:** stopped using scipy for euler<->quaternion conversions ([f7429b5](https://github.com/arenaxr/arena-py/commit/f7429b534af54d40cf1848c5b094c79911d306f3))
 
 ## [0.4.1](https://github.com/arenaxr/arena-py/compare/v0.4.0...v0.4.1) (2023-05-26)
 

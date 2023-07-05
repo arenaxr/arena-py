@@ -38,7 +38,10 @@ class AsyncioMQTTHelper:
 
     def on_socket_register_write(self, client, userdata, sock):
         def cb():
-            client.loop_write()
+            try:
+                client.loop_write()
+            except:
+                pass
 
         self.loop.add_writer(sock, cb)
 

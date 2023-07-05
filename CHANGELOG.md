@@ -2,6 +2,12 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.4.4](https://github.com/arenaxr/arena-py/compare/v0.4.3...v0.4.4) (2023-07-05)
+
+### Bug Fixes
+
+* fix reconnects on Macs ([d33a249](https://github.com/arenaxr/arena-py/commit/d33a249ded3b15266d96bcc23af2b27c52a74d36))
+
 ## [0.4.3](https://github.com/arenaxr/arena-py/compare/v0.4.2...v0.4.3) (2023-07-05)
 
 ### Features

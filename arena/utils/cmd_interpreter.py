@@ -1,6 +1,7 @@
-# A simple command interpreter to inspect/manipulate arena programs from the cli
-import cmd, sys, json, threading, asyncio
+# A simple command interpreter 
 
+import cmd, sys, json, threading, asyncio
+from datetime import date, datetime
 class ArenaCmdInterpreter(cmd.Cmd):
     intro = 'Type help or ? to list available commands.\n'
     prompt = '# '
@@ -10,7 +11,7 @@ class ArenaCmdInterpreter(cmd.Cmd):
     __get_keywords =  ('persisted_objs', 'persisted_scene_option', 'writable_scenes', 'user_list')
 
     def __serialize_obj(self, obj):
-        if isinstance(obj, datetime):
+        if isinstance(obj, (datetime, date)):
             return str(obj)
         if hasattr(obj, '__dict__'):
             return obj.__dict__
@@ -64,9 +65,6 @@ class ArenaCmdInterpreter(cmd.Cmd):
             answer = input("This will terminate the ARENA program. Are you sure [Y/N]? ").lower()
         if answer == "y":
             print("Exiting...")
-            tasks = [task for task in asyncio.all_tasks()]
-            list(map(lambda task: task.cancel(), tasks))
-                
             sys.exit()
 
     def do_quit(self, arg):

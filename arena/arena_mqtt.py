@@ -6,6 +6,7 @@ import random
 import socket
 import ssl
 import sys
+from datetime import datetime
 
 import paho.mqtt.client as mqtt
 
@@ -136,6 +137,8 @@ class ArenaMQTT(object):
         # set paho mqtt callbacks
         self.mqttc.on_connect = self.on_connect
         self.mqttc.on_disconnect = self.on_disconnect
+        self.mqttc.on_publish = self.on_publish
+        self.msg_io = { "last_rcv_time": None, "last_pub_time": None }
 
         # add main message processing + callbacks loop to tasks
         self.run_async(self.process_message)
@@ -293,7 +296,7 @@ class ArenaMQTT(object):
         # ignore own messages
         if mqtt.topic_matches_sub(self.ignore_topic, msg.topic):
             return
-
+        self.msg_io['last_rcv_time'] = datetime.now()
         self.msg_queue.put_nowait(msg)
 
     async def process_message(self):
@@ -311,6 +314,9 @@ class ArenaMQTT(object):
         if self.end_program_callback:
             self.end_program_callback(self)
         self.mqttc.disconnect()
+
+    def on_publish(self, client, userdata, mid):
+        self.msg_io['last_pub_time'] = datetime.now()
 
     def message_callback_add(self, sub, callback):
         """Subscribes to new topic and adds callback"""

@@ -11,7 +11,6 @@ from .events import *
 from .objects import *
 from .utils import *
 
-
 class Scene(ArenaMQTT):
     """
     Gives access to an ARENA scene.
@@ -95,6 +94,11 @@ class Scene(ArenaMQTT):
             # create ARENA-py Objects from persist server
             # no need to return anything here
             self.get_persisted_objs()
+            
+            # check if we want to start the command interpreter
+            enable_interp = os.getenv("ENABLE_INTERPRETER", 'False').lower() in ('true', '1', 't')
+            if enable_interp: 
+                ArenaCmdInterpreter(self).start()
 
     async def process_message(self):
         while True:

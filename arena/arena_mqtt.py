@@ -7,6 +7,7 @@ import socket
 import ssl
 import sys
 from datetime import datetime
+import threading 
 
 import paho.mqtt.client as mqtt
 
@@ -149,13 +150,8 @@ class ArenaMQTT(object):
 
         self.msg_queue = asyncio.Queue()
 
-        # check if we want to start the command interpreter
-        enable_interp = os.getenv("ENABLE_INTERPRETER", 'False').lower() in ('true', '1', 't')
-        if enable_interp: 
-            self.cmd_interpreter = ArenaCmdInterpreter(self, 
-                                                       show_attrs=('config_data', 'scene', 'users', 'auth', 'all_objects', 'msg_io'), 
-                                                       get_callables=('persisted_objs', 'persisted_scene_option', 'writable_scenes', 'user_list'))
-            self.run_async(self.cmd_interpreter.cmd_loop_task)
+        # setup event to let others wait on connection 
+        self.connected_evt = threading.Event()
         
         # connect to mqtt broker
         if "port" in kwargs:
@@ -172,6 +168,14 @@ class ArenaMQTT(object):
         except Exception as err:
             print(f'MQTT connect error to {self.mqtt_host}, port={port}: Result Code={err}')
         self.mqttc.socket().setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
+
+        # check if we want to start the command interpreter
+        enable_interp = os.getenv("ENABLE_INTERPRETER", 'False').lower() in ('true', '1', 't')
+        if enable_interp: 
+            self.cmd_interpreter = ArenaCmdInterpreter(self, 
+                                                       show_attrs=('config_data', 'scene', 'users', 'auth', 'all_objects', 'msg_io'), 
+                                                       get_callables=('persisted_objs', 'persisted_scene_option', 'writable_scenes', 'user_list'))
+            self.cmd_interpreter.start_thread(self.connected_evt)
 
 
     def parse_cli(self):
@@ -297,6 +301,9 @@ class ArenaMQTT(object):
 
             print("Connected!")
             print("=====")
+            
+            # set event
+            self.connected_evt.set()
         else:
             print(f"Connection error! Result code={rc}")
 

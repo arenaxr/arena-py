@@ -1,6 +1,6 @@
 # A simple command interpreter 
 
-import cmd, os, json, asyncio
+import cmd, os, json, asyncio, threading, time
 from datetime import date, datetime
 class ArenaCmdInterpreter(cmd.Cmd):
     intro = 'Type help or ? to list available commands.\n'
@@ -20,10 +20,14 @@ class ArenaCmdInterpreter(cmd.Cmd):
         self._show_attrs = show_attrs
         self._get_callables = get_callables
 
-    # cmd loop; must externally setup a task/thread to run this
-    def cmd_loop_task(self):
+    def __cmd_loop_thread(self, start_cmd_event):
+        if start_cmd_event: start_cmd_event.wait(5) # try to start cmd last; wait on event with timeout
         self.cmdloop()
-    
+        
+    def start_thread(self, start_cmd_event=None):
+        t = threading.Thread(name='interpreter_thread', target=self.__cmd_loop_thread, args=(start_cmd_event,))
+        t.start()
+        
     def do_show(self, arg):
         if arg not in self._show_attrs:
             self.help_show()
@@ -58,8 +62,6 @@ class ArenaCmdInterpreter(cmd.Cmd):
             answer = input("This will terminate the ARENA program. Are you sure [Y/N]? ").lower()
         if answer == "y":
             print("Exiting...")
-            loop = asyncio.get_event_loop()
-            loop.stop()
             os._exit(0)
         
         return True

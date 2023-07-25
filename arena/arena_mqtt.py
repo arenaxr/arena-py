@@ -12,7 +12,7 @@ import paho.mqtt.client as mqtt
 
 from .auth import ArenaAuth
 from .event_loop import *
-
+from .utils import ArenaCmdInterpreter
 
 class ArenaMQTT(object):
     """
@@ -149,6 +149,14 @@ class ArenaMQTT(object):
 
         self.msg_queue = asyncio.Queue()
 
+        # check if we want to start the command interpreter
+        enable_interp = os.getenv("ENABLE_INTERPRETER", 'False').lower() in ('true', '1', 't')
+        if enable_interp: 
+            self.cmd_interpreter = ArenaCmdInterpreter(self, 
+                                                       show_attrs=('config_data', 'scene', 'users', 'auth', 'all_objects', 'msg_io'), 
+                                                       get_callables=('persisted_objs', 'persisted_scene_option', 'writable_scenes', 'user_list'))
+            self.run_async(self.cmd_interpreter.cmd_loop_task)
+        
         # connect to mqtt broker
         if "port" in kwargs:
             port = kwargs["port"]

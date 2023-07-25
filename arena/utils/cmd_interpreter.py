@@ -1,14 +1,11 @@
 # A simple command interpreter 
 
-import cmd, sys, json, threading, asyncio
+import cmd, os, json, asyncio
 from datetime import date, datetime
 class ArenaCmdInterpreter(cmd.Cmd):
     intro = 'Type help or ? to list available commands.\n'
     prompt = '# '
     file = None
-
-    __show_keywords =  ('scene', 'users', 'auth', 'all_objects', 'msg_io')
-    __get_keywords =  ('persisted_objs', 'persisted_scene_option', 'writable_scenes', 'user_list')
 
     def __serialize_obj(self, obj):
         if isinstance(obj, (datetime, date)):
@@ -17,19 +14,18 @@ class ArenaCmdInterpreter(cmd.Cmd):
             return obj.__dict__
         raise TypeError("Type not serializable")
     
-    def __init__(self, scene):
+    def __init__(self, scene, show_attrs=('config_data', 'scene', 'users', 'auth', 'all_objects', 'msg_io'), get_callables=('persisted_objs', 'persisted_scene_option', 'writable_scenes', 'user_list')):
         super().__init__(completekey='tab')
         self._scene = scene
+        self._show_attrs = show_attrs
+        self._get_callables = get_callables
 
-    def __cmd_loop_thread(self):
+    # cmd loop; must externally setup a task/thread to run this
+    def cmd_loop_task(self):
         self.cmdloop()
-        
-    def start(self):
-        t = threading.Thread(name='interpreter_thread', target=self.__cmd_loop_thread)
-        t.start()
     
     def do_show(self, arg):
-        if arg not in self.__show_keywords:
+        if arg not in self._show_attrs:
             self.help_show()
             return            
         try:
@@ -39,10 +35,10 @@ class ArenaCmdInterpreter(cmd.Cmd):
         print(json.dumps(obj, indent=4, sort_keys=True, default=self.__serialize_obj))
 
     def help_show(self):
-        print(f"Display scene attributes: {[i for i in self.__show_keywords]}")
+        print(f"Display scene attributes: {[i for i in self._show_attrs]}")
 
     def do_get(self, arg):
-        if arg not in self.__get_keywords:
+        if arg not in self._get_callables:
             self.help_get()
             return     
         try:       
@@ -53,22 +49,23 @@ class ArenaCmdInterpreter(cmd.Cmd):
             print(scene_get(self._scene))
     
     def help_get(self):
-        print(f"Scene get_* methods: {[i for i in self.__get_keywords]}. E.g:\n")
+        print(f"Scene get_* methods: {[i for i in self._get_callables]}. E.g:\n")
         print("\tget persisted_objs => returns all persisted objects in the scene (by executing scene.get_persisted_objs)\n")
-        
-    def _task_exit(self, loop):
-        loop.stop()
-        
+                
     def do_exit(self, arg):
         answer = ""
         while answer not in ["y", "n"]:
             answer = input("This will terminate the ARENA program. Are you sure [Y/N]? ").lower()
         if answer == "y":
             print("Exiting...")
-            sys.exit()
-
+            loop = asyncio.get_event_loop()
+            loop.stop()
+            os._exit(0)
+        
+        return True
+            
     def do_quit(self, arg):
-        self.do_exit(arg)
+        return self.do_exit(arg)
 
     def help_exit(self):
         print("Exit program.")

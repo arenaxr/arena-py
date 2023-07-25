@@ -94,16 +94,15 @@ class Scene(ArenaMQTT):
             # create ARENA-py Objects from persist server
             # no need to return anything here
             self.get_persisted_objs()
-            
-            # check if we want to start the command interpreter
-            enable_interp = os.getenv("ENABLE_INTERPRETER", 'False').lower() in ('true', '1', 't')
-            if enable_interp: 
-                ArenaCmdInterpreter(self).start()
 
     async def process_message(self):
         while True:
-            msg = await self.msg_queue.get()
-
+            try:
+                msg = await self.msg_queue.get()
+            except RuntimeError as e:
+                print(f"Ignoring error: {e}")
+                return 
+            
             # extract payload
             try:
                 payload_str = msg.payload.decode("utf-8", "ignore")

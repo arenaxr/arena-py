@@ -23,7 +23,7 @@ class Face(object):
         new_quat = data["pose"]["quaternions"]
         new_euler = Rotation(*new_quat).euler
         filtered_euler = self.rot_filter.add((new_euler.x, new_euler.y, new_euler.z)) # filter
-        filtered_euler[0] *= -1.2   # flip direction and scale up a bit
+        filtered_euler[0] *= 1.2    # scale up a bit
         filtered_euler[0] += 5      # rotate up a bit
         filtered_euler[1] *= 0.7    # scale down
         # head faces backward at first, rotate head 180 to correct

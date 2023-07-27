@@ -139,8 +139,11 @@ class ArenaMQTT(object):
         self.mqttc.on_connect = self.on_connect
         self.mqttc.on_disconnect = self.on_disconnect
         self.mqttc.on_publish = self.on_publish
-        self.msg_io = { "last_rcv_time": None, "last_pub_time": None }
-
+        
+        # setup msg counters
+        self.msg_io = { 'last_rcv_time': None, 'last_pub_time': None, 'rcv_msgs': 0, 'pub_msgs': 0, 'rcv_msgs_per_sec': 0.0, 'pub_msgs_per_sec': 0.0}
+        self.msg_rate_time_start = datetime.now()
+        
         # add main message processing + callbacks loop to tasks
         self.run_async(self.process_message)
 
@@ -148,6 +151,10 @@ class ArenaMQTT(object):
         self.run_forever(self.network_latency_update,
                          interval_ms=network_latency_interval)
 
+        # update message rate every second
+        self.run_forever(self.msg_rate_update,
+                         interval_ms=1000)
+        
         self.msg_queue = asyncio.Queue()
 
         # setup event to let others wait on connection 
@@ -173,7 +180,7 @@ class ArenaMQTT(object):
         enable_interp = os.getenv("ENABLE_INTERPRETER", 'False').lower() in ('true', '1', 't')
         if enable_interp: 
             self.cmd_interpreter = ArenaCmdInterpreter(self, 
-                                                       show_attrs=('config_data', 'scene', 'users', 'auth', 'all_objects', 'msg_io'), 
+                                                       show_attrs=('config_data', 'scene', 'users', 'all_objects', 'msg_io'), 
                                                        get_callables=('persisted_objs', 'persisted_scene_option', 'writable_scenes', 'user_list'))
             self.cmd_interpreter.start_thread(self.connected_evt)
 
@@ -213,7 +220,6 @@ class ArenaMQTT(object):
             "debug": args.debug,
         }
 
-
     def generate_client_id(self):
         """Returns a random 6 digit id"""
         return str(random.randrange(100000, 999999))
@@ -223,6 +229,13 @@ class ArenaMQTT(object):
         # publish empty message with QoS of 2 to update latency
         self.mqttc.publish(self.latency_topic, "", qos=2)
 
+    def msg_rate_update(self):
+        """Update Message rate"""
+        elapsed = datetime.now() - self.msg_rate_time_start
+        if elapsed.seconds > 0:
+            self.msg_io['rcv_msgs_per_sec'] = round(self.msg_io['rcv_msgs']  / elapsed.seconds, 2)
+            self.msg_io['pub_msgs_per_sec'] = round(self.msg_io['pub_msgs']  / elapsed.seconds, 2)
+        
     def run_once(self, func=None, **kwargs):
         """Runs a user-defined function on startup"""
         if func is not None:
@@ -298,12 +311,16 @@ class ArenaMQTT(object):
             # listen to all messages in scene
             client.subscribe(self.subscribe_topic)
             client.message_callback_add(self.subscribe_topic, self.on_message)
+            
+            # set event
+            self.connected_evt.set()
+            
+            # reset msg rate time
+            self.msg_rate_time_start = datetime.now()
 
             print("Connected!")
             print("=====")
             
-            # set event
-            self.connected_evt.set()
         else:
             print(f"Connection error! Result code={rc}")
 
@@ -312,6 +329,7 @@ class ArenaMQTT(object):
         if mqtt.topic_matches_sub(self.ignore_topic, msg.topic):
             return
         self.msg_io['last_rcv_time'] = datetime.now()
+        self.msg_io['rcv_msgs'] = self.msg_io['rcv_msgs'] + 1
         self.msg_queue.put_nowait(msg)
 
     async def process_message(self):
@@ -332,6 +350,7 @@ class ArenaMQTT(object):
 
     def on_publish(self, client, userdata, mid):
         self.msg_io['last_pub_time'] = datetime.now()
+        self.msg_io['pub_msgs'] = self.msg_io['pub_msgs'] + 1
 
     def message_callback_add(self, sub, callback):
         """Subscribes to new topic and adds callback"""

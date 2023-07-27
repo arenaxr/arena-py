@@ -3,7 +3,7 @@
 import cmd, os, json, asyncio, threading, time
 from datetime import date, datetime
 class ArenaCmdInterpreter(cmd.Cmd):
-    intro = 'Type help or ? to list available commands.\n'
+    intro = 'Welcome to the ARENA-py console. Type help or ? to list available commands.\n'
     prompt = '# '
     file = None
 
@@ -14,7 +14,7 @@ class ArenaCmdInterpreter(cmd.Cmd):
             return obj.__dict__
         raise TypeError("Type not serializable")
     
-    def __init__(self, scene, show_attrs=('config_data', 'scene', 'users', 'auth', 'all_objects', 'msg_io'), get_callables=('persisted_objs', 'persisted_scene_option', 'writable_scenes', 'user_list')):
+    def __init__(self, scene, show_attrs=('config_data', 'scene', 'users', 'all_objects', 'msg_io'), get_callables=('persisted_objs', 'persisted_scene_option', 'writable_scenes', 'user_list')):
         super().__init__(completekey='tab')
         self._scene = scene
         self._show_attrs = show_attrs
@@ -35,7 +35,9 @@ class ArenaCmdInterpreter(cmd.Cmd):
         try:
             obj = getattr(self._scene, arg)
         except AttributeError:
-            obj = {}            
+            print(f"Could not find attr {arg}")
+            return 
+        
         print(json.dumps(obj, indent=4, sort_keys=True, default=self.__serialize_obj))
 
     def help_show(self):
@@ -48,9 +50,14 @@ class ArenaCmdInterpreter(cmd.Cmd):
         try:       
             scene_get = getattr(self._scene, f"get_{arg}")
         except AttributeError:
+            print(f"Could not find attr get_{arg}")
             return
-        if callable(scene_get):
-            print(scene_get(self._scene))
+        
+        try:
+            if callable(scene_get):
+                print(scene_get())
+        except Exception as e:
+            print(e)
     
     def help_get(self):
         print(f"Scene get_* methods: {[i for i in self._get_callables]}. E.g:\n")
@@ -66,11 +73,5 @@ class ArenaCmdInterpreter(cmd.Cmd):
         
         return True
             
-    def do_quit(self, arg):
-        return self.do_exit(arg)
-
     def help_exit(self):
         print("Exit program.")
-
-    def help_quit(self):
-        self.help_exit()

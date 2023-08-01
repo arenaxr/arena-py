@@ -2,6 +2,23 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.5.0](https://github.com/arenaxr/arena-py/compare/v0.4.5...v0.5.0) (2023-08-01)
+
+
+### Features
+
+* add interpreter ([237b3ac](https://github.com/arenaxr/arena-py/commit/237b3ac21c85224c95f9d8fcd5fa362f530d5456))
+* add interpreter to event loop; improve exit ([f1812f0](https://github.com/arenaxr/arena-py/commit/f1812f05ddc1073a7fb257ddd2ef1f3755a0cf5e))
+
+
+### Bug Fixes
+
+* datetime serialization ([30d0f45](https://github.com/arenaxr/arena-py/commit/30d0f458e253832e8ddd8da533cb66b9e3f05472))
+* get calls; add msg rates ([e592a62](https://github.com/arenaxr/arena-py/commit/e592a6259417c9313931be17af035e3013bb2dc8))
+* move interpreter to a thread ([1066565](https://github.com/arenaxr/arena-py/commit/10665656a8efd046ba8fb01c6c8ae6b21f46fca3))
+* paho-mqtt update to 1.5.1 still works end_callback ([ff4ec5e](https://github.com/arenaxr/arena-py/commit/ff4ec5e5bae49147d2d1d0b573778c591939ce4d))
+* restore end_callback mqtt with paho 1.5.0 ([a32c086](https://github.com/arenaxr/arena-py/commit/a32c0862e58ff6becce3a01f4b849dcbf99ef92f))
+
 ## [0.4.5](https://github.com/arenaxr/arena-py/compare/v0.4.2...v0.4.5) (2023-07-05)
 
 

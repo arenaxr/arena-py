@@ -7,7 +7,7 @@ import socket
 import ssl
 import sys
 from datetime import datetime
-import threading 
+import threading
 
 import paho.mqtt.client as mqtt
 
@@ -26,6 +26,7 @@ class ArenaMQTT(object):
 
     def __init__(
                 self,
+                web_host = "arenaxr.org",
                 realm = "realm",
                 network_latency_interval = 10000,  # run network latency update every 10s
                 on_msg_callback = None,
@@ -41,7 +42,8 @@ class ArenaMQTT(object):
             self.web_host = kwargs["host"]
             print(f"Using Host from 'host' input parameter: {self.web_host}")
         else:
-            sys.exit("ARENA webserver host argument (host) is unspecified or None, aborting...")
+            # Use default "web_host", helps avoid and web vs mqtt host and other user setup confusion
+            self.web_host = web_host
 
         if os.environ.get("REALM"):
             self.realm = os.environ["REALM"]
@@ -139,11 +141,11 @@ class ArenaMQTT(object):
         self.mqttc.on_connect = self.on_connect
         self.mqttc.on_disconnect = self.on_disconnect
         self.mqttc.on_publish = self.on_publish
-        
+
         # setup msg counters
         self.msg_io = { 'last_rcv_time': None, 'last_pub_time': None, 'rcv_msgs': 0, 'pub_msgs': 0, 'rcv_msgs_per_sec': 0.0, 'pub_msgs_per_sec': 0.0}
         self.msg_rate_time_start = datetime.now()
-        
+
         # add main message processing + callbacks loop to tasks
         self.run_async(self.process_message)
 
@@ -154,12 +156,12 @@ class ArenaMQTT(object):
         # update message rate every second
         self.run_forever(self.msg_rate_update,
                          interval_ms=1000)
-        
+
         self.msg_queue = asyncio.Queue()
 
-        # setup event to let others wait on connection 
+        # setup event to let others wait on connection
         self.connected_evt = threading.Event()
-        
+
         # connect to mqtt broker
         if "port" in kwargs:
             port = kwargs["port"]
@@ -178,9 +180,9 @@ class ArenaMQTT(object):
 
         # check if we want to start the command interpreter
         enable_interp = os.getenv("ENABLE_INTERPRETER", 'False').lower() in ('true', '1', 't')
-        if enable_interp: 
-            self.cmd_interpreter = ArenaCmdInterpreter(self, 
-                                                       show_attrs=('config_data', 'scene', 'users', 'all_objects', 'msg_io'), 
+        if enable_interp:
+            self.cmd_interpreter = ArenaCmdInterpreter(self,
+                                                       show_attrs=('config_data', 'scene', 'users', 'all_objects', 'msg_io'),
                                                        get_callables=('persisted_objs', 'persisted_scene_option', 'writable_scenes', 'user_list'))
             self.cmd_interpreter.start_thread(self.connected_evt)
 
@@ -235,7 +237,7 @@ class ArenaMQTT(object):
         if elapsed.seconds > 0:
             self.msg_io['rcv_msgs_per_sec'] = round(self.msg_io['rcv_msgs']  / elapsed.seconds, 2)
             self.msg_io['pub_msgs_per_sec'] = round(self.msg_io['pub_msgs']  / elapsed.seconds, 2)
-        
+
     def run_once(self, func=None, **kwargs):
         """Runs a user-defined function on startup"""
         if func is not None:
@@ -311,16 +313,16 @@ class ArenaMQTT(object):
             # listen to all messages in scene
             client.subscribe(self.subscribe_topic)
             client.message_callback_add(self.subscribe_topic, self.on_message)
-            
+
             # set event
             self.connected_evt.set()
-            
+
             # reset msg rate time
             self.msg_rate_time_start = datetime.now()
 
             print("Connected!")
             print("=====")
-            
+
         else:
             print(f"Connection error! Result code={rc}")
 

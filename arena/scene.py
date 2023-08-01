@@ -24,6 +24,7 @@ class Scene(ArenaMQTT):
 
     def __init__(
                 self,
+                host = "arenaxr.org",
                 realm = "realm",
                 network_latency_interval = 10000,  # run network latency update every 10s
                 on_msg_callback = None,
@@ -60,6 +61,7 @@ class Scene(ArenaMQTT):
             sys.exit("Scene argument (scene) is unspecified or None, aborting...")
 
         super().__init__(
+            host,
             realm,
             network_latency_interval,
             on_msg_callback,
@@ -101,8 +103,8 @@ class Scene(ArenaMQTT):
                 msg = await self.msg_queue.get()
             except RuntimeError as e:
                 print(f"Ignoring error: {e}")
-                return 
-            
+                return
+
             # extract payload
             try:
                 payload_str = msg.payload.decode("utf-8", "ignore")

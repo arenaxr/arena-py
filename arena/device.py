@@ -19,6 +19,7 @@ class Device(ArenaMQTT):
 
     def __init__(
                 self,
+                host = "arenaxr.org",
                 realm = "realm",
                 network_latency_interval = 10000,  # run network latency update every 10s
                 on_msg_callback = None,
@@ -50,6 +51,7 @@ class Device(ArenaMQTT):
             sys.exit("Device argument (device) is unspecified or None, aborting...")
 
         super().__init__(
+            host,
             realm,
             network_latency_interval,
             on_msg_callback,

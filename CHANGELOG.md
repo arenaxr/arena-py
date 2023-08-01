@@ -2,6 +2,13 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.5.4](https://github.com/arenaxr/arena-py/compare/v0.5.3...v0.5.4) (2023-08-01)
+
+
+### Bug Fixes
+
+* fix github publish action ([74d43ad](https://github.com/arenaxr/arena-py/commit/74d43ad5a5ecfd9db4c8e4236915a8b94122721e))
+
 ## [0.5.3](https://github.com/arenaxr/arena-py/compare/v0.5.2...v0.5.3) (2023-08-01)
 
 

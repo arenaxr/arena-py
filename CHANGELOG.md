@@ -2,6 +2,15 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.5.1](https://github.com/arenaxr/arena-py/compare/v0.5.0...v0.5.1) (2023-08-01)
+
+
+### Bug Fixes
+
+* add default web_host = arenaxr.org ([aa7ab26](https://github.com/arenaxr/arena-py/commit/aa7ab2619b0a59f4c0a6542ba83a00637d321b15))
+* stop pushing to test.pypi.org ([670c33b](https://github.com/arenaxr/arena-py/commit/670c33b65904bc83feed933dac2c02002634656d))
+* updated to avoid pypi filename collisions ([bb05487](https://github.com/arenaxr/arena-py/commit/bb0548768c72bc6bce8f3778231e59cb9867b9b9))
+
 ## [0.5.0](https://github.com/arenaxr/arena-py/compare/v0.4.5...v0.5.0) (2023-08-01)
 
 

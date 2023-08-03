@@ -2,6 +2,13 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.5.7](https://github.com/arenaxr/arena-py/compare/v0.5.6...v0.5.7) (2023-08-03)
+
+
+### Bug Fixes
+
+* put back default start and end in Line ([5b24a40](https://github.com/arenaxr/arena-py/commit/5b24a40a8342b110421998781caa975b0c983c7e))
+
 ## [0.5.6](https://github.com/arenaxr/arena-py/compare/v0.5.5...v0.5.6) (2023-08-03)
 
 

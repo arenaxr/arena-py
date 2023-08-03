@@ -13,6 +13,4 @@ def make_im():
         url=image_url
     )
 
-    scene.add_object(im)
-
 scene.run_tasks()

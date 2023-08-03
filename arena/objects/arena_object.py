@@ -1,5 +1,5 @@
 from ..base_object import *
-from ..attributes import Animation, Data, Color
+from ..attributes import Animation, Data, Position, Rotation, Scale, Color
 from ..utils import *
 import uuid
 
@@ -41,6 +41,15 @@ class Object(BaseObject):
         # default "object_type" to entity
         if "object_type" not in kwargs:
             kwargs["object_type"] = Object.object_type
+
+        if "position" not in kwargs:
+            kwargs["position"] = Position(0,0,0)
+
+        if "rotation" not in kwargs:
+            kwargs["rotation"] = Rotation(0,0,0)
+
+        if "scale" not in kwargs:
+            kwargs["scale"] = Scale(1,1,1)
 
         # print warning if object is being created with the same id as an existing object
         if Object.exists(object_id):

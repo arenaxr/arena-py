@@ -27,6 +27,11 @@ class Color(Attribute):
             else:
                 c = tuple(int(color[c:c+2], 16) for c in (0, 2, 4))
             red, green, blue = c
+
+        if isinstance(red, float): red = int(red)
+        if isinstance(blue, float): blue = int(blue)
+        if isinstance(green, float): green = int(green)
+
         super().__init__(red=red, green=green, blue=blue)
 
     @property

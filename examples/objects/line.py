@@ -3,15 +3,16 @@ from arena import *
 scene = Scene(host="arenaxr.org", scene="example")
 
 start = (0,0,-3)
-end = (10,10,-10)
+end = (5,5,5)
 
 @scene.run_once
 def make_line():
     line = Line(
         object_id="my_line",
-        path=(start, end),
+        start=start,
+        end=end,
         color=(0,255,0)
     )
-    scene.add_object(line)
+    print(scene.add_object(line))
 
 scene.run_tasks()

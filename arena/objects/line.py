@@ -7,6 +7,6 @@ class Line(Object):
     """
     object_type = "line"
 
-    def __init__(self, start=Position(0,0,0), end=Position(10,10,10), **kwargs):
+    def __init__(self, start, end, **kwargs):
         super().__init__(object_type=Line.object_type, start=start, end=end, **kwargs)
 

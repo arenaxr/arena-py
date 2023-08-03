@@ -72,7 +72,7 @@ class Data(Attribute):
 
             # allow user to input tuples, lists, dicts, etc for specific Attributes.
             # everything gets converted to corresponding attribute
-            if k == "position" and not isinstance(v, Position):
+            if (k == "position" or k == "start" or k == "end") and not isinstance(v, Position):
                 if isinstance(v, (list,tuple)):
                     data[k] = Position(*v[:3])
                 elif isinstance(v, dict):

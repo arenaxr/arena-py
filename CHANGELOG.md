@@ -2,6 +2,13 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.5.5](https://github.com/arenaxr/arena-py/compare/v0.5.4...v0.5.5) (2023-08-03)
+
+
+### Bug Fixes
+
+* color accepts floats, but casts to int; Line start and end implicitly converts to Position ([3684684](https://github.com/arenaxr/arena-py/commit/36846840b5dcc58acb354b57bd94576e37a33393))
+
 ## [0.5.4](https://github.com/arenaxr/arena-py/compare/v0.5.3...v0.5.4) (2023-08-01)
 
 

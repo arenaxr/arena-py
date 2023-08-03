@@ -13,5 +13,6 @@ def make_line():
         end=end,
         color=(0,255,0)
     )
+    scene.add_object(line)
 
 scene.run_tasks()

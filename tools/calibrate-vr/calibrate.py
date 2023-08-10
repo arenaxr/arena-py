@@ -320,7 +320,7 @@ def add_axis(axis):
     global calibrateParent
     if axis == "x":
         position = Position(MARKER_SCALE / 2, 0, 0)
-        rotation = Rotation(0, 90, -90)
+        rotation = Rotation(0, 0, -90)
     elif axis == "y":
         position = Position(0, MARKER_SCALE / 2, 0)
         rotation = Rotation(0, 0, 0)

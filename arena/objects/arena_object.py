@@ -120,8 +120,8 @@ class Object(BaseObject):
 
     def json_preprocess(self, **kwargs):
         # kwargs are for additional param to add to json, like "action":"create"
-        json_payload = {k: v for k, v in vars(self).items() if k != "evt_handler" and \
-                        k != "update_handler" and k != "animations" and k != "delayed_prop_tasks"}
+        skipped_keys = ["evt_handler", "update_handler", "animations", "delayed_prop_tasks"]
+        json_payload = {k: v for k, v in vars(self).items() if k not in skipped_keys}
         json_payload.update(kwargs)
         return json_payload
 

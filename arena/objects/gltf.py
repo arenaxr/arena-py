@@ -29,7 +29,10 @@ class GLTF(Object):
 
     def json_preprocess(self, **kwargs):
         # kwargs are for additional param to add to json, like "action":"create"
-        json_payload = { k:v for k,v in vars(self).items() if not callable(v) and k != "animations" and k != "morphs" }
+        skipped_keys = ["evt_handler", "update_handler", "delayed_prop_tasks",
+                        "animations", "morphs"]
+        json_payload = {k: v for k, v in vars(self).items() if
+                        not callable(v) and k not in skipped_keys}
         json_payload.update(kwargs)
         return json_payload
 

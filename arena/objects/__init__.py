@@ -22,6 +22,7 @@ from .thickline import ThickLine
 from .torus import Torus
 from .torus_knot import TorusKnot
 from .triangle import Triangle
+from .ui import *
 
 OBJECT_TYPE_MAP = {
     "box": Box,

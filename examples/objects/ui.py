@@ -24,6 +24,18 @@ def setup_scene():
     )
     scene.add_object(intro_card)
 
+    hello_card = Card(
+        object_id="hello_card",
+        persist=True,
+        title="Hello World",
+        body="Please applaud",
+        bodyAlign="center",
+        position=Position(-2, 2, -2.5),
+        widthScale=0.25,
+        look_at="#my-camera"
+    )
+    scene.add_object(hello_card)
+
     # Add a popup prompt with single button
 
     def prompt_handler(_scene, evt, _msg):
@@ -34,17 +46,13 @@ def setup_scene():
 
     # Add a button panel, with two sets of buttons
 
-    # Legacy buttons list supports strings only
-    # first_buttonset = ["Prompt A", "Option B", "More"]
-    # second_buttonset = ["Button D", "Button E", "Back"]
-
     first_buttonset = [Button(name="Prompt A"), Button(name="Option B"), Button("More")]
-    second_buttonset = [Button("Button D"), Button("Button E"), Button("Back")]
+    second_buttonset = [Button("D"), Button("E"), Button("F"), Button("Back")]
 
     def button_handler(_scene, evt, _msg):
         global prompt
         if evt.type == "buttonClick":
-            if evt.data.buttonName in ["Option B", "Button D", "Button E"]:
+            if evt.data.buttonName in ["Option B", "D", "E", "F"]: # Compare buttonName
                 print(f"{evt.data.buttonName} clicked!")
             elif evt.data.buttonName == "Prompt A":  # Show prompt
                 prompt = Prompt(
@@ -58,7 +66,7 @@ def setup_scene():
                 scene.add_object(prompt)
             elif evt.data.buttonName == "More":  # switch to second button set
                 scene.update_object(button_panel, buttons=second_buttonset)
-            elif evt.data.buttonName == "Back":  # switch back to first button set
+            elif evt.data.buttonIndex == 3:      # compare buttonIndex, switch 1st set
                 scene.update_object(button_panel, buttons=first_buttonset)
 
     button_panel = ButtonPanel(

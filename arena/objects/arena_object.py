@@ -177,6 +177,12 @@ class Object(BaseObject):
             elif "video_control" == k:
                 json_data["video-control"] = v
 
+            elif "look_at" == k:
+                if isinstance(v, str):
+                    json_data["look-at"] = v
+                elif isinstance(v, Object):
+                    json_data["look-at"] = v.object_id
+
             # for animation, replace "start" and "end" with "from" and "to"
             elif isinstance(k, str) and "animation" == k[:len("animation")]:
                 animation = vars(v).copy()

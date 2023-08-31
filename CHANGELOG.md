@@ -2,6 +2,21 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.6.0](https://github.com/arenaxr/arena-py/compare/v0.5.7...v0.6.0) (2023-08-31)
+
+
+### Features
+
+* add initial UI elements ([547fe8d](https://github.com/arenaxr/arena-py/commit/547fe8d84fbfe4c09f4e5b6dd76c90b68afb480b))
+
+
+### Bug Fixes
+
+* better handle skipped keys in json preprocs ([886e20c](https://github.com/arenaxr/arena-py/commit/886e20cfbca525157b78b1a319d4b26ee2273259))
+* calibrator x-axis arrow rotation ([902a64d](https://github.com/arenaxr/arena-py/commit/902a64d5853f0e143ec7ca530db006cb35a92f7e))
+* Followup Animations with end state update ([8009a6d](https://github.com/arenaxr/arena-py/commit/8009a6d3077a694bd0d6bf2ede53fb0b16e01077))
+* pop delayed_prop_tasks before json_encode ([a4eedcb](https://github.com/arenaxr/arena-py/commit/a4eedcbb0f4a971efc8f92550ccfbcd288bf3896))
+
 ## [0.5.7](https://github.com/arenaxr/arena-py/compare/v0.5.6...v0.5.7) (2023-08-03)
 
 

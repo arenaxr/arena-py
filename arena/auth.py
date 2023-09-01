@@ -81,9 +81,11 @@ class ArenaAuth:
                     # test for valid browser before starting browser-required auth-flow
                     webbrowser.get()
                 except (webbrowser.Error) as err:
-                    print("Console-only configured OS detected. {0} ".format(err))
+                    print(f"Console-only configured OS detected. {err} ")
                     print("You will need to configure your environment to launch a web browser window, to complete the authentication flow.")
-                    return None
+                    print("The following command should open a browser when you have the browser configured:")
+                    print("  python -m webbrowser 'https://example.org'")
+                    raise err
 
                 # automated browser flow for local client
                 flow = InstalledAppFlow.from_client_config(

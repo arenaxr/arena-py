@@ -77,16 +77,6 @@ class ArenaAuth:
                 session = AuthorizedSession(creds)
             else:
                 print("Requesting new Google authentication.")
-                try:
-                    # test for valid browser before starting browser-required auth-flow
-                    webbrowser.get()
-                except (webbrowser.Error) as err:
-                    print(f"Console-only configured OS detected. {err} ")
-                    print("You will need to configure your environment to launch a web browser window, to complete the authentication flow.")
-                    print("The following command should open a browser when you have the browser configured:")
-                    print("  python -m webbrowser 'https://example.org'")
-                    raise err
-
                 # automated browser flow for local client
                 flow = InstalledAppFlow.from_client_config(
                     json.loads(gauth_json), self._scopes)
@@ -309,7 +299,7 @@ class ArenaAuth:
             if isinstance(err, HTTPError) and round(err.code, -2) == 400:
                 # user not authorized on website yet, they don"t have an ARENA username
                 base_url = "{0.scheme}://{0.netloc}".format(urlsplit(url))
-                print("Login with this this account on the website first:")
+                print("Login with this account on the website first:")
                 print(f"Trying to open login page: {base_url}/user")
                 try:
                     webbrowser.open_new_tab(f"{base_url}/user")

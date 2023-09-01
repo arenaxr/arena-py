@@ -76,27 +76,18 @@ class ArenaAuth:
                 creds.refresh(Request())
                 session = AuthorizedSession(creds)
             else:
-                print("Requesting new Google authentication.")
-                if self._is_headless_client():
-                    # console flow for remote client
-                    flow = InstalledAppFlow.from_client_config(
-                        json.loads(gauth_json), self._scopes)
-                    creds = flow.run_console()
-                else:
-                    # automated browser flow for local client
-                    flow = InstalledAppFlow.from_client_config(
-                        json.loads(gauth_json), self._scopes)
-                    creds = flow.run_local_server(port=0)
+                # test for valid browser before starting browser-required auth-flow
+                try:
+                    webbrowser.get()
+                except (webbrowser.Error) as err:
+                    print("Console-only OS detected. {0}".format(err))
+                    return True
 
-                    # # alternate, run console flow with browser popup
-                    # flow = InstalledAppFlow.from_client_config(
-                    #     json.loads(gauth_json), self._scopes, redirect_uri="urn:ietf:wg:oauth:2.0:oob")
-                    # auth_url, _ = flow.authorization_url(prompt="consent")
-                    # print("Please go to this URL: {}".format(auth_url))
-                    # webbrowser.open(auth_url, new=1, autoraise=True)
-                    # code = input("Enter the authorization code: ")
-                    # flow.fetch_token(code=code)
-                    # creds = flow.credentials
+                # automated browser flow for local client
+                print("Requesting new Google authentication.")
+                flow = InstalledAppFlow.from_client_config(
+                    json.loads(gauth_json), self._scopes)
+                creds = flow.run_local_server(port=0)
 
                 session = flow.authorized_session()
             with open(scene_gauth_path, "wb") as token:
@@ -184,19 +175,6 @@ class ArenaAuth:
         """
         my_scenes = self._get_my_scenes(web_host, self._id_token)
         return json.loads(my_scenes)
-
-    def _is_headless_client(self):
-        """ Determine headless or headed console.
-        """
-        if "SSH_TTY" in os.environ or "SSH_CLIENT" in os.environ:
-            print("SSH connection detected, using headless auth.")
-            return True
-        try:
-            webbrowser.get()
-            return False
-        except (webbrowser.Error) as err:
-            print("Console-only OS detected. {0}".format(err))
-            return True
 
     def _log_token(self):
         """

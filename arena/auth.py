@@ -76,15 +76,16 @@ class ArenaAuth:
                 creds.refresh(Request())
                 session = AuthorizedSession(creds)
             else:
-                # test for valid browser before starting browser-required auth-flow
+                print("Requesting new Google authentication.")
                 try:
+                    # test for valid browser before starting browser-required auth-flow
                     webbrowser.get()
                 except (webbrowser.Error) as err:
-                    print("Console-only OS detected. {0}".format(err))
-                    return True
+                    print("Console-only configured OS detected. {0} ".format(err))
+                    print("You will need to configure your environment to launch a web browser window, to complete the authentication flow.")
+                    return None
 
                 # automated browser flow for local client
-                print("Requesting new Google authentication.")
                 flow = InstalledAppFlow.from_client_config(
                     json.loads(gauth_json), self._scopes)
                 creds = flow.run_local_server(port=0)

@@ -2,6 +2,23 @@
 
 ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.7.0](https://github.com/arenaxr/arena-py/compare/v0.6.0...v0.7.0) (2023-09-05)
+
+
+### Features
+
+* add support for controllers ([3ee739c](https://github.com/arenaxr/arena-py/commit/3ee739c21fc8123ddb3bed695279d20f27845e19))
+
+
+### Bug Fixes
+
+* **auth:** add CLI warning for publishing without permmission. Closes [#160](https://github.com/arenaxr/arena-py/issues/160). ([d639609](https://github.com/arenaxr/arena-py/commit/d639609543dd41af373aa9872b5a92716d7892fc))
+* **auth:** add test hints for missing browsers ([7187cca](https://github.com/arenaxr/arena-py/commit/7187cca7044d8b22b8309f4496367ba339a4416a))
+* **auth:** allow auth flow to print url regardless ([a28d38e](https://github.com/arenaxr/arena-py/commit/a28d38e3059289aa0c8cc76fd405fb53d88ca89c))
+* **auth:** improved error messaging when browser undetected ([0f7a4dc](https://github.com/arenaxr/arena-py/commit/0f7a4dc15e4613a46ea5bbbcf115e26002056b6f))
+* **auth:** remove deprecated console-only auth flow ([1f4d88f](https://github.com/arenaxr/arena-py/commit/1f4d88f73bbaf88df3bf07185df72952f7ba5569))
+* **auth:** resolve errors when saved mqtt token is empty ([d38587f](https://github.com/arenaxr/arena-py/commit/d38587f70a666231d37fdcf474441a981d80a2ee))
+
 ## [0.6.0](https://github.com/arenaxr/arena-py/compare/v0.5.7...v0.6.0) (2023-08-31)
 
 

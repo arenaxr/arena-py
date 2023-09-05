@@ -8,6 +8,7 @@ from .dodecahedron import Dodecahedron
 from .entity import Entity
 from .gltf import GLTF
 from .icosahedron import Icosahedron
+from .hands import HandLeft, HandRight
 from .image import Image
 from .light import Light
 from .line import Line
@@ -25,29 +26,31 @@ from .triangle import Triangle
 from .ui import *
 
 OBJECT_TYPE_MAP = {
-    "box": Box,
-    "camera": Camera,
-    "circle": Circle,
-    "cone": Cone,
-    "cube": Box,
-    "cylinder": Cylinder,
-    "dodecahedron": Dodecahedron,
-    "entity": Entity,
-    "gltf-model": GLTF,
-    "icosahedron": Icosahedron,
-    "image": Image,
-    "light": Light,
-    "line": Line,
-    "object": Object,
-    "octahedron": Octahedron,
-    "particle": Particle,
-    "plane": Plane,
-    "ring": Ring,
-    "sphere": Sphere,
-    "tetrahedron": Tetrahedron,
-    "text": Text,
-    "thickline": ThickLine,
-    "torus": Torus,
-    "torusKnot": TorusKnot,
-    "triangle": Triangle,
+    Box.object_type:          Box,
+    Camera.object_type:       Camera,
+    Circle.object_type:       Circle,
+    Cone.object_type:         Cone,
+    Box.object_type:          Box,
+    Cylinder.object_type:     Cylinder,
+    Dodecahedron.object_type: Dodecahedron,
+    Entity.object_type:       Entity,
+    GLTF.object_type:         GLTF,
+    Icosahedron.object_type:  Icosahedron,
+    Image.object_type:        Image,
+    HandLeft.object_type:     HandLeft,
+    HandRight.object_type:    HandRight,
+    Light.object_type:        Light,
+    Line.object_type:         Line,
+    Object.object_type:       Object,
+    Octahedron.object_type:   Octahedron,
+    Particle.object_type:     Particle,
+    Plane.object_type:        Plane,
+    Ring.object_type:         Ring,
+    Sphere.object_type:       Sphere,
+    Tetrahedron.object_type:  Tetrahedron,
+    Text.object_type:         Text,
+    ThickLine.object_type:    ThickLine,
+    Torus.object_type:        Torus,
+    TorusKnot.object_type:    TorusKnot,
+    Triangle.object_type:     Triangle,
 }

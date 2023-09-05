@@ -167,20 +167,36 @@ class Scene(ArenaMQTT):
                         else:
                             self.callback_wrapper(self.on_msg_callback, event, payload)
 
-                    # run user_join_callback when user is found
-                    if object_type and object_type == Camera.object_type:
-                        if object_id not in self.users:
-                            if object_id in self.all_objects:
-                                self.users[object_id] = obj
-                            else:
-                                self.users[object_id] = Camera(**payload)
+                    if object_type:
+                        # run user_join_callback when user is found
+                        if object_type == Camera.object_type:
+                            if object_id not in self.users:
+                                if object_id in self.all_objects:
+                                    self.users[object_id] = obj
+                                else:
+                                    self.users[object_id] = Camera(**payload)
 
-                            if self.user_join_callback:
-                                self.callback_wrapper(
-                                        self.user_join_callback,
-                                        self.users[object_id],
-                                        payload
-                                    )
+                                if self.user_join_callback:
+                                    self.callback_wrapper(
+                                            self.user_join_callback,
+                                            self.users[object_id],
+                                            payload
+                                        )
+
+                        elif object_type == HandLeft.object_type or object_type == HandRight.object_type:
+                            user_id = obj.data.dep
+                            if user_id in self.users:
+                                user = self.users[user_id]
+                                if obj not in user.hands.values():
+                                    user.hands[object_type] = obj
+                                    obj.camera = user
+
+                                    if user.hand_found_callback:
+                                        self.callback_wrapper(
+                                            user.hand_found_callback,
+                                            obj,
+                                            payload
+                                        )
 
                     # if its an object the library has not seen before, call new object callback
                     elif object_id not in self.unspecified_object_ids and self.new_obj_callback:

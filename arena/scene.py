@@ -413,6 +413,9 @@ class Scene(ArenaMQTT):
 
     def _publish(self, obj, action, custom_payload=False):
         """Publishes to mqtt broker with "action":action"""
+        if not self.can_publish:
+            print(f"ERROR: Publish failed! You do not have permission to publish to topic {self.root_topic} on {self.web_host}")
+
         topic = f"{self.root_topic}/{self.mqttc_id}/{obj['object_id']}"
         d = datetime.utcnow().isoformat()[:-3]+"Z"
 

@@ -122,6 +122,10 @@ class ArenaMQTT(object):
                 self.username = data["username"]
                 token = data["token"]
                 self.remote_auth_token = data
+
+        # check for valid permissions to write to the topic
+        self.can_publish = self.auth.has_publish_rights(token, self.root_topic)
+
         self.mqttc.username_pw_set(username=self.username, password=token)
         print("=====")
 

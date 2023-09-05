@@ -155,6 +155,15 @@ class ArenaAuth:
         self._log_token()
         return self._mqtt_token
 
+    def has_publish_rights(self, token, topic):
+        """ Check the MQTT token for permission to publish to topic.
+        """
+        tok = jwt.decode(token, options={"verify_signature": False})
+        for pub in tok["publ"]:
+            if (topic.startswith(pub.strip().rstrip("/").rstrip("#"))):
+                return True
+        return False
+
     def _get_scene_auth_path(self, web_host):
         return f"{_arena_user_dir}/python/{web_host}/s"
 
@@ -359,7 +368,7 @@ def permissions():
         try:
             mqtt_token = json.loads(mqtt_json)
         except (json.decoder.JSONDecodeError) as err:
-            print (f"{err}, {mqtt_path}")
+            print(f"{err}, {mqtt_path}")
             continue
         mqtt_claims = jwt.decode(mqtt_token["token"], options={
             "verify_signature": False})
@@ -382,7 +391,7 @@ def _remove_credentials(cred_dir, expire=False):
         try:
             mqtt_token = json.loads(mqtt_json)
         except (json.decoder.JSONDecodeError) as err:
-            print (f"{err}, {test_mqtt_path}")
+            print(f"{err}, {test_mqtt_path}")
             os.remove(test_mqtt_path)
             return
         mqtt_claims = jwt.decode(mqtt_token["token"], options={

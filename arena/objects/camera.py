@@ -17,6 +17,8 @@ class Camera(Object):
         self.jistsiId = kwargs.get("jistsiId", None)
 
         self.hands = {}
+        self.hand_found_callback = None
+        self.hand_remove_callback = None
 
         position = data.get("position", None)
         rotation = data.get("rotation", None)

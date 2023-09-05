@@ -152,6 +152,18 @@ class Scene(ArenaMQTT):
                                                 payload
                                             )
                                     del self.users[object_id]
+                            elif HandLeft.object_type in object_id or HandRight.object_type in object_id: # object is a hand/controller
+                                user_id = obj.data.dep
+                                if user_id in self.users:
+                                    user = self.users[user_id]
+                                    if obj in user.hands.values():
+                                        if user.hand_remove_callback:
+                                            self.callback_wrapper(
+                                                    user.hand_remove_callback,
+                                                    obj,
+                                                    payload
+                                                )
+                                    del user.hands[HandLeft.object_type if HandLeft.object_type in object_id else HandRight.object_type]
                             elif self.delete_obj_callback:
                                 self.callback_wrapper(self.delete_obj_callback, obj, payload)
                             Object.remove(obj)
@@ -204,7 +216,7 @@ class Scene(ArenaMQTT):
                         self.unspecified_object_ids.add(object_id)
 
             except Exception as e:
-                print("Malformed message, ignoring:")
+                print("Something went wrong, ignoring:")
                 print(e)
 
     def callback_wrapper(self, func, arg, msg):

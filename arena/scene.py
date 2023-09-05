@@ -163,7 +163,8 @@ class Scene(ArenaMQTT):
                                                     obj,
                                                     payload
                                                 )
-                                    del user.hands[HandLeft.object_type if HandLeft.object_type in object_id else HandRight.object_type]
+                                        hand_key = HandLeft.object_type if HandLeft.object_type in object_id else HandRight.object_type
+                                        del user.hands[hand_key]
                             elif self.delete_obj_callback:
                                 self.callback_wrapper(self.delete_obj_callback, obj, payload)
                             Object.remove(obj)

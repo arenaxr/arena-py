@@ -356,7 +356,11 @@ def permissions():
         f = open(mqtt_path, "r")
         mqtt_json = f.read()
         f.close()
-        mqtt_token = json.loads(mqtt_json)
+        try:
+            mqtt_token = json.loads(mqtt_json)
+        except (json.decoder.JSONDecodeError) as err:
+            print (f"{err}, {mqtt_path}")
+            continue
         mqtt_claims = jwt.decode(mqtt_token["token"], options={
             "verify_signature": False})
         _print_mqtt_token(mqtt_path, mqtt_claims)
@@ -375,7 +379,12 @@ def _remove_credentials(cred_dir, expire=False):
         f = open(test_mqtt_path, "r")
         mqtt_json = f.read()
         f.close()
-        mqtt_token = json.loads(mqtt_json)
+        try:
+            mqtt_token = json.loads(mqtt_json)
+        except (json.decoder.JSONDecodeError) as err:
+            print (f"{err}, {test_mqtt_path}")
+            os.remove(test_mqtt_path)
+            return
         mqtt_claims = jwt.decode(mqtt_token["token"], options={
             "verify_signature": False})
         exp = float(mqtt_claims["exp"])

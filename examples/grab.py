@@ -4,7 +4,7 @@ scene = Scene(host="arenaxr.org", scene="grab")
 
 grabbing = False
 
-orig_position = (0,2,-3)
+orig_position = (0,1.5,-2)
 
 def box_click(scene, evt, msg):
     global orig_position
@@ -29,7 +29,7 @@ def box_click(scene, evt, msg):
 my_box = Box(
     object_id="my_box",
     position=orig_position,
-    scale=(1.5,1.5,1.5),
+    scale=(0.5,0.5,0.5),
     color=(50,60,200),
     patent=None,
     clickable=True,

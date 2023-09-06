@@ -1,7 +1,5 @@
 from arena import *
 
-import math
-
 scene = Scene(host="arenaxr.org", scene="grab")
 
 grabbing = False

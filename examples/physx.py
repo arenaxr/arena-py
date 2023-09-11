@@ -60,9 +60,9 @@ def swap_rot(rot: Vector, round_decimals: int = None):
     """
     if round_decimals is not None:
         return [
-            round(rot[1], round_decimals),
-            round(rot[3], round_decimals),
-            round(rot[2], round_decimals),
+            -round(rot[1], round_decimals),
+            -round(rot[3], round_decimals),
+            -round(rot[2], round_decimals),
             round(rot[0], round_decimals),
         ]
     else:
@@ -91,9 +91,6 @@ class PhysicsSystem:
 
         self.physx_scene = physx.Scene()
 
-        # p.setGravity(0, 0, gravity)
-        # p.setTimeStep(self.physics_interval)
-
         self.scene = Scene(
             host="arena-dev1.conix.io",
             realm="realm",
@@ -108,7 +105,7 @@ class PhysicsSystem:
         self.physx_scene.add_actor(
             physx.RigidStatic.create_plane(
                 material=physx.Material(
-                    static_friction=0.1, dynamic_friction=0.1, restitution=0.75
+                    static_friction=0.2, dynamic_friction=0.2, restitution=0.75
                 )
             )
         )
@@ -129,54 +126,50 @@ class PhysicsSystem:
         self.scene.run_tasks()
 
     def new_user_handler(self, _scene, obj, _payload):
-        pass
         """
         Model users as 0.5m static spheres
-        :param _scene:
-        :param obj:
-        :param _payload:
-        :return:
         """
-        # d = obj.data
-        # new_sphere = p.loadURDF(
-        #     "sphere2.urdf", [d.position.x, d.position.z, d.position.y]
-        # )
-        # p.changeDynamics(
-        #     new_sphere,
-        #     -1,
-        #     restitution=0.75,
-        #     mass=0,
-        #     lateralFriction=1,
-        #     localInertiaDiagonal=(0, 0, 0),
-        # )
-        # self.user_cams[obj.object_id] = {
-        #     "phys_id": new_sphere,
-        #     "timestamp": time.time(),
-        # }
+        d = obj.data
+        pos = [d.position.x, d.position.z, d.position.y]
+
+        actor = physx.RigidDynamic()
+        actor.attach_shape(
+            physx.Shape.create_sphere(
+                0.5,
+                physx.Material(
+                    restitution=0.95,
+                ),
+            )
+        )
+        actor.set_mass(1.0)  # Need to provide, but value doesn't matter
+        actor.set_rigid_body_flag(physx.RigidBodyFlag.KINEMATIC, True)
+        actor.set_kinematic_target(pose=(pos, BASE_ORIENTATION))
+        self.physx_scene.add_actor(actor)
+
+        self.user_cams[obj.object_id] = {
+            "actor": actor,
+            "prev_pos": pos,
+        }
 
     def left_user_handler(self, _scene, obj, _payload):
-        pass
-        # if self.user_cams.get(obj.object_id):
-        #     p.removeBody(self.user_cams.pop(obj.object_id)["phys_id"])
+        if self.user_cams.get(obj.object_id):
+            self.physx_scene.remove_actor(self.user_cams.pop(obj.object_id)["actor"])
 
     async def sync_world(self):
-        pass
-        # while True:
-        #     for c in self.user_cams.items():
-        #         scene_user = self.scene.users.get(c[0])
-        #         if scene_user:
-        #             new_pos = [
-        #                 scene_user.data.position.x,
-        #                 scene_user.data.position.z,
-        #                 scene_user.data.position.y,
-        #             ]
-        #             update_sphere_id = c[1]["phys_id"]
-        #             prev_pos, _ = p.getBasePositionAndOrientation(update_sphere_id)
-        #             if new_pos != list(prev_pos):
-        #                 p.resetBasePositionAndOrientation(
-        #                     update_sphere_id, new_pos, BASE_ORIENTATION
-        #                 )
-        #     await asyncio.sleep(1 / self.mqtt_sync_rate)
+        while True:
+            for c in self.user_cams.items():
+                scene_user = self.scene.users.get(c[0])
+                if scene_user:
+                    new_pos = [
+                        scene_user.data.position.x,
+                        scene_user.data.position.z,
+                        scene_user.data.position.y,
+                    ]
+                    if new_pos != c[1]["prev_pos"]:
+                        c[1]["prev_pos"] = new_pos
+                        user_actor = c[1]["actor"]
+                        user_actor.set_kinematic_target(pose=(new_pos, BASE_ORIENTATION))
+            await asyncio.sleep(1 / self.mqtt_sync_rate)
 
 
 # TODO: Make generic phys-arena object class
@@ -193,10 +186,14 @@ class SoccerBall:
 
         actor = physx.RigidDynamic()
         actor.attach_shape(
-            physx.Shape.create_sphere(2.5, physx.Material(restitution=0.75))
+            physx.Shape.create_sphere(
+                2.0,
+                physx.Material(restitution=0.9),
+            )
         )
         actor.set_global_pose(pose=(start_pos, self.start_orientation))
         actor.set_mass(1.0)
+        actor.set_angular_damping(1)
         physx_scene.add_actor(actor)
 
         self.actor = actor
@@ -204,7 +201,7 @@ class SoccerBall:
         self.arena_object = GLTF(
             url="/store/models/soccerball.glb",
             position=swap_yz(start_pos),
-            scale=(2.5, 2.5, 2.5),
+            scale=(2.0, 2.0, 2.0),
             object_id=f"ball_{ball_id}",
             clickable=True,
             # evt_handler=self.click_handler,
@@ -261,5 +258,5 @@ class SoccerGame(PhysicsSystem):
             self.physx_rate.sleep()
 
 
-game = SoccerGame(count=1)
+game = SoccerGame(count=2)
 game.start()

@@ -9,11 +9,13 @@ from pyphysx_utils.rate import Rate
 # from pyphysx_render.pyrender_offscreen_renderer import PyPhysxOffscreenRenderer
 from pyphysx_render.pyrender import PyPhysxViewer
 
+from quaternion import quaternion, as_float_array
+
 from typing import List
 
 Vector = List[float]
 
-BASE_ORIENTATION = [0, 0, 0, 0]
+BASE_ORIENTATION = quaternion(1, 0, 0, 0)
 
 
 class debugDECODER(json.JSONEncoder):
@@ -38,31 +40,33 @@ def swap_yz(pos: Vector, round_decimals: int = None):
     """
     if round_decimals is not None:
         return [
-            round(pos[0], round_decimals),
-            round(pos[2], round_decimals),
-            round(pos[1], round_decimals),
+            round(float(pos[0]), round_decimals),
+            round(float(pos[2]), round_decimals),
+            round(float(pos[1]), round_decimals),
         ]
+
     else:
-        return float(pos[0]), float(pos[2]), float(pos[1])
+        return [float(pos[0]), float(pos[2]), float(pos[1])]
 
 
 def swap_rot(rot: Vector, round_decimals: int = None):
     """
     Util to swap y and z axis, where AFrame uses y as vertical, pybullet uses z.
-    Also negates the rotation for yet unknown reason
+    Also negates the rotation for yet unknown reason. Quaternion.as_float_array
+    comes in as [w, x, y, z]
     :param rot: Array-like of len 4
     :param round_decimals: int, defaults to None (no rounding), optional
     :return: list
     """
     if round_decimals is not None:
         return [
-            round(rot.x, round_decimals),
-            round(rot.z, round_decimals),
-            round(rot.y, round_decimals),
-            round(rot.w, round_decimals),
+            round(rot[1], round_decimals),
+            round(rot[3], round_decimals),
+            round(rot[2], round_decimals),
+            round(rot[0], round_decimals),
         ]
     else:
-        return [-rot.x, -rot.z, -rot.y, rot.w]
+        return [-rot[1], -rot[3], -rot[2], rot[0]]
 
 
 class PhysicsSystem:
@@ -181,7 +185,9 @@ class SoccerBall:
         if start_pos is None:
             start_pos = [0, 0, 3]  # Start slightly above size of ball
         self.start_pos = start_pos
+        self.prev_pos = swap_yz(start_pos, 3)
         self.start_orientation = BASE_ORIENTATION
+        self.prev_rot = swap_rot(as_float_array(BASE_ORIENTATION), 3)
         self.ball_id = ball_id
         self.physx_scene = physx_scene
 
@@ -189,7 +195,7 @@ class SoccerBall:
         actor.attach_shape(
             physx.Shape.create_sphere(2.5, physx.Material(restitution=0.75))
         )
-        actor.set_global_pose(start_pos)
+        actor.set_global_pose(pose=(start_pos, self.start_orientation))
         actor.set_mass(1.0)
         physx_scene.add_actor(actor)
 
@@ -239,12 +245,18 @@ class SoccerGame(PhysicsSystem):
             self.renderer.update()
             if j % (self.physics_rate // self.physics_push_sync_rate) == 0:
                 for ball in self.balls:
+                    update = {}
                     ball_pos, ball_rot = ball.actor.get_global_pose()
-                    self.scene.update_object(
-                        ball.arena_object,
-                        position=swap_yz(ball_pos),
-                        rotation=swap_rot(ball_rot),
-                    )
+                    swapped_pos = swap_yz(ball_pos, 3)
+                    if swapped_pos != ball.prev_pos:
+                        update["position"] = swapped_pos
+                        ball.prev_pos = swapped_pos
+                    swapped_rot = swap_rot(as_float_array(ball_rot), 3)
+                    if swapped_rot != ball.prev_rot:
+                        update["rotation"] = swapped_rot
+                        ball.prev_rot = swapped_rot
+                    if update:
+                        self.scene.update_object(ball.arena_object, **update)
             j += 1
             self.physx_rate.sleep()
 

@@ -262,8 +262,9 @@ def on_handler(_scene, evt, _msg):
 
 def off_handler(_scene, evt, _msg):
     if evt.type == "mousedown":
-        del user_rigs[evt.data.source]
-        #remove_light()
+        if evt.data.source in user_rigs:
+            del user_rigs[evt.data.source]
+            #remove_light()
 
 
 def get_color(axis):

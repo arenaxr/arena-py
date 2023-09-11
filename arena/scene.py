@@ -219,6 +219,7 @@ class Scene(ArenaMQTT):
             except Exception as e:
                 print("Something went wrong, ignoring:")
                 print(e)
+                print(payload)
 
     def callback_wrapper(self, func, arg, msg):
         """Checks for number of arguments for callback"""

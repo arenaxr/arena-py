@@ -252,20 +252,30 @@ def on_handler(_scene, evt, _msg):
         rig_matrix = np.identity(4)
         rig_pos = rig_matrix[:3, 3]
         rig_rot = rig_matrix[:3, :3]
+
+        # Before setting up rig, check if exists
+        prev_rig = user_rigs.get(evt.data.source)
         user_rigs[evt.data.source] = {
             "matrix": rig_matrix,
             "position": rig_pos,
             "rotation": rig_rot,
             "last_click": 0,
+            "enabled": True,
         }
-        #add_light()
+        if prev_rig is None:
+            # This is a new rig to program. Just in case a previous rig existed,
+            # such as one from a persistent anchor, just reset it to identity.
+            publish_rig_offset(evt.data.source)
+
+        # add_light()
 
 
 def off_handler(_scene, evt, _msg):
     if evt.type == "mousedown":
-        if evt.data.source in user_rigs:
-            del user_rigs[evt.data.source]
-            #remove_light()
+        rig = user_rigs.get(evt.data.source)
+        if rig is None:
+            return
+        rig["enabled"] = False
 
 
 def get_color(axis):
@@ -408,7 +418,7 @@ def mouse_handler(_scene, evt, _msg):
 def publish_rig_offset(user_id):
     global user_rigs
     rig = user_rigs.get(user_id)
-    if rig is None:
+    if rig is None or not rig["enabled"]:
         return
     obj_topic = f"{scene.root_topic}/{user_id}"
     if rig:
@@ -446,7 +456,7 @@ def ground_click_handler(_scene, evt, _msg):
         return
     global user_rigs
     rig = user_rigs.get(evt.data.source)
-    if rig is None:
+    if rig is None or not rig["enabled"]:
         return
     prev_rig_pos = rig["position"]
     new_x = prev_rig_pos[X] - evt.data.position.x
@@ -466,7 +476,7 @@ def camera_position_updater(cam_id, axis, direction):
     # print(f'Camera position updater: {cam_id}, {axis}, {direction}')
     global user_rigs
     rig = user_rigs.get(cam_id)
-    if rig is None:
+    if rig is None or not rig["enabled"]:
         return
     if axis == "x":
         rig["position"][X] += -POSITION_INC if direction == "pos" else POSITION_INC
@@ -488,7 +498,7 @@ def camera_rotation_updater(cam_id, axis, direction):
     # print(f'Camera rotation updater: {cam_id}, {axis}, {direction}')
     global user_rigs
     rig = user_rigs.get(cam_id)
-    if rig is None:
+    if rig is None or not rig["enabled"]:
         return
     now = time.time()
     inc = 5 if (now - rig["last_click"]) < BIG_INC_THRESHOLD else 1

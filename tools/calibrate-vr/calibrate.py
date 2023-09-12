@@ -115,7 +115,8 @@ ground_plane_mask = None
 
 def user_left_callback(_scene, cam, _msg):
     global user_rigs
-    del user_rigs[cam.object_id]
+    if cam.object_id in user_rigs:
+        del user_rigs[cam.object_id]
 
 
 @scene.run_once

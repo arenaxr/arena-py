@@ -30,6 +30,7 @@ CONE_SCALE = Scale(MARKER_SCALE / 5, MARKER_SCALE / 5 * 2, MARKER_SCALE / 5)
 calibrateparents = []
 user_rigs = {}
 
+
 def create_rot_matrix(angle_deg, axis):
     """
     Create a pose matrix representing a rotation about a given axis.
@@ -46,25 +47,38 @@ def create_rot_matrix(angle_deg, axis):
     angle_rad = np.deg2rad(angle_deg)
 
     # Define the rotation matrix based on the specified axis
-    if axis == 'x':
-        rotation_matrix = np.array([[1, 0, 0, 0],
-                                    [0, np.cos(angle_rad), -np.sin(angle_rad), 0],
-                                    [0, np.sin(angle_rad), np.cos(angle_rad), 0],
-                                    [0, 0, 0, 1]])
-    elif axis == 'y':
-        rotation_matrix = np.array([[np.cos(angle_rad), 0, np.sin(angle_rad), 0],
-                                    [0, 1, 0, 0],
-                                    [-np.sin(angle_rad), 0, np.cos(angle_rad), 0],
-                                    [0, 0, 0, 1]])
-    elif axis == 'z':
-        rotation_matrix = np.array([[np.cos(angle_rad), -np.sin(angle_rad), 0, 0],
-                                    [np.sin(angle_rad), np.cos(angle_rad), 0, 0],
-                                    [0, 0, 1, 0],
-                                    [0, 0, 0, 1]])
+    if axis == "x":
+        rotation_matrix = np.array(
+            [
+                [1, 0, 0, 0],
+                [0, np.cos(angle_rad), -np.sin(angle_rad), 0],
+                [0, np.sin(angle_rad), np.cos(angle_rad), 0],
+                [0, 0, 0, 1],
+            ]
+        )
+    elif axis == "y":
+        rotation_matrix = np.array(
+            [
+                [np.cos(angle_rad), 0, np.sin(angle_rad), 0],
+                [0, 1, 0, 0],
+                [-np.sin(angle_rad), 0, np.cos(angle_rad), 0],
+                [0, 0, 0, 1],
+            ]
+        )
+    elif axis == "z":
+        rotation_matrix = np.array(
+            [
+                [np.cos(angle_rad), -np.sin(angle_rad), 0, 0],
+                [np.sin(angle_rad), np.cos(angle_rad), 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 1],
+            ]
+        )
     else:
         raise ValueError("Invalid axis. Must be one of 'X', 'Y', or 'Z'.")
 
     return rotation_matrix
+
 
 ROTATIONS = {
     "x": {
@@ -75,7 +89,7 @@ ROTATIONS = {
         "neg": {
             1: create_rot_matrix(1, "x"),
             5: create_rot_matrix(5, "x"),
-        }
+        },
     },
     "y": {
         "pos": {
@@ -85,7 +99,7 @@ ROTATIONS = {
         "neg": {
             1: create_rot_matrix(1, "y"),
             5: create_rot_matrix(5, "y"),
-        }
+        },
     },
     "z": {
         "pos": {
@@ -95,14 +109,14 @@ ROTATIONS = {
         "neg": {
             1: create_rot_matrix(1, "z"),
             5: create_rot_matrix(5, "z"),
-        }
+        },
     },
 }
 
 
 def end_program_callback(_scene: Scene):
-        remove_obj_onoff()
-        remove_obj_calibrate()
+    remove_obj_onoff()
+    remove_obj_calibrate()
 
 
 # command line options
@@ -112,6 +126,7 @@ onoffParent = None
 calibrateParent = None
 ground_plane = None
 ground_plane_mask = None
+
 
 def user_left_callback(_scene, cam, _msg):
     global user_rigs
@@ -230,7 +245,7 @@ def add_obj_onoff():
             object_id="button-on",
             parent=onoffParent.object_id,
             position=Position(-0.25, 0, 0),
-            rotation=Rotation(0, -90 , 0),
+            rotation=Rotation(0, -90, 0),
             height=0.1,
             radius=0.25,
             segmentsRadial=3,
@@ -308,7 +323,7 @@ def add_light():
         "loop": True,
         "property": "rotation.x",
         "easing": "linear",
-        "dir": "normal"
+        "dir": "normal",
     }
     scene.update_object(calibrate_cone, animation=animation)
 
@@ -386,7 +401,9 @@ def add_rotation_clicks(parent, axis, direction):
             parent=parent,
             scale=CONE_SCALE,
             rotation=Rotation(-90, 0, 0),
-            position=Position(x * MARKER_SCALE / 5, MARKER_SCALE / 10, -MARKER_SCALE / 2),
+            position=Position(
+                x * MARKER_SCALE / 5, MARKER_SCALE / 10, -MARKER_SCALE / 2
+            ),
             material=Material(color=get_color(axis), opacity=OPC_OFF),
             clickable=True,
             evt_handler=mouse_handler,
@@ -463,7 +480,6 @@ def ground_click_handler(_scene, evt, _msg):
     new_z = prev_rig_pos[Z] - evt.data.position.z
     rig["position"][X] = new_x
     rig["position"][Z] = new_z
-    # print(f'Ground click: {evt.data.clickPos.x}, {evt.data.clickPos.z}')
     publish_rig_offset(evt.data.source)
 
 

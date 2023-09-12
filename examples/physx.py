@@ -6,8 +6,8 @@ import asyncio
 import pyphysx as physx
 from pyphysx_utils.rate import Rate
 
-# from pyphysx_render.pyrender_offscreen_renderer import PyPhysxOffscreenRenderer
-from pyphysx_render.pyrender import PyPhysxViewer
+from pyphysx_render.pyrender_offscreen_renderer import PyPhysxOffscreenRenderer
+# from pyphysx_render.pyrender import PyPhysxViewer
 
 from quaternion import quaternion, as_float_array
 
@@ -76,18 +76,19 @@ class PhysicsSystem:
 
     def __init__(
         self,
-        physics_rate=120,  # Default pybullet step = 1/240s
-        physics_update_rate=60,  # Lower than engine rate
+        physics_rate=240,  # Default pybullet step = 1/240s
         physics_push_sync_rate=60,  # Frequency of mqtt object_updates pushes
-        mqtt_sync_rate=60,  # Frequency of physics sync to mqtt object states
+        mqtt_sync_rate=120,  # Frequency of physics sync to mqtt object states
         gravity=-9.8,  # Gravity of physics system
         **kwargs,
     ):
         self.physics_rate = physics_rate
         self.physics_interval = 1 / physics_rate
-        self.physics_update_rate = physics_update_rate
         self.physics_push_sync_rate = physics_push_sync_rate
         self.mqtt_sync_rate = mqtt_sync_rate
+
+        physx.Physics.init_gpu()
+        physx.Physics.set_num_cpu(2)
 
         self.physx_scene = physx.Scene()
 
@@ -101,6 +102,8 @@ class PhysicsSystem:
             threaded=True,
         )
         self.user_cams = {}
+        self.user_actors = physx.Aggregate(50)
+        self.physx_scene.add_aggregate(self.user_actors)
 
         self.physx_scene.add_actor(
             physx.RigidStatic.create_plane(
@@ -119,7 +122,7 @@ class PhysicsSystem:
             )
         )
 
-        self.physx_rate = Rate(self.physics_rate * 2)
+        self.physx_rate = Rate(self.physics_rate)
 
     def start(self):
         self.scene.run_async(self.sync_world)
@@ -143,8 +146,7 @@ class PhysicsSystem:
         )
         actor.set_mass(1.0)  # Need to provide, but value doesn't matter
         actor.set_rigid_body_flag(physx.RigidBodyFlag.KINEMATIC, True)
-        actor.set_kinematic_target(pose=(pos, BASE_ORIENTATION))
-        self.physx_scene.add_actor(actor)
+        self.user_actors.add_actor(actor)
 
         self.user_cams[obj.object_id] = {
             "actor": actor,
@@ -153,7 +155,7 @@ class PhysicsSystem:
 
     def left_user_handler(self, _scene, obj, _payload):
         if self.user_cams.get(obj.object_id):
-            self.physx_scene.remove_actor(self.user_cams.pop(obj.object_id)["actor"])
+            self.user_actors.remove_actor(self.user_cams.pop(obj.object_id)["actor"])
 
     async def sync_world(self):
         while True:
@@ -180,7 +182,7 @@ class SoccerBall:
         self.start_pos = start_pos
         self.prev_pos = swap_yz(start_pos, 3)
         self.start_orientation = BASE_ORIENTATION
-        self.prev_rot = swap_rot(as_float_array(BASE_ORIENTATION), 3)
+        self.prev_rot = swap_rot(as_float_array(BASE_ORIENTATION), 4)
         self.ball_id = ball_id
         self.physx_scene = physx_scene
 
@@ -221,8 +223,8 @@ class SoccerGame(PhysicsSystem):
         super().__init__(**kwargs)
         self.balls = []
         self.count = count
-        # self.renderer = PyPhysxOffscreenRenderer()
-        self.renderer = PyPhysxViewer()
+        self.renderer = PyPhysxOffscreenRenderer()
+        # self.renderer = PyPhysxViewer()
         self.renderer.add_physx_scene(self.physx_scene)
 
     def start(self):
@@ -248,14 +250,14 @@ class SoccerGame(PhysicsSystem):
                     if swapped_pos != ball.prev_pos:
                         update["position"] = swapped_pos
                         ball.prev_pos = swapped_pos
-                    swapped_rot = swap_rot(as_float_array(ball_rot), 3)
+                    swapped_rot = swap_rot(as_float_array(ball_rot), 4)
                     if swapped_rot != ball.prev_rot:
                         update["rotation"] = swapped_rot
                         ball.prev_rot = swapped_rot
                     if update:
                         self.scene.update_object(ball.arena_object, **update)
             j += 1
-            self.physx_rate.sleep()
+            await asyncio.sleep(self.physx_rate.period())
 
 
 game = SoccerGame(count=2)

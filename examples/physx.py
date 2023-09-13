@@ -90,7 +90,7 @@ class PhysicsSystem:
         physx.Physics.init_gpu()
         physx.Physics.set_num_cpu(2)
 
-        self.physx_scene = physx.Scene()
+        self.physx_scene = physx.Scene(scene_flags=[physx.SceneFlag.ENABLE_CCD])
 
         self.scene = Scene(
             host="arena-dev1.conix.io",
@@ -146,6 +146,7 @@ class PhysicsSystem:
         )
         actor.set_mass(1.0)  # Need to provide, but value doesn't matter
         actor.set_rigid_body_flag(physx.RigidBodyFlag.KINEMATIC, True)
+        actor.set_rigid_body_flag(physx.RigidBodyFlag.ENABLE_SPECULATIVE_CCD, True)
         self.user_actors.add_actor(actor)
 
         self.user_cams[obj.object_id] = {
@@ -196,6 +197,8 @@ class SoccerBall:
         actor.set_global_pose(pose=(start_pos, self.start_orientation))
         actor.set_mass(1.0)
         actor.set_angular_damping(1)
+        actor.set_rigid_body_flag(physx.RigidBodyFlag.ENABLE_CCD, True)
+
         physx_scene.add_actor(actor)
 
         self.actor = actor

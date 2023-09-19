@@ -153,18 +153,19 @@ class Scene(ArenaMQTT):
                                             )
                                     del self.users[object_id]
                             elif HandLeft.object_type in object_id or HandRight.object_type in object_id: # object is a hand/controller
-                                user_id = obj.data.dep
-                                if user_id in self.users:
-                                    user = self.users[user_id]
-                                    if obj in user.hands.values():
-                                        if user.hand_remove_callback:
-                                            self.callback_wrapper(
-                                                    user.hand_remove_callback,
-                                                    obj,
-                                                    payload
-                                                )
-                                        hand_key = HandLeft.object_type if HandLeft.object_type in object_id else HandRight.object_type
-                                        del user.hands[hand_key]
+                                if "dep" in obj.data:
+                                    user_id = obj.data.dep
+                                    if user_id in self.users:
+                                        user = self.users[user_id]
+                                        if obj in user.hands.values():
+                                            if user.hand_remove_callback:
+                                                self.callback_wrapper(
+                                                        user.hand_remove_callback,
+                                                        obj,
+                                                        payload
+                                                    )
+                                            hand_key = HandLeft.object_type if HandLeft.object_type in object_id else HandRight.object_type
+                                            del user.hands[hand_key]
                             elif self.delete_obj_callback:
                                 self.callback_wrapper(self.delete_obj_callback, obj, payload)
                             Object.remove(obj)
@@ -197,19 +198,20 @@ class Scene(ArenaMQTT):
                                         )
 
                         elif object_type == HandLeft.object_type or object_type == HandRight.object_type:
-                            user_id = obj.data.dep
-                            if user_id in self.users:
-                                user = self.users[user_id]
-                                if obj not in user.hands.values():
-                                    user.hands[object_type] = obj
-                                    obj.camera = user
+                            if "dep" in obj.data:
+                                user_id = obj.data.dep
+                                if user_id in self.users:
+                                    user = self.users[user_id]
+                                    if obj not in user.hands.values():
+                                        user.hands[object_type] = obj
+                                        obj.camera = user
 
-                                    if user.hand_found_callback:
-                                        self.callback_wrapper(
-                                            user.hand_found_callback,
-                                            obj,
-                                            payload
-                                        )
+                                        if user.hand_found_callback:
+                                            self.callback_wrapper(
+                                                user.hand_found_callback,
+                                                obj,
+                                                payload
+                                            )
 
                     # if its an object the library has not seen before, call new object callback
                     elif object_id not in self.unspecified_object_ids and self.new_obj_callback:

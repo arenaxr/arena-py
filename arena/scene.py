@@ -396,7 +396,8 @@ class Scene(ArenaMQTT):
 
         async def _delayed_task():
             try:
-                await asyncio.sleep(anim.get('dur', 0) / 1000)  # convert ms to s
+                sleep_dur = (anim.get('dur', 0) + anim.get('delay', 0)) / 1000
+                await asyncio.sleep(sleep_dur)  # this is in seconds
                 final_state = anim["from"] if anim.get("dir", "normal") == "reverse"\
                     else anim["to"]
                 obj.update_attributes(**{anim["property"]: final_state})

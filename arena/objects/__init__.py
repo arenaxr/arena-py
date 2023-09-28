@@ -31,7 +31,7 @@ OBJECT_TYPE_MAP = {
     Box.object_type:          Box,
     Cylinder.object_type:     Cylinder,
     Dodecahedron.object_type: Dodecahedron,
-    Entity.object_type:       Object,
+    Object.object_type:       Object,
     GLTF.object_type:         GLTF,
     Icosahedron.object_type:  Icosahedron,
     Image.object_type:        Image,

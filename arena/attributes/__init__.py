@@ -13,6 +13,7 @@ from .position import Position
 from .rotation import Rotation
 from .scale import Scale
 from .sound import Sound
+from .spe_particles import SpeParticles
 from .text_input import TextInput
 from .video_control import VideoControl
 
@@ -33,6 +34,7 @@ ATTRIBUTE_TYPE_MAP = {
     "rotation": Rotation,
     "scale": Scale,
     "sound": Sound,
+    "spe_particles": SpeParticles,
     "text_input": TextInput,
     "video_control": VideoControl,
 }

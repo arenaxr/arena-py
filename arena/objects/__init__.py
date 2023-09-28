@@ -5,7 +5,6 @@ from .circle import Circle
 from .cone import Cone
 from .cylinder import Cylinder
 from .dodecahedron import Dodecahedron
-from .entity import Entity
 from .gltf import GLTF
 from .icosahedron import Icosahedron
 from .hands import HandLeft, HandRight
@@ -13,7 +12,6 @@ from .image import Image
 from .light import Light
 from .line import Line
 from .octahedron import Octahedron
-from .particle import Particle
 from .plane import Plane
 from .ring import Ring
 from .sphere import Sphere
@@ -33,7 +31,7 @@ OBJECT_TYPE_MAP = {
     Box.object_type:          Box,
     Cylinder.object_type:     Cylinder,
     Dodecahedron.object_type: Dodecahedron,
-    Entity.object_type:       Entity,
+    Entity.object_type:       Object,
     GLTF.object_type:         GLTF,
     Icosahedron.object_type:  Icosahedron,
     Image.object_type:        Image,
@@ -43,7 +41,6 @@ OBJECT_TYPE_MAP = {
     Line.object_type:         Line,
     Object.object_type:       Object,
     Octahedron.object_type:   Octahedron,
-    Particle.object_type:     Particle,
     Plane.object_type:        Plane,
     Ring.object_type:         Ring,
     Sphere.object_type:       Sphere,

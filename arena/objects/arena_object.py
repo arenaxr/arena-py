@@ -183,6 +183,9 @@ class Object(BaseObject):
                 elif isinstance(v, Object):
                     json_data["look-at"] = v.object_id
 
+            elif "spe_particles" == k:
+                json_data["spe-particles"] = v
+
             # for animation, replace "start" and "end" with "from" and "to"
             elif isinstance(k, str) and "animation" == k[:len("animation")]:
                 animation = vars(v).copy()

@@ -154,7 +154,7 @@ class SoccerGame(PhysicsSystem):
     def start(self):
         for i in range(self.count):
             print("creating ball", i)
-            start_pos = [random.random(), random.random(), random.random() * 15]
+            start_pos = [random.random(), random.random(), 2 + random.random() * 10]
             b = SoccerBall(ball_id=i, start_pos=start_pos)
             self.balls[b.ball_id] = b
             self.scene.add_object(b.arena_object)
@@ -168,11 +168,16 @@ class SoccerGame(PhysicsSystem):
             if j % (self.physics_rate // self.mqtt_push_rate) == 0:
                 for b, b_obj in self.balls.items():
                     ball_pos, ball_rot = p.getBasePositionAndOrientation(b)
-                    self.scene.update_object(
-                        b_obj.arena_object,
-                        position=swap_yz(ball_pos),
-                        rotation=swap_rot(ball_rot),
-                    )
+                    new_rot = swap_rot(ball_rot)
+                    new_pos = swap_yz(ball_pos)
+                    if new_rot != b_obj.last_rot or new_pos != b_obj.last_pos:
+                        b_obj.last_pos = new_pos
+                        b_obj.last_rot = new_rot
+                        self.scene.update_object(
+                            b_obj.arena_object,
+                            position=swap_yz(ball_pos),
+                            rotation=swap_rot(ball_rot),
+                        )
             j += 1
             await asyncio.sleep(1 / self.physics_rate)
 
@@ -185,6 +190,8 @@ class SoccerBall:
         self.start_pos = start_pos
         self.start_orientation = p.getQuaternionFromEuler([0, 0, 0])
         self.ball_id = ball_id
+        self.last_pos = [0, 0, 0]
+        self.last_rot = [0, 0, 0, 1]
 
         b_shape = p.createCollisionShape(p.GEOM_SPHERE, radius=1.75)
         b = p.createMultiBody(1, b_shape, basePosition=start_pos)
@@ -193,8 +200,10 @@ class SoccerBall:
             -1,
             restitution=0.99,
             rollingFriction=0.05,
+            spinningFriction=0.03,
+            lateralFriction=1,
             mass=1,
-            ccdSweptSphereRadius=2.5,
+            ccdSweptSphereRadius=1.75,
         )
         self.arena_object = GLTF(
             url="/store/models/soccerball.gltf",

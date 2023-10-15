@@ -33,7 +33,9 @@ def process_geometry(msg):
     np_triangles = np.reshape(np_triangles, (-1, 3))
     mesh.triangles = o3d.utility.Vector3iVector(np_triangles)
 
-    np_transform = np.array(list(transform.values())).reshape((4, 4), order="F") # col to row
+    np_transform = np.array(list(transform.values())).reshape(
+        (4, 4), order="F"
+    )  # col to row
     mesh.transform(np_transform)
 
     mesh.compute_triangle_normals()
@@ -56,11 +58,11 @@ def process_plane(msg):
     transform = msg.get("planePose")
     polygons = msg.get("polygon")
 
-    vertex_positions = [[p['x'], p['y'], p['z']] for p in polygons]
+    vertex_positions = [[p["x"], p["y"], p["z"]] for p in polygons]
 
     triangle_indices = []
     for i in range(2, len(vertex_positions)):
-        triangle_indices.append([0, i-1, i])
+        triangle_indices.append([0, i - 1, i])
 
     mesh = o3d.geometry.TriangleMesh()
 
@@ -70,7 +72,9 @@ def process_plane(msg):
     np_triangles = np.array(triangle_indices).astype(np.int32)
     mesh.triangles = o3d.utility.Vector3iVector(np_triangles)
 
-    np_transform = np.array(list(transform.values())).reshape((4, 4), order="F") # col to row
+    np_transform = np.array(list(transform.values())).reshape(
+        (4, 4), order="F"
+    )  # col to row
     mesh.transform(np_transform)
 
     mesh.compute_triangle_normals()
@@ -91,7 +95,9 @@ def write_meshes():
     combined_mesh = o3d.geometry.TriangleMesh()
     i = 0
     for m in mesh_list:
-        o3d.io.write_triangle_mesh("meshes/meshes_" + str(i) + ".gltf", m, write_ascii=True)
+        o3d.io.write_triangle_mesh(
+            "meshes/meshes_" + str(i) + ".gltf", m, write_ascii=True
+        )
         i += 1
         combined_mesh += m
     o3d.io.write_triangle_mesh("meshes/combined_meshes.gltf", combined_mesh)
@@ -100,17 +106,17 @@ def write_meshes():
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python geomapper.py <json_filename>")
+        print("Usage: python plane_mesh_mapper.py <json_filename>")
         sys.exit(1)
 
     json_filename = sys.argv[1]
 
-    with open(json_filename, 'r') as f:
+    with open(json_filename, "r") as f:
         json_content = json.load(f)
 
     for entry in json_content:
         if entry.get("vertices"):
-            if entry.get("semanticLabel") == "global mesh":
+            if entry.get("semanticLabel") == "global mesh":  # skip or only global mesh
                 continue
             process_geometry(entry)
         elif entry.get("polygon"):

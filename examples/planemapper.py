@@ -44,12 +44,13 @@ def process_geometry(msg):
         np_triangles = np.reshape(np_triangles, (-1, 3))
         mesh.triangles = o3d.utility.Vector3iVector(np_triangles)
 
-        np_transform = np.array(list(transform.values())).reshape((4, 4), order="F") # col to row
+        np_transform = np.array(list(transform.values())).reshape(
+            (4, 4), order="F"
+        )  # col to row
         mesh.transform(np_transform)
 
         mesh.compute_triangle_normals()
-        mesh.paint_uniform_color(mesh.triangle_normals[0]/2 + 0.5)
-
+        mesh.paint_uniform_color(mesh.triangle_normals[0] / 2 + 0.5)
 
         meshes[uid] = mesh
 
@@ -75,11 +76,13 @@ def process_geometry(msg):
             np_triangles = np.reshape(np_triangles, (-1, 3))
             mesh.triangles = o3d.utility.Vector3iVector(np_triangles)
 
-        np_transform = np.array(list(transform.values())).reshape((4, 4), order="F") # col to row
+        np_transform = np.array(list(transform.values())).reshape(
+            (4, 4), order="F"
+        )  # col to row
         mesh.transform(np_transform)
 
         mesh.compute_triangle_normals()
-        mesh.paint_uniform_color(mesh.triangle_normals[0]/2 + 0.5)
+        mesh.paint_uniform_color(mesh.triangle_normals[0] / 2 + 0.5)
 
         vis.update_geometry(mesh)
         vis.poll_events()
@@ -99,19 +102,19 @@ def write_meshes(scene):
     mesh_list = list(meshes.values())
     print("Writing", len(mesh_list), "meshes")
     combined_mesh = o3d.geometry.TriangleMesh()
-    i = 0;
+    i = 0
     for m in mesh_list:
-        o3d.io.write_triangle_mesh("meshes/plane_meshes_" + str(i) + ".gltf", m, write_ascii=True)
-        i+=1
+        o3d.io.write_triangle_mesh(
+            "meshes/plane_meshes_" + str(i) + ".gltf", m, write_ascii=True
+        )
+        i += 1
         combined_mesh += m
     o3d.io.write_triangle_mesh("meshes/combined_plane_meshes.gltf", combined_mesh)
     vis.destroy_window()
 
 
 scene = Scene(
-     host="arena-dev1.conix.io",
-     scene="blank",
-     end_program_callback=write_meshes
+    host="arena-dev1.conix.io", scene="blank", end_program_callback=write_meshes
 )
 
 

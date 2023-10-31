@@ -1,17 +1,29 @@
 import math
 from ..utils import Utils
 from .attribute import Attribute
+from collections.abc import Iterable
+
 
 class Rotation(Attribute):
     """
     Rotation Attribute in quaternions or euler.
     Usage: rotation=Rotation(x,y,z,w) or rotation=Rotation(x,y,z)
     """
-    def __init__(self, x=0, y=0, z=0, w=None):
-        if w is not None: # quaternions
-            super().__init__(x=Utils.agran(x), y=Utils.agran(y), z=Utils.agran(z), w=Utils.agran(w))
-        else: # euler
-            super().__init__(x=Utils.agran(x), y=Utils.agran(y), z=Utils.agran(z), w=None)
+
+    def __init__(self, x=None, y=None, z=None, w=None):
+        if x is not None and (y is None or z is None or isinstance(x, Iterable)):
+            raise ValueError("Rotation takes x,y,z or x,y,z,w")
+        x = x or 0
+        y = y or 0
+        z = z or 0
+        if w is not None:  # quaternion
+            super().__init__(
+                x=Utils.agran(x), y=Utils.agran(y), z=Utils.agran(z), w=Utils.agran(w)
+            )
+        else:  # euler
+            super().__init__(
+                x=Utils.agran(x), y=Utils.agran(y), z=Utils.agran(z), w=None
+            )
 
     def __repr__(self):
         if self.is_quaternion:
@@ -27,17 +39,17 @@ class Rotation(Attribute):
 
     @property
     def euler(self):
-        if self.is_quaternion: # quaternions
+        if self.is_quaternion:  # quaternions
             euler = Rotation.q2e((self.x, self.y, self.z, self.w))
             return Rotation(*euler)
-        else: # euler
+        else:  # euler
             return self
 
     @property
     def quaternion(self):
-        if self.is_quaternion: # quaternions
+        if self.is_quaternion:  # quaternions
             return self
-        else: # euler
+        else:  # euler
             quat = Rotation.e2q((self.x, self.y, self.z))
             return Rotation(*quat)
 

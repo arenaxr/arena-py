@@ -2,6 +2,40 @@
 
 arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
+## [0.8.0](https://github.com/arenaxr/arena-py/compare/v0.7.0...v0.8.0) (2023-11-01)
+
+
+### Features
+
+* add grabbing example ([6f3a04a](https://github.com/arenaxr/arena-py/commit/6f3a04ab5f5397e6984b7679c33b99dc9b901ade))
+* add grabbing example ([ce9d236](https://github.com/arenaxr/arena-py/commit/ce9d236e0235cc9443aa11da98ac458ec7384bac))
+
+
+### Bug Fixes
+
+* add dur for anims for delayed_prop task ([fdd09f1](https://github.com/arenaxr/arena-py/commit/fdd09f1ab9bb5953985a9e79818f400fab6a1df8))
+* **camera:** publish/read all camera data in data block ([04efd0d](https://github.com/arenaxr/arena-py/commit/04efd0da84df4d820297a91df3a4ffeb06a10620))
+* check user in rigs dict before delete ([ea57f0f](https://github.com/arenaxr/arena-py/commit/ea57f0f9d91f873dbd931351790b8956a37d2775))
+* **particles:** add support for spe-particles componenet ([005a19b](https://github.com/arenaxr/arena-py/commit/005a19b36c513100f959d47f55e937cb6cc42fb8))
+* publish reset rig for new users ([24f1696](https://github.com/arenaxr/arena-py/commit/24f1696810da03f45fd7ffa26fa16dfc08718db1))
+
+## [0.8.0](https://github.com/arenaxr/arena-py/compare/v0.7.0...v0.8.0) (2023-10-31)
+
+
+### Features
+
+* add grabbing example ([6f3a04a](https://github.com/arenaxr/arena-py/commit/6f3a04ab5f5397e6984b7679c33b99dc9b901ade))
+* add grabbing example ([ce9d236](https://github.com/arenaxr/arena-py/commit/ce9d236e0235cc9443aa11da98ac458ec7384bac))
+
+
+### Bug Fixes
+
+* add dur for anims for delayed_prop task ([fdd09f1](https://github.com/arenaxr/arena-py/commit/fdd09f1ab9bb5953985a9e79818f400fab6a1df8))
+* **camera:** publish/read all camera data in data block ([04efd0d](https://github.com/arenaxr/arena-py/commit/04efd0da84df4d820297a91df3a4ffeb06a10620))
+* check user in rigs dict before delete ([ea57f0f](https://github.com/arenaxr/arena-py/commit/ea57f0f9d91f873dbd931351790b8956a37d2775))
+* **particles:** add support for spe-particles componenet ([005a19b](https://github.com/arenaxr/arena-py/commit/005a19b36c513100f959d47f55e937cb6cc42fb8))
+* publish reset rig for new users ([24f1696](https://github.com/arenaxr/arena-py/commit/24f1696810da03f45fd7ffa26fa16dfc08718db1))
+
 ## [0.7.0](https://github.com/arenaxr/arena-py/compare/v0.6.0...v0.7.0) (2023-09-05)
 
 

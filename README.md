@@ -31,19 +31,19 @@ def make_box():
 scene.run_tasks()
 ```
 
-## ARENA-py Library
+## arena-py Library
 The above is the simplest example of an ARENA Python program. This library sits above the ARENA pub/sub MQTT
-message protocol: JSON messages described in more detail at https://github.com/conix-center/ARENA-core which runs in a browser.
+message protocol: JSON messages described in more detail at https://github.com/arenaxr/ARENA-core which runs in a browser.
 That forms a layer, in turn, on top of [A-Frame](https://aframe.io/) and [THREE.js](http://threejs.org/) javascript libraries.
 
 ## Authentication
 We have added protection to the ARENA MQTT broker to limit access to change your scenes, which requires Python programs to supply authentication through a Google account.
 
 ### Sign-In Desktop OS
-If you have a web browser available, the ARENA-py library `Scene(host="myhost.com")` will launch a web browser the first time and ask you for an account to authenticate you with, before opening a client MQTT connection.
+If you have a web browser available, the arena-py library `Scene(host="myhost.com")` will launch a web browser the first time and ask you for an account to authenticate you with, before opening a client MQTT connection.
 
 ### Sign-In Server/Headless OS
-For headless environments, the ARENA-py library `Scene(host="myhost.com")` will provide you with a url to cut and paste in a browser anywhere, ask you for an account to authenticate you with, and show you a code you can enter on the command line, before opening a client MQTT connection.
+For headless environments, the arena-py library `Scene(host="myhost.com")` will provide you with a url to cut and paste in a browser anywhere, ask you for an account to authenticate you with, and show you a code you can enter on the command line, before opening a client MQTT connection.
 
 ## Scripts
 Some helper script aliases have been added in this library to help you manage authentication and quick command-line (CLI) publish and subscribe to the ARENA.
@@ -75,18 +75,18 @@ arena-py-sub --help
 ```
 
 ## Changelog
-Changelog can be found [here](https://github.com/conix-center/ARENA-py/tree/master/CHANGELOG.md).
+Changelog can be found [here](https://github.com/arenaxr/arena-py/tree/master/CHANGELOG.md).
 
-## ARENA-py Repository Files
-- [arena/](https://github.com/conix-center/ARENA-py/tree/master/arena/): The ARENA Python library.
+## arena-py Repository Files
+- [arena/](https://github.com/arenaxr/arena-py/tree/master/arena/): The ARENA Python library.
 
-- [examples/](https://github.com/conix-center/ARENA-py/tree/master/examples/): Canonical examples of ARENA functions from the [documentation](https://docs.arenaxr.org/content/python/).
-- [examples/objects](https://github.com/conix-center/ARENA-py/tree/master/examples/objects): Examples on how to create various ARENA-py objects.
-- [examples/attributes](https://github.com/conix-center/ARENA-py/tree/master/examples/attributes): Examples on how to declare an add various ARENA-py object attributes.
+- [examples/](https://github.com/arenaxr/arena-py/tree/master/examples/): Canonical examples of ARENA functions from the [documentation](https://docs.arenaxr.org/content/python/).
+- [examples/objects](https://github.com/arenaxr/arena-py/tree/master/examples/objects): Examples on how to create various arena-py objects.
+- [examples/attributes](https://github.com/arenaxr/arena-py/tree/master/examples/attributes): Examples on how to declare an add various arena-py object attributes.
 
-- [examples/legacy/](https://github.com/conix-center/ARENA-py/tree/master/examples/legacy/): **Deprecated** demos for **ARENA-py < 0.1.0**.
-- [examples/legacy/digital-twins/](https://github.com/conix-center/ARENA-py/tree/master/examples/legacy/digital-twins/): **Deprecated** demo of digital twins of physical spaces for **ARENA-py < 0.1.0**.
+- [examples/legacy/](https://github.com/arenaxr/arena-py/tree/master/examples/legacy/): **Deprecated** demos for **arena-py < 0.1.0**.
+- [examples/legacy/digital-twins/](https://github.com/arenaxr/arena-py/tree/master/examples/legacy/digital-twins/): **Deprecated** demo of digital twins of physical spaces for **arena-py < 0.1.0**.
 
-- [system-tests/](https://github.com/conix-center/ARENA-py/tree/master/system-tests/): Workouts and tests for ARENA-py.
+- [system-tests/](https://github.com/arenaxr/arena-py/tree/master/system-tests/): Workouts and tests for arena-py.
 
-- [tools/](https://github.com/conix-center/ARENA-py/tree/master/tools/): Reusable tools for any ARENA scene.
+- [tools/](https://github.com/arenaxr/arena-py/tree/master/tools/): Reusable tools for any ARENA scene.

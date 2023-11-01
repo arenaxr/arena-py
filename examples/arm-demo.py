@@ -122,7 +122,7 @@ def main():
         color="#ffffff",
         clickable=True,
         goto_url=GotoUrl(dest="newtab", on="mousedown",
-                         url="https://github.com/conix-center/ARENA-py/blob/master/examples/arm-demo.py"),
+                         url="https://github.com/arenaxr/arena-py/blob/master/examples/arm-demo.py"),
         persist=True,
     )
     arena.add_object(arm_src_img)

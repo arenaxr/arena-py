@@ -1,20 +1,29 @@
+import os
 import setuptools
 
 with open("README.md", "r") as readme:
     long_description = readme.read()
 
+package_root = os.path.abspath(os.path.dirname(__file__))
+
+version = {}
+with open(os.path.join(package_root, "arena/version.py")) as fp:
+    exec(fp.read(), version)
+version = version["__version__"]
+
+
 setuptools.setup(
     name="arena-py",
-    version="0.8.0",
+    version=version,
     author="Conix Research Center",
     author_email="info@conix.io",
     license="BSD 3-clause \"New\" or \"Revised License\"",
     description="Draw objects and run programs in the ARENA using Python!",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/arenaxr/ARENA-py",
+    url="https://github.com/arenaxr/arena-py",
     packages=setuptools.find_packages(),
-    entry_points = {
+    entry_points={
         'console_scripts': [
             'arena=arena.__main__:cli',
             'arena-py-permissions=arena.scripts.arena_py_permissions:main',

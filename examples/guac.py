@@ -317,7 +317,7 @@ def main():
         color="#ffffff",
         clickable=True,
         goto_url=GotoUrl(dest="newtab", on="mousedown",
-                         url="https://github.com/conix-center/ARENA-py/blob/master/examples/guac.py"),
+                         url="https://github.com/arenaxr/arena-py/blob/master/examples/guac.py"),
         persist=True,
     )
     arena.add_object(guac_src_img)

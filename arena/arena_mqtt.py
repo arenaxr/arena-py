@@ -195,7 +195,7 @@ class ArenaMQTT(object):
         """
         Reusable command-line options to give apps flexible options to avoid hard-coding locations.
         """
-        parser = argparse.ArgumentParser(description=("ARENA-py Application CLI"))
+        parser = argparse.ArgumentParser(description=("arena-py Application CLI"))
         parser.add_argument("-mh", "--host", type=str,
                             help="ARENA webserver main host to connect to")
         parser.add_argument("-n", "--namespace", type=str,

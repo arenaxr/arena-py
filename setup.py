@@ -12,7 +12,7 @@ setuptools.setup(
     description="Draw objects and run programs in the ARENA using Python!",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/arenaxr/ARENA-py",
+    url="https://github.com/arenaxr/arena-py",
     packages=setuptools.find_packages(),
     entry_points = {
         'console_scripts': [

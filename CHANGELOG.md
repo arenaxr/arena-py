@@ -1,6 +1,6 @@
 # Changelog
 
-ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
+arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ## [0.7.0](https://github.com/arenaxr/arena-py/compare/v0.6.0...v0.7.0) (2023-09-05)
 
@@ -257,7 +257,7 @@ ARENA-py notable changes. Started 2021-02-19 (version 0.1.12).
 ## [0.1.33] - 2021-05-18
 ### Added
 - `Object`s start with a default color of `(128,128,128)`.
-- Add first draft of ARENA-py CLI (similar to mosquitto_pub/sub)!
+- Add first draft of arena-py CLI (similar to mosquitto_pub/sub)!
 Usage: `python3 -m arena -s <scene> -a <pub/sub> ...`
 Type `python3 -m arena -h` for options.
 

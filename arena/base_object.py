@@ -12,7 +12,7 @@ class BaseObjectJSONEncoder(json.JSONEncoder):
 
 class BaseObject(object):
     """
-    Basic Building Block for everything in ARENA-py.
+    Basic Building Block for everything in arena-py.
     Can easily be interpreted and used like a JSON-able Python dictionary.
     """
     def __init__(self, **kwargs):

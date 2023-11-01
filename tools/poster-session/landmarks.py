@@ -1,7 +1,7 @@
 """
 *TL;DR
 Support adding landmarks to a scene
-(temporary, until we add this functionality to ARENA-py library)
+(temporary, until we add this functionality to arena-py library)
 """
 import json
 import paho.mqtt.publish as publish

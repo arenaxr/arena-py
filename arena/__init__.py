@@ -1,5 +1,5 @@
 """
-ARENA-py
+arena-py
 
 Draw objects and run programs in the ARENA using Python!
 """

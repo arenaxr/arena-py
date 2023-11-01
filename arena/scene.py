@@ -94,7 +94,7 @@ class Scene(ArenaMQTT):
     def on_connect(self, client, userdata, flags, rc):
         super().on_connect(client, userdata, flags, rc)
         if rc == 0:
-            # create ARENA-py Objects from persist server
+            # create arena-py Objects from persist server
             # no need to return anything here
             self.get_persisted_objs()
 

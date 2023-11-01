@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ARENA-py CLI
+arena-py CLI
 
 Usage: python3 -m arena -s <scene> -a <pub/sub> ...
 """
@@ -68,7 +68,7 @@ def main(host, realm, scene, namespace, action, topic, message):
 
 
 def cli():
-    parser = argparse.ArgumentParser(description=("ARENA-py MQTT CLI"))
+    parser = argparse.ArgumentParser(description=("arena-py MQTT CLI"))
 
     parser.add_argument("-mh", "--host",
                         type=str,

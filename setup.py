@@ -11,7 +11,6 @@ with open(os.path.join(package_root, "arena/version.py")) as fp:
     exec(fp.read(), version)
 version = version["__version__"]
 
-
 setuptools.setup(
     name="arena-py",
     version=version,

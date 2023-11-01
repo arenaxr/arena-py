@@ -42,8 +42,9 @@ class ArenaAuth:
         """
         Begins authentication flow, getting Google auth, opening web browser if
         needed, getting username and state from ARENA server.
-        web_host: The hostname of the ARENA webserver.
-        Returns: Username from arena-account, or None.
+
+        :param str web_host: The hostname of the ARENA webserver.
+        :return: Username from arena-account, or None.
         """
         print("Signing in to the ARENA...")
         gauth_json = self._get_gauthid(web_host)
@@ -103,12 +104,13 @@ class ArenaAuth:
     def authenticate_scene(self, web_host, realm, scene, username, video=False):
         """ End authentication flow, requesting permissions may change by owner
         or admin, for now, get a fresh mqtt_token each time.
-        web_host: The hostname of the ARENA webserver.
-        realm: The topic realm name.
-        scene: The namespace/scene name combination.
-        username: The ARENA username for the user.
-        video: If Jitsi video conference is requested.
-        Returns: username and mqtt_token from arena-account.
+
+        :param str web_host: The hostname of the ARENA webserver.
+        :param str realm: The topic realm name.
+        :param str scene: The namespace/scene name combination.
+        :param str username: The ARENA username for the user.
+        :param bool video: If Jitsi video conference is requested.
+        :return: username and mqtt_token from arena-account.
         """
         scene_auth_dir = self._get_scene_auth_path(web_host)
         scene_mqtt_path = f"{scene_auth_dir}/{_mqtt_token_file}"
@@ -172,8 +174,9 @@ class ArenaAuth:
 
     def get_writable_scenes(self, web_host):
         """ Request list of scene names for logged in user that user has publish permission for.
-        web_host: The hostname of the ARENA webserver.
-        Returns: list of scenes.
+
+        :param str web_host: The hostname of the ARENA webserver.
+        :return: list of scenes.
         """
         my_scenes = self._get_my_scenes(web_host, self._id_token)
         return json.loads(my_scenes)
@@ -207,8 +210,8 @@ class ArenaAuth:
     def check_local_auth(self):
         """
         Check for local mqtt_token and save to local memory.
-        TODO: remove local check after ARTS supports mqtt_token passing
         """
+        # TODO: remove local check after ARTS supports mqtt_token passing
         # 4 Oct 2021 remove deprecated user home creds path
         _remove_credentials(str(Path.home()))
         # check token expiration
@@ -281,10 +284,10 @@ class ArenaAuth:
 
     def urlopen(self, url, data=None, creds=False, csrf=None):
         """ urlopen is for ARENA URL connections.
-        url: the url to POST/GET.
-        data: None for GET, add params for POST.
-        creds: True to pass the MQTT token as a cookie.
-        csrf: The csrftoken.
+        :param str url: the url to POST/GET.
+        :param str data: None for GET, add params for POST.
+        :param str creds: True to pass the MQTT token as a cookie.
+        :param str csrf: The csrftoken.
         """
         urlparts = urlsplit(url)
         try:

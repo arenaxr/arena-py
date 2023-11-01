@@ -286,7 +286,7 @@ class ArenaAuth:
         """ urlopen is for ARENA URL connections.
         :param str url: the url to POST/GET.
         :param str data: None for GET, add params for POST.
-        :param str creds: True to pass the MQTT token as a cookie.
+        :param bool creds: True to pass the MQTT token as a cookie.
         :param str csrf: The csrftoken.
         """
         urlparts = urlsplit(url)

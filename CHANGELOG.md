@@ -4,6 +4,9 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ## [0.8.0](https://github.com/arenaxr/arena-py/compare/v0.7.0...v0.8.0) (2023-11-01)
 
+* **BREAKING CHANGE**: All `arena-user` attributes (descriptors of users in the scene) now are published under the
+                       `arena-user` key within the `data` block, rather than the top-level or directly under `data`
+                       of the of the MQTT message.
 
 ### Features
 

@@ -4,16 +4,16 @@ import setuptools
 with open("README.md", "r") as readme:
     long_description = readme.read()
 
-package_root = os.path.abspath(os.path.dirname(__file__))
+# package_root = os.path.abspath(os.path.dirname(__file__))
 
-version = {}
-with open(os.path.join(package_root, "arena/version.py")) as fp:
-    exec(fp.read(), version)
-version = version["__version__"]
+# version = {}
+# with open(os.path.join(package_root, "arena/version.py")) as fp:
+#     exec(fp.read(), version)
+# version = version["__version__"]
 
 setuptools.setup(
     name="arena-py",
-    version=version,
+    version="0.8.0",
     author="Conix Research Center",
     author_email="info@conix.io",
     license="BSD 3-clause \"New\" or \"Revised License\"",

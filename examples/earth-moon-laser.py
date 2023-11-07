@@ -2,18 +2,15 @@
 """ Simple program to animate the earth and moon with a laser pointer. """
 from arena import *
 
-
-def click_pointer(scene, evt, msg):
+def click_pointer(scene, event, msg):
     """Emit a 1-second laser line and target for each user click"""
-    if evt.type == "mousedown":
-        start = evt.data.clickPos
-        end = evt.data.position
-        start.y = start.y - 0.1
+    if event.type == "mousedown":
+        start = event.data.clickPos
+        end = event.data.position
+        start.y = start.y - 0.1  # emit below user frustum for visibility
         line = ThickLine(path=(start, end), color=(255, 0, 0), lineWidth=5, ttl=1)
-        scene.add_object(line)
         ball = Sphere(position=end, scale=(0.06, 0.06, 0.06), color=(255, 0, 0), ttl=1)
-        scene.add_object(ball)
-
+        scene.add_objects([line, ball])
 
 scene = Scene(host="arenaxr.org", scene="earth")
 earth = GLTF(

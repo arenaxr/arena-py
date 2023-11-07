@@ -9,20 +9,20 @@ def click_pointer(scene, event, msg):
         end = event.data.position
         start.y = start.y - 0.1  # emit below user frustum for visibility
         line = ThickLine(path=(start, end), color=(255, 0, 0), lineWidth=5, ttl=1)
-        ball = Sphere(position=end, scale=(0.06, 0.06, 0.06), color=(255, 0, 0), ttl=1)
+        ball = Sphere(position=end, scale=(0.03, 0.03, 0.03), color=(255, 0, 0), ttl=1)
         scene.add_objects([line, ball])
 
 scene = Scene(host="arenaxr.org", scene="earth")
 earth = GLTF(
     object_id="gltf-model_Earth",
-    scale=(10, 10, 10),
+    scale=(5, 5, 5),
     url="store/users/wiselab/models/Earth.glb",
     clickable=True,
     persist=True,
+    evt_handler=click_pointer,
     animation=Animation(
         property="rotation", end=(0, 360, 0), loop=True, dur=20000, easing="linear"
     ),
-    evt_handler=click_pointer,
 )
 moon = GLTF(
     object_id="gltf-model_Moon",

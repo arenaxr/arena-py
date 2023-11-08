@@ -1,4 +1,4 @@
-# ARENA-Py
+# arena-py
 Draw objects and run programs in the ARENA using Python!
 
 ## Documentation

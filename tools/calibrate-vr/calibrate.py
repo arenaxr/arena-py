@@ -7,7 +7,6 @@ import json
 import os
 import time
 import numpy as np
-from scipy.spatial.transform import Rotation as spRotation
 
 env_axis = os.environ.get("FULL_AXIS")
 fullAxis = bool(env_axis) if env_axis is not None else False
@@ -439,8 +438,7 @@ def publish_rig_offset(user_id):
         return
     obj_topic = f"{scene.root_topic}/{user_id}"
     if rig:
-        rotation_matrix = spRotation.from_matrix(rig["rotation"])
-        qx, qy, qz, qw = rotation_matrix.as_quat()
+        qx, qy, qz, qw = Utils.matrix3_to_quat(rig["rotation"])
         msg = {
             "object_id": user_id,
             "type": "rig",

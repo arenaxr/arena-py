@@ -90,11 +90,11 @@ class Utils(object):
     def get_world_pose(cls, obj, scene):
         current_obj = obj
         matrices = []
-        while current_obj.data.get("parent") is not None:
+        while "parent" in current_obj.data:
             current_matrix = cls.pose_to_matrix4(
                 current_obj.data.position,
-                current_obj.data.rotation,
-                current_obj.data.scale,
+                current_obj.data.rotation.quaternion,
+                current_obj.data.scale.array,
             )
             matrices = [current_matrix] + matrices  # prepend
             current_obj = scene.all_objects[current_obj.data.parent]

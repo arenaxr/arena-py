@@ -23,3 +23,7 @@ class Scale(Attribute):
 
     def to_str(self):
         return Utils.tuple_to_string((self.x, self.y, self.z))
+
+    @property
+    def array(self):
+        return [self.x, self.y, self.z]

@@ -58,6 +58,11 @@ class Rotation(Attribute):
             quat = Rotation.e2q((self.x, self.y, self.z))
             return Rotation(*quat)
 
+    @property
+    def array(self):
+        q = self.quaternion
+        return [q.x, q.y, q.z, q.w]
+
     @classmethod
     def q2e(cls, q):
         """quaternions to euler (degrees)"""

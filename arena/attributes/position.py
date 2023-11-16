@@ -29,3 +29,7 @@ class Position(Attribute):
         return math.sqrt(
             (self.x - pos.x) ** 2 + (self.y - pos.y) ** 2 + (self.z - pos.z) ** 2
         )
+
+    @property
+    def array(self):
+        return [self.x, self.y, self.z]

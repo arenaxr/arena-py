@@ -42,11 +42,11 @@ def create_pcd(json_data, points=10000, write=False, crop_y=0.5):
         return
 
     mesh = o3d.geometry.TriangleMesh()
-    np_vertices = np.array(list(vertices.values()))
+    np_vertices = np.array(vertices)
     np_vertices = np.reshape(np_vertices, (-1, 3))
     mesh.vertices = o3d.utility.Vector3dVector(np_vertices)
 
-    np_triangles = np.array(list(indices.values())).astype(np.int32)
+    np_triangles = np.array(indices).astype(np.int32)
     np_triangles = np.reshape(np_triangles, (-1, 3))
     mesh.triangles = o3d.utility.Vector3iVector(np_triangles)
 
@@ -62,6 +62,9 @@ def create_pcd(json_data, points=10000, write=False, crop_y=0.5):
         np_transform[2, 3] = -center[2]
 
     mesh.transform(np_transform)
+
+    if write:
+        o3d.io.write_triangle_mesh("meshes/global_mesh.gltf", mesh)
 
     pcd = mesh.sample_points_poisson_disk(
         number_of_points=points, use_triangle_normal=True

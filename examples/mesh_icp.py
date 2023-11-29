@@ -24,7 +24,8 @@ def msg_callback(_client, _userdata, msg):
     topic_split = msg.topic.split("/")
     name_scene = "/".join(topic_split[3:5])
     usercam = topic_split[5]
-    pcd_src = create_pcd(payload)
+    mesh_src = load_mesh_data(payload)
+    pcd_src = create_pcd(mesh_src)
     pcd_src.paint_uniform_color([1, 0, 0])
     if pcd_src is not None:
         res = icp(pcd_src, pcd_target)
@@ -35,24 +36,22 @@ def msg_callback(_client, _userdata, msg):
         quat = R.from_matrix(mat[0:3, 0:3]).as_quat()
 
         pub_topic = f"realm/s/{name_scene}/{usercam}"
-        pub_msg = json.dumps({
-            'object_id': usercam,
-            'action': 'update',
-            'type': 'rig',
-            'data': {
-                'position': {
-                    'x': pos[0],
-                    'y': pos[1],
-                    'z': pos[2]
+        pub_msg = json.dumps(
+            {
+                "object_id": usercam,
+                "action": "update",
+                "type": "rig",
+                "data": {
+                    "position": {"x": pos[0], "y": pos[1], "z": pos[2]},
+                    "rotation": {
+                        "x": quat[0],
+                        "y": quat[1],
+                        "z": quat[2],
+                        "w": quat[3],
+                    },
                 },
-                'rotation': {
-                    'x': quat[0],
-                    'y': quat[1],
-                    'z': quat[2],
-                    'w': quat[3]
-                }
             }
-        })
+        )
         print("Publishing", pub_msg, "to", pub_topic)
         scene.mqttc.publish(pub_topic, pub_msg)
         # visualize
@@ -71,7 +70,7 @@ def draw_registration_result(source, target, icp_transform):
     vis.add_geometry(target)
 
 
-def create_pcd(mesh_data, points=10000, write=False, crop_y=0.5):
+def load_mesh_data(mesh_data, write=False):
     vertices = mesh_data.get("vertices")
     indices = mesh_data.get("indices")
     semanticLabel = mesh_data.get("semanticLabel")
@@ -96,8 +95,6 @@ def create_pcd(mesh_data, points=10000, write=False, crop_y=0.5):
         np_transform[0, 3] = 0
         np_transform[2, 3] = 0
 
-    print("Create PCD from mesh with pose", np_transform, "with WRITE", write)
-
     mesh.transform(np_transform)
 
     if write:
@@ -108,8 +105,13 @@ def create_pcd(mesh_data, points=10000, write=False, crop_y=0.5):
         mesh.transform(np_transform)
 
     if write:
+        print("Writing global_mesh gltf")
         o3d.io.write_triangle_mesh("meshes/global_mesh.gltf", mesh)
 
+    return mesh
+
+
+def create_pcd(mesh, points=10000, write=False, crop_y=0.5):
     pcd = mesh.sample_points_poisson_disk(
         number_of_points=points, use_triangle_normal=True
     )
@@ -135,12 +137,14 @@ def rotation_matrix_y(angle_degrees):
     cos_theta = np.cos(angle_radians)
     sin_theta = np.sin(angle_radians)
 
-    return np.array([
-        [cos_theta, 0, sin_theta, 0],
-        [0, 1, 0, 0],
-        [-sin_theta, 0, cos_theta, 0],
-        [0, 0, 0, 1]
-    ])
+    return np.array(
+        [
+            [cos_theta, 0, sin_theta, 0],
+            [0, 1, 0, 0],
+            [-sin_theta, 0, cos_theta, 0],
+            [0, 0, 0, 1],
+        ]
+    )
 
 
 def icp(src, target, distance=20, rotations=8):
@@ -179,20 +183,30 @@ vis.create_window()
 print("CUDA:", o3d.core.Device())
 
 if os.path.isfile("target.pcd"):
+    print("Loading Target PCD")
     pcd_target = o3d.io.read_point_cloud("target.pcd")
 else:
-    with open("meshdata.pack", 'rb') as f:
-        data = msgpack.load(f)
-        pcd_target = create_pcd(data, write=True)
+    if os.path.isfile("./meshes/global_mesh.gltf"):
+        print("Loading Target Mesh")
+        target_mesh = o3d.io.read_triangle_mesh("./meshes/global_mesh.gltf")
+    else:
+        with open("meshdata.pack", "rb") as f:
+            print("Loading Target Packed Mesh Data")
+            data = msgpack.load(f)
+            target_mesh = load_mesh_data(data, write=True)
+    pcd_target = create_pcd(target_mesh, write=True)
 
 
 # pcd_target.paint_uniform_color([0, 1, 0])
 # with open("meshdata2.pack", 'rb') as f:
 #     data = msgpack.load(f)
-#     pcd_src = create_pcd(data)
+#     mesh_src = load_mesh_data(data)
+#     pcd_src = create_pcd(mesh_src)
 #     pcd_src.paint_uniform_color([1, 0, 0])
 #     res = icp(pcd_src, pcd_target)
 #     draw_registration_result(pcd_src, pcd_target, res.transformation)
+#     origin = o3d.geometry.TriangleMesh.create_coordinate_frame(size=2)
+#     vis.add_geometry(origin)
 
 
 @scene.run_forever(interval_ms=100)

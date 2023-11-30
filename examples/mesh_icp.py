@@ -134,12 +134,14 @@ def load_mesh_data(mesh_data, write=False, target=False):
         np_transform[0, 3] = -center[0]
         np_transform[2, 3] = -center[2]
         mesh.transform(np_transform)
+        mesh.compute_triangle_normals()  # Recompute normals after transform
 
     if write:
-        print("Writing global_mesh gltf")
         if target:
+            print("Writing global_mesh gltf")
             o3d.io.write_triangle_mesh("meshes/global_mesh.glb", mesh)
         else:
+            print("Writing mesh gltf")
             o3d.io.write_triangle_mesh(
                 "meshes/meshes_" + str(int(time.time())) + ".glb", mesh
             )
@@ -276,9 +278,15 @@ if target_pcd is not None:
 #     src_pcd = create_pcd(mesh_src)
 #     src_pcd.paint_uniform_color([1, 0, 0])
 #     res = icp(src_pcd, target_pcd)
-#     draw_registration_result(src_pcd, target_pcd, res.transformation)
-#     origin = o3d.geometry.TriangleMesh.create_coordinate_frame(size=2)
-#     vis.add_geometry(origin)
+#     draw_registration_result(src_pcd, res.transformation)
+
+
+# src_mesh = o3d.io.read_triangle_mesh("./meshes/meshes_1701379498.glb")
+# src_pcd = create_pcd(src_mesh)
+# src_pcd.paint_uniform_color([1, 0, 0])
+# res = icp(src_pcd, target_pcd)
+# print(res.transformation)
+# draw_registration_result(src_pcd, res.transformation)
 
 
 # Update loop for visualization

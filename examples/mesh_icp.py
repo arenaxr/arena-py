@@ -79,18 +79,18 @@ def msg_callback(_client, _userdata, msg):
         print("invalid mesh data")
 
 
-def draw_registration_result(source, icp_transform, color=None):
+def draw_registration_result(source, icp_transform, uniform_color=None):
     """
     Draws source pcd with ICP solution transform applied
     :param source: source pcd
     :param icp_transform: solution matrix
-    :param color: rendered color of PCD
+    :param uniform_color: rendered color of PCD
     """
-    if color is None:
-        color = [0, 0, 1]
+    if uniform_color is None:
+        uniform_color = [0, 0, 1]
     source_transformed = o3d.geometry.PointCloud(source)
-    source.transform(icp_transform)
-    source.paint_uniform_color(color)
+    source_transformed.transform(icp_transform)
+    source_transformed.paint_uniform_color(uniform_color)
     vis.add_geometry(source_transformed)
 
 

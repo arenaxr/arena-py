@@ -5,14 +5,18 @@ import msgpack
 import json
 from scipy.spatial.transform import Rotation as R
 from math import radians
+import time
 
 
 DEBUG = False
 LISTEN_TOPIC = "realm/proc/debug/+/+/+/meshes"
 vis = None
+target_mesh = None
+target_pcd = None
 
 
 def msg_callback(_client, _userdata, msg):
+    global target_mesh, target_pcd
     try:
         payload_str = msg.payload.decode("utf-8", "ignore")
         payload = json.loads(payload_str)
@@ -24,12 +28,17 @@ def msg_callback(_client, _userdata, msg):
     topic_split = msg.topic.split("/")
     name_scene = "/".join(topic_split[3:5])
     usercam = topic_split[5]
-    mesh_src = load_mesh_data(payload)
-    pcd_src = create_pcd(mesh_src)
-    pcd_src.paint_uniform_color([1, 0, 0])
-    if pcd_src is not None:
-        res = icp(pcd_src, pcd_target)
-        print("ICP result", res.transformation)
+    if target_mesh is None:  # No reference target, make this one the target
+        target_mesh = load_mesh_data(payload, write=True, target=True)
+        target_pcd = create_pcd(target_mesh, write=True)
+        return
+    else:
+        src_mesh = load_mesh_data(payload, write=True)
+        src_pcd = create_pcd(src_mesh)
+    src_pcd.paint_uniform_color([1, 0, 0])
+    if src_pcd is not None:
+        res = icp(src_pcd, target_pcd)
+        print("ICP result for", usercam, ":", res.transformation)
 
         mat = np.copy(res.transformation)
         pos = mat[0:3, 3]
@@ -52,25 +61,24 @@ def msg_callback(_client, _userdata, msg):
                 },
             }
         )
-        print("Publishing", pub_msg, "to", pub_topic)
         scene.mqttc.publish(pub_topic, pub_msg)
         # visualize
-        draw_registration_result(pcd_src, pcd_target, res.transformation)
+        vis.clear_geometries()
+        vis.add_geometry(src_pcd)
+        vis.add_geometry(target_pcd)
+        draw_registration_result(src_pcd, res.transformation)
     else:
         print("invalid mesh data")
 
 
-def draw_registration_result(source, target, icp_transform):
-    vis.clear_geometries()
+def draw_registration_result(source, icp_transform, color=[0, 0, 1]):
     source_transformed = o3d.geometry.PointCloud(source)
     source.transform(icp_transform)
-    source.paint_uniform_color([0, 0, 1])
-    vis.add_geometry(source)
+    source.paint_uniform_color(color)
     vis.add_geometry(source_transformed)
-    vis.add_geometry(target)
 
 
-def load_mesh_data(mesh_data, write=False):
+def load_mesh_data(mesh_data, write=False, target=False):
     vertices = mesh_data.get("vertices")
     indices = mesh_data.get("indices")
     semanticLabel = mesh_data.get("semanticLabel")
@@ -106,8 +114,12 @@ def load_mesh_data(mesh_data, write=False):
 
     if write:
         print("Writing global_mesh gltf")
-        o3d.io.write_triangle_mesh("meshes/global_mesh.gltf", mesh)
-
+        if target:
+            o3d.io.write_triangle_mesh("meshes/global_mesh.gltf", mesh)
+        else:
+            o3d.io.write_triangle_mesh(
+                "meshes/meshes_" + str(int(time.time())) + ".gltf", mesh
+            )
     return mesh
 
 
@@ -147,7 +159,7 @@ def rotation_matrix_y(angle_degrees):
     )
 
 
-def icp(src, target, distance=20, rotations=8):
+def icp(src, target, distance=5, rotations=8):
     src_center = src.get_center()
     target_center = target.get_center()
     init_transform = np.identity(4)
@@ -176,7 +188,7 @@ def icp(src, target, distance=20, rotations=8):
 scene = Scene(host="arena-dev1.conix.io")
 scene.message_callback_add(LISTEN_TOPIC, msg_callback)
 
-o3d.utility.set_verbosity_level(o3d.utility.VerbosityLevel.Debug)
+# o3d.utility.set_verbosity_level(o3d.utility.VerbosityLevel.Debug)
 vis = o3d.visualization.Visualizer()
 vis.create_window()
 
@@ -184,27 +196,34 @@ print("CUDA:", o3d.core.Device())
 
 if os.path.isfile("target.pcd"):
     print("Loading Target PCD")
-    pcd_target = o3d.io.read_point_cloud("target.pcd")
+    target_pcd = o3d.io.read_point_cloud("target.pcd")
 else:
     if os.path.isfile("./meshes/global_mesh.gltf"):
         print("Loading Target Mesh")
         target_mesh = o3d.io.read_triangle_mesh("./meshes/global_mesh.gltf")
     else:
-        with open("meshdata.pack", "rb") as f:
-            print("Loading Target Packed Mesh Data")
-            data = msgpack.load(f)
-            target_mesh = load_mesh_data(data, write=True)
-    pcd_target = create_pcd(target_mesh, write=True)
+        if os.path.isfile("meshdata.pack"):
+            with open("meshdata.pack", "rb") as f:
+                print("Loading Target Packed Mesh Data")
+                data = msgpack.load(f)
+                target_mesh = load_mesh_data(data, write=True, target=True)
+    if target_mesh is not None:
+        target_pcd = create_pcd(target_mesh, write=True)
+    else:
+        print("No target mesh found")
+        target_pcd = None
+
+if target_pcd is not None:
+    target_pcd.paint_uniform_color([0, 1, 0])
 
 
-# pcd_target.paint_uniform_color([0, 1, 0])
 # with open("meshdata2.pack", 'rb') as f:
 #     data = msgpack.load(f)
 #     mesh_src = load_mesh_data(data)
-#     pcd_src = create_pcd(mesh_src)
-#     pcd_src.paint_uniform_color([1, 0, 0])
-#     res = icp(pcd_src, pcd_target)
-#     draw_registration_result(pcd_src, pcd_target, res.transformation)
+#     src_pcd = create_pcd(mesh_src)
+#     src_pcd.paint_uniform_color([1, 0, 0])
+#     res = icp(src_pcd, target_pcd)
+#     draw_registration_result(src_pcd, target_pcd, res.transformation)
 #     origin = o3d.geometry.TriangleMesh.create_coordinate_frame(size=2)
 #     vis.add_geometry(origin)
 

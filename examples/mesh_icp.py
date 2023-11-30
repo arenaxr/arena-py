@@ -40,9 +40,10 @@ def msg_callback(_client, _userdata, msg):
         target_pcd = create_pcd(target_mesh, write=True)
         return
     else:  # Create PCD from incoming mesh JSON data. TODO: handle packed binary data
+        print("New src mesh data, creating src PCD")
         src_mesh = load_mesh_data(payload, write=True)
         src_pcd = create_pcd(src_mesh)
-    src_pcd.paint_uniform_color([1, 0, 0])
+        src_pcd.paint_uniform_color([1, 0, 0])
     if src_pcd is not None:
         res = icp(src_pcd, target_pcd)
         print("ICP result for", usercam, ":", res.transformation)
@@ -137,10 +138,10 @@ def load_mesh_data(mesh_data, write=False, target=False):
     if write:
         print("Writing global_mesh gltf")
         if target:
-            o3d.io.write_triangle_mesh("meshes/global_mesh.gltf", mesh)
+            o3d.io.write_triangle_mesh("meshes/global_mesh.glb", mesh)
         else:
             o3d.io.write_triangle_mesh(
-                "meshes/meshes_" + str(int(time.time())) + ".gltf", mesh
+                "meshes/meshes_" + str(int(time.time())) + ".glb", mesh
             )
     return mesh
 
@@ -170,6 +171,7 @@ def create_pcd(mesh, points=10000, write=False, crop_y=0.5):
         pcd = pcd.crop(cropped_aabb)
 
     if write:
+        print("Writing target.pcd")
         o3d.io.write_point_cloud("target.pcd", pcd)
     return pcd
 
@@ -245,9 +247,9 @@ if os.path.isfile("target.pcd"):
     print("Loading Target PCD")
     target_pcd = o3d.io.read_point_cloud("target.pcd")
 else:
-    if os.path.isfile("./meshes/global_mesh.gltf"):
+    if os.path.isfile("./meshes/global_mesh.glb"):
         print("Loading Target Mesh")
-        target_mesh = o3d.io.read_triangle_mesh("./meshes/global_mesh.gltf")
+        target_mesh = o3d.io.read_triangle_mesh("./meshes/global_mesh.glb")
     else:
         if os.path.isfile("meshdata.pack"):
             with open("meshdata.pack", "rb") as f:
@@ -262,6 +264,9 @@ else:
 
 if target_pcd is not None:
     target_pcd.paint_uniform_color([0, 1, 0])
+    vis.add_geometry(target_pcd)
+    axis = o3d.geometry.TriangleMesh.create_coordinate_frame(size=2)
+    vis.add_geometry(axis)
 
 
 # Test manually with input file
@@ -277,7 +282,7 @@ if target_pcd is not None:
 
 
 # Update loop for visualization
-@scene.run_forever(interval_ms=100)
+@scene.run_forever(interval_ms=50)
 def update_viz():
     if vis is not None:
         vis.poll_events()

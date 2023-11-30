@@ -45,6 +45,7 @@ def msg_callback(_client, _userdata, msg):
         src_pcd = create_pcd(src_mesh)
         src_pcd.paint_uniform_color([1, 0, 0])
     if src_pcd is not None:
+        vis.clear_geometries()
         res = icp(src_pcd, target_pcd)
         print("ICP result for", usercam, ":", res.transformation)
 
@@ -71,7 +72,6 @@ def msg_callback(_client, _userdata, msg):
         )
         scene.mqttc.publish(pub_topic, pub_msg)
         # visualize results
-        vis.clear_geometries()
         vis.add_geometry(src_pcd)
         vis.add_geometry(target_pcd)
         draw_registration_result(src_pcd, res.transformation)
@@ -79,13 +79,15 @@ def msg_callback(_client, _userdata, msg):
         print("invalid mesh data")
 
 
-def draw_registration_result(source, icp_transform, color=[0, 0, 1]):
+def draw_registration_result(source, icp_transform, color=None):
     """
     Draws source pcd with ICP solution transform applied
     :param source: source pcd
     :param icp_transform: solution matrix
     :param color: rendered color of PCD
     """
+    if color is None:
+        color = [0, 0, 1]
     source_transformed = o3d.geometry.PointCloud(source)
     source.transform(icp_transform)
     source.paint_uniform_color(color)
@@ -122,13 +124,13 @@ def load_mesh_data(mesh_data, write=False, target=False):
 
     # Comes in as col-major, apply transform as specified from the meshPose
     np_transform = np.array(list(meshPose.values())).reshape((4, 4), order="F")
-    if write:  # When we write, we throw away translation of the meshPose
+    if target:  # When we write target, we throw away translation of the meshPose
         np_transform[0, 3] = 0
         np_transform[2, 3] = 0
 
     mesh.transform(np_transform)
 
-    if write:  # Also (temporarily) recenter the mesh on origi
+    if target:  # Also (temporarily) recenter the mesh on origi
         center = mesh.get_center()
         np_transform = np.identity(4)
         np_transform[0, 3] = -center[0]

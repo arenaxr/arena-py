@@ -16,6 +16,12 @@ target_pcd = None
 
 
 def msg_callback(_client, _userdata, msg):
+    """
+    Callback for incoming mesh data from pubsub. Will attempt to align incoming source
+    mesh to the target pcd using ICP and publish the the resulting transformation
+    to the scene topic. If no target pcd has been set, the first incoming mesh will
+    be set as the target.
+    """
     global target_mesh, target_pcd
     try:
         payload_str = msg.payload.decode("utf-8", "ignore")
@@ -32,7 +38,7 @@ def msg_callback(_client, _userdata, msg):
         target_mesh = load_mesh_data(payload, write=True, target=True)
         target_pcd = create_pcd(target_mesh, write=True)
         return
-    else:
+    else:  # Create PCD from incoming mesh JSON data. TODO: handle packed binary data
         src_mesh = load_mesh_data(payload, write=True)
         src_pcd = create_pcd(src_mesh)
     src_pcd.paint_uniform_color([1, 0, 0])
@@ -62,7 +68,7 @@ def msg_callback(_client, _userdata, msg):
             }
         )
         scene.mqttc.publish(pub_topic, pub_msg)
-        # visualize
+        # visualize results
         vis.clear_geometries()
         vis.add_geometry(src_pcd)
         vis.add_geometry(target_pcd)
@@ -72,6 +78,12 @@ def msg_callback(_client, _userdata, msg):
 
 
 def draw_registration_result(source, icp_transform, color=[0, 0, 1]):
+    """
+    Draws source pcd with ICP solution transform applied
+    :param source: source pcd
+    :param icp_transform: solution matrix
+    :param color: rendered color of PCD
+    """
     source_transformed = o3d.geometry.PointCloud(source)
     source.transform(icp_transform)
     source.paint_uniform_color(color)
@@ -79,6 +91,14 @@ def draw_registration_result(source, icp_transform, color=[0, 0, 1]):
 
 
 def load_mesh_data(mesh_data, write=False, target=False):
+    """
+    Taking in a mesh data, creates an Open3D TriangleMesh
+    Optionally writes the mesh to a gltf file, and/or sets it as the target mesh
+    :param mesh_data: mesh data payload dictionary
+    :param write: whether to write the mesh to a gltf file
+    :param target: whether to set the mesh as the target mesh
+    :return: Open3D TriangleMesh
+    """
     vertices = mesh_data.get("vertices")
     indices = mesh_data.get("indices")
     semanticLabel = mesh_data.get("semanticLabel")
@@ -86,6 +106,7 @@ def load_mesh_data(mesh_data, write=False, target=False):
     if vertices is None or semanticLabel != "global mesh":
         return None
 
+    # Build mesh from vertices and indices
     mesh = o3d.geometry.TriangleMesh()
     np_vertices = np.array(vertices)
     np_vertices = np.reshape(np_vertices, (-1, 3))
@@ -97,15 +118,15 @@ def load_mesh_data(mesh_data, write=False, target=False):
 
     mesh.compute_triangle_normals()
 
-    # Comes in as col-major
+    # Comes in as col-major, apply transform as specified from the meshPose
     np_transform = np.array(list(meshPose.values())).reshape((4, 4), order="F")
-    if write:
+    if write:  # When we write, we throw away translation of the meshPose
         np_transform[0, 3] = 0
         np_transform[2, 3] = 0
 
     mesh.transform(np_transform)
 
-    if write:
+    if write:  # Also (temporarily) recenter the mesh on origi
         center = mesh.get_center()
         np_transform = np.identity(4)
         np_transform[0, 3] = -center[0]
@@ -124,11 +145,19 @@ def load_mesh_data(mesh_data, write=False, target=False):
 
 
 def create_pcd(mesh, points=10000, write=False, crop_y=0.5):
+    """
+    Creates a point cloud from a mesh using poisson disk sampling
+    :param mesh: mesh to convert
+    :param points: how many points to produce for resuling point cloud
+    :param write: whether to write the point cloud to a pcd file
+    :param crop_y: how much to crop off the top and bottom of the mesh
+    :return: Open3D PointCloud
+    """
     pcd = mesh.sample_points_poisson_disk(
         number_of_points=points, use_triangle_normal=True
     )
 
-    if crop_y > 0:
+    if crop_y > 0:  # Cropping floor and ceiling helps remove useless points for ICP
         aabb = pcd.get_axis_aligned_bounding_box()
         min_bound = np.array(aabb.min_bound)
         max_bound = np.array(aabb.max_bound)
@@ -145,6 +174,11 @@ def create_pcd(mesh, points=10000, write=False, crop_y=0.5):
 
 
 def rotation_matrix_y(angle_degrees):
+    """
+    Creates a rotation matrix around the Y axis (only axis that shoudl matter for ICP)
+    :param angle_degrees:
+    :return: numpy 4x4 transformation matrix
+    """
     angle_radians = radians(angle_degrees)
     cos_theta = np.cos(angle_radians)
     sin_theta = np.sin(angle_radians)
@@ -160,16 +194,27 @@ def rotation_matrix_y(angle_degrees):
 
 
 def icp(src, target, distance=5, rotations=8):
+    """
+    Given a source and target point cloud, attempts to align the source to the target
+    :param src: source point cloud
+    :param target: target point cloud
+    :param distance: max distance between points to consider a match
+    :param rotations: how many sets of iterations to run by subdividing 360 degrees
+                      into this many rotated initial transforms
+    :return: Open3D registration result
+    """
+    # Start by aligning centroids for initial transform position
     src_center = src.get_center()
     target_center = target.get_center()
     init_transform = np.identity(4)
     init_transform[:3, 3] = target_center - src_center
 
     attempts = []
-    # Assuming a square room, try all 4 wall-aligned rotations
     rot_matrix = rotation_matrix_y(360 / rotations)
 
+    # Try each rotation as initial transform and take the best result
     for i in range(rotations):
+        # Incrementally rotate while preserving translation
         init_transform = rot_matrix @ init_transform
 
         res = o3d.pipelines.registration.registration_icp(
@@ -194,6 +239,7 @@ vis.create_window()
 
 print("CUDA:", o3d.core.Device())
 
+# Try to load target pcd, or target mesh, or target packed dict data as target pcd
 if os.path.isfile("target.pcd"):
     print("Loading Target PCD")
     target_pcd = o3d.io.read_point_cloud("target.pcd")
@@ -209,7 +255,7 @@ else:
                 target_mesh = load_mesh_data(data, write=True, target=True)
     if target_mesh is not None:
         target_pcd = create_pcd(target_mesh, write=True)
-    else:
+    else:  # No target mesh or pcd found, message handler sets first incoming as target
         print("No target mesh found")
         target_pcd = None
 
@@ -217,6 +263,7 @@ if target_pcd is not None:
     target_pcd.paint_uniform_color([0, 1, 0])
 
 
+# Test manually with input file
 # with open("meshdata2.pack", 'rb') as f:
 #     data = msgpack.load(f)
 #     mesh_src = load_mesh_data(data)
@@ -228,6 +275,7 @@ if target_pcd is not None:
 #     vis.add_geometry(origin)
 
 
+# Update loop for visualization
 @scene.run_forever(interval_ms=100)
 def update_viz():
     if vis is not None:

@@ -34,7 +34,8 @@ def msg_callback(_client, _userdata, msg):
     topic_split = msg.topic.split("/")
     name_scene = "/".join(topic_split[3:5])
     usercam = topic_split[5]
-    if target_mesh is None:  # No reference target, make this one the target
+    if target_pcd is None:  # No reference target, make this one the target
+        print("No target pcd, setting as new target")
         target_mesh = load_mesh_data(payload, write=True, target=True)
         target_pcd = create_pcd(target_mesh, write=True)
         return

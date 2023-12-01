@@ -128,23 +128,16 @@ def load_mesh_data(mesh_data, write=False, target=False):
     np_triangles = np.reshape(np_triangles, (-1, 3))
     mesh.triangles = o3d.utility.Vector3iVector(np_triangles)
 
-    mesh.compute_triangle_normals()
-
     # Comes in as col-major, apply transform as specified from the meshPose
     np_transform = np.array(list(meshPose.values())).reshape((4, 4), order="F")
-    if target:  # When we write target, we throw away translation of the meshPose
-        np_transform[0, 3] = 0
-        np_transform[2, 3] = 0
-
     mesh.transform(np_transform)
 
-    if target:  # Also (temporarily) recenter the mesh on origi
+    if target:  # Also recenter the mesh on origin
         center = mesh.get_center()
-        np_transform = np.identity(4)
-        np_transform[0, 3] = -center[0]
-        np_transform[2, 3] = -center[2]
-        mesh.transform(np_transform)
-        mesh.compute_triangle_normals()  # Recompute normals after transform
+        mesh.translate([-center[0], 0, -center[2]])
+
+    mesh.compute_triangle_normals()
+    mesh.compute_vertex_normals()
 
     if write:
         if target:
@@ -153,7 +146,8 @@ def load_mesh_data(mesh_data, write=False, target=False):
         else:
             print("Writing mesh gltf")
             o3d.io.write_triangle_mesh(
-                "meshes/meshes_" + str(int(time.time())) + ".glb", mesh
+                "meshes/meshes_" + str(int(time.time())) + ".glb",
+                mesh,
             )
     return mesh
 
@@ -284,6 +278,8 @@ else:
     if os.path.isfile("./meshes/global_mesh.glb"):
         print("Loading Target Mesh")
         target_mesh = o3d.io.read_triangle_mesh("./meshes/global_mesh.glb")
+        target_mesh.compute_triangle_normals()
+        target_mesh.compute_vertex_normals()
     else:
         if os.path.isfile("meshdata.pack"):
             with open("meshdata.pack", "rb") as f:
@@ -306,18 +302,22 @@ if target_pcd is not None:
 # Test manually with input file
 # with open("meshdata2.pack", 'rb') as f:
 #     data = msgpack.load(f)
-#     mesh_src = load_mesh_data(data)
+#     mesh_src = load_mesh_data(data, write=True)
 #     src_pcd = create_pcd(mesh_src)
 #     src_pcd.paint_uniform_color([1, 0, 0])
 #     res = icp(src_pcd, target_pcd)
+#     print("ICP fitness: ", res.fitness, ", transform:", res.transformation)
 #     draw_registration_result(src_pcd, res.transformation)
 
-
-# src_mesh = o3d.io.read_triangle_mesh("./meshes/meshes_1701379498.glb")
+# src_mesh = o3d.io.read_triangle_mesh("./meshes/meshes_1701384568.glb")
+# if not src_mesh.has_triangle_normals():
+#     src_mesh.compute_triangle_normals()
+# if not src_mesh.has_vertex_normals():
+#     src_mesh.compute_vertex_normals()
 # src_pcd = create_pcd(src_mesh)
 # src_pcd.paint_uniform_color([1, 0, 0])
 # res = icp(src_pcd, target_pcd)
-# print(res.transformation)
+# print("ICP fitness: ", res.fitness, ", transform:", res.transformation)
 # draw_registration_result(src_pcd, res.transformation)
 
 

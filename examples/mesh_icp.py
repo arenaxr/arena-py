@@ -13,6 +13,7 @@ LISTEN_TOPIC = "realm/proc/debug/+/+/+/meshes"
 vis = None
 target_mesh = None
 target_pcd = None
+target_distance = None
 
 
 def msg_callback(_client, _userdata, msg):
@@ -47,7 +48,14 @@ def msg_callback(_client, _userdata, msg):
     if src_pcd is not None:
         vis.clear_geometries()
         res = icp(src_pcd, target_pcd)
-        print("ICP result for", usercam, ":", res.transformation)
+        print(
+            "ICP result for",
+            usercam,
+            ": fitness = ",
+            res.fitness,
+            ", transform = ",
+            res.transformation,
+        )
 
         mat = np.copy(res.transformation)
         pos = mat[0:3, 3]
@@ -200,7 +208,21 @@ def rotation_matrix_y(angle_degrees):
     )
 
 
-def icp(src, target, distance=5, rotations=8):
+def set_target_distance():
+    """
+    Sets max correspondence distance for ICP based on target mesh size.
+    """
+    global target_distance
+    if target_pcd is not None:
+        obb = target_pcd.get_oriented_bounding_box()
+        obb_dimensions = obb.extent
+        w, h, d = obb_dimensions
+        # Factor in surface area of the box with point cloud density
+        target_distance = (w * h + w * d + h * d) / (2 * 10000**0.5)
+        print("Target distance: ", target_distance)
+
+
+def icp(src, target, distance=0, rotations=8):
     """
     Given a source and target point cloud, attempts to align the source to the target
     :param src: source point cloud
@@ -210,6 +232,13 @@ def icp(src, target, distance=5, rotations=8):
                       into this many rotated initial transforms
     :return: Open3D registration result
     """
+    if distance > 0:
+        max_distance = distance
+    else:
+        if target_distance is None:
+            set_target_distance()
+        max_distance = target_distance
+
     # Start by aligning centroids for initial transform position
     src_center = src.get_center()
     target_center = target.get_center()
@@ -227,12 +256,13 @@ def icp(src, target, distance=5, rotations=8):
         res = o3d.pipelines.registration.registration_icp(
             src,
             target,
-            max_correspondence_distance=distance,
+            max_correspondence_distance=max_distance,
             init=init_transform,
             estimation_method=o3d.pipelines.registration.TransformationEstimationPointToPlane(),
             # criteria=o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=200),
         )
         attempts.append(res)
+        # draw_registration_result(src, res.transformation, uniform_color=[0, 0, res.fitness])
 
     return min(attempts, key=lambda x: x.fitness)
 

@@ -9,6 +9,7 @@ import time
 
 
 DEBUG = False
+VISUALIZE = True
 LISTEN_TOPIC = "realm/proc/debug/+/+/+/meshes"
 vis = None
 target_mesh = None
@@ -30,8 +31,6 @@ def msg_callback(_client, _userdata, msg):
     except ValueError:
         print("bad json data")
         return
-    if DEBUG:
-        print(payload)
     topic_split = msg.topic.split("/")
     name_scene = "/".join(topic_split[3:5])
     usercam = topic_split[5]
@@ -46,7 +45,8 @@ def msg_callback(_client, _userdata, msg):
         src_pcd = create_pcd(src_mesh)
         src_pcd.paint_uniform_color([1, 0, 0])
     if src_pcd is not None:
-        vis.clear_geometries()
+        if vis is not None:
+            vis.clear_geometries()
         res = icp(src_pcd, target_pcd)
         print(
             "ICP result for",
@@ -80,9 +80,10 @@ def msg_callback(_client, _userdata, msg):
         )
         scene.mqttc.publish(pub_topic, pub_msg)
         # visualize results
-        vis.add_geometry(src_pcd)
-        vis.add_geometry(target_pcd)
-        draw_registration_result(src_pcd, res.transformation)
+        if vis is not None:
+            vis.add_geometry(src_pcd)
+            vis.add_geometry(target_pcd)
+            draw_registration_result(src_pcd, res.transformation)
     else:
         print("invalid mesh data")
 
@@ -94,6 +95,8 @@ def draw_registration_result(source, icp_transform, uniform_color=None):
     :param icp_transform: solution matrix
     :param uniform_color: rendered color of PCD
     """
+    if vis is None:
+        return
     if uniform_color is None:
         uniform_color = [0, 0, 1]
     source_transformed = o3d.geometry.PointCloud(source)
@@ -264,9 +267,11 @@ def icp(src, target, distance=0, rotations=8):
 scene = Scene(host="arena-dev1.conix.io")
 scene.message_callback_add(LISTEN_TOPIC, msg_callback)
 
-# o3d.utility.set_verbosity_level(o3d.utility.VerbosityLevel.Debug)
-vis = o3d.visualization.Visualizer()
-vis.create_window()
+if DEBUG:
+    o3d.utility.set_verbosity_level(o3d.utility.VerbosityLevel.Debug)
+if VISUALIZE:
+    vis = o3d.visualization.Visualizer()
+    vis.create_window()
 
 print("CUDA:", o3d.core.Device())
 
@@ -294,9 +299,10 @@ else:
 
 if target_pcd is not None:
     target_pcd.paint_uniform_color([0, 1, 0])
-    vis.add_geometry(target_pcd)
-    axis = o3d.geometry.TriangleMesh.create_coordinate_frame(size=2)
-    vis.add_geometry(axis)
+    if vis is not None:
+        vis.add_geometry(target_pcd)
+        axis = o3d.geometry.TriangleMesh.create_coordinate_frame(size=2)
+        vis.add_geometry(axis)
 
 
 # Test manually with input file

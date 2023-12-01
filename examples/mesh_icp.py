@@ -8,8 +8,10 @@ from math import radians
 import time
 
 
-DEBUG = False
-VISUALIZE = True
+DEBUG = False  # Enable open3d debug messages, including ICP iteration details
+VISUALIZE = True  # Enable visualization of incoming meshes and ICP results
+MIN_FITNESS_THRESHOLD = 0.9  # TODO: figure out cutoff for "wrong room mesh"
+
 LISTEN_TOPIC = "realm/proc/debug/+/+/+/meshes"
 vis = None
 target_mesh = None
@@ -26,11 +28,9 @@ def msg_callback(_client, _userdata, msg):
     """
     global target_mesh, target_pcd
     try:
-        #payload_str = msg.payload.decode("utf-8", "ignore")
-        #payload = json.loads(payload_str)
         payload = msgpack.unpackb(msg.payload)
     except Exception:
-        print("ignoring non msgpack data")
+        print("ignoring non-msgpack data")
         return
     topic_split = msg.topic.split("/")
     name_scene = "/".join(topic_split[3:5])
@@ -57,6 +57,10 @@ def msg_callback(_client, _userdata, msg):
             ", transform = ",
             res.transformation,
         )
+
+        if res.fitness < MIN_FITNESS_THRESHOLD:
+            print("ICP fitness too low, ignoring")
+            return
 
         mat = np.copy(res.transformation)
         pos = mat[0:3, 3]

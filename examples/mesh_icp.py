@@ -20,16 +20,17 @@ target_distance = None
 def msg_callback(_client, _userdata, msg):
     """
     Callback for incoming mesh data from pubsub. Will attempt to align incoming source
-    mesh to the target pcd using ICP and publish the the resulting transformation
+    mesh to the target pcd using ICP and publish the resulting transformation
     to the scene topic. If no target pcd has been set, the first incoming mesh will
     be set as the target.
     """
     global target_mesh, target_pcd
     try:
-        payload_str = msg.payload.decode("utf-8", "ignore")
-        payload = json.loads(payload_str)
-    except ValueError:
-        print("bad json data")
+        #payload_str = msg.payload.decode("utf-8", "ignore")
+        #payload = json.loads(payload_str)
+        payload = msgpack.unpackb(msg.payload)
+    except Exception:
+        print("ignoring non msgpack data")
         return
     topic_split = msg.topic.split("/")
     name_scene = "/".join(topic_split[3:5])
@@ -132,7 +133,7 @@ def load_mesh_data(mesh_data, write=False, target=False):
     mesh.triangles = o3d.utility.Vector3iVector(np_triangles)
 
     # Comes in as col-major, apply transform as specified from the meshPose
-    np_transform = np.array(list(meshPose.values())).reshape((4, 4), order="F")
+    np_transform = np.array(meshPose).reshape((4, 4), order="F")
     mesh.transform(np_transform)
 
     if target:  # Also recenter the mesh on origin

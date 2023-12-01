@@ -264,7 +264,7 @@ def icp(src, target, distance=0, rotations=8):
         attempts.append(res)
         # draw_registration_result(src, res.transformation, uniform_color=[0, 0, res.fitness])
 
-    return min(attempts, key=lambda x: x.fitness)
+    return max(attempts, key=lambda x: x.fitness)
 
 
 scene = Scene(host="arena-dev1.conix.io")

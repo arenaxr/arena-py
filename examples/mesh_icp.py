@@ -48,9 +48,12 @@ def msg_callback(_client, _userdata, msg):
     if src_pcd is not None:
         if vis is not None:
             vis.clear_geometries()
+        start_time = time.time()
         res = icp(src_pcd, target_pcd)
         print(
-            "ICP result for",
+            "Execution time: ",
+            time.time() - start_time,
+            ". ICP result for",
             usercam,
             ": fitness = ",
             res.fitness,
@@ -327,8 +330,16 @@ if target_pcd is not None:
 #     src_mesh.compute_vertex_normals()
 # src_pcd = create_pcd(src_mesh)
 # src_pcd.paint_uniform_color([1, 0, 0])
+# start_time = time.time()
 # res = icp(src_pcd, target_pcd)
-# print("ICP fitness: ", res.fitness, ", transform:", res.transformation)
+# print(
+#     "Execution time: ",
+#     time.time() - start_time,
+#     ". ICP fitness: ",
+#     res.fitness,
+#     ", transform:",
+#     res.transformation
+# )
 # draw_registration_result(src_pcd, res.transformation)
 
 

@@ -10,6 +10,7 @@ import time
 
 DEBUG = False  # Enable open3d debug messages, including ICP iteration details
 VISUALIZE = True  # Enable visualization of incoming meshes and ICP results
+SAVE_MESHES = True  # Enable saving of incoming meshes to gltf files
 MIN_FITNESS_THRESHOLD = 0.9  # TODO: figure out cutoff for "wrong room mesh"
 USE_CUDA = True  # Enable CUDA acceleration. Requires CUDA GPU, build o3d from source
 
@@ -47,9 +48,9 @@ def msg_callback(_client, _userdata, msg):
         if USE_CUDA:
             target_pcd_cuda = o3d.t.geometry.PointCloud().from_legacy(target_pcd)
         return
-    else:  # Create PCD from incoming mesh JSON data. TODO: handle packed binary data
+    else:  # Create PCD from incoming mesh JSON data.
         print("New src mesh data, creating src PCD")
-        src_mesh = load_mesh_data(payload, write=True)
+        src_mesh = load_mesh_data(payload, write=SAVE_MESHES)
         src_pcd = create_pcd(src_mesh)
         src_pcd.paint_uniform_color([1, 0, 0])
         if USE_CUDA:
@@ -167,11 +168,12 @@ def load_mesh_data(mesh_data, write=False, target=False):
             print("Writing global_mesh gltf")
             o3d.io.write_triangle_mesh("meshes/global_mesh.glb", mesh)
         else:
+            # Hash filename based on vertices, indices, and y-rotation/yaw of meshPose
+            v = len(vertices)
+            i = len(indices)
+            filename = f"meshes/mesh_{v}_{i}.glb"
             print("Writing mesh gltf")
-            o3d.io.write_triangle_mesh(
-                "meshes/meshes_" + str(int(time.time())) + ".glb",
-                mesh,
-            )
+            o3d.io.write_triangle_mesh(filename, mesh)
     return mesh
 
 

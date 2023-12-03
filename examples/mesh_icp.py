@@ -11,12 +11,15 @@ import time
 DEBUG = False  # Enable open3d debug messages, including ICP iteration details
 VISUALIZE = True  # Enable visualization of incoming meshes and ICP results
 MIN_FITNESS_THRESHOLD = 0.9  # TODO: figure out cutoff for "wrong room mesh"
+USE_CUDA = True  # Enable CUDA acceleration. Requires CUDA GPU, build o3d from source
 
 LISTEN_TOPIC = "realm/proc/debug/+/+/+/meshes"
 vis = None
 target_mesh = None
 target_pcd = None
+target_pcd_cuda = None
 target_distance = None
+cuda_device = o3d.core.Device("CUDA:0")
 
 
 def msg_callback(_client, _userdata, msg):
@@ -26,7 +29,9 @@ def msg_callback(_client, _userdata, msg):
     to the scene topic. If no target pcd has been set, the first incoming mesh will
     be set as the target.
     """
-    global target_mesh, target_pcd
+    global target_mesh, target_pcd, target_pcd_cuda
+    src_pcd_cuda = None
+
     try:
         payload = msgpack.unpackb(msg.payload)
     except Exception:
@@ -39,17 +44,24 @@ def msg_callback(_client, _userdata, msg):
         print("No target pcd, setting as new target")
         target_mesh = load_mesh_data(payload, write=True, target=True)
         target_pcd = create_pcd(target_mesh, write=True)
+        if USE_CUDA:
+            target_pcd_cuda = o3d.t.geometry.PointCloud().from_legacy(target_pcd)
         return
     else:  # Create PCD from incoming mesh JSON data. TODO: handle packed binary data
         print("New src mesh data, creating src PCD")
         src_mesh = load_mesh_data(payload, write=True)
         src_pcd = create_pcd(src_mesh)
         src_pcd.paint_uniform_color([1, 0, 0])
+        if USE_CUDA:
+            src_pcd_cuda = o3d.t.geometry.PointCloud().from_legacy(src_pcd)
     if src_pcd is not None:
         if vis is not None:
             vis.clear_geometries()
         start_time = time.time()
-        res = icp(src_pcd, target_pcd)
+        if USE_CUDA:
+            res = icp(src_pcd_cuda, target_pcd_cuda)
+        else:
+            res = icp(src_pcd, target_pcd)
         print(
             "Execution time: ",
             time.time() - start_time,
@@ -245,10 +257,19 @@ def icp(src, target, distance=0, rotations=8):
         max_distance = target_distance
 
     # Start by aligning centroids for initial transform position
-    src_center = src.get_center()
-    target_center = target.get_center()
+    if USE_CUDA:
+        src_center = src.get_center().numpy()
+        target_center = target.get_center().numpy()
+    else:
+        src_center = src.get_center()
+        target_center = target.get_center()
     init_transform = np.identity(4)
     init_transform[:3, 3] = target_center - src_center
+
+    if USE_CUDA:
+        # Move to CUDA device
+        src = src.cuda(0)
+        target = target.cuda(0)
 
     attempts = []
     rot_matrix = rotation_matrix_y(360 / rotations)
@@ -257,22 +278,34 @@ def icp(src, target, distance=0, rotations=8):
     for i in range(rotations):
         # Incrementally rotate while preserving translation
         init_transform = rot_matrix @ init_transform
-
-        res = o3d.pipelines.registration.registration_icp(
-            src,
-            target,
-            max_correspondence_distance=max_distance,
-            init=init_transform,
-            estimation_method=o3d.pipelines.registration.TransformationEstimationPointToPlane(),
-            # criteria=o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=200),
-        )
+        if USE_CUDA:
+            init_transform_cuda = o3d.core.Tensor(
+                init_transform, device=cuda_device, dtype=o3d.core.Dtype.Float32
+            )
+            res = o3d.t.pipelines.registration.icp(
+                src,
+                target,
+                max_correspondence_distance=max_distance,
+                init_source_to_target=init_transform_cuda,
+                estimation_method=o3d.t.pipelines.registration.TransformationEstimationPointToPlane(),
+                # criteria=o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=200),
+            )
+        else:
+            res = o3d.pipelines.registration.registration_icp(
+                src,
+                target,
+                max_correspondence_distance=max_distance,
+                init=init_transform,
+                estimation_method=o3d.pipelines.registration.TransformationEstimationPointToPlane(),
+                # criteria=o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=200),
+            )
         attempts.append(res)
         # draw_registration_result(src, res.transformation, uniform_color=[0, 0, res.fitness])
 
     return max(attempts, key=lambda x: x.fitness)
 
 
-scene = Scene(host="arena-dev1.conix.io")
+scene = Scene(host="arena-dev1.conix.io", scene="blank")
 scene.message_callback_add(LISTEN_TOPIC, msg_callback)
 
 if DEBUG:
@@ -280,8 +313,6 @@ if DEBUG:
 if VISUALIZE:
     vis = o3d.visualization.Visualizer()
     vis.create_window()
-
-print("CUDA:", o3d.core.Device())
 
 # Try to load target pcd, or target mesh, or target packed dict data as target pcd
 if os.path.isfile("target.pcd"):
@@ -311,6 +342,8 @@ if target_pcd is not None:
         vis.add_geometry(target_pcd)
         axis = o3d.geometry.TriangleMesh.create_coordinate_frame(size=2)
         vis.add_geometry(axis)
+    if USE_CUDA:
+        target_pcd_cuda = o3d.t.geometry.PointCloud().from_legacy(target_pcd)
 
 
 # Test manually with input file
@@ -330,8 +363,9 @@ if target_pcd is not None:
 #     src_mesh.compute_vertex_normals()
 # src_pcd = create_pcd(src_mesh)
 # src_pcd.paint_uniform_color([1, 0, 0])
+# src_pcd_cuda = o3d.t.geometry.PointCloud().from_legacy(src_pcd)
 # start_time = time.time()
-# res = icp(src_pcd, target_pcd)
+# res = icp(src_pcd_cuda, target_pcd_cuda)
 # print(
 #     "Execution time: ",
 #     time.time() - start_time,

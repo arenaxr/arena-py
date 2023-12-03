@@ -4,7 +4,6 @@ import numpy as np
 import msgpack
 import json
 from scipy.spatial.transform import Rotation as R
-from math import radians
 import time
 
 
@@ -12,7 +11,7 @@ DEBUG = False  # Enable open3d debug messages, including ICP iteration details
 VISUALIZE = True  # Enable visualization of incoming meshes and ICP results
 SAVE_MESHES = True  # Enable saving of incoming meshes to gltf files
 MIN_FITNESS_THRESHOLD = 0.9  # TODO: figure out cutoff for "wrong room mesh"
-USE_CUDA = True  # Enable CUDA acceleration. Requires CUDA GPU, build o3d from source
+USE_CUDA = False  # Enable CUDA acceleration. Requires CUDA GPU, build o3d from source
 
 LISTEN_TOPIC = "realm/proc/debug/+/+/+/meshes"
 vis = None
@@ -209,11 +208,11 @@ def create_pcd(mesh, points=10000, write=False, crop_y=0.5):
 
 def rotation_matrix_y(angle_degrees):
     """
-    Creates a rotation matrix around the Y axis (only axis that shoudl matter for ICP)
+    Creates a rotation matrix around the Y axis (only axis that should matter for ICP)
     :param angle_degrees:
     :return: numpy 4x4 transformation matrix
     """
-    angle_radians = radians(angle_degrees)
+    angle_radians = np.deg2rad(angle_degrees)
     cos_theta = np.cos(angle_radians)
     sin_theta = np.sin(angle_radians)
 

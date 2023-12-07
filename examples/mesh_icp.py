@@ -13,7 +13,7 @@ SAVE_MESHES = True  # Enable saving of incoming meshes to gltf files
 MIN_FITNESS_THRESHOLD = 0.9  # TODO: figure out cutoff for "wrong room mesh"
 USE_CUDA = False  # Enable CUDA acceleration. Requires CUDA GPU, build o3d from source
 
-LISTEN_TOPIC = "realm/proc/debug/+/+/+/meshes"
+LISTEN_TOPIC = "realm/env/+/+/+/meshes"
 vis = None
 target_mesh = None
 target_pcd = None
@@ -38,8 +38,8 @@ def msg_callback(_client, _userdata, msg):
         print("ignoring non-msgpack data")
         return
     topic_split = msg.topic.split("/")
-    name_scene = "/".join(topic_split[3:5])
-    usercam = topic_split[5]
+    name_scene = "/".join(topic_split[2:4])
+    usercam = topic_split[4]
     if target_pcd is None:  # No reference target, make this one the target
         print("No target pcd, setting as new target")
         target_mesh = load_mesh_data(payload, write=True, target=True)

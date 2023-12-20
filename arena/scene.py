@@ -10,7 +10,7 @@ from .arena_mqtt import ArenaMQTT
 from .attributes import *
 from .events import *
 from .objects import *
-from .utils import *
+from .utils import Utils, ArenaTelemetry
 
 class Scene(ArenaMQTT):
     """
@@ -39,6 +39,9 @@ class Scene(ArenaMQTT):
                 cli_args = False,
                 **kwargs
             ):
+        
+        self.tel = ArenaTelemetry()
+        
         if cli_args:
             self.args = self.parse_cli()
             if self.args["host"]:

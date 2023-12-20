@@ -183,7 +183,7 @@ class ArenaMQTT(object):
         self.mqttc.socket().setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
 
         # check if we want to start the command interpreter
-        enable_interp = os.getenv("ENABLE_INTERPRETER", 'False').lower() in ('true', '1', 't')
+        enable_interp = os.environ.get("ENABLE_INTERPRETER", 'False').lower() in ('true', '1', 't')
         if enable_interp:
             self.cmd_interpreter = ArenaCmdInterpreter(self,
                                                        show_attrs=('config_data', 'scene', 'users', 'all_objects', 'msg_io'),

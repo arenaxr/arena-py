@@ -39,9 +39,10 @@ class Scene(ArenaMQTT):
                 cli_args = False,
                 **kwargs
             ):
-        
-        self.tel = ArenaTelemetry()
-        
+                
+        # init telemetry
+        self.telemetry = ArenaTelemetry()
+                
         if cli_args:
             self.args = self.parse_cli()
             if self.args["host"]:
@@ -58,11 +59,11 @@ class Scene(ArenaMQTT):
             print(f"Using Scene from 'SCENE' env variable: {self.scene}")
         elif "scene" in kwargs and kwargs["scene"]:
             if re.search("/", kwargs["scene"]):
-                sys.exit("Scene argument (scene) cannot include '/', aborting...")
+                self.exit("Scene argument (scene) cannot include '/', aborting...")
             self.scene = kwargs["scene"]
             print(f"Using Scene from 'scene' input parameter: {self.scene}")
         else:
-            sys.exit("Scene argument (scene) is unspecified or None, aborting...")
+            self.exit("Scene argument (scene) is unspecified or None, aborting...")
 
         super().__init__(
             host,
@@ -75,25 +76,35 @@ class Scene(ArenaMQTT):
             **kwargs
         )
 
-        self.persist_host = self.config_data["ARENADefaults"]["persistHost"]
-        self.persist_path = self.config_data["ARENADefaults"]["persistPath"]
+        with self.telemetry.start_span(f"init {self.namespace}/{self.scene}") as span:
+            # 'init' span will track the remainder of the initialization
+            self.persist_host = self.config_data["ARENADefaults"]["persistHost"]
+            self.persist_path = self.config_data["ARENADefaults"]["persistPath"]
 
-        self.persist_url = f"https://{self.persist_host}{self.persist_path}{self.namespaced_target}"
+            self.persist_url = f"https://{self.persist_host}{self.persist_path}{self.namespaced_target}"
 
-        # set up callbacks
-        self.new_obj_callback = new_obj_callback
-        self.delete_obj_callback = delete_obj_callback
-        self.user_join_callback = user_join_callback
-        self.user_left_callback = user_left_callback
+            # set up callbacks
+            self.new_obj_callback = new_obj_callback
+            self.delete_obj_callback = delete_obj_callback
+            self.user_join_callback = user_join_callback
+            self.user_left_callback = user_left_callback
 
-        self.unspecified_object_ids = set() # objects that exist in the scene,
-                                            # but this scene instance does not
-                                            # have a reference to
-        self.users = {} # dict of all users
+            self.unspecified_object_ids = set() # objects that exist in the scene,
+                                                # but this scene instance does not
+                                                # have a reference to
+            self.users = {} # dict of all users
 
-        # Always use the the hostname specified by the user, or defaults.
-        print(f"Loading: https://{self.web_host}/{self.namespace}/{self.scene}, realm={self.realm}")
+            # Always use the the hostname specified by the user, or defaults.
+            print(f"Loading: https://{self.web_host}/{self.namespace}/{self.scene}, realm={self.realm}")
+            
+            span.add_event("Init Done.")
 
+    def exit(self, arg=0):
+        if arg != 0:
+            error_msg = f"Exiting with sys.exit('{self.hooks.exit_arg}')"
+            self.telemetry.set_error(error_msg)
+        sys.exit(arg)
+            
     def on_connect(self, client, userdata, flags, rc):
         super().on_connect(client, userdata, flags, rc)
         if rc == 0:
@@ -121,105 +132,114 @@ class Scene(ArenaMQTT):
             try:
                 # update object attributes, if possible
                 if "object_id" in payload:
-                    # parese payload
+                    # parse payload
                     object_id = payload.get("object_id", None)
                     action = payload.get("action", None)
 
-                    data = payload.get("data", {})
-                    object_type = data.get("object_type", None)
+                    with self.telemetry.start_process_msg_span(object_id, action) as span:
+                        data = payload.get("data", {})
+                        object_type = data.get("object_type", None)
 
-                    event = None
+                        event = None
 
-                    # create/get object from object_id
-                    if object_id in self.all_objects:
-                        obj = self.all_objects[object_id]
-                    else:
-                        ObjClass = OBJECT_TYPE_MAP.get(object_type, Object)
-                        obj = ObjClass(**payload)
+                        # create/get object from object_id
+                        if object_id in self.all_objects:
+                            obj = self.all_objects[object_id]
+                        else:
+                            ObjClass = OBJECT_TYPE_MAP.get(object_type, Object)
+                            obj = ObjClass(**payload)
 
-                    # react to action accordingly
-                    if action:
-                        if action == "clientEvent":
-                            event = Event(**payload)
-                            if obj.evt_handler:
-                                self.callback_wrapper(obj.evt_handler, event, payload)
+                        # react to action accordingly
+                        if action:
+                            if action == "clientEvent":
+                                event = Event(**payload)
+                                if obj.evt_handler:
+                                    self.callback_wrapper(obj.evt_handler, event, payload)
+                                    continue
+                                span.add_event("Client event: {event}")
+
+
+                            elif action == "delete":
+                                if Camera.object_type in object_id: # object is a camera
+                                    if object_id in self.users:
+                                        if self.user_left_callback:
+                                            self.callback_wrapper(
+                                                    self.user_left_callback,
+                                                    self.users[object_id],
+                                                    payload
+                                                )
+                                        del self.users[object_id]
+                                elif HandLeft.object_type in object_id or HandRight.object_type in object_id: # object is a hand/controller
+                                    if "dep" in obj.data:
+                                        user_id = obj.data.dep
+                                        if user_id in self.users:
+                                            user = self.users[user_id]
+                                            if obj in user.hands.values():
+                                                if user.hand_remove_callback:
+                                                    self.callback_wrapper(
+                                                            user.hand_remove_callback,
+                                                            obj,
+                                                            payload
+                                                        )
+                                                hand_key = HandLeft.object_type if HandLeft.object_type in object_id else HandRight.object_type
+                                                del user.hands[hand_key]
+                                elif self.delete_obj_callback:
+                                    self.callback_wrapper(self.delete_obj_callback, obj, payload)
+                                Object.remove(obj)
+                                span.add_event("Object delete.")
+
                                 continue
 
-                        elif action == "delete":
-                            if Camera.object_type in object_id: # object is a camera
-                                if object_id in self.users:
-                                    if self.user_left_callback:
+                            else: # create/update
+                                obj.update_attributes(**payload)
+                                span.add_event("Object attributes update.")
+
+                        # call new message callback for all messages
+                        if self.on_msg_callback:
+                            if not event:
+                                self.callback_wrapper(self.on_msg_callback, obj, payload)
+                            else:
+                                self.callback_wrapper(self.on_msg_callback, event, payload)
+
+                        if object_type:
+                            # run user_join_callback when user is found
+                            if object_type == Camera.object_type:
+                                if object_id not in self.users:
+                                    if object_id in self.all_objects:
+                                        self.users[object_id] = obj
+                                    else:
+                                        self.users[object_id] = Camera(**payload)
+
+                                    if self.user_join_callback:
                                         self.callback_wrapper(
-                                                self.user_left_callback,
+                                                self.user_join_callback,
                                                 self.users[object_id],
                                                 payload
                                             )
-                                    del self.users[object_id]
-                            elif HandLeft.object_type in object_id or HandRight.object_type in object_id: # object is a hand/controller
+
+                            elif object_type == HandLeft.object_type or object_type == HandRight.object_type:
                                 if "dep" in obj.data:
                                     user_id = obj.data.dep
                                     if user_id in self.users:
                                         user = self.users[user_id]
-                                        if obj in user.hands.values():
-                                            if user.hand_remove_callback:
+                                        if obj not in user.hands.values():
+                                            user.hands[object_type] = obj
+                                            obj.camera = user
+
+                                            if user.hand_found_callback:
                                                 self.callback_wrapper(
-                                                        user.hand_remove_callback,
-                                                        obj,
-                                                        payload
-                                                    )
-                                            hand_key = HandLeft.object_type if HandLeft.object_type in object_id else HandRight.object_type
-                                            del user.hands[hand_key]
-                            elif self.delete_obj_callback:
-                                self.callback_wrapper(self.delete_obj_callback, obj, payload)
-                            Object.remove(obj)
-                            continue
+                                                    user.hand_found_callback,
+                                                    obj,
+                                                    payload
+                                                )
 
-                        else: # create/update
-                            obj.update_attributes(**payload)
-
-                    # call new message callback for all messages
-                    if self.on_msg_callback:
-                        if not event:
-                            self.callback_wrapper(self.on_msg_callback, obj, payload)
-                        else:
-                            self.callback_wrapper(self.on_msg_callback, event, payload)
-
-                    if object_type:
-                        # run user_join_callback when user is found
-                        if object_type == Camera.object_type:
-                            if object_id not in self.users:
-                                if object_id in self.all_objects:
-                                    self.users[object_id] = obj
-                                else:
-                                    self.users[object_id] = Camera(**payload)
-
-                                if self.user_join_callback:
-                                    self.callback_wrapper(
-                                            self.user_join_callback,
-                                            self.users[object_id],
-                                            payload
-                                        )
-
-                        elif object_type == HandLeft.object_type or object_type == HandRight.object_type:
-                            if "dep" in obj.data:
-                                user_id = obj.data.dep
-                                if user_id in self.users:
-                                    user = self.users[user_id]
-                                    if obj not in user.hands.values():
-                                        user.hands[object_type] = obj
-                                        obj.camera = user
-
-                                        if user.hand_found_callback:
-                                            self.callback_wrapper(
-                                                user.hand_found_callback,
-                                                obj,
-                                                payload
-                                            )
-
-                    # if its an object the library has not seen before, call new object callback
-                    elif object_id not in self.unspecified_object_ids and self.new_obj_callback:
-                        self.callback_wrapper(self.new_obj_callback, obj, payload)
-                        self.unspecified_object_ids.add(object_id)
+                        # if its an object the library has not seen before, call new object callback
+                        elif object_id not in self.unspecified_object_ids and self.new_obj_callback:
+                            self.callback_wrapper(self.new_obj_callback, obj, payload)
+                            self.unspecified_object_ids.add(object_id)
+                            span.add_event("New Object.")
+                        
+                        span.add_event("Handle Msg Done.")
 
             except Exception as e:
                 print("Something went wrong, ignoring:")
@@ -420,23 +440,24 @@ class Scene(ArenaMQTT):
 
     def _publish(self, obj, action, custom_payload=False):
         """Publishes to mqtt broker with "action":action"""
-        if not self.can_publish:
-            print(f"ERROR: Publish failed! You do not have permission to publish to topic {self.root_topic} on {self.web_host}")
+        with self.telemetry.start_publish_span(obj.object_id, action, obj.type):        
+            if not self.can_publish:
+                print(f"ERROR: Publish failed! You do not have permission to publish to topic {self.root_topic} on {self.web_host}")
 
-        topic = f"{self.root_topic}/{self.mqttc_id}/{obj['object_id']}"
-        d = datetime.utcnow().isoformat()[:-3]+"Z"
+            topic = f"{self.root_topic}/{self.mqttc_id}/{obj['object_id']}"
+            d = datetime.utcnow().isoformat()[:-3]+"Z"
 
-        if custom_payload:
-            payload = obj
-            payload["action"] = action
-            payload["timestamp"] = d
-            payload = json.dumps(payload)
-        else:
-            payload = obj.json(action=action, timestamp=d)
+            if custom_payload:
+                payload = obj
+                payload["action"] = action
+                payload["timestamp"] = d
+                payload = json.dumps(payload)
+            else:
+                payload = obj.json(action=action, timestamp=d)
 
-        self.mqttc.publish(topic, payload, qos=0)
-        if self.debug: print("[publish]", topic, payload)
-        return payload
+            self.mqttc.publish(topic, payload, qos=0)
+            if self.debug: print("[publish]", topic, payload)
+            return payload
 
     def get_persisted_obj(self, object_id):
         """Returns a dictionary for a persisted object."""

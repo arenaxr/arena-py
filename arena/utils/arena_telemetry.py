@@ -56,23 +56,6 @@ class MQTTSpanExporter(SpanExporter):
     def shutdown(self) -> None:
         print("shutdown exporter!")
         pass
-    
-def kill_handler(*args):
-    sys.exit(0)
-        
-# patch sys.exit to save exit status
-class ExitHooks(object):
-    def __init__(self):
-        self.exit_arg = None
-
-    def hook(self):
-        self._orig_exit = sys.exit
-        sys.exit = self.exit
-        
-    def exit(self, arg=0):
-        self.exit_arg = arg
-        self._orig_exit(arg)
-                
 class ArenaTelemetry():
     
     parent_span: Span = None

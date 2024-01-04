@@ -13,6 +13,7 @@ from arena import *
 
 def end_program_callback(scene: Scene):
     global sceneParent
+    set_Physics(False)  # remove physics
     scene.delete_object(sceneParent)
 
 
@@ -91,7 +92,7 @@ def initCube(x, y, color):
         persist=True,
         object_id=name,
         # messes up child-follow-parent pose
-        # physics=Physics(type="static"),
+        physics=Physics(type="static"),
         collision_listener=True,
         material=Material(transparent=True, opacity=0.5),
         impulse=Impulse(
@@ -254,7 +255,7 @@ def guac_callback(scene, evt, msg):
         grid[(x - 1)][(y - 1)] = counter % 2
         arena.update_object(
             cubes[(x, y)],
-            # physics=Physics(type="static"),
+            physics=Physics(type="static"),
             color=color,
             impulse=Impulse(
                 on="mouseup",
@@ -282,9 +283,31 @@ def guac_callback(scene, evt, msg):
         return
 
 
+def set_Physics(physics_on):
+    options = arena.get_persisted_scene_option()
+    if options:
+        scene_options = options[0]
+        object_id = scene_options["object_id"]
+    else:
+        object_id = "scene-options"
+    opt_obj = Object(object_id=object_id, persist=True)
+    opt_obj.type = "scene-options"
+    del opt_obj.data.object_type
+    opt_obj.data["scene-options"] = {
+        "physics": physics_on
+    }
+    if scene_options:
+        arena.update_object(opt_obj)
+    else:
+        arena.add_object(opt_obj)
+
+
 @arena.run_once
 def main():
     global sceneParent
+
+    set_Physics(True)  # add physics
+
     # make a parent scene object
     sceneParent = Object(
         persist=True,

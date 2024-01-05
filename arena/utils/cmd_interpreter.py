@@ -11,7 +11,7 @@ class ArenaCmdInterpreter(cmd.Cmd):
         if isinstance(obj, (datetime, date)):
             return str(obj)
         if hasattr(obj, '__dict__'):
-            return obj.__dict__
+            return {k: v for k, v in vars(obj).items() if k.startswith("_") == False} # ignore private members
         raise TypeError("Type not serializable")
 
     def __init__(self, scene, show_attrs=('config_data', 'scene', 'users', 'all_objects', 'msg_io'), get_callables=('persisted_objs', 'persisted_scene_option', 'writable_scenes', 'user_list')):

@@ -13,7 +13,7 @@ import paho.mqtt.client as mqtt
 
 from .auth import ArenaAuth
 from .event_loop import *
-from .utils import ArenaCmdInterpreter
+from .utils import ArenaCmdInterpreter, ProgramStats
 
 class ArenaMQTT(object):
     """
@@ -146,20 +146,15 @@ class ArenaMQTT(object):
         self.mqttc.on_disconnect = self.on_disconnect
         self.mqttc.on_publish = self.on_publish
 
-        # setup msg counters
-        self.msg_io = { 'last_rcv_time': None, 'last_pub_time': None, 'rcv_msgs': 0, 'pub_msgs': 0, 'rcv_msgs_per_sec': 0.0, 'pub_msgs_per_sec': 0.0}
-        self.msg_rate_time_start = datetime.now()
-
+        # setup program stats collection
+        self.stats = ProgramStats(self.event_loop, update_callback=self.stats_update)
+        
         # add main message processing + callbacks loop to tasks
         self.run_async(self.process_message)
 
         # update network latency every network_latency_interval secs
         self.run_forever(self.network_latency_update,
                          interval_ms=network_latency_interval)
-
-        # update message rate every second
-        self.run_forever(self.msg_rate_update,
-                         interval_ms=1000)
 
         self.msg_queue = asyncio.Queue()
 
@@ -186,7 +181,7 @@ class ArenaMQTT(object):
         enable_interp = os.environ.get("ENABLE_INTERPRETER", 'False').lower() in ('true', '1', 't')
         if enable_interp:
             self.cmd_interpreter = ArenaCmdInterpreter(self,
-                                                       show_attrs=('config_data', 'scene', 'users', 'all_objects', 'msg_io'),
+                                                       show_attrs=('config_data', 'scene', 'users', 'all_objects', 'stats'),
                                                        get_callables=('persisted_objs', 'persisted_scene_option', 'writable_scenes', 'user_list'))
             self.cmd_interpreter.start_thread(self.connected_evt)
 
@@ -234,14 +229,7 @@ class ArenaMQTT(object):
         """Update client latency in $NETWORK/latency"""
         # publish empty message with QoS of 2 to update latency
         self.mqttc.publish(self.latency_topic, "", qos=2)
-
-    def msg_rate_update(self):
-        """Update Message rate"""
-        elapsed = datetime.now() - self.msg_rate_time_start
-        if elapsed.seconds > 0:
-            self.msg_io['rcv_msgs_per_sec'] = round(self.msg_io['rcv_msgs']  / elapsed.seconds, 2)
-            self.msg_io['pub_msgs_per_sec'] = round(self.msg_io['pub_msgs']  / elapsed.seconds, 2)
-
+    
     def run_once(self, func=None, **kwargs):
         """Runs a user-defined function on startup"""
         if func is not None:
@@ -334,8 +322,7 @@ class ArenaMQTT(object):
         # ignore own messages
         if mqtt.topic_matches_sub(self.ignore_topic, msg.topic):
             return
-        self.msg_io['last_rcv_time'] = datetime.now()
-        self.msg_io['rcv_msgs'] = self.msg_io['rcv_msgs'] + 1
+        self.stats.msg_rcv()
         self.msg_queue.put_nowait(msg)
 
     async def process_message(self):
@@ -355,8 +342,7 @@ class ArenaMQTT(object):
         self.mqttc.disconnect()
 
     def on_publish(self, client, userdata, mid):
-        self.msg_io['last_pub_time'] = datetime.now()
-        self.msg_io['pub_msgs'] = self.msg_io['pub_msgs'] + 1
+        self.stats.msg_publish()
 
     def message_callback_add(self, sub, callback):
         """Subscribes to new topic and adds callback"""

@@ -22,6 +22,7 @@ from .torus import Torus
 from .torus_knot import TorusKnot
 from .triangle import Triangle
 from .ui import *
+from .program import Program
 
 OBJECT_TYPE_MAP = {
     Box.object_type:          Box,
@@ -50,4 +51,5 @@ OBJECT_TYPE_MAP = {
     Torus.object_type:        Torus,
     TorusKnot.object_type:    TorusKnot,
     Triangle.object_type:     Triangle,
+    Program.object_type:      Program,
 }

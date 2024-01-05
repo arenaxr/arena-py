@@ -1,4 +1,5 @@
 # Environment variables definitions
+# Variable defaults defined by ENV_DEFAULTS (scroll down)
 #
 
 MQTTH = "MQTTH"
@@ -80,6 +81,16 @@ This variable overrides arguments passed in the command line.
 Default: None
 """
 
+PROGRAM_OBJECT_ID = "PROGRAM_OBJECT_ID"
+"""
+.. envvar:: PROGRAM_OBJECT_ID
+
+The :envvar:`PROGRAM_OBJECT_ID` indicates the object id in ARENA persist for this program.
+This is passed by the runtime and used to identify the program object that represents the currently running program.
+
+Default: None
+"""
+
 ENABLE_INTERPRETER = "ENABLE_INTERPRETER"
 """
 .. envvar:: ENABLE_INTERPRETER
@@ -88,7 +99,7 @@ The :envvar:`ENABLE_INTERPRETER` enables the a simple command line interpreter t
 can be used to inspect library/program state. Set this variable with a value of 
 `true`, `1` or `t` (case insensitive) to enable the interpreter.
 
-Default: False
+Default: 'false'
 """
 
 ARENA_TELEMETRY = "ARENA_TELEMETRY"
@@ -120,5 +131,21 @@ OTEL_LOG_LEVEL = "OTEL_LOG_LEVEL"
 
 The :envvar:`OTEL_LOG_LEVEL` environment variable sets the log level used by the logger 
 implementation (ArenaTelemetry) using OpenTelemetry (OTEL). 
-Default: "info". Our logger uses OpenTelemetry (OTEL). 
+Default: "info". 
 """
+
+# env variables defaults 
+ENV_DEFAULTS = {
+  MQTTH:                None,
+  ARENA_USERNAME:       None,
+  ARENA_PASSWORD:       None,
+  REALM:                None,
+  SCENE:                None,
+  NAMESPACE:            None,
+  DEVICE:               None,
+  PROGRAM_OBJECT_ID:    None,
+  ENABLE_INTERPRETER:   'false',
+  ARENA_TELEMETRY:      None,
+  OTLP_ENDPOINT:        'http://localhost:4317',
+  OTEL_LOG_LEVEL:       'info',
+}

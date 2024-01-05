@@ -13,6 +13,14 @@ import paho.mqtt.client as mqtt
 from .auth import ArenaAuth
 from .event_loop import *
 from .utils import ProgramStats
+
+from .env_vars import (
+    MQTTH,
+    REALM,
+    ARENA_USERNAME,
+    ARENA_PASSWORD,
+    NAMESPACE
+)
 class ArenaMQTT(object):
     """
     Wrapper around Paho MQTT client and EventLoop.
@@ -33,8 +41,8 @@ class ArenaMQTT(object):
                 debug = False,
                 **kwargs
             ):
-        if os.environ.get("MQTTH"):
-            self.web_host = os.environ["MQTTH"]
+        if os.environ.get(MQTTH):
+            self.web_host = os.environ[MQTTH]
             print(f"Using Host from 'MQTTH' env variable: {self.web_host}")
         elif "host" in kwargs and kwargs["host"]:
             self.web_host = kwargs["host"]
@@ -43,8 +51,8 @@ class ArenaMQTT(object):
             # Use default "web_host", helps avoid and web vs mqtt host and other user setup confusion
             self.web_host = web_host
 
-        if os.environ.get("REALM"):
-            self.realm = os.environ["REALM"]
+        if os.environ.get(REALM):
+            self.realm = os.environ[REALM]
             print(f"Using Realm from 'REALM' env variable: {self.realm}")
         elif "realm" in kwargs and kwargs["realm"]:
             self.realm = kwargs["realm"]
@@ -61,10 +69,10 @@ class ArenaMQTT(object):
         token = None
         self.remote_auth_token = {}  # provide reference for downloaded token
         self.auth = ArenaAuth()
-        if os.environ.get("ARENA_USERNAME") and os.environ.get("ARENA_PASSWORD"):
+        if os.environ.get(ARENA_USERNAME) and os.environ.get(ARENA_PASSWORD):
             # auth 1st: use passed in env var
-            self.username = os.environ["ARENA_USERNAME"]
-            token = os.environ["ARENA_PASSWORD"]
+            self.username = os.environ[ARENA_USERNAME]
+            token = os.environ[ARENA_PASSWORD]
             self.auth.store_environment_auth(self.username, token)
         else:
             if self.scene:
@@ -80,8 +88,8 @@ class ArenaMQTT(object):
                     # auth 3rd: use the user account online
                     self.username = self.auth.authenticate_user(self.web_host)
 
-        if os.environ.get("NAMESPACE"):
-            self.namespace = os.environ["NAMESPACE"]
+        if os.environ.get(NAMESPACE):
+            self.namespace = os.environ[NAMESPACE]
         elif "namespace" not in kwargs or ("namespace" in kwargs and kwargs["namespace"] is None):
             self.namespace = self.username
         else:
@@ -336,3 +344,6 @@ class ArenaMQTT(object):
         """Unsubscribes to topic and removes callback"""
         self.mqttc.unsubscribe(sub)
         self.mqttc.message_callback_remove(sub)
+
+    def stats_update(self):
+        raise NotImplementedError("Must override stats_update")

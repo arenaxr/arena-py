@@ -13,6 +13,9 @@ from .events import *
 from .objects import *
 from .utils import Utils, ArenaTelemetry, ArenaCmdInterpreter
 
+from .env_vars import (
+    SCENE,
+)
 class Scene(ArenaMQTT):
     """
     Gives access to an ARENA scene.
@@ -63,8 +66,8 @@ class Scene(ArenaMQTT):
             if self.args["debug"]:
                 debug = self.args["debug"]
 
-        if os.environ.get("SCENE"):
-            self.scene = os.environ["SCENE"]
+        if os.environ.get(SCENE):
+            self.scene = os.environ[SCENE]
             print(f"Using Scene from 'SCENE' env variable: {self.scene}")
         elif "scene" in kwargs and kwargs["scene"]:
             if re.search("/", kwargs["scene"]):
@@ -555,7 +558,7 @@ class Scene(ArenaMQTT):
         """Returns a list of users"""
         return self.users.values()
         
-    def stats_update(self, running=True):
+    def stats_update(self):
         """Callbak when program stats are updated"""
         obj = Program.running_instance_stats(self.stats.get_stats())
         if obj:

@@ -7,14 +7,12 @@ import socket
 import ssl
 import sys
 from datetime import datetime
-import threading
 
 import paho.mqtt.client as mqtt
 
 from .auth import ArenaAuth
 from .event_loop import *
-from .utils import ArenaCmdInterpreter, ProgramStats
-
+from .utils import ProgramStats
 class ArenaMQTT(object):
     """
     Wrapper around Paho MQTT client and EventLoop.
@@ -158,9 +156,6 @@ class ArenaMQTT(object):
 
         self.msg_queue = asyncio.Queue()
 
-        # setup event to let others wait on connection
-        self.connected_evt = threading.Event()
-
         # connect to mqtt broker
         if "port" in kwargs:
             port = kwargs["port"]
@@ -176,15 +171,6 @@ class ArenaMQTT(object):
         except Exception as err:
             print(f'MQTT connect error to {self.mqtt_host}, port={port}: Result Code={err}')
         self.mqttc.socket().setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
-
-        # check if we want to start the command interpreter
-        enable_interp = os.environ.get("ENABLE_INTERPRETER", 'False').lower() in ('true', '1', 't')
-        if enable_interp:
-            self.cmd_interpreter = ArenaCmdInterpreter(self,
-                                                       show_attrs=('config_data', 'scene', 'users', 'all_objects', 'stats'),
-                                                       get_callables=('persisted_objs', 'persisted_scene_option', 'writable_scenes', 'user_list'))
-            self.cmd_interpreter.start_thread(self.connected_evt)
-
 
     def parse_cli(self):
         """
@@ -305,9 +291,6 @@ class ArenaMQTT(object):
             # listen to all messages in scene
             client.subscribe(self.subscribe_topic)
             client.message_callback_add(self.subscribe_topic, self.on_message)
-
-            # set event
-            self.connected_evt.set()
 
             # reset msg rate time
             self.msg_rate_time_start = datetime.now()

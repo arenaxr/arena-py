@@ -5,12 +5,13 @@ import re
 import sys
 from datetime import datetime
 from inspect import signature
+import threading
 
 from .arena_mqtt import ArenaMQTT
 from .attributes import *
 from .events import *
 from .objects import *
-from .utils import Utils, ArenaTelemetry
+from .utils import Utils, ArenaTelemetry, ArenaCmdInterpreter
 
 class Scene(ArenaMQTT):
     """
@@ -42,6 +43,14 @@ class Scene(ArenaMQTT):
                 
         # init telemetry
         self.telemetry = ArenaTelemetry()
+        
+        # setup event to let others wait on connection
+        self.connected_evt = threading.Event()
+                
+        # start the command interpreter (if enabled by env variable)
+        self.cmd_interpreter = ArenaCmdInterpreter(self, show_attrs=('config_data', 'scene', 'users', 'all_objects', 'stats'),
+                                    get_callables=('persisted_objs', 'persisted_scene_option', 'writable_scenes', 'user_list'),
+                                    start_cmd_event=self.connected_evt)
                 
         if cli_args:
             self.args = self.parse_cli()
@@ -109,8 +118,11 @@ class Scene(ArenaMQTT):
     def on_connect(self, client, userdata, flags, rc):
         super().on_connect(client, userdata, flags, rc)
         if rc == 0:
+            # set event
+            self.connected_evt.set()
+
             # create arena-py Objects from persist server
-            # no need to return anything here
+            # no need to return anything here            
             self.get_persisted_objs()
         
     async def process_message(self):

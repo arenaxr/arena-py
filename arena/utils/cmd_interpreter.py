@@ -14,19 +14,21 @@ class ArenaCmdInterpreter(cmd.Cmd):
             return {k: v for k, v in vars(obj).items() if k.startswith("_") == False} # ignore private members
         raise TypeError("Type not serializable")
 
-    def __init__(self, scene, show_attrs=('config_data', 'scene', 'users', 'all_objects', 'msg_io'), get_callables=('persisted_objs', 'persisted_scene_option', 'writable_scenes', 'user_list')):
+    def __init__(self, scene, show_attrs=('config_data', 'scene', 'users', 'all_objects', 'msg_io'), get_callables=('persisted_objs', 'persisted_scene_option', 'writable_scenes', 'user_list'), start_cmd_event=None):
+        self.enable_interp = os.environ.get("ENABLE_INTERPRETER", 'False').lower() in ('true', '1', 't')
+        if not self.enable_interp: return
         super().__init__(completekey='tab')
         self._scene = scene
         self._show_attrs = show_attrs
         self._get_callables = get_callables
+        
+        # start interpreter thread
+        t = threading.Thread(name='interpreter_thread', target=self.__cmd_loop_thread, args=(start_cmd_event,))
+        t.start()
 
     def __cmd_loop_thread(self, start_cmd_event):
         if start_cmd_event: start_cmd_event.wait(5) # try to start cmd last; wait on event with timeout
         self.cmdloop()
-
-    def start_thread(self, start_cmd_event=None):
-        t = threading.Thread(name='interpreter_thread', target=self.__cmd_loop_thread, args=(start_cmd_event,))
-        t.start()
 
     def do_show(self, arg):
         if arg not in self._show_attrs:

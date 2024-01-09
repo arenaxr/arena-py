@@ -1,6 +1,8 @@
 # Environment variables definitions
-# When applicable, cariable defaults are defined by ENV_DEFAULTS
+# When applicable, variable defaults are defined by ENV_DEFAULTS
 #
+import sys 
+import os
 
 MQTTH = "MQTTH"
 """
@@ -117,9 +119,29 @@ implementation (ArenaTelemetry) using OpenTelemetry (OTEL).
 Default: "info". 
 """
 
+PROGRAM_STATS_UPDATE_INTERVAL_MS = "PROGRAM_STATS_UPDATE_INTERVAL_MS"
+"""
+.. envvar:: PROGRAM_STATS_UPDATE_INTERVAL_MS
+
+The :envvar:`PROGRAM_STATS_UPDATE_INTERVAL_MS` environment variable defines how often program
+stats are published
+
+Default: 5000. 
+"""
+
 # env variables defaults 
 ENV_DEFAULTS = {
   ENABLE_INTERPRETER:   'false',
   OTLP_ENDPOINT:        'http://localhost:4317',
   OTEL_LOG_LEVEL:       'info',
+  PROGRAM_STATS_UPDATE_INTERVAL_MS: 5000
 }
+
+def _get_env(all=False):
+  skip = ('os', 'sys')
+  env = {}
+  # get variables defined in this module; skip credentials, private data and imports
+  if not all: skip = ( ARENA_PASSWORD, ARENA_USERNAME, 'os', 'sys' )
+  for key in [ v for v in dir(sys.modules[__name__]) if not v.startswith('_') and v not in skip]:
+    env[key] = os.environ.get(key)
+  return env

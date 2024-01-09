@@ -12,15 +12,16 @@ import paho.mqtt.client as mqtt
 
 from .auth import ArenaAuth
 from .event_loop import *
-from .utils import ProgramStats
+from .utils import ProgramRunInfo
 
-from .env_vars import (
+from .env import (
     MQTTH,
     REALM,
     ARENA_USERNAME,
     ARENA_PASSWORD,
     NAMESPACE
 )
+
 class ArenaMQTT(object):
     """
     Wrapper around Paho MQTT client and EventLoop.
@@ -152,8 +153,8 @@ class ArenaMQTT(object):
         self.mqttc.on_disconnect = self.on_disconnect
         self.mqttc.on_publish = self.on_publish
 
-        # setup program stats collection
-        self.stats = ProgramStats(self.event_loop, update_callback=self.stats_update)
+        # setup program run info to collect stats
+        self.run_info = ProgramRunInfo(self.event_loop, update_callback=self.run_info_update)
         
         # add main message processing + callbacks loop to tasks
         self.run_async(self.process_message)
@@ -313,7 +314,7 @@ class ArenaMQTT(object):
         # ignore own messages
         if mqtt.topic_matches_sub(self.ignore_topic, msg.topic):
             return
-        self.stats.msg_rcv()
+        self.run_info.msg_rcv()
         self.msg_queue.put_nowait(msg)
 
     async def process_message(self):
@@ -333,7 +334,7 @@ class ArenaMQTT(object):
         self.mqttc.disconnect()
 
     def on_publish(self, client, userdata, mid):
-        self.stats.msg_publish()
+        self.run_info.msg_publish()
 
     def message_callback_add(self, sub, callback):
         """Subscribes to new topic and adds callback"""
@@ -345,5 +346,6 @@ class ArenaMQTT(object):
         self.mqttc.unsubscribe(sub)
         self.mqttc.message_callback_remove(sub)
 
-    def stats_update(self):
-        raise NotImplementedError("Must override stats_update")
+    def run_info_update(self, stats):
+        """Callbak when program info/stats are updated; publish program object update"""        
+        raise NotImplementedError("Must override run_info_update")

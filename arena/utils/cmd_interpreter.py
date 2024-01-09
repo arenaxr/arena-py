@@ -71,7 +71,7 @@ class ArenaCmdInterpreter(cmd.Cmd):
             answer = input("This will terminate the ARENA program. Are you sure [Y/N]? ").lower()
         if answer == "y":
             print("Exiting...")
-            os._exit(0)
+            self._scene.exit(0)
 
         return True
 

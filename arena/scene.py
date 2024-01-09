@@ -120,14 +120,15 @@ class Scene(ArenaMQTT):
             # Always use the the hostname specified by the user, or defaults.
             print(f"Loading: https://{self.web_host}/{self.namespace}/{self.scene}, realm={self.realm}")
             
-            span.add_event("Init Done.")
+            span.add_event(f"Loading: https://{self.web_host}/{self.namespace}/{self.scene}, realm={self.realm}")
 
     def exit(self, arg=0):
         """Custom exit to push errors to telemetry"""
+        error_msg=None
         if arg != 0:
             error_msg = f"Exiting with sys.exit('{arg}')"
-            self.telemetry.set_error(error_msg)
-        sys.exit(arg)
+        self.telemetry.exit(error_msg)
+        os._exit(arg)
             
     def on_connect(self, client, userdata, flags, rc):
         super().on_connect(client, userdata, flags, rc)
@@ -144,7 +145,7 @@ class Scene(ArenaMQTT):
             try:
                 msg = await self.msg_queue.get()
             except RuntimeError as e:
-                print(f"Ignoring error: {e}")
+                self.telemetry.add_event(f"Ignoring error: {e}")                
                 return
 
             # extract payload
@@ -152,18 +153,16 @@ class Scene(ArenaMQTT):
                 payload_str = msg.payload.decode("utf-8", "ignore")
                 payload = json.loads(payload_str)
             except Exception as e:
-                print("Malformed payload, ignoring:")
-                print(e)
+                self.telemetry.add_event(f"Malformed payload: {payload_str}. {e}.")
                 return
 
-            try:
-                # update object attributes, if possible
-                if "object_id" in payload:
-                    # parse payload
-                    object_id = payload.get("object_id", None)
-                    action = payload.get("action", None)
+            object_id = payload.get("object_id", None)
+            action = payload.get("action", None)
 
-                    with self.telemetry.start_process_msg_span(object_id, action) as span:
+            with self.telemetry.start_process_msg_span(object_id, action) as span:    
+                try:
+                    # update object attributes, if possible
+                    if object_id:
                         data = payload.get("data", {})
                         object_type = data.get("object_type", None)
 
@@ -220,6 +219,9 @@ class Scene(ArenaMQTT):
                             else: # create/update
                                 obj.update_attributes(**payload)
                                 span.add_event("Object attributes update.")
+                        
+                        else:
+                            self.telemetry.set_error("No message action!", span)
 
                         # call new message callback for all messages
                         if self.on_msg_callback:
@@ -267,11 +269,11 @@ class Scene(ArenaMQTT):
                             span.add_event("New Object.")
                         
                         span.add_event("Handle Msg Done.")
+                    else:
+                        self.telemetry.set_error("No object id!", span)
 
-            except Exception as e:
-                print("Something went wrong, ignoring:")
-                print(e)
-                print(payload)
+                except Exception as e:                    
+                    self.telemetry.set_error(f"Something went wrong, ignoring: {payload}. {e}")
 
     def callback_wrapper(self, func, arg, msg):
         """Checks for number of arguments for callback"""
@@ -454,8 +456,7 @@ class Scene(ArenaMQTT):
                 self.update_object(obj)
                 obj.delayed_prop_tasks.pop(anim["property"], None)
             except asyncio.CancelledError:
-                print("Animation end task cancelled for",
-                      obj.object_id + "." + anim["property"])
+                self.telemetry.add_event(f"Animation end task cancelled for {obj.object_id}.{anim['property']}")
 
         if anim.get("loop", 0) or anim.get("enabled", True) is False:
             return None
@@ -467,9 +468,9 @@ class Scene(ArenaMQTT):
 
     def _publish(self, obj, action, custom_payload=False):
         """Publishes to mqtt broker with "action":action"""
-        with self.telemetry.start_publish_span(obj.object_id, action, obj.type):        
+        with self.telemetry.start_publish_span(obj.object_id, action, obj.type) as span:
             if not self.can_publish:
-                print(f"ERROR: Publish failed! You do not have permission to publish to topic {self.root_topic} on {self.web_host}")
+                self.telemetry.set_error(f"ERROR: Publish failed! You do not have permission to publish to topic {self.root_topic} on {self.web_host}", span)
 
             topic = f"{self.root_topic}/{self.mqttc_id}/{obj['object_id']}"
             d = datetime.utcnow().isoformat()[:-3]+"Z"
@@ -483,7 +484,8 @@ class Scene(ArenaMQTT):
                 payload = obj.json(action=action, timestamp=d)
 
             self.mqttc.publish(topic, payload, qos=0)
-            if self.debug: print("[publish]", topic, payload)
+            if self.debug: 
+                self.telemetry.add_event(f"[publish] {topic} {payload}")
             return payload
 
     def get_persisted_obj(self, object_id):

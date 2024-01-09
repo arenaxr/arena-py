@@ -13,12 +13,12 @@ from opentelemetry.sdk.trace import TracerProvider, ReadableSpan, Span
 from opentelemetry.trace import NoOpTracerProvider, Status, StatusCode
 from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter, SpanExporter, SpanExportResult
 
-from ..env_vars import (
+from ..env import (
     ARENA_TELEMETRY,
-    OTLP_ENDPOINT
+    OTLP_ENDPOINT,
+    ENV_DEFAULTS
 )
 
-OTLP_ENDPOINT_DFT = "http://localhost:4317"    
 TRACE_TOPIC_DFT = "realm/ns/scene/t/traces"
 
 class MQTTSpanExporter(SpanExporter):
@@ -56,6 +56,7 @@ class MQTTSpanExporter(SpanExporter):
     def shutdown(self) -> None:
         print("shutdown exporter!")
         pass
+    
 class ArenaTelemetry():
     
     parent_span: Span = None
@@ -70,7 +71,7 @@ class ArenaTelemetry():
         })
         
         env_telemetry = os.environ.get(ARENA_TELEMETRY, 'None')
-        otlp_endpoint = os.environ.get(OTLP_ENDPOINT, OTLP_ENDPOINT_DFT)
+        otlp_endpoint = os.environ.get(OTLP_ENDPOINT, ENV_DEFAULTS.get(OTLP_ENDPOINT))
         tel_exporters = {
             'otlp': lambda: OTLPSpanExporter(otlp_endpoint, insecure=True),
             'mqtt': lambda: MQTTSpanExporter(), 

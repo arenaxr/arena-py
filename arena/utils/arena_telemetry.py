@@ -12,6 +12,7 @@ from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import TracerProvider, ReadableSpan, Span
 from opentelemetry.trace import NoOpTracerProvider, Status, StatusCode
 from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter, SpanExporter, SpanExportResult
+from opentelemetry.trace.span import INVALID_SPAN
 
 from ..env import (
     ARENA_TELEMETRY,
@@ -80,7 +81,8 @@ class ArenaTelemetry():
         self.enabled = env_telemetry.lower() in tel_exporters.keys()
         if self.enabled:
             provider = TracerProvider(resource=resource)
-            processor = BatchSpanProcessor(tel_exporters[env_telemetry]())
+            self.exporter = tel_exporters[env_telemetry]()
+            processor = BatchSpanProcessor(self.exporter)
             provider.add_span_processor(processor)
             trace.set_tracer_provider(provider)
         else:
@@ -94,15 +96,21 @@ class ArenaTelemetry():
         
         # create a parent span
         self.parent_span = self.tracer.start_span("somescene")
-        self.parent_span_ctx = trace.set_span_in_context(self.parent_span)        
-    
+        self.parent_span_ctx = trace.set_span_in_context(self.parent_span)    
+        
+        # make sure we end parent span
+        atexit.register(self.exit) 
              
     # record exit status on error 
-    def set_error(self, error_msg):
-        self.parent_span.set_status(Status(StatusCode.ERROR, error_msg))
+    def exit(self, error_msg=None):
+        if not self.enabled: return
+        if error_msg: self.parent_span.set_status(Status(StatusCode.ERROR, error_msg))
+        self.parent_span.end()
+        self.exporter.force_flush()
+        self.parent_span = INVALID_SPAN
         
     def __del__(self):
-        self.parent_span.end()       
+        if self.parent_span != INVALID_SPAN: self.exit()
         
     # wrapper to otel start_as_current_span; force context to be parent span
     def start_span(self, name, **kwargs):
@@ -119,8 +127,18 @@ class ArenaTelemetry():
         if 'context' in kwargs: del kwargs['context']
         return self.tracer.start_as_current_span(f"{obj_id} {action} publish_message {type}", context=self.parent_span_ctx, **kwargs)
         
-    # add event to current span
-    def add_event(self, name, **kwargs):
+    # add event to given or current span
+    def add_event(self, name, span=None, print_msg=True, **kwargs):
+        if print_msg: print(name)
         if not self.enabled: return
-        current_span = trace.get_current_span()
-        current_span.add_event(name, kwargs)
+        if not span: span = trace.get_current_span()
+        if span == INVALID_SPAN: span = self.parent_span
+        span.add_event(name, kwargs)
+
+    # set error on given or current span
+    def set_error(self, error_msg, span=None, print_msg=True):
+        if print_msg: print(error_msg)
+        if not self.enabled: return
+        if not span: span = trace.get_current_span()
+        if span == INVALID_SPAN: span = self.parent_span
+        span.set_status(Status(StatusCode.ERROR, error_msg))

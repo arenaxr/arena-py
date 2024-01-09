@@ -11,11 +11,12 @@ from .arena_mqtt import ArenaMQTT
 from .attributes import *
 from .events import *
 from .objects import *
-from .utils import Utils, ArenaTelemetry, ArenaCmdInterpreter
+from .utils import Utils, ArenaTelemetry, ArenaCmdInterpreter, ProgramRunInfo
 
 from .env import (
     SCENE,
-    PROGRAM_OBJECT_ID
+    PROGRAM_OBJECT_ID,
+    _get_env
 )
 
 class Scene(ArenaMQTT):
@@ -53,7 +54,7 @@ class Scene(ArenaMQTT):
         self.connected_evt = threading.Event()
                 
         # start the command interpreter (if enabled by env variable)
-        self.cmd_interpreter = ArenaCmdInterpreter(self, show_attrs=('config_data', 'scene', 'users', 'all_objects', 'stats'),
+        self.cmd_interpreter = ArenaCmdInterpreter(self, show_attrs=('config_data', 'scene', 'users', 'all_objects', 'run_info'),
                                     get_callables=('persisted_objs', 'persisted_scene_option', 'writable_scenes', 'user_list'),
                                     start_cmd_event=self.connected_evt)
                 
@@ -69,7 +70,7 @@ class Scene(ArenaMQTT):
                 debug = self.args["debug"]
 
         if os.environ.get(SCENE):
-            self.scene = os.environ[SCENE]
+            self.scene = _get_env(SCENE)
             print(f"Using Scene from 'SCENE' env variable: {self.scene}")
         elif "scene" in kwargs and kwargs["scene"]:
             if re.search("/", kwargs["scene"]):
@@ -96,7 +97,7 @@ class Scene(ArenaMQTT):
             # create a program object to describe this program
             # PROGRAM_OBJECT_ID allows to match the object id of persisted program object
             # when a program object with PROGRAM_OBJECT_ID is loaded from persist, it will replace this one
-            self.program = Program(object_id=os.environ.get(PROGRAM_OBJECT_ID), 
+            self.program = Program(object_id=_get_env(PROGRAM_OBJECT_ID), 
                                    name=f"{self.namespace}/{self.scene}", 
                                    filename=sys.argv[0], 
                                    filetype="PY")
@@ -117,9 +118,18 @@ class Scene(ArenaMQTT):
                                                 # have a reference to
             self.users = {} # dict of all users
 
+            # setup program run info to collect stats
+            self.run_info = ProgramRunInfo(self.event_loop, 
+                                           update_callback=self.run_info_update, 
+                                           web_host=self.web_host,
+                                           namespace=self.namespace,
+                                           scene=self.scene,
+                                           realm=self.realm
+                                           )
+
             # Always use the the hostname specified by the user, or defaults.
             print(f"Loading: https://{self.web_host}/{self.namespace}/{self.scene}, realm={self.realm}")
-            
+                        
             span.add_event(f"Loading: https://{self.web_host}/{self.namespace}/{self.scene}, realm={self.realm}")
 
     def exit(self, arg=0):
@@ -139,6 +149,13 @@ class Scene(ArenaMQTT):
             # create arena-py Objects from persist server
             # no need to return anything here            
             self.get_persisted_objs()
+
+    def on_message(self, client, userdata, msg):
+        super().on_message(client, userdata, msg)
+        self.run_info.msg_rcv()
+
+    def on_publish(self, client, userdata, mid):
+        self.run_info.msg_publish()
         
     async def process_message(self):
         while True:

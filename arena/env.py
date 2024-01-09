@@ -129,7 +129,7 @@ stats are published
 Default: 5000. 
 """
 
-# env variables defaults 
+""" Environment variables default values """
 ENV_DEFAULTS = {
   ENABLE_INTERPRETER:   'false',
   OTLP_ENDPOINT:        'http://localhost:4317',
@@ -137,11 +137,14 @@ ENV_DEFAULTS = {
   PROGRAM_STATS_UPDATE_INTERVAL_MS: 5000
 }
 
-def _get_env(all=False):
-  skip = ('os', 'sys')
+def _get_env(env_var):
+  """ Get value of env variable with default defined by ENV_DEFAULTS; None if not defined in ENV_DEFAULTS """
+  return os.environ.get(env_var, ENV_DEFAULTS.get(env_var))
+
+def _get_arena_env():
+  """Get all variables defined in this module; skip credentials, private data and imports"""
   env = {}
-  # get variables defined in this module; skip credentials, private data and imports
-  if not all: skip = ( ARENA_PASSWORD, ARENA_USERNAME, 'os', 'sys' )
+  skip = ( ARENA_PASSWORD, ARENA_USERNAME, 'os', 'sys' )
   for key in [ v for v in dir(sys.modules[__name__]) if not v.startswith('_') and v not in skip]:
     env[key] = os.environ.get(key)
   return env

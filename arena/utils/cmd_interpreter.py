@@ -1,7 +1,26 @@
-# A simple command interpreter
+"""
+The ArenaCmdInterpreter is a simple line-oriented command interpreter that
+allows to inspect library/program state. It looks at :envvar:`ENABLE_INTERPRETER` 
+to enable the interpreter. 
+
+The :class:`.ArenaCmdInterpreter` receives a :class:`.Scene` instance and provides commands
+to inspect attributes and execute functions (callables) given to the constructor.
+
+The commands available are:
+  show: displays attributes
+  info: excutes scene functions that output information
+  help: displays the commands available
+  exit: terminates the program
+  
+"""
 
 import cmd, os, json, asyncio, threading, time
 from datetime import date, datetime
+from ..env import (
+    ENABLE_INTERPRETER,
+    _get_env
+)
+
 class ArenaCmdInterpreter(cmd.Cmd):
     intro = 'Welcome to the arena-py console. Type help or ? to list available commands.\n'
     prompt = '# '
@@ -15,7 +34,7 @@ class ArenaCmdInterpreter(cmd.Cmd):
         raise TypeError("Type not serializable")
 
     def __init__(self, scene, show_attrs=('config_data', 'scene', 'users', 'all_objects', 'msg_io'), get_callables=('persisted_objs', 'persisted_scene_option', 'writable_scenes', 'user_list'), start_cmd_event=None):
-        self.enable_interp = os.environ.get("ENABLE_INTERPRETER", 'False').lower() in ('true', '1', 't')
+        self.enable_interp = _get_env(ENABLE_INTERPRETER).lower() in ('true', '1', 't')
         if not self.enable_interp: return
         super().__init__(completekey='tab')
         self._scene = scene

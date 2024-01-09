@@ -7,6 +7,7 @@ from .arena_mqtt import ArenaMQTT
 
 from .env import (
     DEVICE,
+    _get_env
 )
 
 class Device(ArenaMQTT):
@@ -43,7 +44,7 @@ class Device(ArenaMQTT):
                 debug = self.args["debug"]
 
         if os.environ.get(DEVICE):
-            self.device = os.environ[DEVICE]
+            self.device = _get_env(DEVICE)
             print(f"Using Device from 'DEVICE' env variable: {self.device}")
         elif "device" in kwargs and kwargs["device"]:
             if re.search("/", kwargs["device"]):

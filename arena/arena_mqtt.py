@@ -12,14 +12,14 @@ import paho.mqtt.client as mqtt
 
 from .auth import ArenaAuth
 from .event_loop import *
-from .utils import ProgramRunInfo
 
 from .env import (
     MQTTH,
     REALM,
     ARENA_USERNAME,
     ARENA_PASSWORD,
-    NAMESPACE
+    NAMESPACE,
+    _get_env
 )
 
 class ArenaMQTT(object):
@@ -43,7 +43,7 @@ class ArenaMQTT(object):
                 **kwargs
             ):
         if os.environ.get(MQTTH):
-            self.web_host = os.environ[MQTTH]
+            self.web_host = _get_env(MQTTH)
             print(f"Using Host from 'MQTTH' env variable: {self.web_host}")
         elif "host" in kwargs and kwargs["host"]:
             self.web_host = kwargs["host"]
@@ -53,7 +53,7 @@ class ArenaMQTT(object):
             self.web_host = web_host
 
         if os.environ.get(REALM):
-            self.realm = os.environ[REALM]
+            self.realm = _get_env(REALM)
             print(f"Using Realm from 'REALM' env variable: {self.realm}")
         elif "realm" in kwargs and kwargs["realm"]:
             self.realm = kwargs["realm"]
@@ -72,8 +72,8 @@ class ArenaMQTT(object):
         self.auth = ArenaAuth()
         if os.environ.get(ARENA_USERNAME) and os.environ.get(ARENA_PASSWORD):
             # auth 1st: use passed in env var
-            self.username = os.environ[ARENA_USERNAME]
-            token = os.environ[ARENA_PASSWORD]
+            self.username = _get_env(ARENA_USERNAME)
+            token = _get_env(ARENA_PASSWORD)
             self.auth.store_environment_auth(self.username, token)
         else:
             if self.scene:
@@ -90,7 +90,7 @@ class ArenaMQTT(object):
                     self.username = self.auth.authenticate_user(self.web_host)
 
         if os.environ.get(NAMESPACE):
-            self.namespace = os.environ[NAMESPACE]
+            self.namespace = _get_env(NAMESPACE)
         elif "namespace" not in kwargs or ("namespace" in kwargs and kwargs["namespace"] is None):
             self.namespace = self.username
         else:
@@ -152,9 +152,6 @@ class ArenaMQTT(object):
         self.mqttc.on_connect = self.on_connect
         self.mqttc.on_disconnect = self.on_disconnect
         self.mqttc.on_publish = self.on_publish
-
-        # setup program run info to collect stats
-        self.run_info = ProgramRunInfo(self.event_loop, update_callback=self.run_info_update)
         
         # add main message processing + callbacks loop to tasks
         self.run_async(self.process_message)
@@ -314,7 +311,6 @@ class ArenaMQTT(object):
         # ignore own messages
         if mqtt.topic_matches_sub(self.ignore_topic, msg.topic):
             return
-        self.run_info.msg_rcv()
         self.msg_queue.put_nowait(msg)
 
     async def process_message(self):
@@ -333,9 +329,6 @@ class ArenaMQTT(object):
             self.end_program_callback(self)
         self.mqttc.disconnect()
 
-    def on_publish(self, client, userdata, mid):
-        self.run_info.msg_publish()
-
     def message_callback_add(self, sub, callback):
         """Subscribes to new topic and adds callback"""
         self.mqttc.subscribe(sub)
@@ -345,7 +338,3 @@ class ArenaMQTT(object):
         """Unsubscribes to topic and removes callback"""
         self.mqttc.unsubscribe(sub)
         self.mqttc.message_callback_remove(sub)
-
-    def run_info_update(self, stats):
-        """Callbak when program info/stats are updated; publish program object update"""        
-        raise NotImplementedError("Must override run_info_update")

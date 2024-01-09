@@ -13,9 +13,11 @@ from .events import *
 from .objects import *
 from .utils import Utils, ArenaTelemetry, ArenaCmdInterpreter
 
-from .env_vars import (
+from .env import (
     SCENE,
+    PROGRAM_OBJECT_ID
 )
+
 class Scene(ArenaMQTT):
     """
     Gives access to an ARENA scene.
@@ -45,7 +47,7 @@ class Scene(ArenaMQTT):
             ):
                 
         # init telemetry
-        self.telemetry = ArenaTelemetry()
+        self.telemetry = ArenaTelemetry()        
         
         # setup event to let others wait on connection
         self.connected_evt = threading.Event()
@@ -90,6 +92,15 @@ class Scene(ArenaMQTT):
 
         with self.telemetry.start_span(f"init {self.namespace}/{self.scene}") as span:
             # 'init' span will track the remainder of the initialization
+
+            # create a program object to describe this program
+            # PROGRAM_OBJECT_ID allows to match the object id of persisted program object
+            # when a program object with PROGRAM_OBJECT_ID is loaded from persist, it will replace this one
+            self.program = Program(object_id=os.environ.get(PROGRAM_OBJECT_ID), 
+                                   name=f"{self.namespace}/{self.scene}", 
+                                   filename=sys.argv[0], 
+                                   filetype="PY")
+                        
             self.persist_host = self.config_data["ARENADefaults"]["persistHost"]
             self.persist_path = self.config_data["ARENADefaults"]["persistPath"]
 
@@ -523,7 +534,8 @@ class Scene(ArenaMQTT):
             object_type = data.get("object_type")
             
             # special case for Program type
-            if obj.get("type") == Program.object_type: object_type = Program.object_type
+            if obj.get("type") == Program.object_type: 
+                object_type = Program.object_type
             
             if object_id != None:
                 if object_id in self.all_objects:
@@ -535,6 +547,11 @@ class Scene(ArenaMQTT):
                     obj_class = OBJECT_TYPE_MAP.get(object_type, Object)
                     persisted_obj = obj_class(object_id=object_id, data=data)
                     persisted_obj.persist = True
+                    
+                    # replace program object, if matches our program id
+                    if object_type == Program.object_type:
+                        if os.environ.get(PROGRAM_OBJECT_ID) == object_id:
+                            self.program = persisted_obj
             
                 objs[object_id] = persisted_obj
 
@@ -558,12 +575,12 @@ class Scene(ArenaMQTT):
         """Returns a list of users"""
         return self.users.values()
         
-    def stats_update(self):
-        """Callbak when program stats are updated"""
-        obj = Program.running_instance_stats(self.stats.get_stats())
-        if obj:
-            # publish program object update
-            self._publish(obj, "update")
+    def run_info_update(self, run_info):
+        """Callbak when program stats are updated; publish program object update"""
+        # Add run info to program data object and publish program object update
+        run_info.add_program_info(self.program.data)
+        self.program.persist = True
+        self._publish(self.program, "update")
         
 class Arena(Scene):
     """

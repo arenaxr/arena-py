@@ -4,7 +4,7 @@ from ..attributes import Data
 import uuid
 import os
 
-from ..env_vars import (
+from ..env import (
     PROGRAM_OBJECT_ID,
 )
 
@@ -21,21 +21,13 @@ class Program(BaseObject):
     :param str[] args: Command-line arguments (passed in argv); e.g. [ "arg=value" ]. 
     :param str[] env: Environment variables; e.g. [ "SCENE=ascene" ].
     
-    
-    Uses env variable PROGRAM_OBJECT_ID to identify persist program object that represents the running program;
     """
 
     type = "program"
     object_type = "program"
-    
-    # save the program object the represents the running program instance
-    running_instance = None
  
-    def __init__(self, object_id=str(uuid.uuid4()), persist=False, **kwargs):
-
-        if os.environ.get(PROGRAM_OBJECT_ID) == object_id:
-            Program.running_instance = self
-            
+    def __init__(self, object_id=str(uuid.uuid4()), persist=False, objects_list_add=True, **kwargs):
+                            
         # remove timestamp, if exists
         if "timestamp" in kwargs: del kwargs["timestamp"]
 
@@ -44,8 +36,8 @@ class Program(BaseObject):
 
         # remove "action", if exists
         if "action" in kwargs: del kwargs["action"]
-
-        # print warning if object is being created with the same id as an existing object
+                    
+        # update program object or print warning if existing object
         if Object.exists(object_id):
             if not Object.get(object_id).persist:
                 print("[WARNING]", f"An object with object_id of {object_id} was already created. The previous object will be overwritten.")
@@ -62,7 +54,7 @@ class Program(BaseObject):
             )
 
         # add current object to all_objects dict
-        Object.add(self)
+        if objects_list_add: Object.add(self)
 
     def update_attributes(self, evt_handler=None, update_handler=None, **kwargs):
         if "data" not in self:
@@ -86,12 +78,3 @@ class Program(BaseObject):
 
         json_payload["data"] = data
         return self.json_encode(json_payload)
-
-    @classmethod
-    def running_instance_stats(cls, stats):
-        if Program.running_instance:
-            Program.running_instance.data['info'] = stats
-            Program.running_instance.persist = True
-            return Program.running_instance
-        return None
-    

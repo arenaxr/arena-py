@@ -5,7 +5,7 @@ import sys
 
 from .arena_mqtt import ArenaMQTT
 
-from .env_vars import (
+from .env import (
     DEVICE,
 )
 

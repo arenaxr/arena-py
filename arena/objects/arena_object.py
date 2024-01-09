@@ -198,8 +198,9 @@ class Object(BaseObject):
     def remove(cls, obj):
         object_id = obj.object_id
         del Object.all_objects[object_id]
-        for task in obj.delayed_prop_tasks.values():  # Cancel all pending tasks
-            task.cancel()
+        if (hasattr(obj, "delayed_prop_tasks")):
+            for task in obj.delayed_prop_tasks.values():  # Cancel all pending tasks
+                task.cancel()
 
     @classmethod
     def exists(cls, object_id):

@@ -71,15 +71,15 @@ class ArenaTelemetry():
     parent_span: Span = None
 
     def __init__(self, name=sys.argv[0], id=None):
-    """Return a `ArenaTelemetry` using given service name and id
-       Provides utility calls that wrap open telemetry functionality to start spans, log events, and other.
-       
-       Creates a parent span for all the spans related to the program.
-       
-       Args:
-            name: name of the service used with the telemetry backend
-            id: additional id used with the telemetry backend
-    """
+        """ Return an `ArenaTelemetry` using given service name and id
+            Provides utility calls that wrap open telemetry functionality to start spans, log events, and other.
+        
+            Creates a parent span for all the spans related to the program.
+        
+            Args:
+                name: name of the service used with the telemetry backend
+                id: additional id used with the telemetry backend
+        """
             
         service_name = f"{name}"
         if id: service_name = service_name + "({id})"

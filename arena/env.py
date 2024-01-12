@@ -4,31 +4,6 @@
 import sys 
 import os
 
-MQTTH = "MQTTH"
-"""
-.. envvar:: MQTTH
-
-The :envvar:`MQTTH` defines the MQTT host used by the library.
-This variable overrides arguments passed in the command line.
-"""
-
-ARENA_USERNAME = "ARENA_USERNAME"
-"""
-.. envvar:: ARENA_USERNAME
-
-The :envvar:`ARENA_USERNAME` defines username used to authenticate.
-This variable overrides arguments passed in the command line.
-
-"""
-
-ARENA_PASSWORD = "ARENA_PASSWORD"
-"""
-.. envvar:: ARENA_PASSWORD
-
-The :envvar:`ARENA_PASSWORD` defines password used to authenticate.
-This variable overrides arguments passed in the command line.
-"""
-
 REALM = "REALM"
 """
 .. envvar:: REALM
@@ -36,7 +11,7 @@ REALM = "REALM"
 The :envvar:`REALM` defines the ARENA Realm to listen to.
 After connecting, the library listens to a scene topic as follows:
 `{REALM}/s/{NAMESPACE}/{SCENE}`.
-This variable overrides arguments passed in the command line.
+This variable overrides arguments passed in the scene's constructor.
 """
 
 SCENE = "SCENE"
@@ -46,7 +21,7 @@ SCENE = "SCENE"
 The :envvar:`SCENE` defines ARENA Scene to listen to.
 After connecting, the library listens to a scene topic as follows:
 `{REALM}/s/{NAMESPACE}/{SCENE}`.
-This variable overrides arguments passed in the command line.
+This variable overrides arguments passed in the scene's constructor.
 """
 
 NAMESPACE = "NAMESPACE"
@@ -56,7 +31,32 @@ NAMESPACE = "NAMESPACE"
 The :envvar:`NAMESPACE` defines ARENA Namespace to listen to.
 After connecting, the library listens to a scene topic as follows:
 `{REALM}/s/{NAMESPACE}/{SCENE}`.
-This variable overrides arguments passed in the command line.
+This variable overrides arguments passed in the scene's constructor.
+"""
+
+ARENA_USERNAME = "ARENA_USERNAME"
+"""
+.. envvar:: ARENA_USERNAME
+
+The :envvar:`ARENA_USERNAME` defines username used to authenticate.
+If undefined, will try to use local authentication information previously saved.
+"""
+
+ARENA_PASSWORD = "ARENA_PASSWORD"
+"""
+.. envvar:: ARENA_PASSWORD
+
+The :envvar:`ARENA_PASSWORD` defines password used to authenticate.
+If undefined, will try to use local authentication information previously saved.
+"""
+
+MQTTH = "MQTTH"
+"""
+.. envvar:: MQTTH
+
+The :envvar:`MQTTH` defines the MQTT host used by the library.
+This variable allows to use a broker different from the host argument passed to the 
+scene constructor
 """
 
 DEVICE = "DEVICE"

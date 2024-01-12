@@ -73,13 +73,14 @@ class Scene(ArenaMQTT):
             self.scene = _get_env(SCENE)
             print(f"Using Scene from 'SCENE' env variable: {self.scene}")
         elif "scene" in kwargs and kwargs["scene"]:
-            if re.search("/", kwargs["scene"]):
-                self.exit("Scene argument (scene) cannot include '/', aborting...")
             self.scene = kwargs["scene"]
             print(f"Using Scene from 'scene' input parameter: {self.scene}")
         else:
             self.exit("Scene argument (scene) is unspecified or None, aborting...")
 
+        if re.search("/", self.scene):
+            self.exit("Scene cannot include '/', aborting...")
+            
         super().__init__(
             host,
             realm,

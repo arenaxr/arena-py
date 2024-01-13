@@ -154,14 +154,36 @@ class Object(BaseObject):
                 json_data["rotation"] = rot.quaternion
 
             # handle special case where "physics" should be "dynamic-body"
-            elif "physics" == k or "dynamic_body" == k:
+            elif "physics" == k:
                 json_data["dynamic-body"] = v
 
             # handle special case where "clickable" should be "click-listener"
-            elif "clickable" == k or "click_listener" == k:
+            elif "clickable" == k:
                 json_data["click-listener"] = v
 
-            # remove underscores from specific keys
+            elif "look_at" == k:
+                if isinstance(v, str):
+                    json_data["look-at"] = v
+                elif isinstance(v, Object):
+                    json_data["look-at"] = v.object_id
+
+            # for animation, replace "start" and "end" with "from" and "to"
+            elif isinstance(k, str) and "animation" == k[:len("animation")]:
+                animation = vars(v).copy()
+                Utils.dict_key_replace(animation, "start", "from")
+                Utils.dict_key_replace(animation, "end", "to")
+                json_data[k] = animation
+            else:
+                json_data[k] = v
+
+        # remove underscores from specific keys
+        for k,v in data.items():
+            if "dynamic_body" == k:
+                json_data["dynamic-body"] = v
+
+            elif "click_listener" == k:
+                json_data["click-listener"] = v
+
             elif "goto_url" == k:
                 json_data["goto-url"] = v
 
@@ -177,23 +199,8 @@ class Object(BaseObject):
             elif "video_control" == k:
                 json_data["video-control"] = v
 
-            elif "look_at" == k:
-                if isinstance(v, str):
-                    json_data["look-at"] = v
-                elif isinstance(v, Object):
-                    json_data["look-at"] = v.object_id
-
             elif "spe_particles" == k:
                 json_data["spe-particles"] = v
-
-            # for animation, replace "start" and "end" with "from" and "to"
-            elif isinstance(k, str) and "animation" == k[:len("animation")]:
-                animation = vars(v).copy()
-                Utils.dict_key_replace(animation, "start", "from")
-                Utils.dict_key_replace(animation, "end", "to")
-                json_data[k] = animation
-            else:
-                json_data[k] = v
 
         json_payload.pop("delayed_prop_tasks", None)
 

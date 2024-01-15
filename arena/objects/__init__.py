@@ -18,7 +18,7 @@ from .ring import Ring
 from .sphere import Sphere
 from .tetrahedron import Tetrahedron
 from .text import Text
-from .thickline import ThickLine
+from .thickline import Thickline
 from .torus import Torus
 from .torus_knot import TorusKnot
 from .triangle import Triangle
@@ -49,7 +49,7 @@ OBJECT_TYPE_MAP = {
     Sphere.object_type:       Sphere,
     Tetrahedron.object_type:  Tetrahedron,
     Text.object_type:         Text,
-    ThickLine.object_type:    ThickLine,
+    Thickline.object_type:    Thickline,
     Torus.object_type:        Torus,
     TorusKnot.object_type:    TorusKnot,
     Triangle.object_type:     Triangle,

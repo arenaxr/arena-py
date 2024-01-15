@@ -2,7 +2,6 @@ import json
 from .arena_object import Object
 from ..attributes import Morph
 
-
 class GltfModel(Object):
     """
     Class for GLTF Models in the ARENA.
@@ -14,7 +13,7 @@ class GltfModel(Object):
         super().__init__(object_type=GLTF.object_type, url=url, **kwargs)
 
     def update_morph(self, morph):
-        if isinstance(morph, (list, tuple)):
+        if isinstance(morph, (list,tuple)):
             for m in morph:
                 self.morphs[m.morphtarget] = m
         elif isinstance(morph, Morph):
@@ -38,7 +37,7 @@ class GltfModel(Object):
         return json_payload
 
     def json_postprocess(self, json_payload, json_data):
-        for i, morph in enumerate(self.morphs.values()):
+        for i,morph in enumerate(self.morphs.values()):
             json_data[f"gltf-morph__{i}"] = vars(morph)
 
 

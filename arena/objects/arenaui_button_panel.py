@@ -1,6 +1,5 @@
 from .arena_object import Object
 
-
 class ArenauiButtonPanel(Object):
     """
     Button Panel in the ARENA UI.
@@ -10,7 +9,6 @@ class ArenauiButtonPanel(Object):
     :param bool vertical: Whether to display buttons vertically (optional)
     :param str font: Font of button panel ['Roboto', 'Roboto-Mono'] (optional)
     """
-
     object_type = "arenaui-button-panel"
 
     def __init__(self, **kwargs):
@@ -34,6 +32,12 @@ class ArenauiButtonPanel(Object):
         return json_payload
 
 
+class ButtonPanel(ArenauiButtonPanel):
+    """
+    Altername name for ArenauiButtonPanel.
+    """
+
+
 class Button:
     """
     Buttons of a ButtonPanel in the ARENA UI.
@@ -49,9 +53,3 @@ class Button:
     def __init__(self, name="Button", **kwargs):
         self.name = name
         self.__dict__.update(kwargs)
-
-
-class ButtonPanel(ArenauiButtonPanel):
-    """
-    Altername name for ArenauiButtonPanel.
-    """

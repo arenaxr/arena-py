@@ -1,6 +1,5 @@
 from .arena_object import Object
 
-
 class ArenauiCard(Object):
     """
     Text/Image Card in the ARENA UI.

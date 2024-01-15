@@ -1,6 +1,5 @@
 from .arena_object import Object
 
-
 class ArenauiPrompt(Object):
     """
     Popup Prompt in the ARENA UI.

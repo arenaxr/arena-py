@@ -5,9 +5,10 @@ from .circle import Circle
 from .cone import Cone
 from .cylinder import Cylinder
 from .dodecahedron import Dodecahedron
-from .gltf import GLTF
+from .gltf_model import GltfModel
 from .icosahedron import Icosahedron
-from .hands import HandLeft, HandRight
+from .hand_left import HandLeft
+from .hand_right import HandRight
 from .image import Image
 from .light import Light
 from .line import Line
@@ -21,7 +22,9 @@ from .thickline import ThickLine
 from .torus import Torus
 from .torus_knot import TorusKnot
 from .triangle import Triangle
-from .ui import *
+from .arenaui_button_panel import *
+from .arenaui_card import *
+from .arenaui_prompt import *
 
 OBJECT_TYPE_MAP = {
     Box.object_type:          Box,
@@ -32,7 +35,7 @@ OBJECT_TYPE_MAP = {
     Cylinder.object_type:     Cylinder,
     Dodecahedron.object_type: Dodecahedron,
     Object.object_type:       Object,
-    GLTF.object_type:         GLTF,
+    GltfModel.object_type:         GltfModel,
     Icosahedron.object_type:  Icosahedron,
     Image.object_type:        Image,
     HandLeft.object_type:     HandLeft,

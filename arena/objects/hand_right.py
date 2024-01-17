@@ -2,7 +2,10 @@ from .arena_object import Object
 
 class HandRight(Object):
     """
-    Class for Right Hands/Controllers in the ARENA.
+    Class for HandRight in the ARENA: Hand is the (left or right) hand metadata pose and controller type of the user avatar.
+    
+    :param str url: Path to user avatar hand model, defaults to 'static/models/hands/valve_index_left.gltf' (optional)
+    :param str dep: Camera object_id this hand belongs to. (optional)
     """
     object_type = "handRight"
 

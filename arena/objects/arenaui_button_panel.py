@@ -34,7 +34,7 @@ class ArenauiButtonPanel(Object):
 
 class ButtonPanel(ArenauiButtonPanel):
     """
-    Altername name for ArenauiButtonPanel.
+    Alternate name for ArenauiButtonPanel.
     """
 
 

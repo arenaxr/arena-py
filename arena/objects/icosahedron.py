@@ -2,7 +2,10 @@ from .arena_object import Object
 
 class Icosahedron(Object):
     """
-    Class for Icosahedron in the ARENA.
+    Class for Icosahedron in the ARENA: icosahedron Geometry
+    
+    :param int detail: detail (optional)
+    :param float radius: radius, defaults to '1' (optional)
     """
     object_type = "icosahedron"
 

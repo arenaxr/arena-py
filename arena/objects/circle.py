@@ -4,9 +4,9 @@ class Circle(Object):
     """
     Class for Circle in the ARENA: Circle Geometry
     
-    :param float radius: radius, defaults to '1' (optional)
-    :param int segments: segments, defaults to '32' (optional)
-    :param float thetaLength: theta length, defaults to '360' (optional)
+    :param float radius: radius; defaults to '1' (optional)
+    :param int segments: segments; defaults to '32' (optional)
+    :param float thetaLength: theta length; defaults to '360' (optional)
     :param float thetaStart: theta start (optional)
     """
     object_type = "circle"

@@ -5,7 +5,7 @@ class Dodecahedron(Object):
     Class for Dodecahedron in the ARENA: dodecahedron Geometry
     
     :param int detail: detail (optional)
-    :param float radius: radius, defaults to '1' (optional)
+    :param float radius: radius; defaults to '1' (optional)
     """
     object_type = "dodecahedron"
 

@@ -4,11 +4,11 @@ class ArenauiButtonPanel(Object):
     """
     Class for ArenauiButtonPanel in the ARENA: ARENAUI element which displays a vertical or horizontal panel of buttons.
     
-    :param list buttons: Buttons, defaults to '[{'name': 'Option 1'}, {'name': 'Option 2'}]' (optional)
+    :param list buttons: Buttons; defaults to '[{'name': 'Option 1'}, {'name': 'Option 2'}]' (optional)
     :param str title: Title to display above buttons (optional). (optional)
     :param bool vertical: Vertical button layout (optional)
-    :param str font: Font to use for button text [Roboto, Roboto-Mono], defaults to 'Roboto' (optional)
-    :param str theme: Color Theme [light, dark], defaults to 'light' (optional)
+    :param str font: Font to use for button text [Roboto, Roboto-Mono]; defaults to 'Roboto' (optional)
+    :param str theme: Color Theme [light, dark]; defaults to 'light' (optional)
     """
     object_type = "arenaui-button-panel"
 

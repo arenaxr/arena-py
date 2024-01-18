@@ -4,11 +4,11 @@ class Ring(Object):
     """
     Class for Ring in the ARENA: Ring Geometry
     
-    :param float radiusInner: radius inner, defaults to '0.8' (optional)
-    :param float radiusOuter: radius outer, defaults to '1.2' (optional)
-    :param int segmentsPhi: segments phi, defaults to '10' (optional)
-    :param int segmentsTheta: segments theta, defaults to '32' (optional)
-    :param float thetaLength: theta length, defaults to '360' (optional)
+    :param float radiusInner: radius inner; defaults to '0.8' (optional)
+    :param float radiusOuter: radius outer; defaults to '1.2' (optional)
+    :param int segmentsPhi: segments phi; defaults to '10' (optional)
+    :param int segmentsTheta: segments theta; defaults to '32' (optional)
+    :param float thetaLength: theta length; defaults to '360' (optional)
     :param float thetaStart: theta start (optional)
     """
     object_type = "ring"

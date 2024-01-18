@@ -5,7 +5,7 @@ class Octahedron(Object):
     Class for Octahedron in the ARENA: Octahedron Geometry
     
     :param int detail: detail (optional)
-    :param float radius: radius, defaults to '1' (optional)
+    :param float radius: radius; defaults to '1' (optional)
     """
     object_type = "octahedron"
 

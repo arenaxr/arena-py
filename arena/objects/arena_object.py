@@ -1,7 +1,9 @@
+import uuid
+
 from ..base_object import *
 from ..attributes import Animation, Data, Position, Rotation, Scale, Color
 from ..utils import *
-import uuid
+
 
 class Object(BaseObject):
     """
@@ -167,6 +169,10 @@ class Object(BaseObject):
                 elif isinstance(v, Object):
                     json_data["look-at"] = v.object_id
 
+            # remove underscores from any other keys
+            if "_" in k:
+                json_data[k.replace('_', '-')] = v
+
             # for animation, replace "start" and "end" with "from" and "to"
             elif isinstance(k, str) and "animation" == k[:len("animation")]:
                 animation = vars(v).copy()
@@ -175,32 +181,6 @@ class Object(BaseObject):
                 json_data[k] = animation
             else:
                 json_data[k] = v
-
-        # remove underscores from specific keys
-        for k,v in data.items():
-            if "dynamic_body" == k:
-                json_data["dynamic-body"] = v
-
-            elif "click_listener" == k:
-                json_data["click-listener"] = v
-
-            elif "goto_url" == k:
-                json_data["goto-url"] = v
-
-            elif "jitsi_video" == k:
-                json_data["jitsi-video"] = v
-
-            elif "collision_listener" == k:
-                json_data["collision-listener"] = v
-
-            elif "animation_mixer" == k:
-                json_data["animation-mixer"] = v
-
-            elif "video_control" == k:
-                json_data["video-control"] = v
-
-            elif "spe_particles" == k:
-                json_data["spe-particles"] = v
 
         json_payload.pop("delayed_prop_tasks", None)
 

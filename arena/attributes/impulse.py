@@ -4,8 +4,12 @@ from .position import Position
 
 class Impulse(Attribute):
     """
-    Impulse Attribute.
+    Impulse attribute class to manage its properties in the ARENA: Apply an impulse to an object to set it in motion. This happens in conjunction with an event. Requires click-listener and physics.
     Usage: impulse=Impulse(...)
+    
+    :param dict force: impulse vector; defaults to '{'x': 1, 'y': 1, 'z': 1}' (optional)
+    :param str on: Event to listen 'on'. (optional)
+    :param dict position: world position; defaults to '{'x': 1, 'y': 1, 'z': 1}' (optional)
     """
     def __init__(self, on="mousedown", force=Position(0,0,0), position=Position(0,0,0), **kwargs):
         if isinstance(force, Position):

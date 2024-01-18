@@ -1,40 +1,69 @@
-from .animation_mixer import AnimationMixer
-from .animation import Animation
-from .attribute import Attribute
-from .color import Color
-from .data import Data
-from .goto_url import GotoUrl
-from .impulse import Impulse
-from .jitsi_video import JitsiVideo
-from .material import Material
-from .morph import Morph
-from .physics import Physics
-from .position import Position
-from .rotation import Rotation
-from .scale import Scale
-from .sound import Sound
-from .spe_particles import SpeParticles
-from .text_input import TextInput
-from .video_control import VideoControl
+# This file is auto-generated from github.com/arenaxr/arena-schema, changes here may be overwritten.
 
-# [TODO]: do something with this
+from .attribute import *
+from .color import *
+from .data import *
+from .animation import *
+from .animation_mixer import *
+from .armarker import *
+from .attribution import *
+from .blip import *
+from .box_collision_listener import *
+from .click_listener import *
+from .dynamic_body import *
+from .gltf_model_lod import *
+from .gltf_morph import *
+from .goto_landmark import *
+from .goto_url import *
+from .impulse import *
+from .jitsi_video import *
+from .landmark import *
+from .material import *
+from .material_extras import *
+from .multisrc import *
+from .particle_system import *
+from .position import *
+from .remote_render import *
+from .rotation import *
+from .scale import *
+from .shadow import *
+from .sound import *
+from .spe_particles import *
+from .static_body import *
+from .textinput import *
+from .video_control import *
+
 ATTRIBUTE_TYPE_MAP = {
-    "animation-mixer": AnimationMixer,
-    "animation": Animation,
     "attribute": Attribute,
     "color": Color,
     "data": Data,
+    "animation": Animation,
+    "animation_mixer": AnimationMixer,
+    "armarker": Armarker,
+    "attribution": Attribution,
+    "blip": Blip,
+    "box_collision_listener": BoxCollisionListener,
+    "click_listener": ClickListener,
+    "dynamic_body": DynamicBody,
+    "gltf_model_lod": GltfModelLod,
+    "gltf_morph": GltfMorph,
+    "goto_landmark": GotoLandmark,
     "goto_url": GotoUrl,
     "impulse": Impulse,
     "jitsi_video": JitsiVideo,
+    "landmark": Landmark,
     "material": Material,
-    "morph": Morph,
-    "physics": Physics,
+    "material_extras": MaterialExtras,
+    "multisrc": Multisrc,
+    "particle_system": ParticleSystem,
     "position": Position,
+    "remote_render": RemoteRender,
     "rotation": Rotation,
     "scale": Scale,
+    "shadow": Shadow,
     "sound": Sound,
     "spe_particles": SpeParticles,
-    "text_input": TextInput,
+    "static_body": StaticBody,
+    "textinput": Textinput,
     "video_control": VideoControl,
 }

@@ -4,7 +4,7 @@ from .position import Position
 from .rotation import Rotation
 from .goto_url import GotoUrl
 from .jitsi_video import JitsiVideo
-from .physics import Physics
+from .dynamic_body import Physics
 from .scale import Scale
 from .material import Material
 from .color import Color

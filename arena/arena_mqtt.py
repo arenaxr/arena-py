@@ -147,7 +147,16 @@ class ArenaMQTT(object):
         self.mqttc.on_publish = self.on_publish
 
         # setup msg counters
-        self.msg_io = { 'last_rcv_time': None, 'last_pub_time': None, 'rcv_msgs': 0, 'pub_msgs': 0, 'rcv_msgs_per_sec': 0.0, 'pub_msgs_per_sec': 0.0}
+        self.msg_io = {
+            'last_rcv_time': None,
+            'last_pub_time': None,
+            'rcv_msgs': 0,
+            'pub_msgs': 0,
+            'rcv_msgs_per_sec': 0.0,
+            'pub_msgs_per_sec': 0.0,
+            "rcv_queue_size": 0,
+            "pub_queue_size": 0,
+        }
         self.msg_rate_time_start = datetime.now()
 
         # add main message processing + callbacks loop to tasks
@@ -241,6 +250,8 @@ class ArenaMQTT(object):
         if elapsed.seconds > 0:
             self.msg_io['rcv_msgs_per_sec'] = round(self.msg_io['rcv_msgs']  / elapsed.seconds, 2)
             self.msg_io['pub_msgs_per_sec'] = round(self.msg_io['pub_msgs']  / elapsed.seconds, 2)
+            self.msg_io['rcv_queue_size'] = self.msg_queue.qsize()
+            self.msg_io['pub_queue_size'] = len(self.mqttc._out_packet)
 
     def run_once(self, func=None, **kwargs):
         """Runs a user-defined function on startup"""

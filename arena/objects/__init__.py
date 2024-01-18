@@ -38,7 +38,6 @@ from .videosphere import Videosphere
 
 OBJECT_TYPE_MAP = {
     Object.object_type: Object,
-
     ArenauiButtonPanel.object_type: ArenauiButtonPanel,
     ArenauiCard.object_type: ArenauiCard,
     ArenauiPrompt.object_type: ArenauiPrompt,

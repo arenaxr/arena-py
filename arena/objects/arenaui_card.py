@@ -2,7 +2,7 @@ from .arena_object import Object
 
 class ArenauiCard(Object):
     """
-    Class for ArenauiCard in the ARENA: ARENAUI element which displays text and optionally an image.
+    ArenauiCard object class to manage its properties in the ARENA: ARENAUI element which displays text and optionally an image.
     
     :param str title: Title (optional)
     :param str body: This is the text body of the card. (optional)

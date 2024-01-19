@@ -2,7 +2,7 @@ from .arena_object import Object
 
 class Capsule(Object):
     """
-    Class for Capsule in the ARENA: Capsule Geometry
+    Capsule object class to manage its properties in the ARENA: Capsule Geometry
     
     :param float length: length; defaults to '1' (optional)
     :param float radius: radius; defaults to '1' (optional)

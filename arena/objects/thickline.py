@@ -4,7 +4,7 @@ from ..attributes import Attribute, Position
 
 class Thickline(Object):
     """
-    Class for Thickline in the ARENA: Draw a line that can have a custom width
+    Thickline object class to manage its properties in the ARENA: Draw a line that can have a custom width
     
     :param str color: Line color; defaults to '#000000' (optional)
     :param float lineWidth: Width of line in px; defaults to '1' (optional)

@@ -2,7 +2,7 @@ from .arena_object import Object
 
 class Box(Object):
     """
-    Class for Box in the ARENA: Box Geometry
+    Box object class to manage its properties in the ARENA: Box Geometry
     
     :param float depth: depth; defaults to '1' (optional)
     :param float height: height; defaults to '1' (optional)

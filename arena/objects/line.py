@@ -3,7 +3,7 @@ from ..attributes import Position
 
 class Line(Object):
     """
-    Class for Line in the ARENA: Draw a line
+    Line object class to manage its properties in the ARENA: Draw a line
     
     :param str color: Line color.; defaults to '#74BEC1' (optional)
     :param dict end: End coordinate.; defaults to '{'x': -0.5, 'y': -0.5, 'z': 0}' (optional)

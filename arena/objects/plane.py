@@ -2,7 +2,7 @@ from .arena_object import Object
 
 class Plane(Object):
     """
-    Class for Plane in the ARENA: Plane Geometry
+    Plane object class to manage its properties in the ARENA: Plane Geometry
     
     :param float height: height; defaults to '1' (optional)
     :param int segmentsHeight: segments height; defaults to '1' (optional)

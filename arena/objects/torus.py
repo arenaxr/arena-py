@@ -2,7 +2,7 @@ from .arena_object import Object
 
 class Torus(Object):
     """
-    Class for Torus in the ARENA: Torus Geometry
+    Torus object class to manage its properties in the ARENA: Torus Geometry
     
     :param float arc: Arc; defaults to '360' (optional)
     :param float radius: radius; defaults to '1' (optional)

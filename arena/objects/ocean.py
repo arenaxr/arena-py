@@ -2,7 +2,7 @@ from .arena_object import Object
 
 class Ocean(Object):
     """
-    Class for Ocean in the ARENA: Flat-shaded ocean primitive.
+    Ocean object class to manage its properties in the ARENA: Flat-shaded ocean primitive.
     
     :param float width: Width of the ocean area.; defaults to '10' (optional)
     :param float depth: Depth of the ocean area.; defaults to '10' (optional)

@@ -2,7 +2,7 @@ from .arena_object import Object
 
 class Circle(Object):
     """
-    Class for Circle in the ARENA: Circle Geometry
+    Circle object class to manage its properties in the ARENA: Circle Geometry
     
     :param float radius: radius; defaults to '1' (optional)
     :param int segments: segments; defaults to '32' (optional)

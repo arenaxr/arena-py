@@ -2,7 +2,7 @@ from .arena_object import Object
 
 class Light(Object):
     """
-    Class for Light in the ARENA: A light.  More properties at (https://aframe.io/docs/1.5.0/components/light.html) A-Frame Light.
+    Light object class to manage its properties in the ARENA: A light.  More properties at (https://aframe.io/docs/1.5.0/components/light.html) A-Frame Light.
     
     :param float angle: Maximum extent of spot light from its direction (in degrees). NOTE: Spot light type only.; defaults to '60' (optional)
     :param bool castShadow: castShadow (point, spot, directional) (optional)

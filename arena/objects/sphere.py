@@ -2,7 +2,7 @@ from .arena_object import Object
 
 class Sphere(Object):
     """
-    Class for Sphere in the ARENA: Sphere Geometry
+    Sphere object class to manage its properties in the ARENA: Sphere Geometry
     
     :param float phiLength: phi length; defaults to '360' (optional)
     :param float phiStart: phi start (optional)

@@ -2,7 +2,7 @@ from .arena_object import Object
 
 class Cone(Object):
     """
-    Class for Cone in the ARENA: Cone Geometry
+    Cone object class to manage its properties in the ARENA: Cone Geometry
     
     :param float height: height; defaults to '1' (optional)
     :param bool openEnded: open ended (optional)

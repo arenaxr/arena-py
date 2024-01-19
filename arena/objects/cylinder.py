@@ -2,7 +2,7 @@ from .arena_object import Object
 
 class Cylinder(Object):
     """
-    Class for Cylinder in the ARENA: cylinder Geometry
+    Cylinder object class to manage its properties in the ARENA: cylinder Geometry
     
     :param float height: height; defaults to '1' (optional)
     :param bool openEnded: open ended (optional)

@@ -2,7 +2,7 @@ from .arena_object import Object
 
 class Triangle(Object):
     """
-    Class for Triangle in the ARENA: Triangle Geometry
+    Triangle object class to manage its properties in the ARENA: Triangle Geometry
     
     :param dict vertexA: vertex A; defaults to '{'x': 0, 'y': 0.5, 'z': 0}' (optional)
     :param dict vertexB: vertex B; defaults to '{'x': -0.5, 'y': -0.5, 'z': 0}' (optional)

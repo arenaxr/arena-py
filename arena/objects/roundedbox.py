@@ -2,7 +2,7 @@ from .arena_object import Object
 
 class Roundedbox(Object):
     """
-    Class for Roundedbox in the ARENA: Rounded Box Geometry
+    Roundedbox object class to manage its properties in the ARENA: Rounded Box Geometry
     
     :param float depth: depth; defaults to '1' (optional)
     :param float height: height; defaults to '1' (optional)

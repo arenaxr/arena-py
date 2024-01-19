@@ -2,7 +2,7 @@ from .arena_object import Object
 
 class Videosphere(Object):
     """
-    Class for Videosphere in the ARENA: Videosphere Geometry
+    Videosphere object class to manage its properties in the ARENA: Videosphere Geometry
     
     :param bool autoplay: autoplay; defaults to 'True' (optional)
     :param str crossOrigin: crossOrigin; defaults to 'anonymous' (optional)

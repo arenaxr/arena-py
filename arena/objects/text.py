@@ -2,7 +2,7 @@ from .arena_object import Object
 
 class Text(Object):
     """
-    Class for Text in the ARENA: Display text.  More properties at (https://aframe.io/docs/1.5.0/components/text.html) A-Frame Text.
+    Text object class to manage its properties in the ARENA: Display text.  More properties at (https://aframe.io/docs/1.5.0/components/text.html) A-Frame Text.
     
     :param str align: Multi-line text alignment. [left, center, right]; defaults to 'left' (optional)
     :param float alphaTest: Discard text pixels if alpha is less than this value.; defaults to '0.5' (optional)

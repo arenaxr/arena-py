@@ -1,11 +1,20 @@
 from ..utils import *
-from ..attributes import *
+from .attribute import Attribute
+from .position import Position
+from .rotation import Rotation
+from .goto_url import GotoUrl
+from .jitsi_video import JitsiVideo
+from .dynamic_body import Physics
+from .scale import Scale
+from .material import Material
+from .color import Color
+from .video_control import VideoControl
 
 class Data(Attribute):
     """
     Data attribute class to manage its properties in the ARENA: Wraps all attributes in JSON.
     Usage: data=Data(...)
-    
+
     :param dict animation: Animate and tween values. (optional)
     :param dict animation_mixer: A list of available animations can usually be found by inspecting the model file or its documentation. All animations will play by default. To play only a specific set of animations, use wildcards: animation-mixer='clip: run_*'. (optional)
     :param dict armarker: A location marker (such as an AprilTag, a lightAnchor, or an UWB tag), used to anchor scenes, or scene objects, in the real world. (optional)

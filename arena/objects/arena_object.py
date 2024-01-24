@@ -39,7 +39,6 @@ class Object(BaseObject):
 
         # remove "action", if exists
         if "action" in kwargs: del kwargs["action"]
-
         # default "object_type" to entity
         if "object_type" not in kwargs:
             kwargs["object_type"] = Object.object_type
@@ -170,7 +169,7 @@ class Object(BaseObject):
                     json_data["look-at"] = v.object_id
 
             # remove underscores from any other keys
-            if "_" in k:
+            elif "_" in k and k != "object_type":
                 json_data[k.replace('_', '-')] = v
 
             # for animation, replace "start" and "end" with "from" and "to"

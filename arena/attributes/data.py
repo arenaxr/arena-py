@@ -54,7 +54,7 @@ class Data(Attribute):
     :param dict spe_particles: GPU based particle systems in A-Frame. (optional)
     :param dict static_body: A fixed-position or animated object. Other objects may collide with static bodies, but static bodies themselves are unaffected by gravity and collisions. (optional)
     :param dict textinput: Opens an HTML prompt when clicked. Sends text input as an event on MQTT. Requires click-listener. (optional)
-    :param str url: Store File Store file paths under 'store/users/<username>', see CDN and other storage options in the description above. (optional)
+    :param str url: Use File Store paths under 'store/users/username', see CDN and other storage options in the description above. (optional)
     :param dict video_control: Video Control (optional)
     """
     def __init__(self, **kwargs):

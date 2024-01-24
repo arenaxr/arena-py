@@ -6,7 +6,7 @@ class PcdModel(Object):
     
     :param str pointColor: Color of the points; defaults to '#7f7f7f' (optional)
     :param float pointSize: Size of the points; defaults to '0.01' (optional)
-    :param str url: Store File Store file paths under 'store/users/<username>', see CDN and other storage options in the description above. (optional)
+    :param str url: Use File Store paths under 'store/users/username', see CDN and other storage options in the description above. (optional)
     """
     object_type = "pcd-model"
 

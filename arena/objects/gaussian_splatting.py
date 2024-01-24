@@ -6,7 +6,7 @@ class GaussianSplatting(Object):
     
     :param str cutoutEntity: Selector to a box primitive that uses scale and position to define the bounds of splat points to render (optional)
     :param float pixelRatio: Pixel ratio for rendering. Reducing the value decreases the resolution and improves performance. If a negative value is set, the device's native value will be applied.; defaults to '1.0' (optional)
-    :param str src: Store File Store file paths under 'store/users/<username>', see CDN and other storage options in the description above. (optional)
+    :param str src: Use File Store paths under 'store/users/username', see CDN and other storage options in the description above. (optional)
     :param float xrPixelRatio: Same as pixelRatio. Applied to XR devices.; defaults to '0.5' (optional)
     """
     object_type = "gaussian_splatting"

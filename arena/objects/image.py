@@ -7,7 +7,7 @@ class Image(Object):
     :param float height: height; defaults to '1' (optional)
     :param int segmentsHeight: segments height; defaults to '1' (optional)
     :param int segmentsWidth: segments width; defaults to '1' (optional)
-    :param str url: Store File Store file paths under 'store/users/<username>', see CDN and other storage options in the description above. (optional)
+    :param str url: Use File Store paths under 'store/users/username', see CDN and other storage options in the description above. (optional)
     :param float width: width; defaults to '1' (optional)
     """
     object_type = "image"

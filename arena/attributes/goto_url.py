@@ -2,11 +2,11 @@ from .attribute import Attribute
 
 class GotoUrl(Attribute):
     """
-    GotoUrl attribute class to manage its properties in the ARENA: Goto given URL; Requires click-listener
+    GotoUrl attribute class to manage its properties in the ARENA: Goto given URL; Requires click-listener.
     Usage: goto_url=GotoUrl(...)
     
-    :param str dest:  [popup, newtab, sametab]; defaults to 'sametab' (optional)
-    :param str on:  [mousedown, mouseup]; defaults to 'mousedown' (optional)
+    :param str dest:  Allows [popup, newtab, sametab] Defaults to 'sametab' (optional)
+    :param str on:  Allows [mousedown, mouseup] Defaults to 'mousedown' (optional)
     :param str url: Landmark Url (optional)
     """
     def __init__(self, url, dest="static", on="mousedown", **kwargs):

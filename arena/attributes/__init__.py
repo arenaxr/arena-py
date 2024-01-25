@@ -21,7 +21,6 @@ from .landmark import *
 from .material import *
 from .material_extras import *
 from .multisrc import *
-from .particle_system import *
 from .position import *
 from .remote_render import *
 from .rotation import *
@@ -55,7 +54,6 @@ ATTRIBUTE_TYPE_MAP = {
     "material": Material,
     "material_extras": MaterialExtras,
     "multisrc": Multisrc,
-    "particle_system": ParticleSystem,
     "position": Position,
     "remote_render": RemoteRender,
     "rotation": Rotation,

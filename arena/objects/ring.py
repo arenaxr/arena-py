@@ -2,13 +2,13 @@ from .arena_object import Object
 
 class Ring(Object):
     """
-    Ring object class to manage its properties in the ARENA: Ring Geometry
+    Ring object class to manage its properties in the ARENA: Ring Geometry.
     
-    :param float radiusInner: radius inner; defaults to '0.8' (optional)
-    :param float radiusOuter: radius outer; defaults to '1.2' (optional)
-    :param int segmentsPhi: segments phi; defaults to '10' (optional)
-    :param int segmentsTheta: segments theta; defaults to '32' (optional)
-    :param float thetaLength: theta length; defaults to '360' (optional)
+    :param float radiusInner: radius inner Defaults to '0.8' (optional)
+    :param float radiusOuter: radius outer Defaults to '1.2' (optional)
+    :param int segmentsPhi: segments phi Defaults to '10' (optional)
+    :param int segmentsTheta: segments theta Defaults to '32' (optional)
+    :param float thetaLength: theta length Defaults to '360' (optional)
     :param float thetaStart: theta start (optional)
     """
     object_type = "ring"

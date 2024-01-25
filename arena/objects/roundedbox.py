@@ -2,13 +2,13 @@ from .arena_object import Object
 
 class Roundedbox(Object):
     """
-    Roundedbox object class to manage its properties in the ARENA: Rounded Box Geometry
+    Roundedbox object class to manage its properties in the ARENA: Rounded Box Geometry.
     
-    :param float depth: depth; defaults to '1' (optional)
-    :param float height: height; defaults to '1' (optional)
-    :param float radius: radius of edge; defaults to '0.15' (optional)
-    :param int radiusSegments: segments radius; defaults to '10' (optional)
-    :param float width: width; defaults to '1' (optional)
+    :param float depth: depth Defaults to '1' (optional)
+    :param float height: height Defaults to '1' (optional)
+    :param float radius: radius of edge Defaults to '0.15' (optional)
+    :param int radiusSegments: segments radius Defaults to '10' (optional)
+    :param float width: width Defaults to '1' (optional)
     """
     object_type = "roundedbox"
 

@@ -6,7 +6,7 @@ from collections.abc import Iterable
 
 class Position(Attribute):
     """
-    Position attribute class to manage its properties in the ARENA: 3D object position
+    Position attribute class to manage its properties in the ARENA: 3D object position.
     Usage: position=Position(...)
     
     :param float x:  (optional)

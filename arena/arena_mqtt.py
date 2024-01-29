@@ -152,7 +152,7 @@ class ArenaMQTT(object):
         self.mqttc.on_connect = self.on_connect
         self.mqttc.on_disconnect = self.on_disconnect
         self.mqttc.on_publish = self.on_publish
-        
+
         # add main message processing + callbacks loop to tasks
         self.run_async(self.process_message)
 
@@ -221,7 +221,7 @@ class ArenaMQTT(object):
         """Update client latency in $NETWORK/latency"""
         # publish empty message with QoS of 2 to update latency
         self.mqttc.publish(self.latency_topic, "", qos=2)
-    
+
     def run_once(self, func=None, **kwargs):
         """Runs a user-defined function on startup"""
         if func is not None:

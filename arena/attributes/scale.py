@@ -5,8 +5,12 @@ from collections.abc import Iterable
 
 class Scale(Attribute):
     """
-    Scale Attribute.
-    Usage: scale=Scale(x,y,z)
+    Scale attribute class to manage its properties in the ARENA: 3D object scale.
+    Usage: scale=Scale(...)
+    
+    :param float x:  Defaults to '1' (optional)
+    :param float y:  Defaults to '1' (optional)
+    :param float z:  Defaults to '1' (optional)
     """
 
     def __init__(self, x=None, y=None, z=None):

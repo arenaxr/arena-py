@@ -2,7 +2,12 @@ from .arena_object import Object
 
 class Circle(Object):
     """
-    Class for Circle in the ARENA.
+    Circle object class to manage its properties in the ARENA: Circle Geometry.
+    
+    :param float radius: radius Defaults to '1' (optional)
+    :param int segments: segments Defaults to '32' (optional)
+    :param float thetaLength: theta length Defaults to '360' (optional)
+    :param float thetaStart: theta start (optional)
     """
     object_type = "circle"
 

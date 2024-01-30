@@ -1,7 +1,9 @@
-from ..base_object import *
-from ..attributes import Animation, Data, Position, Rotation, Scale, Color
-from ..utils import *
 import uuid
+
+from ..base_object import *
+from ..attributes import Animation, Data, Position, Rotation, Scale, ATTRIBUTE_KEYWORD_TRANSLATION
+from ..utils import *
+
 
 class Object(BaseObject):
     """
@@ -153,38 +155,11 @@ class Object(BaseObject):
                 # always publish quaternions on wire format to avoid persist euler->quat merges
                 json_data["rotation"] = rot.quaternion
 
-            # handle special case where "physics" should be "dynamic-body"
-            elif "physics" == k or "dynamic_body" == k:
-                json_data["dynamic-body"] = v
-
-            # handle special case where "clickable" should be "click-listener"
-            elif "clickable" == k or "click_listener" == k:
-                json_data["click-listener"] = v
-
-            # remove underscores from specific keys
-            elif "goto_url" == k:
-                json_data["goto-url"] = v
-
-            elif "jitsi_video" == k:
-                json_data["jitsi-video"] = v
-
-            elif "collision_listener" == k:
-                json_data["collision-listener"] = v
-
-            elif "animation_mixer" == k:
-                json_data["animation-mixer"] = v
-
-            elif "video_control" == k:
-                json_data["video-control"] = v
-
             elif "look_at" == k:
                 if isinstance(v, str):
                     json_data["look-at"] = v
                 elif isinstance(v, Object):
                     json_data["look-at"] = v.object_id
-
-            elif "spe_particles" == k:
-                json_data["spe-particles"] = v
 
             # for animation, replace "start" and "end" with "from" and "to"
             elif isinstance(k, str) and "animation" == k[:len("animation")]:
@@ -192,6 +167,14 @@ class Object(BaseObject):
                 Utils.dict_key_replace(animation, "start", "from")
                 Utils.dict_key_replace(animation, "end", "to")
                 json_data[k] = animation
+
+            # Translate and remove underscores from any other keys.
+            # Must be done last since ATTRIBUTE_KEYWORD_TRANSLATION contains all attributes,
+            # which may interfere with special casing above from, say "rotation" for example.
+            elif k in ATTRIBUTE_KEYWORD_TRANSLATION:
+                json_data[ATTRIBUTE_KEYWORD_TRANSLATION[k]] = v
+
+            # allow: likely unknown/misspelled attribute to this library version
             else:
                 json_data[k] = v
 

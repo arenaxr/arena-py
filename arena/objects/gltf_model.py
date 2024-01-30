@@ -2,9 +2,11 @@ import json
 from .arena_object import Object
 from ..attributes import Morph
 
-class GLTF(Object):
+class GltfModel(Object):
     """
-    Class for GLTF Models in the ARENA.
+    GltfModel object class to manage its properties in the ARENA: Load a GLTF model.   Besides applying standard rotation and position attributes to the center-point of the GLTF model, the individual child components can also be manually manipulated. See format details in the `modelUpdate` data attribute. See guidance to store paths under (https://docs.arenaxr.org/content/interface/filestore.html) ARENA File Store, CDN, or DropBox.
+    
+    :param str url: Use File Store paths under 'store/users/username', see CDN and other storage options in the description above. (optional)
     """
     object_type = "gltf-model"
 
@@ -40,7 +42,14 @@ class GLTF(Object):
         for i,morph in enumerate(self.morphs.values()):
             json_data[f"gltf-morph__{i}"] = vars(morph)
 
-class Model(GLTF):
+
+class GLTF(GltfModel):
     """
-    Another name for GLTF.
+    Another name for GltfModel.
+    """
+
+
+class Model(GltfModel):
+    """
+    Another name for GltfModel.
     """

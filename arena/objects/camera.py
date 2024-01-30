@@ -4,7 +4,9 @@ from ..attributes import Position, Rotation
 
 class Camera(Object):
     """
-    Class for Camera in the ARENA.
+    Camera object class to manage its properties in the ARENA: Camera is the pose and arena-user component data representing a user avatar.
+    
+    :param dict arena_user:  (optional)
     """
 
     object_type = "camera"

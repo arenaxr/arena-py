@@ -6,8 +6,12 @@ from collections.abc import Iterable
 
 class Position(Attribute):
     """
-    Position Attribute.
-    Usage: position=Position(x,y,z)
+    Position attribute class to manage its properties in the ARENA: 3D object position.
+    Usage: position=Position(...)
+    
+    :param float x:  (optional)
+    :param float y:  (optional)
+    :param float z:  (optional)
     """
 
     def __init__(self, x=None, y=None, z=None):

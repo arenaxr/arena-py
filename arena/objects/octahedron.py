@@ -2,7 +2,10 @@ from .arena_object import Object
 
 class Octahedron(Object):
     """
-    Class for Octahedron in the ARENA.
+    Octahedron object class to manage its properties in the ARENA: Octahedron Geometry.
+    
+    :param int detail: detail (optional)
+    :param float radius: radius Defaults to '1' (optional)
     """
     object_type = "octahedron"
 

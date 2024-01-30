@@ -39,6 +39,7 @@ class Object(BaseObject):
 
         # remove "action", if exists
         if "action" in kwargs: del kwargs["action"]
+
         # default "object_type" to entity
         if "object_type" not in kwargs:
             kwargs["object_type"] = Object.object_type

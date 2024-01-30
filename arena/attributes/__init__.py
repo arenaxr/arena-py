@@ -1,5 +1,6 @@
 # This file is auto-generated from github.com/arenaxr/arena-schema, changes here may be overwritten.
 
+from .translate import *
 from .attribute import *
 from .color import *
 from .data import *

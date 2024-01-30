@@ -9,6 +9,7 @@ from .scale import Scale
 from .material import Material
 from .color import Color
 from .video_control import VideoControl
+from .translate import ATTRIBUTE_CLASS_TRANSLATION, KEYWORD_ATTRIBUTE_TRANSLATION
 
 class Data(Attribute):
     """
@@ -66,52 +67,6 @@ class Data(Attribute):
         new_data = new_data.get("data", new_data)
         dash_words = []
         for k,v in new_data.items():
-            # the dashes in these specific keys need to be replaced with underscores
-            if k == "goto-url":
-                dash_words += [k]
-                k = "goto_url"
-                if isinstance(v, dict):
-                    data[k] = GotoUrl(**v)
-                else:
-                    data[k] = v
-
-            if k == "jitsi-video":
-                dash_words += [k]
-                k = "jitsi_video"
-                if isinstance(v, dict):
-                    data[k] = JitsiVideo(**v)
-                else:
-                    data[k] = v
-
-            if k == "video-control":
-                dash_words += [k]
-                k = "video_control"
-                if isinstance(v, dict):
-                    data[k] = VideoControl(**v)
-                else:
-                    data[k] = v
-
-            # this could be called "clickable"
-            if k == "click-listener":
-                if "clickable" in data:
-                    k = "clickable"
-                else:
-                    dash_words += [k]
-                    k = "click_listener"
-                data[k] = v
-
-            # this could be called "physics"
-            if k == "dynamic-body":
-                if "physics" in data:
-                    k = "physics"
-                else:
-                    dash_words += [k]
-                    k = "dynamic_body"
-                if isinstance(v, dict):
-                    data[k] = Physics(**v)
-                else:
-                    data[k] = v
-
             # allow user to input tuples, lists, dicts, etc for specific Attributes.
             # everything gets converted to corresponding attribute
             if (k == "position" or k == "start" or k == "end") and not isinstance(v, Position):
@@ -166,6 +121,18 @@ class Data(Attribute):
                     v["color"] = color
                 if isinstance(v, dict):
                     data[k] = Material(**v)
+                else:
+                    data[k] = v
+
+            # Translate and handle underscores from any other keys.
+            # Must be done last since KEYWORD_ATTRIBUTE_TRANSLATION contains all attributes,
+            # which may interfere with special casing above from, say "rotation" for example.
+            elif k in KEYWORD_ATTRIBUTE_TRANSLATION:
+                if '-' in k:
+                    dash_words += [k]
+                    k = KEYWORD_ATTRIBUTE_TRANSLATION[k]
+                if isinstance(v, dict):
+                    data[k] = ATTRIBUTE_CLASS_TRANSLATION[k](**v)
                 else:
                     data[k] = v
 

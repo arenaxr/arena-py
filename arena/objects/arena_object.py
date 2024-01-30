@@ -1,7 +1,7 @@
 import uuid
 
 from ..base_object import *
-from ..attributes import Animation, Data, Position, Rotation, Scale, Color
+from ..attributes import Animation, Data, Position, Rotation, Scale, ATTRIBUTE_KEYWORD_TRANSLATION
 from ..utils import *
 
 
@@ -154,23 +154,11 @@ class Object(BaseObject):
                 # always publish quaternions on wire format to avoid persist euler->quat merges
                 json_data["rotation"] = rot.quaternion
 
-            # handle special case where "physics" should be "dynamic-body"
-            elif "physics" == k:
-                json_data["dynamic-body"] = v
-
-            # handle special case where "clickable" should be "click-listener"
-            elif "clickable" == k:
-                json_data["click-listener"] = v
-
             elif "look_at" == k:
                 if isinstance(v, str):
                     json_data["look-at"] = v
                 elif isinstance(v, Object):
                     json_data["look-at"] = v.object_id
-
-            # remove underscores from any other keys
-            elif "_" in k and k != "object_type":
-                json_data[k.replace('_', '-')] = v
 
             # for animation, replace "start" and "end" with "from" and "to"
             elif isinstance(k, str) and "animation" == k[:len("animation")]:
@@ -178,6 +166,14 @@ class Object(BaseObject):
                 Utils.dict_key_replace(animation, "start", "from")
                 Utils.dict_key_replace(animation, "end", "to")
                 json_data[k] = animation
+
+            # Translate and remove underscores from any other keys.
+            # Must be done last since ATTRIBUTE_KEYWORD_TRANSLATION contains all attributes,
+            # which may interfere with special casing above from, say "rotation" for example.
+            elif k in ATTRIBUTE_KEYWORD_TRANSLATION:
+                json_data[ATTRIBUTE_KEYWORD_TRANSLATION[k]] = v
+
+            # allow: likely unknown/misspelled attribute to this library version
             else:
                 json_data[k] = v
 

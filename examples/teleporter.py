@@ -28,19 +28,17 @@ class Teleporter(Object):
         self.teleporter_src = Cylinder(
                                 object_id="teleporter1",
                                 scale=(1,2.5,1),
-                                color=(255,255,0),
-                                material=Material(transparent=True, opacity=0.5),
+                                material=Material(transparent=True, opacity=0.5, color=(255,255,0)),
                                 position=self.pos_src
                             )
         self.teleporter_dest = Cylinder(
                                 object_id="teleporter2",
                                 scale=(1,2.5,1),
-                                color=(255,0,255),
-                                material=Material(transparent=True, opacity=0.5),
+                                material=Material(transparent=True, opacity=0.5, color=(255,0,255)),
                                 position=self.pos_dest
                             )
-        self.src_text = Text(text="Teleporter source", position=(0,0.8,0), parent=self.teleporter_src)
-        self.dest_text = Text(text="Teleporter destination", position=(0,0.8,0), parent=self.teleporter_dest)
+        self.src_text = Text(value="Teleporter source", position=(0,0.8,0), parent=self.teleporter_src)
+        self.dest_text = Text(value="Teleporter destination", position=(0,0.8,0), parent=self.teleporter_dest)
 
         # add objects to scene
         self.scene.add_object(self.teleporter_src)

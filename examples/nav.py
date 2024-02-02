@@ -18,11 +18,11 @@ def drawpath(waypoints, name_seed, persist ):
     if name_seed == -1:
         pathStr = "path" + str(random.randint(0, 1000000))
     else:
-        pathStr = "path" + str(name_seed)   
+        pathStr = "path" + str(name_seed)
     stepCnt=0
     for pt in waypoints:
         if lastPt is None:
-            lastPt = pt 
+            lastPt = pt
             continue
         dist = math.sqrt( ((pt[0]-lastPt[0])*(pt[0]-lastPt[0]))+((pt[1]-lastPt[1])*(pt[1]-lastPt[1])) +((pt[2]-lastPt[2])*(pt[2]-lastPt[2]))  )
         totalSteps = int(dist / 0.3)
@@ -37,13 +37,13 @@ def drawpath(waypoints, name_seed, persist ):
             stepCnt+=1
             cyl = Cylinder(
                 position = (x,y,z),
-                color=(0,255,255),
+                material=Material(color=(0,255,255)),
                 scale=(0.1,0.05,0.1),
                 material=Material(transparent=True, opacity=0.5),
             	persist=persist
-            )            
-            scene.add_object(cyl)    
-        lastPt = pt 
+            )
+            scene.add_object(cyl)
+        lastPt = pt
 
 def click_handler(scene,evt,msg):
     if evt.type =="mouseup":
@@ -67,13 +67,13 @@ def draw_waypoints():
 
     cyl = Cylinder(
         position = (18.9, -3.05,-12.3),
-        color=(0,255,255),
+        material=Material(color=(0,255,255)),
         scale=(0.03,0.03,0.03),
         material=Material(transparent=True, opacity=0.1),
         evt_handler=click_handler,
         clickable=True
-    )            
-    scene.add_object(cyl)    
+    )
+    scene.add_object(cyl)
 #
     # Create a bunch of green boxes drawn directly to screen
     #position = (random.randrange(10)-5,
@@ -81,7 +81,7 @@ def draw_waypoints():
     #            -random.randrange(10))
     #box = Box(
     #        position=position,
-    #        color=color
+    #        material=Material(color=color)
     #    )
     #scene.add_object(box)
     #x = x + 1

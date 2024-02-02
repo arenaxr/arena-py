@@ -9,7 +9,7 @@ def make_circle():
         position=(0,2,-3),
         rotation=(-45,0,0),
         scale=(1.5,1.5,1.5),
-        color=(70,0,100),
+        material=Material(color=(70,0,100)),
     )
     scene.add_object(my_circle)
 

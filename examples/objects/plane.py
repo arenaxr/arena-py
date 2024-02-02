@@ -8,7 +8,7 @@ def make_plane():
         object_id="my_plane",
         position=(0,5,-3),
         scale=(5,5,5),
-        color=(200,200,40),
+        material=Material(color=(200,200,40)),
     )
     scene.add_object(my_plane)
 

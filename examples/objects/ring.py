@@ -8,7 +8,7 @@ def make_ring():
         object_id="my_ring",
         position=(0,2,-3),
         scale=(1.5,1.5,1.5),
-        color=(255,0,255),
+        material=Material(color=(255,0,255)),
     )
     scene.add_object(my_ring)
 

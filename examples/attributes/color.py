@@ -9,7 +9,7 @@ def make_colored_iso():
     my_iso = Icosahedron(
         object_id="my_iso",
         position=(0,2,-5),
-        color=color
+        material=Material(color=color)
     )
 
     scene.add_object(my_iso)

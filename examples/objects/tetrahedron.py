@@ -8,7 +8,7 @@ def make_tet():
         object_id="my_tet",
         position=(0,2,-3),
         scale=(2,2,2),
-        color=(255,100,255),
+        material=Material(color=(255,100,255)),
     )
     scene.add_object(my_tet)
 

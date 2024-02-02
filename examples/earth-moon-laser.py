@@ -9,7 +9,7 @@ def click_pointer(scene, event, msg):
         end = event.data.position
         start.y = start.y - 0.1  # emit below user frustum for visibility
         line = ThickLine(path=(start, end), color=(255, 0, 0), lineWidth=5, ttl=1)
-        ball = Sphere(position=end, scale=(0.03, 0.03, 0.03), color=(255, 0, 0), ttl=1)
+        ball = Sphere(position=end, scale=(0.03, 0.03, 0.03), material=Material(color=(255, 0, 0)), ttl=1)
         scene.add_objects([line, ball])
 
 scene = Scene(host="arenaxr.org", scene="earth")

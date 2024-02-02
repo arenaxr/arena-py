@@ -8,7 +8,7 @@ def make_triangle():
         object_id="my_triangle",
         position=(0,5,-3),
         scale=(1.5,1.5,1.5),
-        color=(10,70,200),
+        material=Material(color=(10,70,200)),
     )
     scene.add_object(my_triangle)
 

@@ -3,7 +3,7 @@ from .arena_object import Object
 class Text(Object):
     """
     Text object class to manage its properties in the ARENA: Display text.  More properties at (https://aframe.io/docs/1.5.0/components/text.html) A-Frame Text.
-    
+
     :param str align: Multi-line text alignment. Allows [left, center, right] Defaults to 'left' (optional)
     :param float alphaTest: Discard text pixels if alpha is less than this value. Defaults to '0.5' (optional)
     :param str anchor: Horizontal positioning. Allows [left, right, center, align] Defaults to 'center' (optional)
@@ -29,5 +29,7 @@ class Text(Object):
     """
     object_type = "text"
 
-    def __init__(self, text="placeholder text", **kwargs):
-        super().__init__(object_type=Text.object_type, text=text, **kwargs)
+    def __init__(self, **kwargs):
+        # NOTE: Don't require parameter 'text' or 'value' we won't know which one users
+        #       used downstream into persist
+        super().__init__(object_type=Text.object_type, **kwargs)

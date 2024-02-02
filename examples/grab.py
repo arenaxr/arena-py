@@ -30,7 +30,7 @@ my_box = Box(
     object_id="my_box",
     position=orig_position,
     scale=(0.5,0.5,0.5),
-    color=(50,60,200),
+    material=Material(color=(50,60,200)),
     patent=None,
     clickable=True,
     evt_handler=box_click

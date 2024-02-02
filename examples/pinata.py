@@ -88,7 +88,7 @@ def click(scene, evt, msg):
         pinata_state=MOVING
         hit_counter-=1
         # Update the text over the pinata
-        hit_text.update_attributes(text=str(hit_counter))
+        hit_text.update_attributes(value=str(hit_counter))
         scene.update_object(hit_text)
 
         hit_sound = Sound(src=HIT_SOUND_PATH,positional=True,autoplay=True,poolSize=10 )
@@ -110,7 +110,7 @@ def game_reset():
     pinata_loc=[random.randrange(RESPAWN_X_MIN,RESPAWN_X_MAX),RESPAWN_Y,random.randrange(RESPAWN_Z_MIN,RESPAWN_Z_MAX)]
     pinata.update_attributes(position=pinata_loc)
     scene.update_object(pinata)
-    hit_text.update_attributes(text=str(hit_counter))
+    hit_text.update_attributes(value=str(hit_counter))
     scene.update_object(hit_text)
     scene.update_object(hit_text)
     vy=0
@@ -134,7 +134,7 @@ def main():
             url=PINATA_MODEL_PATH
             )
     scene.add_object(pinata)
-    hit_text = Text(object_id="hit_text", persist=True, text=str(hit_counter), scale=Scale(3,3,3), position=Position(0.5,5,0), parent=pinata)
+    hit_text = Text(object_id="hit_text", persist=True, value=str(hit_counter), scale=Scale(3,3,3), position=Position(0.5,5,0), parent=pinata)
     scene.add_object(hit_text)
     scene.update_object(hit_text)
     game_reset()

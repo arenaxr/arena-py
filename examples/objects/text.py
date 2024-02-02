@@ -6,7 +6,7 @@ scene = Scene(host="arenaxr.org", scene="example")
 def make_text():
     my_text = Text(
         object_id="my_text",
-        text="Hello World!",
+        value="Hello World!",
         align="center",
         font="mozillavr", # https://aframe.io/docs/1.4.0/components/text.html#stock-fonts
         position=(0,2,-3),

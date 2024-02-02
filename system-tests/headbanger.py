@@ -76,16 +76,16 @@ def update():
             head.data.position.y = cycle % 3 + 1
             if(cycle % 3 == 0):
                 scene.update_object(head, rotation=(
-                    0, i, 0), color=(255, 0, 0))
+                    0, i, 0), material=Material(color=(255, 0, 0)))
             if(cycle % 3 == 1):
                 scene.update_object(head, rotation=(
-                    0, i, 0), color=(0, 255, 0))
+                    0, i, 0), material=Material(color=(0, 255, 0)))
             if(cycle % 3 == 2):
                 scene.update_object(head, rotation=(
-                    0, i, 0), color=(0, 0, 255))
+                    0, i, 0), material=Material(color=(0, 0, 255)))
         else:
             scene.update_object(head, rotation=(
-                0, i, 0), color=(128, 128, 128))
+                0, i, 0), material=Material(color=(128, 128, 128)))
     if i == 0:
         if(cycle % 3 == 0):
             print("********************************** Red Low")

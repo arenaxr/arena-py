@@ -8,7 +8,7 @@ def make_oct():
         object_id="my_oct",
         position=(0,2,-3),
         scale=(1.5,1.5,1.5),
-        color=(30,100,40),
+        material=Material(color=(30,100,40)),
     )
     scene.add_object(my_oct)
 

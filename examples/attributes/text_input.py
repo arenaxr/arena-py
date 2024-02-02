@@ -12,7 +12,7 @@ def make_tex_input_iso():
     my_iso = Icosahedron(
         object_id="my_iso",
         position=(0,2,-5),
-        color=(100,200,100),
+        material=Material(color=(100,200,100)),
         clickable=True,
         textinput=TextInput(
             on="mouseup",

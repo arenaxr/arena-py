@@ -8,7 +8,7 @@ def make_cone():
         object_id="my_cone",
         position=(0,2,-3),
         scale=(1,2,1),
-        color=(60,200,104),
+        material=Material(color=(60,200,104)),
     )
     scene.add_object(my_cone)
 

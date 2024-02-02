@@ -62,7 +62,7 @@ def cancel_torus1_move():
 
 def change_torus2_color():
     print("Changing torus2 color (should not affect animation")
-    scene.update_object(my_torus2, color=Color(255, 0, 0))  # Change color to red
+    scene.update_object(my_torus2, material=Material(color=Color(255, 0, 0)))  # Change color to red
 
 
 def change_torus3_animation():

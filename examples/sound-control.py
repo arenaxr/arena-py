@@ -57,7 +57,7 @@ def main():
         object_id="button_play_text",
         parent=button_play.object_id,
         position=(0, 0, 0.5),
-        text="Play",
+        value="Play",
         color=(0, 0, 0),
     )
     scene.add_object(button_play_text)
@@ -74,7 +74,7 @@ def main():
         object_id="button_pause_text",
         parent=button_pause.object_id,
         position=(0, 0, 0.5),
-        text="Pause",
+        value="Pause",
         color=(0, 0, 0),
     )
     scene.add_object(button_pause_text)
@@ -91,7 +91,7 @@ def main():
         object_id="button_stop_text",
         parent=button_stop.object_id,
         position=(0, 0, 0.5),
-        text="Stop",
+        value="Stop",
         color=(0, 0, 0),
     )
     scene.add_object(button_stop_text)

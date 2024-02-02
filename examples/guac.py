@@ -93,13 +93,12 @@ def initCube(x, y, color):
         # messes up child-follow-parent pose
         # physics=Physics(type="static"),
         collision_listener=True,
-        material=Material(transparent=True, opacity=0.5),
+        material=Material(transparent=True, opacity=0.5, color=color),
         impulse=Impulse(
             on="mouseup",
             force=(0, 40, 0),
             position=(10, 1, 1)),
         position=(x, y, -3),
-        color=color,
         scale=(0.6, 0.6, 0.6),
         clickable=True,
         evt_handler=guac_callback,
@@ -154,7 +153,7 @@ def draw_hud(score):
     hud = Text(
         persist=True,
         object_id="guac-hudText",
-        text="red:"+str(reds)+" blue:"+str(blues)+" draw:"+str(draws),
+        value="red:"+str(reds)+" blue:"+str(blues)+" draw:"+str(draws),
         position=(2, 4, -3),
         scale=(1, 1, 1),
         color="#555555",
@@ -255,12 +254,11 @@ def guac_callback(scene, evt, msg):
         arena.update_object(
             cubes[(x, y)],
             # physics=Physics(type="static"),
-            color=color,
             impulse=Impulse(
                 on="mouseup",
                 force=(0, 40, 0),
                 position=(10, 1, 1)),
-            material=Material(transparent=False, opacity=1),
+            material=Material(transparent=False, opacity=1, color=color),
             clickable=True,
             position=(x, y, -3),
             scale=(0.6, 0.6, 0.6),
@@ -301,7 +299,7 @@ def main():
     title_txt = Text(
         object_id="guac-title_txt",
         position=(2, 4.3, -3),
-        text="Tic Tac Guac",
+        value="Tic Tac Guac",
         color="#555555",
         persist=True,
         parent=sceneParent.object_id,
@@ -314,7 +312,7 @@ def main():
         position=(5, 1, -6),
         scale=(1.75, 0.5, 1),
         parent=sceneParent.object_id,
-        color="#ffffff",
+        material=Material(color="#ffffff"),
         clickable=True,
         goto_url=GotoUrl(dest="newtab", on="mousedown",
                          url="https://github.com/arenaxr/arena-py/blob/master/examples/guac.py"),
@@ -325,7 +323,7 @@ def main():
         object_id="guac-src_txt",
         position=(5, 1, -6),
         parent=sceneParent.object_id,
-        text="Click for source",
+        value="Click for source",
         color="#555555",
         persist=True,
     )

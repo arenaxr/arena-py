@@ -8,7 +8,7 @@ def make_cylinder():
         object_id="my_cylinder",
         position=(0,2,-3),
         scale=(1,2,1),
-        color=(255,100,16),
+        material=Material(color=(255,100,16)),
     )
     scene.add_object(my_cylinder)
 

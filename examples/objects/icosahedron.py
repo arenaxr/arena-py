@@ -8,7 +8,7 @@ def make_iso():
         object_id="iso",
         position=(0,2,-3),
         scale=(1.5,1.5,1.5),
-        color=(10,60,255),
+        material=Material(color=(10,60,255)),
     )
     scene.add_object(iso)
 

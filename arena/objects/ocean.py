@@ -1,9 +1,10 @@
 from .arena_object import Object
 
+
 class Ocean(Object):
     """
     Ocean object class to manage its properties in the ARENA: Flat-shaded ocean primitive.
-    
+
     :param float amplitude: Wave amplitude. Defaults to '0.1' (optional)
     :param float amplitudeVariance: Wave amplitude variance. Defaults to '0.3' (optional)
     :param str color: Wave color. Defaults to '#7AD2F7' (optional)
@@ -16,5 +17,6 @@ class Ocean(Object):
     """
     object_type = "ocean"
 
-    def __init__(self, **kwargs):
-        super().__init__(object_type=Ocean.object_type, **kwargs)
+    def __init__(self, width=10, depth=10, **kwargs):
+        # NOTE: The 'ocean' component for a-frame requires at least depth or width before it will load.
+        super().__init__(object_type=Ocean.object_type, width=width, depth=depth, **kwargs)

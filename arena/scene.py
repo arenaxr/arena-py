@@ -11,7 +11,7 @@ from .arena_mqtt import ArenaMQTT
 from .attributes import *
 from .events import *
 from .objects import *
-from .utils import Utils, ArenaTelemetry, ArenaCmdInterpreter, ProgramRunInfo
+from .utils import Utils, ArenaTelemetry, ArenaCmdInterpreter, ProgramRunInfo, QueueStats
 
 from .env import (
     SCENE,
@@ -120,7 +120,8 @@ class Scene(ArenaMQTT):
             self.users = {} # dict of all users
 
             # setup program run info to collect stats
-            self.run_info = ProgramRunInfo(self.event_loop, 
+            self.run_info = ProgramRunInfo(self.event_loop,
+                                           queue_len_callable=lambda: self.get_rcv_pub_queue_len(), 
                                            update_callback=self.run_info_update, 
                                            web_host=self.web_host,
                                            namespace=self.namespace,
@@ -594,7 +595,11 @@ class Scene(ArenaMQTT):
     def get_user_list(self):
         """Returns a list of users"""
         return self.users.values()
-        
+
+    def get_rcv_pub_queue_len(self):
+        """Return QueueStats object with receive and publish queue length"""
+        return QueueStats(super().rcv_queue_len(),  super().pub_queue_len())
+    
     def run_info_update(self, run_info):
         """Callbak when program stats are updated; publish program object update"""
         # Add run info to program data object and publish program object update

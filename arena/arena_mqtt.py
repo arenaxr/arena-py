@@ -338,3 +338,11 @@ class ArenaMQTT(object):
         """Unsubscribes to topic and removes callback"""
         self.mqttc.unsubscribe(sub)
         self.mqttc.message_callback_remove(sub)
+
+    def rcv_queue_len(self): 
+        """Return receive queue length"""
+        self.msg_queue.qsize()
+        
+    def pub_queue_len(self): 
+        """Return publish queue length"""
+        return self.mqttc._out_packet

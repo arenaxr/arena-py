@@ -100,8 +100,9 @@ class Scene(ArenaMQTT):
             span.add_event("Init Done.")
 
     def exit(self, arg=0):
+        """Custom exit to push errors to telemetry"""
         if arg != 0:
-            error_msg = f"Exiting with sys.exit('{self.hooks.exit_arg}')"
+            error_msg = f"Exiting with sys.exit('{arg}')"
             self.telemetry.set_error(error_msg)
         sys.exit(arg)
             
@@ -111,7 +112,7 @@ class Scene(ArenaMQTT):
             # create arena-py Objects from persist server
             # no need to return anything here
             self.get_persisted_objs()
-
+        
     async def process_message(self):
         while True:
             try:
@@ -460,7 +461,10 @@ class Scene(ArenaMQTT):
             return payload
 
     def get_persisted_obj(self, object_id):
-        """Returns a dictionary for a persisted object."""
+        """Returns a dictionary for a persisted object.
+        
+           If object is known by arena-py, return local object, not persisted
+        """
         obj = None
         if object_id in self.all_objects:
             obj = self.all_objects[object_id]
@@ -468,40 +472,55 @@ class Scene(ArenaMQTT):
         else:
             # pass token to persist
             data = self.auth.urlopen(url=f"{self.persist_url}/{object_id}", creds=True)
-            output = json.loads(data)
-            if len(output) > 0:
-                output = output[0]
+            persist_obj = json.loads(data)
+            if len(obj) > 0:
+                obj = obj[0]
 
-                object_id = output["object_id"]
-                data = output["attributes"]
-                object_type = data.get("object_type", None)
+                obj_id = persist_obj.get("object_id", object_id)
+                data = persist_obj.get("attributes", {})
+                object_type = data.get("object_type")
 
-                ObjClass = OBJECT_TYPE_MAP.get(object_type, Object)
-                obj = ObjClass(object_id=object_id, data=data)
-                obj.persist = True
+                # special case for Program type
+                if persist_obj.get("type") == Program.object_type: object_type = Program.object_type
 
+                if object_type != None:
+                    obj_class = OBJECT_TYPE_MAP.get(object_type, Object)
+                    obj = obj_class(object_id=obj_id, data=data)
+                    obj.persist = True
+                    
         return obj
-
+    
     def get_persisted_objs(self):
-        """Returns a dictionary of persisted objects. [TODO] check object_type"""
+        """Returns a dictionary of persisted objects.
+        
+           If object is known by arena-py, return our local object, not persisted
+           Silently fails/skip objects without object_id and object_type (except programs)
+           Instanciates generic Object if object_type is given but unknown to arena-py
+        """
         objs = {}
         # pass token to persist
         data = self.auth.urlopen(url=self.persist_url, creds=True)
         output = json.loads(data)
         for obj in output:
-            if obj["type"] == Object.object_type or obj["type"] == Object.type:
-                object_id = obj["object_id"]
-                data = obj["attributes"]
-
+            # note: no exception on missing fields
+            object_id = obj.get("object_id")
+            data = obj.get("attributes", {})
+            object_type = data.get("object_type")
+            
+            # special case for Program type
+            if obj.get("type") == Program.object_type: object_type = Program.object_type
+            
+            if object_id != None:
                 if object_id in self.all_objects:
+                    # note: object from our list (not from persist)
                     persisted_obj = self.all_objects[object_id]
                     persisted_obj.persist = True
-                else:
-                    object_type = data.get("object_type", None)
-                    ObjClass = OBJECT_TYPE_MAP.get(object_type, Object)
-                    persisted_obj = ObjClass(object_id=object_id, data=data)
+                elif object_type != None:
+                    # note: instanciate even with empty attributes if object_type is unknown to arena-py
+                    obj_class = OBJECT_TYPE_MAP.get(object_type, Object)
+                    persisted_obj = obj_class(object_id=object_id, data=data)
                     persisted_obj.persist = True
-
+            
                 objs[object_id] = persisted_obj
 
         return objs
@@ -523,7 +542,14 @@ class Scene(ArenaMQTT):
     def get_user_list(self):
         """Returns a list of users"""
         return self.users.values()
-
+        
+    def stats_update(self, running=True):
+        """Callbak when program stats are updated"""
+        obj = Program.running_instance_stats(self.stats.get_stats())
+        if obj:
+            # publish program object update
+            self._publish(obj, "update")
+        
 class Arena(Scene):
     """
     Another name for Scene.

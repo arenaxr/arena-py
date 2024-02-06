@@ -152,7 +152,7 @@ class ArenaMQTT(object):
         self.mqttc.on_connect = self.on_connect
         self.mqttc.on_disconnect = self.on_disconnect
         self.mqttc.on_publish = self.on_publish
-        
+
         # add main message processing + callbacks loop to tasks
         self.run_async(self.process_message)
 

@@ -83,3 +83,6 @@ class Device(ArenaMQTT):
         self.mqttc.publish(topic, payload, qos=0)
         if self.debug: print("[publish]", topic, payload)
         return payload
+    
+    def on_publish(self, client, userdata, mid):
+        pass

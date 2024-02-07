@@ -94,8 +94,13 @@ class ArenaTelemetry():
             'otlp': lambda: OTLPSpanExporter(otlp_endpoint, insecure=True),
             'mqtt': lambda: MQTTSpanExporter(), 
             'console': lambda: ConsoleSpanExporter()
-        }        
-        self.enabled = env_telemetry.lower() in tel_exporters.keys()
+        }
+        
+        if env_telemetry: self.enabled = env_telemetry.lower() in tel_exporters.keys()
+        else: 
+            env_telemetry = 'none'
+            self.enabled = False
+        
         if self.enabled:
             provider = TracerProvider(resource=resource)
             self.exporter = tel_exporters[env_telemetry]()

@@ -39,7 +39,8 @@ setuptools.setup(
         "webcolors~=1.3",
         "google_auth_oauthlib~=1.0.0",
         "google-auth~=2.22.0",
-        "PyJWT~=2.4.0"
+        "PyJWT~=2.4.0",
+        "opentelemetry-exporter-otlp-proto-grpc>=1.21.0"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

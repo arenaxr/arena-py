@@ -1,7 +1,26 @@
-# A simple command interpreter
+"""
+The ArenaCmdInterpreter is a simple line-oriented command interpreter that
+allows to inspect library/program state. It looks at :envvar:`ENABLE_INTERPRETER` 
+to enable the interpreter. 
+
+The :class:`.ArenaCmdInterpreter` receives a :class:`.Scene` instance and provides commands
+to inspect attributes and execute functions (callables) given to the constructor.
+
+The commands available are:
+  show: displays attributes
+  info: excutes scene functions that output information
+  help: displays the commands available
+  exit: terminates the program
+  
+"""
 
 import cmd, os, json, asyncio, threading, time
 from datetime import date, datetime
+from ..env import (
+    ENABLE_INTERPRETER,
+    _get_env
+)
+
 class ArenaCmdInterpreter(cmd.Cmd):
     intro = 'Welcome to the arena-py console. Type help or ? to list available commands.\n'
     prompt = '# '
@@ -11,22 +30,24 @@ class ArenaCmdInterpreter(cmd.Cmd):
         if isinstance(obj, (datetime, date)):
             return str(obj)
         if hasattr(obj, '__dict__'):
-            return obj.__dict__
+            return {k: v for k, v in vars(obj).items() if k.startswith("_") == False} # ignore private members
         raise TypeError("Type not serializable")
 
-    def __init__(self, scene, show_attrs=('config_data', 'scene', 'users', 'all_objects', 'msg_io'), get_callables=('persisted_objs', 'persisted_scene_option', 'writable_scenes', 'user_list')):
+    def __init__(self, scene, show_attrs=('config_data', 'scene', 'users', 'all_objects', 'msg_io'), get_callables=('persisted_objs', 'persisted_scene_option', 'writable_scenes', 'user_list'), start_cmd_event=None):
+        self.enable_interp = _get_env(ENABLE_INTERPRETER).lower() in ('true', '1', 't')
+        if not self.enable_interp: return
         super().__init__(completekey='tab')
         self._scene = scene
         self._show_attrs = show_attrs
         self._get_callables = get_callables
+        
+        # start interpreter thread
+        t = threading.Thread(name='interpreter_thread', target=self.__cmd_loop_thread, args=(start_cmd_event,))
+        t.start()
 
     def __cmd_loop_thread(self, start_cmd_event):
         if start_cmd_event: start_cmd_event.wait(5) # try to start cmd last; wait on event with timeout
         self.cmdloop()
-
-    def start_thread(self, start_cmd_event=None):
-        t = threading.Thread(name='interpreter_thread', target=self.__cmd_loop_thread, args=(start_cmd_event,))
-        t.start()
 
     def do_show(self, arg):
         if arg not in self._show_attrs:
@@ -69,7 +90,7 @@ class ArenaCmdInterpreter(cmd.Cmd):
             answer = input("This will terminate the ARENA program. Are you sure [Y/N]? ").lower()
         if answer == "y":
             print("Exiting...")
-            os._exit(0)
+            self._scene.exit(0)
 
         return True
 

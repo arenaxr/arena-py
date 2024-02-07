@@ -7,13 +7,20 @@ import socket
 import ssl
 import sys
 from datetime import datetime
-import threading
 
 import paho.mqtt.client as mqtt
 
 from .auth import ArenaAuth
 from .event_loop import *
-from .utils import ArenaCmdInterpreter
+
+from .env import (
+    MQTTH,
+    REALM,
+    ARENA_USERNAME,
+    ARENA_PASSWORD,
+    NAMESPACE,
+    _get_env
+)
 
 class ArenaMQTT(object):
     """
@@ -35,8 +42,8 @@ class ArenaMQTT(object):
                 debug = False,
                 **kwargs
             ):
-        if os.environ.get("MQTTH"):
-            self.web_host = os.environ["MQTTH"]
+        if os.environ.get(MQTTH):
+            self.web_host = _get_env(MQTTH)
             print(f"Using Host from 'MQTTH' env variable: {self.web_host}")
         elif "host" in kwargs and kwargs["host"]:
             self.web_host = kwargs["host"]
@@ -45,8 +52,8 @@ class ArenaMQTT(object):
             # Use default "web_host", helps avoid and web vs mqtt host and other user setup confusion
             self.web_host = web_host
 
-        if os.environ.get("REALM"):
-            self.realm = os.environ["REALM"]
+        if os.environ.get(REALM):
+            self.realm = _get_env(REALM)
             print(f"Using Realm from 'REALM' env variable: {self.realm}")
         elif "realm" in kwargs and kwargs["realm"]:
             self.realm = kwargs["realm"]
@@ -63,10 +70,10 @@ class ArenaMQTT(object):
         token = None
         self.remote_auth_token = {}  # provide reference for downloaded token
         self.auth = ArenaAuth()
-        if os.environ.get("ARENA_USERNAME") and os.environ.get("ARENA_PASSWORD"):
+        if os.environ.get(ARENA_USERNAME) and os.environ.get(ARENA_PASSWORD):
             # auth 1st: use passed in env var
-            self.username = os.environ["ARENA_USERNAME"]
-            token = os.environ["ARENA_PASSWORD"]
+            self.username = _get_env(ARENA_USERNAME)
+            token = _get_env(ARENA_PASSWORD)
             self.auth.store_environment_auth(self.username, token)
         else:
             if self.scene:
@@ -82,8 +89,8 @@ class ArenaMQTT(object):
                     # auth 3rd: use the user account online
                     self.username = self.auth.authenticate_user(self.web_host)
 
-        if os.environ.get("NAMESPACE"):
-            self.namespace = os.environ["NAMESPACE"]
+        if os.environ.get(NAMESPACE):
+            self.namespace = _get_env(NAMESPACE)
         elif "namespace" not in kwargs or ("namespace" in kwargs and kwargs["namespace"] is None):
             self.namespace = self.username
         else:
@@ -146,19 +153,6 @@ class ArenaMQTT(object):
         self.mqttc.on_disconnect = self.on_disconnect
         self.mqttc.on_publish = self.on_publish
 
-        # setup msg counters
-        self.msg_io = {
-            'last_rcv_time': None,
-            'last_pub_time': None,
-            'rcv_msgs': 0,
-            'pub_msgs': 0,
-            'rcv_msgs_per_sec': 0.0,
-            'pub_msgs_per_sec': 0.0,
-            "rcv_queue_size": 0,
-            "pub_queue_size": 0,
-        }
-        self.msg_rate_time_start = datetime.now()
-
         # add main message processing + callbacks loop to tasks
         self.run_async(self.process_message)
 
@@ -166,14 +160,7 @@ class ArenaMQTT(object):
         self.run_forever(self.network_latency_update,
                          interval_ms=network_latency_interval)
 
-        # update message rate every second
-        self.run_forever(self.msg_rate_update,
-                         interval_ms=1000)
-
         self.msg_queue = asyncio.Queue()
-
-        # setup event to let others wait on connection
-        self.connected_evt = threading.Event()
 
         # connect to mqtt broker
         if "port" in kwargs:
@@ -190,15 +177,6 @@ class ArenaMQTT(object):
         except Exception as err:
             print(f'MQTT connect error to {self.mqtt_host}, port={port}: Result Code={err}')
         self.mqttc.socket().setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
-
-        # check if we want to start the command interpreter
-        enable_interp = os.getenv("ENABLE_INTERPRETER", 'False').lower() in ('true', '1', 't')
-        if enable_interp:
-            self.cmd_interpreter = ArenaCmdInterpreter(self,
-                                                       show_attrs=('config_data', 'scene', 'users', 'all_objects', 'msg_io'),
-                                                       get_callables=('persisted_objs', 'persisted_scene_option', 'writable_scenes', 'user_list'))
-            self.cmd_interpreter.start_thread(self.connected_evt)
-
 
     def parse_cli(self):
         """
@@ -243,15 +221,6 @@ class ArenaMQTT(object):
         """Update client latency in $NETWORK/latency"""
         # publish empty message with QoS of 2 to update latency
         self.mqttc.publish(self.latency_topic, "", qos=2)
-
-    def msg_rate_update(self):
-        """Update Message rate"""
-        elapsed = datetime.now() - self.msg_rate_time_start
-        if elapsed.seconds > 0:
-            self.msg_io['rcv_msgs_per_sec'] = round(self.msg_io['rcv_msgs']  / elapsed.seconds, 2)
-            self.msg_io['pub_msgs_per_sec'] = round(self.msg_io['pub_msgs']  / elapsed.seconds, 2)
-            self.msg_io['rcv_queue_size'] = self.msg_queue.qsize()
-            self.msg_io['pub_queue_size'] = len(self.mqttc._out_packet)
 
     def run_once(self, func=None, **kwargs):
         """Runs a user-defined function on startup"""
@@ -329,9 +298,6 @@ class ArenaMQTT(object):
             client.subscribe(self.subscribe_topic)
             client.message_callback_add(self.subscribe_topic, self.on_message)
 
-            # set event
-            self.connected_evt.set()
-
             # reset msg rate time
             self.msg_rate_time_start = datetime.now()
 
@@ -345,8 +311,6 @@ class ArenaMQTT(object):
         # ignore own messages
         if mqtt.topic_matches_sub(self.ignore_topic, msg.topic):
             return
-        self.msg_io['last_rcv_time'] = datetime.now()
-        self.msg_io['rcv_msgs'] = self.msg_io['rcv_msgs'] + 1
         self.msg_queue.put_nowait(msg)
 
     async def process_message(self):
@@ -365,10 +329,6 @@ class ArenaMQTT(object):
             self.end_program_callback(self)
         self.mqttc.disconnect()
 
-    def on_publish(self, client, userdata, mid):
-        self.msg_io['last_pub_time'] = datetime.now()
-        self.msg_io['pub_msgs'] = self.msg_io['pub_msgs'] + 1
-
     def message_callback_add(self, sub, callback):
         """Subscribes to new topic and adds callback"""
         self.mqttc.subscribe(sub)
@@ -378,3 +338,11 @@ class ArenaMQTT(object):
         """Unsubscribes to topic and removes callback"""
         self.mqttc.unsubscribe(sub)
         self.mqttc.message_callback_remove(sub)
+
+    def rcv_queue_len(self): 
+        """Return receive queue length"""
+        self.msg_queue.qsize()
+        
+    def pub_queue_len(self): 
+        """Return publish queue length"""
+        return self.mqttc._out_packet

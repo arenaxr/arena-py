@@ -35,6 +35,7 @@ from .torus import *
 from .torus_knot import *
 from .triangle import *
 from .videosphere import *
+from .program import *
 
 OBJECT_TYPE_MAP = {
     Object.object_type: Object,

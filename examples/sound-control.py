@@ -4,7 +4,7 @@
 
 from arena import *
 
-scene = Scene(cli_args=True, debug=True)
+scene = Scene(cli_args=True)
 
 
 def click_handler(scene, evt, msg):

@@ -15,7 +15,7 @@ def user_join_callback(camera):
     print(f"User found: {camera.displayName} [object_id={camera.object_id}]")
 
 
-scene = Scene(host="arena-dev1.conix.io", scene="test", debug=True)
+scene = Scene(host="arenaxr.org", scene="test")
 scene.user_join_callback = user_join_callback
 
 @scene.run_forever(interval_ms=17)

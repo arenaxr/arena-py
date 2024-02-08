@@ -11,8 +11,8 @@ from arena import Box, Device, Material, Scene
 box = Box(object_id="box", position=(0, 2, -1), rotation=(0, 0, 0),
           scale=(2, 2, 2), material=Material(transparent=True, opacity=1))
 
-scene = Scene(host="arenaxr.org", scene="test", debug=True)
-device = Device(host="arenaxr.org", device="robot1", debug=True)
+scene = Scene(host="arenaxr.org", scene="test")
+device = Device(host="arenaxr.org", device="robot1")
 
 CUSTOM_TOPIC = f"{device.realm}/d/{device.namespace}/{device.device}/rtc1"
 

@@ -11,7 +11,7 @@ def make_die1():
         material=Material(color="#ffffff"),
         multisrc=Multisrc(
             srcspath="store/users/wiselab/images/dice/",
-            srcs="side1.png, side2.png, side3.png, side4.png, side5.png, side6.png"
+            srcs="side1.png,side2.png,side3.png,side4.png,side5.png,side6.png"
         )
     )
     scene.add_object(die1)

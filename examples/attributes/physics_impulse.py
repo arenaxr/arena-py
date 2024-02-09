@@ -12,5 +12,6 @@ def make_bouncy_ball():
         position=(0,5,0))
 
     scene.add_object(obj)
+    # TODO: (mwfarb) add physics enabled and ground plane
 
 scene.run_tasks()

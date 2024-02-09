@@ -4,8 +4,8 @@ scene = Scene(host="arenaxr.org", scene="example")
 
 
 @scene.run_once
-def make_attribution_box():
-    attribution_box = GLTF(
+def make_gltf_model_blumbach():
+    gltf_model_blumbach = GLTF(
         object_id="gltf-model-blumbach",
         url="store/users/wiselab/build/blumbach.glb",
         position=(0, 1.7, -5),
@@ -20,7 +20,7 @@ def make_attribution_box():
             title="Mammuthus primigenius",
         )
     )
-    scene.add_object(attribution_box)
+    scene.add_object(gltf_model_blumbach)
 
 
 scene.run_tasks()

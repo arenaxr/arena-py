@@ -6,7 +6,7 @@ scene = Scene(host="arenaxr.org", scene="example")
 @scene.run_once
 def make_dynamic_box():
     dynamic_box = Box(
-        object_id="dynamic-box",
+        object_id="dynamic_box",
         depth=0.05,
         height=0.05,
         width=0.05,

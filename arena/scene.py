@@ -6,6 +6,7 @@ import sys
 from datetime import datetime
 from inspect import signature
 import threading
+import uuid
 
 from .arena_mqtt import ArenaMQTT
 from .attributes import *
@@ -98,7 +99,7 @@ class Scene(ArenaMQTT):
             # create a program object to describe this program
             # PROGRAM_OBJECT_ID allows to match the object id of persisted program object
             # when a program object with PROGRAM_OBJECT_ID is loaded from persist, it will replace this one
-            self.program = Program(object_id=_get_env(PROGRAM_OBJECT_ID), 
+            self.program = Program(object_id=_get_env(PROGRAM_OBJECT_ID, super().client_id()), 
                                    name=f"{self.namespace}/{self.scene}", 
                                    filename=sys.argv[0], 
                                    filetype="PY")
@@ -572,7 +573,12 @@ class Scene(ArenaMQTT):
                     # replace program object, if matches our program id
                     if object_type == Program.object_type:
                         if os.environ.get(PROGRAM_OBJECT_ID) == object_id:
+                            persisted_obj.persist = True
                             self.program = persisted_obj
+                        else:
+                            # dont persist program objet if not ours
+                            persisted_obj.persist = False
+                            
             
                 objs[object_id] = persisted_obj
 
@@ -604,7 +610,6 @@ class Scene(ArenaMQTT):
         """Callbak when program stats are updated; publish program object update"""
         # Add run info to program data object and publish program object update
         run_info.add_program_info(self.program.data)
-        self.program.persist = True
         self._publish(self.program, "update")
         
 class Arena(Scene):

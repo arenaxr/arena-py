@@ -137,9 +137,9 @@ ENV_DEFAULTS = {
   PROGRAM_STATS_UPDATE_INTERVAL_MS: 5000
 }
 
-def _get_env(env_var):
-  """ Get value of env variable with default defined by ENV_DEFAULTS; None if not defined in ENV_DEFAULTS """
-  return os.environ.get(env_var, ENV_DEFAULTS.get(env_var))
+def _get_env(env_var, dft_val=None):
+  """ Get value of env variable with default defined by ENV_DEFAULTS; Returns dft_val if not defined in ENV_DEFAULTS """
+  return os.environ.get(env_var, ENV_DEFAULTS.get(env_var, dft_val))
 
 def _get_arena_env():
   """Get all variables defined in this module; skip credentials, private data and imports"""

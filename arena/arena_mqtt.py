@@ -346,3 +346,8 @@ class ArenaMQTT(object):
     def pub_queue_len(self): 
         """Return publish queue length"""
         return self.mqttc._out_packet
+
+    def client_id(self): 
+        """Return client id"""
+        return self.mqttc_id
+    

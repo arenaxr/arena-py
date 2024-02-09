@@ -43,6 +43,9 @@ class Program(BaseObject):
                 print("[WARNING]", f"An object with object_id of {object_id} was already created. The previous object will be overwritten.")
             Object.remove(Object.get(object_id))
 
+        # set default persist to False
+        self.persist = False
+        
         # setup attributes in the "data" field
         data = kwargs.get("data", kwargs)
         data = Data(**data)

@@ -1,17 +1,19 @@
 from arena import *
 
 
-scene = Scene(host="arenaxr.org", scene="example")
+scene = Scene(host="arena-dev1.conix.io", scene="example")
 
 
 def box_event(scene, evt, msg):
     print(f"Event {evt.type} received on object {evt.object_id}!")
     if evt.type == "collision-start":
-        # show green ball at point of collision start
-        add_temp_ball(scene, evt["data"]["position"], "green")
+        # show green ball at point of collision start, center grey
+        add_temp_ball(scene, evt["data"]["position"], "#00ff00")
+        add_temp_ball(scene, evt["data"]["targetPosition"], "#777777")
     elif evt.type == "collision-end":
-        # show red ball at point of collision end
-        add_temp_ball(scene, evt["data"]["position"], "red")
+        # show red ball at point of collision end, center grey
+        add_temp_ball(scene, evt["data"]["position"], "#ff0000")
+        add_temp_ball(scene, evt["data"]["targetPosition"], "#777777")
 
 
 def add_temp_ball(scene, position, color):
@@ -19,7 +21,7 @@ def add_temp_ball(scene, position, color):
         ttl=1,
         position=position,
         scale=(0.05, 0.05, 0.05),
-        material=Material(color=color)
+        material=Material(color=Color(color))
     ))
 
 

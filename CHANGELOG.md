@@ -6,6 +6,55 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 * **objects, attributes:** added automated support for full schema with docstrings ([#171](https://github.com/arenaxr/arena-py/issues/171)) ([359181f](https://github.com/arenaxr/arena-py/commit/359181f293fe14ec1536be81ee8d4d2a39b39c3b))
 
+## [0.9.0](https://github.com/arenaxr/arena-py/compare/v0.8.0...v0.9.0) (2024-02-12)
+
+
+### Features
+
+* add basic telemetry to scene ([5702fd0](https://github.com/arenaxr/arena-py/commit/5702fd03e7eddeef825b0914a48d6b846873807b))
+* add basic telemetry to scene ([f50a399](https://github.com/arenaxr/arena-py/commit/f50a399e6a6e9818d6750f3e6eaa72d680c9b386))
+* Add program object and publish program stats ([212383a](https://github.com/arenaxr/arena-py/commit/212383abda45af4bef77333fee9c6245255f67ff))
+* central environment vars file and documentation ([7c95f47](https://github.com/arenaxr/arena-py/commit/7c95f479159b2073ac97514f99e5baf24b5d91c1))
+* central environment vars file and documentation ([abc1ab7](https://github.com/arenaxr/arena-py/commit/abc1ab776f4695cd6ed89a2bacf918e012ffad50))
+* **objects, attributes:** added automated support for full schema with docstrings ([d442dee](https://github.com/arenaxr/arena-py/commit/d442dee52f5e5ef48f10038a11ce5a52251000ae))
+* **objects:** adding examples for new schema objects ([e2081b3](https://github.com/arenaxr/arena-py/commit/e2081b3febca8425718a37c99879a338ccdd37d0))
+* send queue length; minor fixes ([186a7e8](https://github.com/arenaxr/arena-py/commit/186a7e89a33d7937b47864c29a0f594b5be178d3))
+
+
+### Bug Fixes
+
+* better/more tracing and exit handling for telemetry ([07c8e2b](https://github.com/arenaxr/arena-py/commit/07c8e2ba9897fde3e0d23638e08d533c8cf8456f))
+* better/more tracing and exit handling for telemetry ([c4eba98](https://github.com/arenaxr/arena-py/commit/c4eba982c8d6dbfad12984b111ed71841e5b704f))
+* bump test ([4e27806](https://github.com/arenaxr/arena-py/commit/4e2780615bf875eb2fcda65c13a59d4bb9f18a35))
+* merging with current head ([f044a15](https://github.com/arenaxr/arena-py/commit/f044a1581ef1d383fcf2be92fd9297735dd3801f))
+* merging with current head (2) ([4fa95b5](https://github.com/arenaxr/arena-py/commit/4fa95b58ee13d646d9a3a0cb46ca77a7f72e7193))
+* minor fixes; add documentation ([3d4146c](https://github.com/arenaxr/arena-py/commit/3d4146c8e54d8c031e0052efb087556a5e62097d))
+* minor fixes; add documentation ([4e208ac](https://github.com/arenaxr/arena-py/commit/4e208ac016c76a5820f375181ae2b97073fd3db1))
+* missing files for small refactor: env_vars to env ([4cf9f7e](https://github.com/arenaxr/arena-py/commit/4cf9f7e8816bfd51e041aefeb637498e4eab7e8b))
+* missing files for small refactor: env_vars to env ([aa891ad](https://github.com/arenaxr/arena-py/commit/aa891ada1d7c7b3ca0590ab5fbe95971994a7241))
+* move command interpreter setup to scene ([9b285d1](https://github.com/arenaxr/arena-py/commit/9b285d1a2b7b524cd26f69924cc3f223048fd916))
+* move command interpreter setup to scene ([9bc081d](https://github.com/arenaxr/arena-py/commit/9bc081dad2e1c30e90ee5f81e77091defa1724ad))
+* pin opentelemetry version ([48d1f00](https://github.com/arenaxr/arena-py/commit/48d1f00f0584d253671523c85cb1a3be6e5df6ba))
+* program object id ([145d55c](https://github.com/arenaxr/arena-py/commit/145d55cdf3dad4afaff419deef7cbb187bcf887f))
+* remove exit hooks ([b8d118b](https://github.com/arenaxr/arena-py/commit/b8d118bb000cb8fb2d466c2b69cd4ffe19d0859e))
+* remove exit hooks ([9ba28f5](https://github.com/arenaxr/arena-py/commit/9ba28f5faed6163057d30702eaca1ce409da0d21))
+* show public attributes only ([056ff57](https://github.com/arenaxr/arena-py/commit/056ff57672d2a0aef0076b8a533e1f32f57e3ed7))
+* show public attributes only ([b162145](https://github.com/arenaxr/arena-py/commit/b1621451c9f239e655eafe12d2727ef9e4c2fdb4))
+* small refactor: env_vars to env and ProgramStats to ProgramRunInfo ([f52c157](https://github.com/arenaxr/arena-py/commit/f52c157c4d869326459cc6b52f08ff172efeaf0e))
+* small refactor: env_vars to env and ProgramStats to ProgramRunInfo ([47a98a9](https://github.com/arenaxr/arena-py/commit/47a98a91b8c14ca6e2b5a25832599d9b168d1a6e))
+* some docs and scene check ([1a12c51](https://github.com/arenaxr/arena-py/commit/1a12c51478ab56ae734e85f152d6712afe6bc383))
+* some docs and scene check ([a5ebe5d](https://github.com/arenaxr/arena-py/commit/a5ebe5d753c4efd17b9d2a1269816eca336a222f))
+* **text:** don't pre-populate 'text', users may use correct 'value' ([323d2c8](https://github.com/arenaxr/arena-py/commit/323d2c880d9c918270242aec80d7b071c22ad07d))
+* use env vars from constants throughout ([01e5404](https://github.com/arenaxr/arena-py/commit/01e5404e573f6d1ff677a073a7afe8ae110e50e7))
+* use env vars from constants throughout ([adadfd1](https://github.com/arenaxr/arena-py/commit/adadfd1da45eb5070c8105246150e9f0f8a326e5))
+* when no tracing is defined ([52abf13](https://github.com/arenaxr/arena-py/commit/52abf13292248a3777a9aab06319568e46db701e))
+
+
+### Documentation
+
+* minor fix ([40875da](https://github.com/arenaxr/arena-py/commit/40875da27072ed5aea58be691b9a4c8442a4da40))
+* restore py usage notes ([0106936](https://github.com/arenaxr/arena-py/commit/0106936e40e35f863893c56d6ef26e481fe00c4c))
+
 ## [0.8.0](https://github.com/arenaxr/arena-py/compare/v0.7.0...v0.8.0) (2023-11-01)
 
 * **BREAKING CHANGE**: All `arena-user` attributes (descriptors of users in the scene) now are published under the

@@ -488,7 +488,10 @@ class Scene(ArenaMQTT):
 
     def _publish(self, obj, action, custom_payload=False):
         """Publishes to mqtt broker with "action":action"""
-        with self.telemetry.start_publish_span(obj["object_id"], action, obj["type"]) as span:
+        obj_type = None
+        if "type" in obj:
+            obj_type = obj["type"]
+        with self.telemetry.start_publish_span(obj["object_id"], action, obj_type) as span:
             if not self.can_publish:
                 self.telemetry.set_error(f"ERROR: Publish failed! You do not have permission to publish to topic {self.root_topic} on {self.web_host}", span)
 

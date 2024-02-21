@@ -28,6 +28,17 @@ def make_test():
         rotation=(-90, 0, 0),
         scale=(2, 2, 2),
         material=Material(opacity=0.5),
+        animation=Animation(
+            to={
+                "x": 10,
+                "y": 1,
+                "z": 1
+            },
+            property="position",
+            easing="linear",
+            dur=100000
+        ),
+
     )
     scene.add_object(control)
 

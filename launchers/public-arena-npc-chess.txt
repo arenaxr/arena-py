@@ -1,0 +1,3 @@
+# parameters to run demos in the arena main demo scene
+
+python3 examples/chess.py -mh arenaxr.org -n public -s arena -p 1.5 0 -1.5 -r 0 45 0 -c .15 .15 .15

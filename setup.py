@@ -13,7 +13,7 @@ with open("README.md", "r") as readme:
 
 setuptools.setup(
     name="arena-py",
-    version="0.9.1",
+    version="0.9.2",
     author="Conix Research Center",
     author_email="info@conix.io",
     license="BSD 3-clause \"New\" or \"Revised License\"",

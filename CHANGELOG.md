@@ -6,6 +6,13 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 * **objects, attributes:** added automated support for full schema with docstrings ([#171](https://github.com/arenaxr/arena-py/issues/171)) ([359181f](https://github.com/arenaxr/arena-py/commit/359181f293fe14ec1536be81ee8d4d2a39b39c3b))
 
+## [0.9.2](https://github.com/arenaxr/arena-py/compare/v0.9.1...v0.9.2) (2024-02-21)
+
+
+### Bug Fixes
+
+* **program:** prevent crash during telemetry ([ea53f19](https://github.com/arenaxr/arena-py/commit/ea53f1945676eb89ba9730c21ae9d37e142df47a))
+
 ## [0.9.1](https://github.com/arenaxr/arena-py/compare/v0.9.0...v0.9.1) (2024-02-21)
 
 

@@ -546,7 +546,7 @@ class Scene(ArenaMQTT):
 
            If object is known by arena-py, return our local object, not persisted
            Silently fails/skip objects without object_id and object_type (except programs)
-           Instanciates generic Object if object_type is given but unknown to arena-py
+           Instantiates generic Object if object_type is given but unknown to arena-py
         """
         objs = {}
         # pass token to persist
@@ -562,13 +562,15 @@ class Scene(ArenaMQTT):
             if obj.get("type") == Program.object_type:
                 object_type = Program.object_type
 
+            persisted_obj = None
+
             if object_id != None:
                 if object_id in self.all_objects:
                     # note: object from our list (not from persist)
                     persisted_obj = self.all_objects[object_id]
                     persisted_obj.persist = True
                 elif object_type != None:
-                    # note: instanciate even with empty attributes if object_type is unknown to arena-py
+                    # note: instantiate even with empty attributes if object_type is unknown to arena-py
                     obj_class = OBJECT_TYPE_MAP.get(object_type, Object)
                     persisted_obj = obj_class(object_id=object_id, data=data)
                     persisted_obj.persist = True
@@ -582,8 +584,8 @@ class Scene(ArenaMQTT):
                             # dont persist program objet if not ours
                             persisted_obj.persist = False
 
-
-                objs[object_id] = persisted_obj
+                if persisted_obj is not None:
+                    objs[object_id] = persisted_obj
 
         return objs
 

@@ -524,8 +524,8 @@ class Scene(ArenaMQTT):
             # pass token to persist
             data = self.auth.urlopen(url=f"{self.persist_url}/{object_id}", creds=True)
             persist_obj = json.loads(data)
-            if len(obj) > 0:
-                obj = obj[0]
+            if len(persist_obj) > 0:
+                persist_obj = persist_obj[0]
 
                 obj_id = persist_obj.get("object_id", object_id)
                 data = persist_obj.get("attributes", {})

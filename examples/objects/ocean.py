@@ -8,7 +8,7 @@ def make_box():
     my_ocean = Ocean(
         object_id="my_ocean",
         position=(0, 0.5, -3),
-        rotation=(90, 0, 0),
+        rotation=(-90, 0, 0),
         width=10,
         depth=10,
     )

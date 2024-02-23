@@ -4,7 +4,12 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
-* **objects, attributes:** added automated support for full schema with docstrings ([#171](https://github.com/arenaxr/arena-py/issues/171)) ([359181f](https://github.com/arenaxr/arena-py/commit/359181f293fe14ec1536be81ee8d4d2a39b39c3b))
+## [0.9.3](https://github.com/arenaxr/arena-py/compare/v0.9.2...v0.9.3) (2024-02-23)
+
+
+### Bug Fixes
+
+* bug with obj nonetype detected ([#178](https://github.com/arenaxr/arena-py/issues/178)) ([5343baf](https://github.com/arenaxr/arena-py/commit/5343baf57a04796804ce72fd8ef1de13be5a5bbe))
 
 ## [0.9.2](https://github.com/arenaxr/arena-py/compare/v0.9.1...v0.9.2) (2024-02-21)
 
@@ -31,7 +36,7 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 * Add program object and publish program stats ([212383a](https://github.com/arenaxr/arena-py/commit/212383abda45af4bef77333fee9c6245255f67ff))
 * central environment vars file and documentation ([7c95f47](https://github.com/arenaxr/arena-py/commit/7c95f479159b2073ac97514f99e5baf24b5d91c1))
 * central environment vars file and documentation ([abc1ab7](https://github.com/arenaxr/arena-py/commit/abc1ab776f4695cd6ed89a2bacf918e012ffad50))
-* **objects, attributes:** added automated support for full schema with docstrings ([d442dee](https://github.com/arenaxr/arena-py/commit/d442dee52f5e5ef48f10038a11ce5a52251000ae))
+* **objects, attributes:** added automated support for full schema with docstrings ([#171](https://github.com/arenaxr/arena-py/issues/171)) ([359181f](https://github.com/arenaxr/arena-py/commit/359181f293fe14ec1536be81ee8d4d2a39b39c3b))
 * **objects:** adding examples for new schema objects ([e2081b3](https://github.com/arenaxr/arena-py/commit/e2081b3febca8425718a37c99879a338ccdd37d0))
 * send queue length; minor fixes ([186a7e8](https://github.com/arenaxr/arena-py/commit/186a7e89a33d7937b47864c29a0f594b5be178d3))
 

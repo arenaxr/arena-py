@@ -147,13 +147,13 @@ rm -f $logfile
 # launch all apps
 for i in "${tests[@]}"
 do
-    start="-------------------------------> Starting $i..."
+    start="--> Starting $i..."
     echo $start
     echo $start >> $logfile 2>&1 &
     sh -c "$i" >> $logfile 2>&1 &
     pid=$(echo $!)
     sleep 5
     kill -INT $pid # ctrl-c
-    stop="-------------------------------> Stopping pid $pid"
+    stop="--> Stopping pid $pid"
     echo $stop >> $logfile 2>&1 &
 done

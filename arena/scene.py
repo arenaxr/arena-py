@@ -516,16 +516,16 @@ class Scene(ArenaMQTT):
 
            If object is known by arena-py, return local object, not persisted
         """
-        obj = None
+        persist_obj = None
         if object_id in self.all_objects:
-            obj = self.all_objects[object_id]
-            obj.persist = True
+            persist_obj = self.all_objects[object_id]
+            persist_obj.persist = True
         else:
             # pass token to persist
             data = self.auth.urlopen(url=f"{self.persist_url}/{object_id}", creds=True)
             persist_obj = json.loads(data)
-            if len(obj) > 0:
-                obj = obj[0]
+            if len(persist_obj) > 0:
+                persist_obj = persist_obj[0]
 
                 obj_id = persist_obj.get("object_id", object_id)
                 data = persist_obj.get("attributes", {})
@@ -536,10 +536,10 @@ class Scene(ArenaMQTT):
 
                 if object_type != None:
                     obj_class = OBJECT_TYPE_MAP.get(object_type, Object)
-                    obj = obj_class(object_id=obj_id, data=data)
-                    obj.persist = True
+                    persist_obj = obj_class(object_id=obj_id, data=data)
+                    persist_obj.persist = True
 
-        return obj
+        return persist_obj
 
     def get_persisted_objs(self):
         """Returns a dictionary of persisted objects.

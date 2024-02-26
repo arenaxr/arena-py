@@ -360,6 +360,28 @@ class Scene(ArenaMQTT):
                     target=target)
         return self.generate_custom_event(evt, action="update")
 
+    def teleport_to_landmark(self, cam, target):
+        """Publishes a camera manipulation event"""
+        if isinstance(target, Object):
+            target_id = target.object_id
+        elif type(target) is str:
+            target_id = target
+        else:
+            raise ValueError("target must be an ARENA object or string object_id")
+
+        if isinstance(cam, Object):
+            object_id = cam.object_id
+        elif type(target) is str:
+            object_id = cam
+        else:
+            raise ValueError("cam must be an ARENA object or string object_id")
+
+        evt = Event(object_id=object_id,
+                    type="camera-override",
+                    object_type="teleport-to-landmark",
+                    landmarkObj=target_id)
+        return self.generate_custom_event(evt, action="update")
+
     @property
     def all_objects(self):
         """Returns all the objects in a scene"""

@@ -36,6 +36,7 @@ class Data(Attribute):
     :param dict jitsi_video: Apply a jitsi video source to the geometry. (optional)
     :param dict landmark: Define entities as a landmark; Landmarks appears in the landmark list and you can move (teleport) to them; You can define the behavior of the teleport: if you will be at a fixed or random distance, looking at the landmark, fixed offset or if it is constrained by a navmesh (when it exists). (optional)
     :param str look_at: The look-at component defines the behavior for an entity to dynamically rotate or face towards another entity or position. Use '#my-camera' to face the user camera, otherwise can take either a vec3 position or a query selector to another entity. (optional)
+    :param str landmarkObj: The object_id of the landmark to teleport to. (optional)
     :param dict material: The material properties of the object's surface. (optional)
     :param dict material_extras: Define extra material properties, namely texture encoding, whether to render the material's color and render order. (optional)
     :param dict modelUpdate: The GLTF-specific `modelUpdate` attribute is an object with child component names as keys. The top-level keys are the names of the child components to be updated. The values of each are nested `position` and `rotation` attributes to set as new values, respectively. Either `position` or `rotation` can be omitted if unchanged. (optional)

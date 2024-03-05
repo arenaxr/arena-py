@@ -1,5 +1,5 @@
 # parameters to run demos in the arena main demo scene
 
 python3 examples/demos/chess/chess.py -mh arenaxr.org -n public -s arena -p 1.5 0 -1.5 -r 0 45 0 -c .15 .15 .15
-# python3 tools/demos/cobot/cobot.py -mh arenaxr.org -n public -s arena -p -2 .8 -3 -r 0 0 0 -c 1 1 1
+python3 tools/demos/cobot-pi/ui.py -mh arenaxr.org -n public -s arena -p -2 .8 -3 -r 0 0 0 -c 1 1 1
 # python3 tools/demos/npc/npc.py -mh arenaxr.org -n public -s arena -p 7.2 0 -2.8 -r 0 0 0 -c .8 .8 .8

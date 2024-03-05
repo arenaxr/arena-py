@@ -1,0 +1,33 @@
+[
+	{
+		"title": "Start",
+		"tags": "",
+		"body": "triangle: Hello!\ntriangle: This is running on pygame <<print pygame.version.ver>>\nsquare: Hello! What's wrong with you face?\ntriangle:What do you mean?\nsquare:I'm just messing with you.\nsquare: Your face *is* missing a corner though\ntriangle:What's wrong with YOUR face?\n[[ignore|Node2]][[punch|Node3]]",
+		"position": {
+			"x": 80,
+			"y": 49
+		},
+		"colorID": 0
+	},
+	{
+		"title": "Node2",
+		"tags": "",
+		"body": "And so they never spoke again\n[[Restart|Start]]",
+		"position": {
+			"x": 101,
+			"y": 337
+		},
+		"colorID": 8
+		
+	},
+	{
+		"title": "Node3",
+		"tags": "",
+		"body": "/triangle shake\nsquare: ouch\n/triangle exit stage_right\n/square exit stage_left\n[[Restart|Start]][[Punch again|Node2]]",
+		"position": {
+			"x": 431,
+			"y": 333
+		},
+		"colorID": 0
+	}
+]

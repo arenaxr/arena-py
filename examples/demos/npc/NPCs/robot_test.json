@@ -1,0 +1,1062 @@
+[
+	{
+		"title": "Morphs",
+		"tags": "",
+		"body": "Here is a list of all the morphs in this dialogue:\n[[Morph_Smile]][[Morph_Blink]][[Morph_Open]][[Morph_Squint]][[Morph_Dizzy]][[Morph_Reset]]",
+		"position": {
+			"x": -303,
+			"y": -648
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Animations",
+		"tags": "",
+		"body": "Here is a list of all the animations in this dialogue:\n[[Anim_Die]][[Anim_Hurt]][[Anim_Idle]][[Anim_Jump]][[Anim_JumpFall]][[Anim_JumpLand]][[Anim_JumpUp]][[Anim_Look]][[Anim_Roll]][[Anim_Run]][[Anim_Skid]][[Anim_T]][[Anim_Walk]]",
+		"position": {
+			"x": -307,
+			"y": -266
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Transforms",
+		"tags": "",
+		"body": "Here is a list of all the transforms in this dialogue:\n[[Transform_Zero]][[Transform_Rack]][[Transform_Lambda]][[Transform_Desks]][[Transform_Enter]][[Transform_Exit]][[Transform_Couch]]",
+		"position": {
+			"x": -299,
+			"y": 156
+		},
+		"colorID": 4
+	},
+	{
+		"title": "Exit",
+		"tags": "",
+		"body": "You went out of the range of the NPC character!\nCome closer to reinitiate dialogue.",
+		"position": {
+			"x": -1947,
+			"y": -1324
+		},
+		"colorID": 0
+	},
+	{
+		"title": "Enter",
+		"tags": "",
+		"body": "Hello! This is the test Yarn file for the NPC character.\nPress \"Actions\" to test linked command actions, or \"Dialogue\" to run a simple dialogue.\n[[Actions]][[Dialogue]][[Exit]]",
+		"position": {
+			"x": -1615,
+			"y": -1322
+		},
+		"colorID": 0
+	},
+	{
+		"title": "Sounds",
+		"tags": "",
+		"body": "Here is a list of all the sounds in this dialogue:\n[[Sound_Next]][[Sound_Choice]][[Sound_Enter]][[Sound_Exit]][[Sound_Talking]]",
+		"position": {
+			"x": -310,
+			"y": -1013
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Morph_Smile",
+		"tags": "",
+		"body": "Playing morph \"smile\": <<morph smile>>\n[[Morphs]][[Actions]][[End]]",
+		"position": {
+			"x": 73,
+			"y": -644
+		},
+		"colorID": 2
+	},
+	{
+		"title": "End",
+		"tags": "",
+		"body": "This is the end. <<image none>><<video none>>\nClick \"Restart\" to back to main menu.\n[[Restart|Enter]]",
+		"position": {
+			"x": 2742,
+			"y": -936
+		},
+		"colorID": 8
+	},
+	{
+		"title": "Anim_Die",
+		"tags": "",
+		"body": "Playing animation \"die\": <<animation die>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 118,
+			"y": -256
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Anim_Hurt",
+		"tags": "",
+		"body": "Playing animation \"hurt\": <<animation hurt>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 328,
+			"y": -258
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Anim_Idle",
+		"tags": "",
+		"body": "Playing animation \"idle\": <<animation idle>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 546,
+			"y": -265
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Sound_Next",
+		"tags": "",
+		"body": "Playing sound \"next\": <<sound next>>\n[[Sounds]][[Actions]][[End]]",
+		"position": {
+			"x": 40,
+			"y": -1016
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Sound_Choice",
+		"tags": "",
+		"body": "Playing sound \"choice\": <<sound choice>>\n[[Sounds]][[Actions]][[End]]",
+		"position": {
+			"x": 251,
+			"y": -1019
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Sound_Enter",
+		"tags": "",
+		"body": "Playing sound \"enter\": <<sound enter>>\n[[Sounds]][[Actions]][[End]]",
+		"position": {
+			"x": 475,
+			"y": -1018
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Sound_Exit",
+		"tags": "",
+		"body": "Playing sound \"exit\": <<sound exit>>\n[[Sounds]][[Actions]][[End]]",
+		"position": {
+			"x": 694,
+			"y": -1025
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Anim_Jump",
+		"tags": "",
+		"body": "Playing animation \"jump\": <<animation jump>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 964,
+			"y": -257
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Actions",
+		"tags": "",
+		"body": "Empty Text <<image none>><<video none>>\n[[Sounds]][[Morphs]][[Transforms]][[Animations]][[URLs]][[Miscellaneous]][[Images]][[Videos]][[End]]",
+		"position": {
+			"x": -864,
+			"y": -441
+		},
+		"colorID": 8
+	},
+	{
+		"title": "Sound_Talking",
+		"tags": "",
+		"body": "Playing sound \"talking\": <<sound talking>>\n[[Sounds]][[Actions]][[End]]",
+		"position": {
+			"x": 908,
+			"y": -1029
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Dialogue",
+		"tags": "",
+		"body": "ChatGPT generated to query:\n\"make a simple dialogue tree about a topic of your choice.\"\nSure, here's a simple dialogue tree about learning a new programming language:\n[[Play Dialogue|Intro]]",
+		"position": {
+			"x": -1489,
+			"y": -1950
+		},
+		"colorID": 6
+	},
+	{
+		"title": "Conclusion",
+		"tags": "",
+		"body": "This is just a basic example of a dialogue tree about learning a new programming language. \nDepending on the language and the audience, the tree could be much more complex and tailored to the learner's needs.\n[[Restart|Enter]]",
+		"position": {
+			"x": 3764,
+			"y": -1447
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Question_1",
+		"tags": "",
+		"body": "Do you have any programming experience?\n[[Yes|Question_1a]][[No|Concepts]]",
+		"position": {
+			"x": -752,
+			"y": -1944
+		},
+		"colorID": 6
+	},
+	{
+		"title": "Question_1a",
+		"tags": "",
+		"body": "What languages have you programmed in before?\n[[Python]][[Java]][[JavaScript]]",
+		"position": {
+			"x": -298,
+			"y": -2031
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Concepts",
+		"tags": "",
+		"body": "Okay!\nHere are some basic programming concepts:\n[[Variables]][[Control structures]][[Functions]][[Data Types]][[Operators]][[Input/Output]][[Debugging]]",
+		"position": {
+			"x": -300,
+			"y": -1705
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Python",
+		"tags": "",
+		"body": "show how the new language is similar to Python and the key differences to be aware of.\n[[Next Question|Question 2]]",
+		"position": {
+			"x": 81,
+			"y": -2284
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Java",
+		"tags": "",
+		"body": "show how the new language is similar to Java and the key differences to be aware of.\n[[Next Question|Question 2]]",
+		"position": {
+			"x": 301,
+			"y": -2284
+		},
+		"colorID": 1
+	},
+	{
+		"title": "JavaScript",
+		"tags": "",
+		"body": "show how the new language is similar to JavaScript and the key differences to be aware of.\n[[Next Question|Question 2]]",
+		"position": {
+			"x": 522,
+			"y": -2284
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Question 2",
+		"tags": "",
+		"body": "What is your goal for learning how to use ARENA?\n[[To get a job]][[To build a personal project]][[to learn something new]]",
+		"position": {
+			"x": 809,
+			"y": -1965
+		},
+		"colorID": 3
+	},
+	{
+		"title": "To get a job",
+		"tags": "",
+		"body": "show job market trends for the language and relevant job openings.\n[[Next Question|Question_3]]",
+		"position": {
+			"x": 1105,
+			"y": -2251
+		},
+		"colorID": 3
+	},
+	{
+		"title": "To build a personal project",
+		"tags": "",
+		"body": "show examples of projects that can be built with the language.\n[[Next Question|Question_3]]",
+		"position": {
+			"x": 1325,
+			"y": -2251
+		},
+		"colorID": 3
+	},
+	{
+		"title": "to learn something new",
+		"tags": "",
+		"body": "show some interesting features of the language and how it can be used.\n[[Next Question|Question_3]]",
+		"position": {
+			"x": 1545,
+			"y": -2251
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Question_3",
+		"tags": "",
+		"body": "What type of resources do you prefer for learning?\n[[Books]][[Video]][[Online Courses]]",
+		"position": {
+			"x": 1894,
+			"y": -2022
+		},
+		"colorID": 4
+	},
+	{
+		"title": "Question_4",
+		"tags": "",
+		"body": "What level of proficiency do you want to achieve?\n[[basic understanding]][[intermediate understanding]][[advanced understanding]]",
+		"position": {
+			"x": 2738,
+			"y": -1973
+		},
+		"colorID": 5
+	},
+	{
+		"title": "intermediate understanding",
+		"tags": "",
+		"body": "show some intermediate resources on the language.\n[[Next Question|Question_5]]",
+		"position": {
+			"x": 3211,
+			"y": -2223
+		},
+		"colorID": 5
+	},
+	{
+		"title": "advanced understanding",
+		"tags": "",
+		"body": "show some advanced resources on the language.\n[[Next Question|Question_5]]",
+		"position": {
+			"x": 3430,
+			"y": -2222
+		},
+		"colorID": 5
+	},
+	{
+		"title": "basic understanding",
+		"tags": "",
+		"body": "show some introductory resources on the language.\n[[Next Question|Question_5]]",
+		"position": {
+			"x": 2990,
+			"y": -2224
+		},
+		"colorID": 5
+	},
+	{
+		"title": "Question_5",
+		"tags": "",
+		"body": "Do you prefer a structured or unstructured learning approach?\n[[Structured]][[Unstructured]]",
+		"position": {
+			"x": 3714,
+			"y": -1961
+		},
+		"colorID": 6
+	},
+	{
+		"title": "Structured",
+		"tags": "",
+		"body": "show some courses or books that offer a structured learning approach.\n[[Conclusion]]",
+		"position": {
+			"x": 3835,
+			"y": -2180
+		},
+		"colorID": 6
+	},
+	{
+		"title": "Unstructured",
+		"tags": "",
+		"body": "show some resources that offer a more flexible learning approach, such as tutorials or video series.\n[[Conclusion]]",
+		"position": {
+			"x": 4054,
+			"y": -2181
+		},
+		"colorID": 6
+	},
+	{
+		"title": "Intro",
+		"tags": "",
+		"body": "I'm going to talk about how to use ARENA!\nFirst I am going to ask some questions to you.\n[[Question_1]]",
+		"position": {
+			"x": -1112,
+			"y": -1946
+		},
+		"colorID": 6
+	},
+	{
+		"title": "URLs",
+		"tags": "",
+		"body": "Here is a list of all the URLs in this dialogue:\n[[Wikipedia Fish PopUp]][[Youtube Frog PopUp]][[Arena Popup]][[Conix NewTab]][[NewScene Island SameTab]]",
+		"position": {
+			"x": -290,
+			"y": 474
+		},
+		"colorID": 5
+	},
+	{
+		"title": "Wikipedia Fish PopUp",
+		"tags": "",
+		"body": "Going to Wikipedia: <<url https://en.wikipedia.org/wiki/Fish>>\n[[URLs]][[Actions]][[End]]",
+		"position": {
+			"x": 131,
+			"y": 472
+		},
+		"colorID": 5
+	},
+	{
+		"title": "Youtube Frog PopUp",
+		"tags": "",
+		"body": "Going to YouTube: <<url https://www.youtube.com/watch?v=cBkWhkAZ9ds>>\n[[URLs]][[Actions]][[End]]",
+		"position": {
+			"x": 353,
+			"y": 471
+		},
+		"colorID": 5
+	},
+	{
+		"title": "Arena Popup",
+		"tags": "",
+		"body": "Going to Arena: <<url arena>>\n[[URLs]][[Actions]][[End]]",
+		"position": {
+			"x": 573,
+			"y": 469
+		},
+		"colorID": 5
+	},
+	{
+		"title": "Conix NewTab",
+		"tags": "",
+		"body": "Going to Conix: <<url conix>>\n[[URLs]][[Actions]][[End]]",
+		"position": {
+			"x": 792,
+			"y": 472
+		},
+		"colorID": 5
+	},
+	{
+		"title": "NewScene Island SameTab",
+		"tags": "",
+		"body": "Going to Island: <<url island>>\n[[URLs]][[Actions]][[End]]",
+		"position": {
+			"x": 1011,
+			"y": 472
+		},
+		"colorID": 5
+	},
+	{
+		"title": "Morph_Blink",
+		"tags": "",
+		"body": "Playing morph \"frown\": <<morph blink>>\n[[Morphs]][[Actions]][[End]]",
+		"position": {
+			"x": 288,
+			"y": -641
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Morph_Open",
+		"tags": "",
+		"body": "Playing morph \"open\": <<morph open>>\n[[Morphs]][[Actions]][[End]]",
+		"position": {
+			"x": 504,
+			"y": -641
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Morph_Squint",
+		"tags": "",
+		"body": "Playing morph \"squint\": <<morph squint>>\n[[Morphs]][[Actions]][[End]]",
+		"position": {
+			"x": 712,
+			"y": -642
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Morph_Dizzy",
+		"tags": "",
+		"body": "Playing morph \"dizzy\": <<morph dizzy>>\n[[Morphs]][[Actions]][[End]]",
+		"position": {
+			"x": 923,
+			"y": -643
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Morph_Reset",
+		"tags": "",
+		"body": "Playing morph \"reset\": <<morph reset>>\n[[Morphs]][[Actions]][[End]]",
+		"position": {
+			"x": 1138,
+			"y": -641
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Anim_JumpFall",
+		"tags": "",
+		"body": "Playing animation \"JumpFall\": <<animation jumpFall>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 1174,
+			"y": -263
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Miscellaneous",
+		"tags": "",
+		"body": "Empty Text\n[[Print]][[Show]][[Hide]]",
+		"position": {
+			"x": -294,
+			"y": 770
+		},
+		"colorID": 6
+	},
+	{
+		"title": "Print",
+		"tags": "",
+		"body": "Using print command: <<print (\"hello you are a fish\")>>\n[[Miscellaneous]][[Actions]][[End]]",
+		"position": {
+			"x": 112,
+			"y": 758
+		},
+		"colorID": 6
+	},
+	{
+		"title": "Show",
+		"tags": "",
+		"body": "Using show command: <<show bob>>\n[[Miscellaneous]][[Actions]][[End]]",
+		"position": {
+			"x": 334,
+			"y": 757
+		},
+		"colorID": 6
+	},
+	{
+		"title": "Hide",
+		"tags": "",
+		"body": "Using hide command: <<hide bob>>\n[[Miscellaneous]][[Actions]][[End]]",
+		"position": {
+			"x": 559,
+			"y": 755
+		},
+		"colorID": 6
+	},
+	{
+		"title": "Variables",
+		"tags": "",
+		"body": "A variable is a container that stores a value or data. \nIt can be thought of as a named storage location,\nthat can hold different types of data, \nsuch as numbers, strings, or boolean values.\n[[Concepts]][[Next Question|Question 2]]",
+		"position": {
+			"x": -297,
+			"y": -1452
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Control structures",
+		"tags": "",
+		"body": "Control structures are used to control the flow of program execution. \nExamples of control structures include if-else statements, loops, and switch statements.\n[[Concepts]][[Next Question|Question 2]]",
+		"position": {
+			"x": -77,
+			"y": -1448
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Functions",
+		"tags": "",
+		"body": "Functions are reusable blocks of code that perform a specific task. \nThey allow you to write code once and use it multiple times.\n[[Concepts]][[Next Question|Question 2]]",
+		"position": {
+			"x": 143,
+			"y": -1448
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Data Types",
+		"tags": "",
+		"body": "Programming languages have different data types that can be used to store and manipulate data. \nCommon data types include integers, floating-point numbers, strings, and booleans.\n[[Concepts]][[Next Question|Question 2]]",
+		"position": {
+			"x": 363,
+			"y": -1448
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Operators",
+		"tags": "",
+		"body": "Operators are symbols or keywords used to perform operations on data. \nExamples of operators include arithmetic operators (+, -, *, /), \ncomparison operators (>, <, ==), \nand logical operators (&&, ||).\n[[Concepts]][[Next Question|Question 2]]",
+		"position": {
+			"x": 584,
+			"y": -1448
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Input/Output",
+		"tags": "",
+		"body": "Input and output are important concepts in programming. \nInput refers to data that is received by a program, \nwhile output refers to data that is produced by a program.\n[[Concepts]][[Next Question|Question 2]]",
+		"position": {
+			"x": 808,
+			"y": -1448
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Debugging",
+		"tags": "",
+		"body": "Debugging is the process of finding and fixing errors or bugs in a program. \nIt is an important skill for any programmer.\n[[Concepts]][[Next Question|Question 2]]",
+		"position": {
+			"x": 1024,
+			"y": -1448
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Books",
+		"tags": "",
+		"body": "show some popular books on the language and their reviews.\n[[Next Question|Question_4]]",
+		"position": {
+			"x": 2014,
+			"y": -2242
+		},
+		"colorID": 4
+	},
+	{
+		"title": "Video",
+		"tags": "",
+		"body": "show some popular tutorial videos on the language and their reviews.\n[[Next Question|Question_4]]",
+		"position": {
+			"x": 2234,
+			"y": -2242
+		},
+		"colorID": 4
+	},
+	{
+		"title": "Online Courses",
+		"tags": "",
+		"body": "show some popular tutorial videos on the language and their reviews.\n[[Next Question|Question_4]]",
+		"position": {
+			"x": 2454,
+			"y": -2242
+		},
+		"colorID": 4
+	},
+	{
+		"title": "Images",
+		"tags": "",
+		"body": "Here is a list of all the images in this dialogue: <<image none>>\n[[image_doge]][[image_dragon]][[image_exclamation]][[image_fish]][[image_forest]][[image_graph]][[image_meme]][[image_nyan]][[image_question]][[image_potato]][[image_stonks]][[image_sushi]]",
+		"position": {
+			"x": -289,
+			"y": 1013
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_doge",
+		"tags": "",
+		"body": "Doge image! <<image doge>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 110,
+			"y": 1007
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_dragon",
+		"tags": "",
+		"body": "Dragon image! <<image dragon>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 330,
+			"y": 1007
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_exclamation",
+		"tags": "",
+		"body": "Exclamation image! <<image exclamation>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 551,
+			"y": 1004
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_fish",
+		"tags": "",
+		"body": "Fish image! <<image fish>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 770,
+			"y": 1007
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_forest",
+		"tags": "",
+		"body": "Forest image! <<image forest>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 990,
+			"y": 1007
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_graph",
+		"tags": "",
+		"body": "Graph image! <<image graph>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 1212,
+			"y": 1007
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_meme",
+		"tags": "",
+		"body": "Meme image! <<image meme>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 1430,
+			"y": 1007
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_nyan",
+		"tags": "",
+		"body": "Nyan image! <<image nyan>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 1651,
+			"y": 1006
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_question",
+		"tags": "",
+		"body": "Question image! <<image question>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 1870,
+			"y": 1007
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_potato",
+		"tags": "",
+		"body": "Potato image! <<image potato>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 2088,
+			"y": 1007
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_stonks",
+		"tags": "",
+		"body": "Stonks image! <<image stonks>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 2310,
+			"y": 1007
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_sushi",
+		"tags": "",
+		"body": "Sushi image! <<image sushi>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 2530,
+			"y": 1007
+		},
+		"colorID": 7
+	},
+	{
+		"title": "Videos",
+		"tags": "",
+		"body": "Here is a list of all the videos in this dialogue: <<video none>>\n[[video_rays]][[video_hydroponic]][[video_greenhouse]][[video_1]][[video_2]][[video_3]][[video_4]][[video_5]][[video_6]][[video_7]][[video_8]][[video_9]]",
+		"position": {
+			"x": -287,
+			"y": 1275
+		},
+		"colorID": 8
+	},
+	{
+		"title": "video_rays",
+		"tags": "",
+		"body": "Rays video! <<video rays>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 119,
+			"y": 1267
+		},
+		"colorID": 8
+	},
+	{
+		"title": "video_hydroponic",
+		"tags": "",
+		"body": "Hydroponic video! <<video hydroponic>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 335,
+			"y": 1267
+		},
+		"colorID": 8
+	},
+	{
+		"title": "video_greenhouse",
+		"tags": "",
+		"body": "Greenhouse video! <<video greenhouse>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 555,
+			"y": 1267
+		},
+		"colorID": 8
+	},
+	{
+		"title": "Anim_JumpLand",
+		"tags": "",
+		"body": "Playing animation \"JumpLand\": <<animation jumpLand>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 1533,
+			"y": -263
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Anim_JumpUp",
+		"tags": "",
+		"body": "Playing animation \"JumpUp\": <<animation jumpUp>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 1752,
+			"y": -265
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Anim_Look",
+		"tags": "",
+		"body": "Playing animation \"look\": <<animation look>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 1970,
+			"y": -265
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Anim_Roll",
+		"tags": "",
+		"body": "Playing animation \"roll\": <<animation roll>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 2193,
+			"y": -263
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Anim_Run",
+		"tags": "",
+		"body": "Playing animation \"run\": <<animation run>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 2413,
+			"y": -263
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Anim_Skid",
+		"tags": "",
+		"body": "Playing animation \"skid\": <<animation skid>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 2633,
+			"y": -263
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Anim_T",
+		"tags": "",
+		"body": "Playing animation \"TStance\": <<animation t>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 2858,
+			"y": -266
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Anim_Walk",
+		"tags": "",
+		"body": "Playing animation \"walk\": <<animation walk>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 3078,
+			"y": -265
+		},
+		"colorID": 3
+	},
+	{
+		"title": "video_1",
+		"tags": "",
+		"body": "Playing video: \"20200707_ARENA - A Collaborative Mixed Reality Environment.mp4\": <<video 1>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 850,
+			"y": 1269
+		},
+		"colorID": 8
+	},
+	{
+		"title": "video_2",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA Collaborative AR Authoring Tool Demo.mp4\": <<video 2>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 1067,
+			"y": 1266
+		},
+		"colorID": 8
+	},
+	{
+		"title": "video_3",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA Indoor Location Tracking Demo.mp4\": <<video 3>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 1290,
+			"y": 1269
+		},
+		"colorID": 8
+	},
+	{
+		"title": "video_4",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA Micro-UAV Swarm Control.mp4\": <<video 4>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 1510,
+			"y": 1269
+		},
+		"colorID": 8
+	},
+	{
+		"title": "video_5",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA One Minute Madness.mp4\": <<video 5>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 1727,
+			"y": 1266
+		},
+		"colorID": 8
+	},
+	{
+		"title": "video_6",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA Physical Object Capture (Digital Twin).mp4\": <<video 6>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 1948,
+			"y": 1268
+		},
+		"colorID": 8
+	},
+	{
+		"title": "video_7",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA Real-Time Face Performance Capture.mp4\": <<video 7>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 2169,
+			"y": 1268
+		},
+		"colorID": 8
+	},
+	{
+		"title": "video_8",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA Robot's First Steps.mp4\": <<video 8>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 2390,
+			"y": 1269
+		},
+		"colorID": 8
+	},
+	{
+		"title": "video_9",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA Virtual Robot Arm.mp4\": <<video 9>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 2610,
+			"y": 1269
+		},
+		"colorID": 8
+	},
+	{
+		"title": "Transform_Zero",
+		"tags": "",
+		"body": "Playing transform \"zero\": <<transform zero>>\n[[Transforms]][[Actions]][[End]]",
+		"position": {
+			"x": 123,
+			"y": 150
+		},
+		"colorID": 4
+	},
+	{
+		"title": "Transform_Rack",
+		"tags": "",
+		"body": "Playing transform \"rack\": <<transform rack>>\n[[Transforms]][[Actions]][[End]]",
+		"position": {
+			"x": 343,
+			"y": 150
+		},
+		"colorID": 4
+	},
+	{
+		"title": "Transform_Lambda",
+		"tags": "",
+		"body": "Playing transform \"lambda\": <<transform lambda>>\n[[Transforms]][[Actions]][[End]]",
+		"position": {
+			"x": 562,
+			"y": 149
+		},
+		"colorID": 4
+	},
+	{
+		"title": "Transform_Desks",
+		"tags": "",
+		"body": "Playing transform \"desks\": <<transform desks>>\n[[Transforms]][[Actions]][[End]]",
+		"position": {
+			"x": 783,
+			"y": 150
+		},
+		"colorID": 4
+	},
+	{
+		"title": "Transform_Enter",
+		"tags": "",
+		"body": "Playing transform \"enter\": <<transform enter>>\n[[Transforms]][[Actions]][[End]]",
+		"position": {
+			"x": 1003,
+			"y": 150
+		},
+		"colorID": 4
+	},
+	{
+		"title": "Transform_Exit",
+		"tags": "",
+		"body": "Playing transform \"exit\": <<transform exit>>\n[[Transforms]][[Actions]][[End]]",
+		"position": {
+			"x": 1223,
+			"y": 150
+		},
+		"colorID": 4
+	},
+	{
+		"title": "Transform_Couch",
+		"tags": "",
+		"body": "Playing transform \"couch\": <<transform couch>>\n[[Transforms]][[Actions]][[End]]",
+		"position": {
+			"x": 1442,
+			"y": 149
+		},
+		"colorID": 4
+	}
+]

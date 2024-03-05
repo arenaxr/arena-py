@@ -1,0 +1,102 @@
+[
+	{
+		"title": "Start",
+		"tags": "",
+		"body": "triangle: Hello!\ntriangle: This is running on pygame <<print pygame.version.ver>>\nsquare: Hello! What's wrong with you face?\ntriangle:What do you mean? <<arena something>>\nsquare:I'm just messing with you.\nsquare: Your face *is* missing a corner though\ntriangle:What's wrong with YOUR face?\n[[ignore|Node2]][[punch|Node3]]",
+		"position": {
+			"x": 160,
+			"y": -480
+		},
+		"colorID": 7
+	},
+	{
+		"title": "Node2",
+		"tags": "",
+		"body": "And so they never spoke again\n[[Restart|Start]]",
+		"position": {
+			"x": 6,
+			"y": -154
+		},
+		"colorID": 8
+	},
+	{
+		"title": "Node3",
+		"tags": "",
+		"body": "/triangle shake\nsquare: ouch\n/triangle exit stage_right\n/square exit stage_left\n[[Move|Move]] [[Rotate|Rotate]] [[LookAt|LookAt]] [[Anim|Anim]] [[Sound|Sound]]",
+		"position": {
+			"x": 1045,
+			"y": -729
+		},
+		"colorID": 7
+	},
+	{
+		"title": "Move",
+		"tags": "",
+		"body": "Moving\n<<move (1.6,2.3,3.2)>>\n[[Restart|Start]]",
+		"position": {
+			"x": 714,
+			"y": -97
+		},
+		"colorID": 0
+	},
+	{
+		"title": "Rotate",
+		"tags": "",
+		"body": "Empty Text\n<<Rotate (1.6,2.3,3.2)>>\n[[Restart|Start]]",
+		"position": {
+			"x": 937,
+			"y": -94
+		},
+		"colorID": 0
+	},
+	{
+		"title": "LookAt",
+		"tags": "",
+		"body": "Empty Text\n<<LookAt (1.6,2.3,3.2)>>\n[[Restart|Start]]",
+		"position": {
+			"x": 1157,
+			"y": -96
+		},
+		"colorID": 0
+	},
+	{
+		"title": "Anim",
+		"tags": "",
+		"body": "Empty Text\n<<PlayAnimation (1.6,2.3,3.2)>>\n[[Restart|Start]]",
+		"position": {
+			"x": 1374,
+			"y": -98
+		},
+		"colorID": 0
+	},
+	{
+		"title": "Sound",
+		"tags": "",
+		"body": "Empty Text\n<<PlaySound (1.6,2.3,3.2)>>\n[[Restart|Start]]",
+		"position": {
+			"x": 1596,
+			"y": -96
+		},
+		"colorID": 0
+	},
+	{
+		"title": "Enter",
+		"tags": "",
+		"body": "Hey you entered!",
+		"position": {
+			"x": 404,
+			"y": -794
+		},
+		"colorID": 0
+	},
+	{
+		"title": "Exit",
+		"tags": "",
+		"body": "hey you exited!",
+		"position": {
+			"x": 619,
+			"y": -789
+		},
+		"colorID": 0
+	}
+]

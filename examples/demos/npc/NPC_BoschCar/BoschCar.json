@@ -1,0 +1,972 @@
+[
+	{
+		"title": "Morphs",
+		"tags": "",
+		"body": "Here is a list of all the morphs in this dialogue:\n[[Morph_Smile]][[Morph_Blink]][[Morph_Open]][[Morph_Squint]][[Morph_Dizzy]][[Morph_Reset]]",
+		"position": {
+			"x": -303,
+			"y": -728
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Animations",
+		"tags": "",
+		"body": "Here is a list of all the animations in this dialogue:\n[[Anim_Die]][[Anim_Hurt]][[Anim_Idle]][[Anim_Jump]][[Anim_JumpFall]][[Anim_JumpLand]][[Anim_JumpUp]][[Anim_Look]][[Anim_Roll]][[Anim_Run]][[Anim_Skid]][[Anim_T]][[Anim_Walk]]",
+		"position": {
+			"x": -307,
+			"y": -346
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Transforms",
+		"tags": "",
+		"body": "Here is a list of all the transforms in this dialogue:\n[[Transform_Zero]][[Transform_Rack]][[Transform_Lambda]][[Transform_Desks]][[Transform_Enter]][[Transform_Exit]][[Transform_Couch]]",
+		"position": {
+			"x": -299,
+			"y": 76
+		},
+		"colorID": 4
+	},
+	{
+		"title": "Exit",
+		"tags": "",
+		"body": "You went out of the range of the NPC character!\nCome closer to reinitiate dialogue.\n[[Restart|Enter]]",
+		"position": {
+			"x": -4196,
+			"y": -1014
+		},
+		"colorID": 4
+	},
+	{
+		"title": "Enter",
+		"tags": "",
+		"body": "Welcome to the WiSELab, Wireless Sensing and Embedded Systems Lab! <<image none>><<video none>>\nWhat do you want to do? [[Enter the ARENA]][[More WiSELab info]][[Who are you?]]",
+		"position": {
+			"x": -3886,
+			"y": -1015
+		},
+		"colorID": 4
+	},
+	{
+		"title": "Sounds",
+		"tags": "",
+		"body": "Here is a list of all the sounds in this dialogue:\n[[Sound_Next]][[Sound_Choice]][[Sound_Enter]][[Sound_Exit]][[Sound_Talking]]",
+		"position": {
+			"x": -310,
+			"y": -1093
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Morph_Smile",
+		"tags": "",
+		"body": "Playing morph \"smile\": <<morph smile>>\n[[Morphs]][[Actions]][[End]]",
+		"position": {
+			"x": 73,
+			"y": -724
+		},
+		"colorID": 2
+	},
+	{
+		"title": "End",
+		"tags": "",
+		"body": "This is the end. <<image none>><<video none>>\nClick \"Restart\" to back to main menu.",
+		"position": {
+			"x": 2742,
+			"y": -1017
+		},
+		"colorID": 8
+	},
+	{
+		"title": "Anim_Die",
+		"tags": "",
+		"body": "Playing animation \"die\": <<animation die>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 118,
+			"y": -336
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Anim_Hurt",
+		"tags": "",
+		"body": "Playing animation \"hurt\": <<animation hurt>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 328,
+			"y": -338
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Anim_Idle",
+		"tags": "",
+		"body": "Playing animation \"idle\": <<animation idle>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 546,
+			"y": -345
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Sound_Next",
+		"tags": "",
+		"body": "Playing sound \"next\": <<sound next>>\n[[Sounds]][[Actions]][[End]]",
+		"position": {
+			"x": 40,
+			"y": -1096
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Sound_Choice",
+		"tags": "",
+		"body": "Playing sound \"choice\": <<sound choice>>\n[[Sounds]][[Actions]][[End]]",
+		"position": {
+			"x": 251,
+			"y": -1099
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Sound_Enter",
+		"tags": "",
+		"body": "Playing sound \"enter\": <<sound enter>>\n[[Sounds]][[Actions]][[End]]",
+		"position": {
+			"x": 475,
+			"y": -1098
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Sound_Exit",
+		"tags": "",
+		"body": "Playing sound \"exit\": <<sound exit>>\n[[Sounds]][[Actions]][[End]]",
+		"position": {
+			"x": 694,
+			"y": -1105
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Anim_Jump",
+		"tags": "",
+		"body": "Playing animation \"jump\": <<animation jump>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 964,
+			"y": -337
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Actions",
+		"tags": "",
+		"body": "Empty Text <<image none>><<video none>>\n[[Sounds]][[Morphs]][[Transforms]][[Animations]][[URLs]][[Miscellaneous]][[Images]][[Videos]][[End]]",
+		"position": {
+			"x": -864,
+			"y": -521
+		},
+		"colorID": 8
+	},
+	{
+		"title": "Sound_Talking",
+		"tags": "",
+		"body": "Playing sound \"talking\": <<sound talking>>\n[[Sounds]][[Actions]][[End]]",
+		"position": {
+			"x": 908,
+			"y": -1109
+		},
+		"colorID": 1
+	},
+	{
+		"title": "URLs",
+		"tags": "",
+		"body": "Here is a list of all the URLs in this dialogue:\n[[Wikipedia Fish PopUp]][[Youtube Frog PopUp]][[Arena Popup]][[Conix NewTab]][[NewScene Island SameTab]]",
+		"position": {
+			"x": -290,
+			"y": 394
+		},
+		"colorID": 5
+	},
+	{
+		"title": "Wikipedia Fish PopUp",
+		"tags": "",
+		"body": "Going to Wikipedia: <<url https://en.wikipedia.org/wiki/Fish>>\n[[URLs]][[Actions]][[End]]",
+		"position": {
+			"x": 130,
+			"y": 391
+		},
+		"colorID": 5
+	},
+	{
+		"title": "Youtube Frog PopUp",
+		"tags": "",
+		"body": "Going to YouTube: <<url https://www.youtube.com/watch?v=cBkWhkAZ9ds>>\n[[URLs]][[Actions]][[End]]",
+		"position": {
+			"x": 353,
+			"y": 391
+		},
+		"colorID": 5
+	},
+	{
+		"title": "Arena Popup",
+		"tags": "",
+		"body": "Going to Arena: <<url arena>>\n[[URLs]][[Actions]][[End]]",
+		"position": {
+			"x": 573,
+			"y": 389
+		},
+		"colorID": 5
+	},
+	{
+		"title": "Conix NewTab",
+		"tags": "",
+		"body": "Going to Conix: <<url conix>>\n[[URLs]][[Actions]][[End]]",
+		"position": {
+			"x": 792,
+			"y": 392
+		},
+		"colorID": 5
+	},
+	{
+		"title": "NewScene Island SameTab",
+		"tags": "",
+		"body": "Going to Island: <<url island>>\n[[URLs]][[Actions]][[End]]",
+		"position": {
+			"x": 1011,
+			"y": 392
+		},
+		"colorID": 5
+	},
+	{
+		"title": "Morph_Blink",
+		"tags": "",
+		"body": "Playing morph \"frown\": <<morph blink>>\n[[Morphs]][[Actions]][[End]]",
+		"position": {
+			"x": 288,
+			"y": -721
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Morph_Open",
+		"tags": "",
+		"body": "Playing morph \"open\": <<morph open>>\n[[Morphs]][[Actions]][[End]]",
+		"position": {
+			"x": 504,
+			"y": -721
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Morph_Squint",
+		"tags": "",
+		"body": "Playing morph \"squint\": <<morph squint>>\n[[Morphs]][[Actions]][[End]]",
+		"position": {
+			"x": 712,
+			"y": -722
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Morph_Dizzy",
+		"tags": "",
+		"body": "Playing morph \"dizzy\": <<morph dizzy>>\n[[Morphs]][[Actions]][[End]]",
+		"position": {
+			"x": 923,
+			"y": -723
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Morph_Reset",
+		"tags": "",
+		"body": "Playing morph \"reset\": <<morph reset>>\n[[Morphs]][[Actions]][[End]]",
+		"position": {
+			"x": 1138,
+			"y": -721
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Anim_JumpFall",
+		"tags": "",
+		"body": "Playing animation \"JumpFall\": <<animation jumpFall>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 1174,
+			"y": -343
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Miscellaneous",
+		"tags": "",
+		"body": "Empty Text\n[[Print]][[Show]][[Hide]]",
+		"position": {
+			"x": -294,
+			"y": 690
+		},
+		"colorID": 6
+	},
+	{
+		"title": "Print",
+		"tags": "",
+		"body": "Using print command: <<print (\"hello you are a fish\")>>\n[[Miscellaneous]][[Actions]][[End]]",
+		"position": {
+			"x": 112,
+			"y": 678
+		},
+		"colorID": 6
+	},
+	{
+		"title": "Show",
+		"tags": "",
+		"body": "Using show command: <<show bob>>\n[[Miscellaneous]][[Actions]][[End]]",
+		"position": {
+			"x": 334,
+			"y": 677
+		},
+		"colorID": 6
+	},
+	{
+		"title": "Hide",
+		"tags": "",
+		"body": "Using hide command: <<hide bob>>\n[[Miscellaneous]][[Actions]][[End]]",
+		"position": {
+			"x": 559,
+			"y": 675
+		},
+		"colorID": 6
+	},
+	{
+		"title": "Images",
+		"tags": "",
+		"body": "Here is a list of all the images in this dialogue: <<image none>>\n[[image_doge]][[image_dragon]][[image_exclamation]][[image_fish]][[image_forest]][[image_graph]][[image_meme]][[image_nyan]][[image_question]][[image_potato]][[image_stonks]][[image_sushi]]",
+		"position": {
+			"x": -289,
+			"y": 933
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_doge",
+		"tags": "",
+		"body": "Doge image! <<image doge>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 110,
+			"y": 927
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_dragon",
+		"tags": "",
+		"body": "Dragon image! <<image dragon>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 330,
+			"y": 927
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_exclamation",
+		"tags": "",
+		"body": "Exclamation image! <<image exclamation>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 551,
+			"y": 924
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_fish",
+		"tags": "",
+		"body": "Fish image! <<image fish>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 770,
+			"y": 927
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_forest",
+		"tags": "",
+		"body": "Forest image! <<image forest>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 990,
+			"y": 927
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_graph",
+		"tags": "",
+		"body": "Graph image! <<image graph>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 1212,
+			"y": 927
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_meme",
+		"tags": "",
+		"body": "Meme image! <<image meme>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 1430,
+			"y": 927
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_nyan",
+		"tags": "",
+		"body": "Nyan image! <<image nyan>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 1651,
+			"y": 926
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_question",
+		"tags": "",
+		"body": "Question image! <<image question>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 1870,
+			"y": 927
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_potato",
+		"tags": "",
+		"body": "Potato image! <<image potato>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 2088,
+			"y": 927
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_stonks",
+		"tags": "",
+		"body": "Stonks image! <<image stonks>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 2310,
+			"y": 927
+		},
+		"colorID": 7
+	},
+	{
+		"title": "image_sushi",
+		"tags": "",
+		"body": "Sushi image! <<image sushi>>\n[[Images]][[Actions]][[End]]",
+		"position": {
+			"x": 2530,
+			"y": 927
+		},
+		"colorID": 7
+	},
+	{
+		"title": "Videos",
+		"tags": "",
+		"body": "Here is a list of all the videos in this dialogue: <<video none>>\n[[video_rays]][[video_hydroponic]][[video_greenhouse]][[video_1]][[video_2]][[video_3]][[video_4]][[video_5]][[video_6]][[video_7]][[video_8]][[video_9]]",
+		"position": {
+			"x": -287,
+			"y": 1195
+		},
+		"colorID": 8
+	},
+	{
+		"title": "video_rays",
+		"tags": "",
+		"body": "Rays video! <<video rays>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 119,
+			"y": 1187
+		},
+		"colorID": 8
+	},
+	{
+		"title": "video_hydroponic",
+		"tags": "",
+		"body": "Hydroponic video! <<video hydroponic>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 335,
+			"y": 1187
+		},
+		"colorID": 8
+	},
+	{
+		"title": "video_greenhouse",
+		"tags": "",
+		"body": "Greenhouse video! <<video greenhouse>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 555,
+			"y": 1187
+		},
+		"colorID": 8
+	},
+	{
+		"title": "Anim_JumpLand",
+		"tags": "",
+		"body": "Playing animation \"JumpLand\": <<animation jumpLand>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 1533,
+			"y": -343
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Anim_JumpUp",
+		"tags": "",
+		"body": "Playing animation \"JumpUp\": <<animation jumpUp>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 1752,
+			"y": -345
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Anim_Look",
+		"tags": "",
+		"body": "Playing animation \"look\": <<animation look>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 1970,
+			"y": -345
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Anim_Roll",
+		"tags": "",
+		"body": "Playing animation \"roll\": <<animation roll>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 2193,
+			"y": -343
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Anim_Run",
+		"tags": "",
+		"body": "Playing animation \"run\": <<animation run>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 2413,
+			"y": -343
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Anim_Skid",
+		"tags": "",
+		"body": "Playing animation \"skid\": <<animation skid>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 2633,
+			"y": -343
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Anim_T",
+		"tags": "",
+		"body": "Playing animation \"TStance\": <<animation t>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 2858,
+			"y": -346
+		},
+		"colorID": 3
+	},
+	{
+		"title": "Anim_Walk",
+		"tags": "",
+		"body": "Playing animation \"walk\": <<animation walk>>\n[[Animations]][[Actions]][[End]]",
+		"position": {
+			"x": 3078,
+			"y": -345
+		},
+		"colorID": 3
+	},
+	{
+		"title": "video_1",
+		"tags": "",
+		"body": "Playing video: \"20200707_ARENA - A Collaborative Mixed Reality Environment.mp4\": <<video 1>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 850,
+			"y": 1189
+		},
+		"colorID": 8
+	},
+	{
+		"title": "video_2",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA Collaborative AR Authoring Tool Demo.mp4\": <<video 2>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 1067,
+			"y": 1186
+		},
+		"colorID": 8
+	},
+	{
+		"title": "video_3",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA Indoor Location Tracking Demo.mp4\": <<video 3>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 1290,
+			"y": 1189
+		},
+		"colorID": 8
+	},
+	{
+		"title": "video_4",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA Micro-UAV Swarm Control.mp4\": <<video 4>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 1510,
+			"y": 1189
+		},
+		"colorID": 8
+	},
+	{
+		"title": "video_5",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA One Minute Madness.mp4\": <<video 5>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 1727,
+			"y": 1186
+		},
+		"colorID": 8
+	},
+	{
+		"title": "video_6",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA Physical Object Capture (Digital Twin).mp4\": <<video 6>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 1948,
+			"y": 1188
+		},
+		"colorID": 8
+	},
+	{
+		"title": "video_7",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA Real-Time Face Performance Capture.mp4\": <<video 7>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 2169,
+			"y": 1188
+		},
+		"colorID": 8
+	},
+	{
+		"title": "video_8",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA Robot's First Steps.mp4\": <<video 8>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 2390,
+			"y": 1189
+		},
+		"colorID": 8
+	},
+	{
+		"title": "video_9",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA Virtual Robot Arm.mp4\": <<video 9>>\n[[Videos]][[Actions]][[End]]",
+		"position": {
+			"x": 2610,
+			"y": 1189
+		},
+		"colorID": 8
+	},
+	{
+		"title": "Transform_Zero",
+		"tags": "",
+		"body": "Playing transform \"zero\": <<transform zero>>\n[[Transforms]][[Actions]][[End]]",
+		"position": {
+			"x": 123,
+			"y": 70
+		},
+		"colorID": 4
+	},
+	{
+		"title": "Transform_Rack",
+		"tags": "",
+		"body": "Playing transform \"rack\": <<transform rack>>\n[[Transforms]][[Actions]][[End]]",
+		"position": {
+			"x": 343,
+			"y": 70
+		},
+		"colorID": 4
+	},
+	{
+		"title": "Transform_Lambda",
+		"tags": "",
+		"body": "Playing transform \"lambda\": <<transform lambda>>\n[[Transforms]][[Actions]][[End]]",
+		"position": {
+			"x": 562,
+			"y": 69
+		},
+		"colorID": 4
+	},
+	{
+		"title": "Transform_Desks",
+		"tags": "",
+		"body": "Playing transform \"desks\": <<transform desks>>\n[[Transforms]][[Actions]][[End]]",
+		"position": {
+			"x": 783,
+			"y": 70
+		},
+		"colorID": 4
+	},
+	{
+		"title": "Transform_Enter",
+		"tags": "",
+		"body": "Playing transform \"enter\": <<transform enter>>\n[[Transforms]][[Actions]][[End]]",
+		"position": {
+			"x": 1003,
+			"y": 70
+		},
+		"colorID": 4
+	},
+	{
+		"title": "Transform_Exit",
+		"tags": "",
+		"body": "Playing transform \"exit\": <<transform exit>>\n[[Transforms]][[Actions]][[End]]",
+		"position": {
+			"x": 1223,
+			"y": 70
+		},
+		"colorID": 4
+	},
+	{
+		"title": "Transform_Couch",
+		"tags": "",
+		"body": "Playing transform \"couch\": <<transform couch>>\n[[Transforms]][[Actions]][[End]]",
+		"position": {
+			"x": 1442,
+			"y": 69
+		},
+		"colorID": 4
+	},
+	{
+		"title": "Enter the ARENA",
+		"tags": "",
+		"body": "This is the ARENA. <<transform exit>>\nWe do a lot of cool research in here.\nLet's enter!\nWelcome to the ARENA! <<transform enter>>\nYou're probably wondering what kind of things we do here.\nWhy not check out some videos? [[Video List|ARENA Videos]]",
+		"position": {
+			"x": -3197,
+			"y": -1042
+		},
+		"colorID": 4
+	},
+	{
+		"title": "More WiSELab info",
+		"tags": "",
+		"body": "WiSELab is a systems research group in the Electrical and Computer Engineering Department at Carnegie Mellon University that focuses on the platforms, protocols and processing techniques that support networked embedded systems.\nWe are interested in a broad range of topics including: operating system design, wireless networking, sensing technologies, real-time scheduling, time synchronization and localization.\nWe apply our work to applications such as augmented, virtual and mixed reality, distributed edge computing systems, building energy management, micro-grid management, critical infrastructure monitoring, large-scale environmental sensing and mobile computing.\nCheck out our website for even more info! <<url https://wise.ece.cmu.edu/>>\nWhat do you want to do next? [[Enter the ARENA]][[Who are you?]]",
+		"position": {
+			"x": -3545,
+			"y": -1165
+		},
+		"colorID": 4
+	},
+	{
+		"title": "Who are you?",
+		"tags": "",
+		"body": "I am an interactive NPC \"Non Playable Character\" chatbot tour guide.\nI am programmed with a visual node-based dialogue tree editor called Yarn. \nCheck out my lines! <<image yarn>>\nMy purpose in life is to talk about the lab and our work. <<image none>>\nI can do a lot of cool things! Such as...\nPlaying sounds, like this jingle: <<sound jingle>>\nPlaying animations, like this jump: <<animation jump>>\nDisplaying URL links, like this one about frogs: <<url https://en.wikipedia.org/wiki/Frog>>\nDisplaying images, like this cat: <<image nyan>>\nAnd also videos, like these fish: <<image none>> <<video rays>>\nThanks for asking! <<video none>>\nWhat do you want to do next? [[Enter the ARENA]][[More WiSELab info]]",
+		"position": {
+			"x": -3551,
+			"y": -885
+		},
+		"colorID": 4
+	},
+	{
+		"title": "ARENA Stations",
+		"tags": "",
+		"body": "I guess now's a good time to start exploring around if we started already.\nWhich station shall we go to? [[Lambda]][[Desks]][[Rack]][[Couch]][[Done with stations|ARENA Menu]]",
+		"position": {
+			"x": -2057,
+			"y": -1049
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Lambda",
+		"tags": "",
+		"body": "Check out our Lambda station! <<transform lambda>>\nCheck this out, we got some really beefy computers here.\nThese computers are used for photogrammetry processing, machine learning workloads, neural radiance fields and more! \n[[More Stations|ARENA Stations]][[Do something else|ARENA Menu]]",
+		"position": {
+			"x": -2060,
+			"y": -727
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Desks",
+		"tags": "",
+		"body": "Check out our student desks! <<transform desks>>\nWe get a lot of really smart people working with us.\nUndergrads, masters, PhD, faculty and staff from all over the world hang out here.\n[[More Stations|ARENA Stations]][[Do something else|ARENA Menu]]",
+		"position": {
+			"x": -2057,
+			"y": -513
+		},
+		"colorID": 2
+	},
+	{
+		"title": "Rack",
+		"tags": "",
+		"body": "Here we organize a lot of equipment. <<transform rack>>\nOne of the most interesting projects is Silverline, the Distributed Runtime for WebAssembly.\nIt can intelligently and efficiently process complex workloads on a smorgasbord of networked devices with various specifications. \n[[More Stations|ARENA Stations]][[Do something else|ARENA Menu]]",
+		"position": {
+			"x": -1845,
+			"y": -510
+		},
+		"colorID": 2
+	},
+	{
+		"title": "One Minute Madness",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA One Minute Madness.mp4\": <<video 5>>\n[[ARENA Videos]][[Done with videos|ARENA Menu]]",
+		"position": {
+			"x": -2694,
+			"y": -526
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Object Tracking",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA Physical Object Capture (Digital Twin).mp4\": <<video 6>>\n[[ARENA Videos]][[Done with videos|ARENA Menu]]",
+		"position": {
+			"x": -2472,
+			"y": -522
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Indoor Localization",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA Indoor Location Tracking Demo.mp4\": <<video 3>>\n[[ARENA Videos]][[Done with videos|ARENA Menu]]",
+		"position": {
+			"x": -2472,
+			"y": -750
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Virtual Robot Arm",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA Virtual Robot Arm.mp4\": <<video 9>>\n[[ARENA Videos]][[Done with videos|ARENA Menu]]",
+		"position": {
+			"x": -2473,
+			"y": -291
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Robot's First Steps",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA Robot's First Steps.mp4\": <<video 8>>\n[[ARENA Videos]][[Done with videos|ARENA Menu]]",
+		"position": {
+			"x": -2693,
+			"y": -286
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Micro UAV Swarm",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA Micro-UAV Swarm Control.mp4\": <<video 4>>\n[[ARENA Videos]][[Done with videos|ARENA Menu]]",
+		"position": {
+			"x": -2914,
+			"y": -524
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Collaborative AR Authoring",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA Collaborative AR Authoring Tool Demo.mp4\": <<video 2>>\n[[ARENA Videos]][[Done with videos|ARENA Menu]]",
+		"position": {
+			"x": -2692,
+			"y": -750
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Collaborative Mixed Reality",
+		"tags": "",
+		"body": "Playing video: \"20200707_ARENA - A Collaborative Mixed Reality Environment.mp4\": <<video 1>>\n[[ARENA Videos]][[Done with videos|ARENA Menu]]",
+		"position": {
+			"x": -2913,
+			"y": -752
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Face Capture",
+		"tags": "",
+		"body": "Playing video \"20200819_ARENA Real-Time Face Performance Capture.mp4\": <<video 7>>\n[[ARENA Videos]][[Done with videos|ARENA Menu]]",
+		"position": {
+			"x": -2912,
+			"y": -288
+		},
+		"colorID": 1
+	},
+	{
+		"title": "ARENA Videos",
+		"tags": "",
+		"body": "Here is a full video list: [[One Minute Madness]][[Collaborative Mixed Reality]][[Indoor Localization]][[Micro UAV Swarm]][[Done with videos|ARENA Menu]]\n\nOther videos, not used\n[[Collaborative AR Authoring]]\n[[Robot's First Steps]]\n[[Virtual Robot Arm]]\n[[Object Tracking]]\n[[Face Capture]]",
+		"position": {
+			"x": -2688,
+			"y": -1046
+		},
+		"colorID": 1
+	},
+	{
+		"title": "ARENA Menu",
+		"tags": "",
+		"body": "What else do you want to do? <<video none>>\n[[ARENA Stations]][[ARENA Videos]][[About Me]][[About ARENA]][[About WiSELab]][[Restart|Enter]]",
+		"position": {
+			"x": -2371,
+			"y": -1363
+		},
+		"colorID": 8
+	},
+	{
+		"title": "About Me",
+		"tags": "",
+		"body": "I am an interactive NPC \"Non Playable Character\" chatbot tour guide.\nI am programmed with a visual node-based dialogue tree editor called Yarn. \nCheck out my lines! <<image yarn>>\nMy purpose in life is to talk about the lab and our work. <<image none>>\nI can do a lot of cool things! Such as...\nPlaying sounds, like this jingle: <<sound jingle>>\nPlaying animations, like this jump: <<animation jump>>\nDisplaying URL links, like this one about frogs: <<url https://en.wikipedia.org/wiki/Frog>>\nDisplaying images, like this cat: <<image nyan>>\nAnd also videos, like these fish: <<image none>> <<video rays>>\nThanks for asking! <<video none>> [[ARENA Menu]]",
+		"position": {
+			"x": -2578,
+			"y": -1720
+		},
+		"colorID": 8
+	},
+	{
+		"title": "About ARENA",
+		"tags": "",
+		"body": "ARENA is the beautiful virtual universe where I live!\nYou can use easily build cross-platform 3D content through a web browser without having to program.\nEasily build hybrid AR/VR reality mashups where physical and remote users can interact in real-time.\nContent from virtual worlds (VR) can be anchored into the real-world (AR) for use with mobile devices and headsets.\nFind nearby content and run programs in the cloud or at the edge on any network-connected device.\nThe ARENA includes fine-grained access control and the ability to sandbox and isolate your content.\nThe ARENA networking platform makes it easy to securely connect headless devices like an RPI to your 3D world.\nSharing an ARENA scene is as easy as sending a URL. \nOpen on a desktop browser for a VR experience, open on a phone, tablet or headset for VR/AR experience.\nCheck out \"arenaxr.org\" today for even more info! <<url https://arenaxr.org/>> [[ARENA Menu]]",
+		"position": {
+			"x": -2359,
+			"y": -1721
+		},
+		"colorID": 8
+	},
+	{
+		"title": "About WiSELab",
+		"tags": "",
+		"body": "WiSELab is a systems research group in the Electrical and Computer Engineering Department at Carnegie Mellon University that focuses on the platforms, protocols and processing techniques that support networked embedded systems.\nWe are interested in a broad range of topics including: operating system design, wireless networking, sensing technologies, real-time scheduling, time synchronization and localization.\nWe apply our work to applications such as augmented, virtual and mixed reality, distributed edge computing systems, building energy management, micro-grid management, critical infrastructure monitoring, large-scale environmental sensing and mobile computing.\nCheck out our website for even more info! <<url https://wise.ece.cmu.edu/>> [[ARENA Menu]]",
+		"position": {
+			"x": -2137,
+			"y": -1719
+		},
+		"colorID": 8
+	},
+	{
+		"title": "Couch",
+		"tags": "",
+		"body": "We got a nice couch, eh? <<transform couch>>\nWe like to drink coffee with guests to introduce the lab here.\nIt's a nice place to hang out and chat!\n[[More Stations|ARENA Stations]][[Do something else|ARENA Menu]]",
+		"position": {
+			"x": -1844,
+			"y": -728
+		},
+		"colorID": 2
+	}
+]

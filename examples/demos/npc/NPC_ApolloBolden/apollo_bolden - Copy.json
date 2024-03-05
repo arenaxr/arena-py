@@ -1,0 +1,72 @@
+[
+	{
+		"title": "Charles F. Bolden's Flight Suit",
+		"tags": "",
+		"body": "A blue full body flight suit worn by Charles F. Bolden Jr. The suit zippers in the front and has several pockets and patches on it. The front of the suit has three patches on the chest. On the PR breast is the mission patch for STS 61C and features a circular design with an image of the space shuttle and a band displaying the names of the mission's astronauts. On the PR breast is a circular NASA logo patch, above which is a leather nametag reading [CHARLES BOLDEN / MAJOR USMC]. The nametag is a dark leather with golden text and pilot's insignia. On the PR shoulder is a circular patch for the 1980 NASA Astronaut Groups 9, which features the year and a space shuttle launching with nineteen white stars. The PL shoulder has an American flag patch. There are Velcro straps at the waist and zippered sections on the arms and legs for adjustments. The legs have a number of zippered pockets. A manufacturer's tag with handwritten details is sewn to the inside of the suit. <<image none>> <<video none>> [[Maj. Gen. Charles F. Bolden]][[NASA Astronaut Group 9]][[Charles Bolden USMC]][[Mission Patch for STS-61-C]][[STS-61-C's Mission]][[STS-61-C's Crew]]",
+		"position": {
+			"x": -2694,
+			"y": -1056
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Maj. Gen. Charles F. Bolden",
+		"tags": "",
+		"body": "Charles F. Bolden (b. 1946) is a retired Major General in the United States Marine Corps, and a former NASA astronaut and Administrator. Born in Columbia, South Carolina, Bolden graduated from the United States Naval Academy in 1968 and became a Marine aviator and test pilot. Bolden flew more than 100 combat missions during the Vietnam War and after the war he logged more than 6,000 hours flying time as a test pilot. <<image 01>> [[Back|Charles F. Bolden's Flight Suit]]",
+		"position": {
+			"x": -2572,
+			"y": -1274
+		},
+		"colorID": 1
+	},
+	{
+		"title": "NASA Astronaut Group 9",
+		"tags": "",
+		"body": "NASA announced Astronaut Group 9 on May 29, 1980. The group, which included Bolden as one of eight pilots in the class, completed their training in 1981. This patch for the 1980 class features nineteen stars representing the 19 NASA astronauts belonging to the group. Members of NASA Astronaut Group 9. Charles Bolden is in the first row on the far left. <<image 02>> [[Back|Charles F. Bolden's Flight Suit]]",
+		"position": {
+			"x": -2352,
+			"y": -1273
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Charles Bolden USMC",
+		"tags": "",
+		"body": "At the time of his first spaceflight, Bolden held the rank of Major in the United States Marine Corps. <<image 03>> [[Back|Charles F. Bolden's Flight Suit]]",
+		"position": {
+			"x": -2130,
+			"y": -1271
+		},
+		"colorID": 1
+	},
+	{
+		"title": "Mission Patch for STS-61-C",
+		"tags": "",
+		"body": "Since Gemini 5, mission patches have been created for all NASA crewed missions and many uncrewed missions. This patch for STS-61-C—Bolden’s first spaceflight—lists the names of the seven members of the mission: Commander Robert L. Gibson, Pilot Charles F. Bolden Jr., Mission Specialists Franklin R. Chang-Diaz, Steven A. Hawley, George D. Nelson, and Payload Specialists Robert J. Cenker and Congressman Bill Nelson. <<image 04>> [[Back|Charles F. Bolden's Flight Suit]]",
+		"position": {
+			"x": -1911,
+			"y": -1272
+		},
+		"colorID": 1
+	},
+	{
+		"title": "STS-61-C's Mission",
+		"tags": "",
+		"body": "STS-61-C, the 24th mission of NASA’s Space Shuttle program and the seventh mission of Space Shuttle Columbia, launched from Kennedy Space Center on January 12, 1986, orbited Earth 96 times, and landed six days later on January 18, 1986. During the mission, the crew deployed the SATCOM -K1 RCA Americom communications satellite and carried out small scientific experiments in astrophysics and materials processing. <<image 05>> [[Back|Charles F. Bolden's Flight Suit]]",
+		"position": {
+			"x": -1690,
+			"y": -1271
+		},
+		"colorID": 1
+	},
+	{
+		"title": "STS-61-C's Crew",
+		"tags": "",
+		"body": "STS-61-C’s crew included the first Costa Rican-born astronaut, Franklin Chang-Diaz, and two future NASA Administrators: Charles Bolden, the fourth African American to travel into space, and Bill Nelson, the second sitting member of Congress to travel into space. <<image 06>> [[Back|Charles F. Bolden's Flight Suit]]",
+		"position": {
+			"x": -1470,
+			"y": -1271
+		},
+		"colorID": 1
+	}
+]

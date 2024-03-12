@@ -4,7 +4,7 @@ class SpeParticles(Attribute):
     """
     SpeParticles attribute class to manage its properties in the ARENA: GPU based particle systems in A-Frame.  More properties at (https://github.com/harlyq/aframe-spe-particles-component) A-Frame SPE Particles component.
     Usage: spe_particles=SpeParticles(...)
-    
+
     :param dict acceleration: For sphere and disc distributions, only the x axis is used. Defaults to '{'x': 0, 'y': 0, 'z': 0}' (optional)
     :param str accelerationDistribution: Distribution of particle acceleration, for disc and sphere, only the x component will be used. if set to NONE use the 'distribution' attribute for accelerationDistribution. Allows [none, box, sphere, disc] Defaults to 'none' (optional)
     :param dict accelerationSpread: Spread of the particle's acceleration. for sphere and disc distributions, only the x axis is used. Defaults to '{'x': 0, 'y': 0, 'z': 0}' (optional)

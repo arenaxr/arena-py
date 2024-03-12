@@ -4,7 +4,7 @@ class VideoControl(Attribute):
     """
     VideoControl attribute class to manage its properties in the ARENA: Video Control.
     Usage: video_control=VideoControl(...)
-    
+
     :param bool anyone_clicks: Responds to clicks from any user. Defaults to 'True' (optional)
     :param bool autoplay: Video starts playing automatically. (optional)
     :param bool cleanup: Automatically remove HTML5 video and img assets from DOM on object removal. Defaults to 'True' (optional)

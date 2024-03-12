@@ -4,7 +4,7 @@ class AnimationMixer(Animation):
     """
     AnimationMixer attribute class to manage its properties in the ARENA: A list of available animations can usually be found by inspecting the model file or its documentation. All animations will play by default. To play only a specific set of animations, use wildcards: animation-mixer='clip: run_*'.  More properties at (https://github.com/n5ro/aframe-extras/tree/master/src/loaders#animation) A-Frame Extras Animation.
     Usage: animation_mixer=AnimationMixer(...)
-    
+
     :param bool clampWhenFinished: If true, halts the animation at the last frame. (optional)
     :param str clip: Name of the animation clip(s) to play. Accepts wildcards. Defaults to '*' (optional)
     :param float crossFadeDuration: Duration of cross-fades between clips, in seconds. (optional)

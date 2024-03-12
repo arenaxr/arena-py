@@ -3,7 +3,7 @@ from .arena_object import Object
 class TorusKnot(Object):
     """
     TorusKnot object class to manage its properties in the ARENA: Torus Knot Geometry.
-    
+
     :param float p: P Defaults to '2' (optional)
     :param float q: Q Defaults to '3' (optional)
     :param float radius: radius Defaults to '1' (optional)

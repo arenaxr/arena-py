@@ -1,6 +1,7 @@
 # This file is auto-generated from github.com/arenaxr/arena-schema, changes here may be overwritten.
 
 from .arena_object import *
+from .program import *
 from .arenaui_button_panel import *
 from .arenaui_card import *
 from .arenaui_prompt import *
@@ -35,7 +36,6 @@ from .torus import *
 from .torus_knot import *
 from .triangle import *
 from .videosphere import *
-from .program import *
 
 OBJECT_TYPE_MAP = {
     Object.object_type: Object,

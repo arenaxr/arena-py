@@ -5,7 +5,7 @@ from ..attributes import Morph
 class GltfModel(Object):
     """
     GltfModel object class to manage its properties in the ARENA: Load a GLTF model.   Besides applying standard rotation and position attributes to the center-point of the GLTF model, the individual child components can also be manually manipulated. See format details in the `modelUpdate` data attribute. See guidance to store paths under (https://docs.arenaxr.org/content/interface/filestore.html) ARENA File Store, CDN, or DropBox.
-    
+
     :param str url: Use File Store paths under 'store/users/username', see CDN and other storage options in the description above. (optional)
     """
     object_type = "gltf-model"

@@ -5,7 +5,7 @@ class Attribution(Attribute):
     """
     Attribution attribute class to manage its properties in the ARENA: Attribution Component. Saves attribution data in any entity.
     Usage: attribution=Attribution(...)
-    
+
     :param str author: Author name; e.g. 'Vaptor-Studio'. Defaults to 'Unknown' (optional)
     :param str authorURL: Author homepage/profile; e.g. https://sketchfab.com/VapTor. (optional)
     :param bool extractAssetExtras: Extract attribution info from asset extras; will override attribution info given (default: true). Defaults to 'True' (optional)

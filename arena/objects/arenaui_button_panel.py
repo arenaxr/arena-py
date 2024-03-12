@@ -3,9 +3,10 @@ from .arena_object import Object
 class ArenauiButtonPanel(Object):
     """
     ArenauiButtonPanel object class to manage its properties in the ARENA: ARENAUI element which displays a vertical or horizontal panel of buttons.
-    
+
     :param list[dict] buttons: Buttons Defaults to '[{'name': 'Option 1'}, {'name': 'Option 2'}]' (optional)
     :param str font: Font to use for button text. Allows [Roboto, Roboto-Mono] Defaults to 'Roboto' (optional)
+    :param str materialSides: Which sides display the rendered UI material Allows [both, front] Defaults to 'both' (optional)
     :param str theme: Color Theme Allows [light, dark] Defaults to 'light' (optional)
     :param str title: Title to display above buttons (optional). (optional)
     :param bool vertical: Vertical button layout (optional)

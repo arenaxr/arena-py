@@ -5,7 +5,7 @@ from ..attributes import Attribute, Position
 class Thickline(Object):
     """
     Thickline object class to manage its properties in the ARENA: Draw a line that can have a custom width.
-    
+
     :param str color: Line color. Defaults to '#000000' (optional)
     :param float lineWidth: Width of line in px. Defaults to '1' (optional)
     :param str lineWidthStyler: Allows defining the line width as a function of relative position p along the path of the line. By default it is set to a constant 1. You may also choose one of the preset functions. Allows [default, grow, shrink, center-sharp, center-smooth, sine-wave] Defaults to 'default' (optional)

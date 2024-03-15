@@ -332,20 +332,10 @@ def signout():
 def _print_mqtt_token(storage_str, mqtt_claims):
     print("\nARENA MQTT/Video Permissions")
     print("----------------------")
-    print(f"Storage: {storage_str}")
-    print(f"User: {mqtt_claims['sub']}")
     exp_str = time.strftime("%c", time.localtime(mqtt_claims["exp"]))
     print(f"Expires: {exp_str}")
-    if "room" in mqtt_claims:
-        print("Video Conference: enabled")
-    else:
-        print("Video Conference: disabled")
-    print("Publish topics:")
-    for pub in mqtt_claims["publ"]:
-        print(f"- {pub}")
-    print("Subscribe topics:")
-    for sub in mqtt_claims["subs"]:
-        print(f"- {sub}")
+    print(f"Storage: {storage_str}")
+    print(f"{json.dumps(mqtt_claims, indent=4)}")
 
 
 def permissions():

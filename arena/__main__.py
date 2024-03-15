@@ -93,7 +93,7 @@ def cli():
 
     parser.add_argument("-t", "--topic",
                         type=str,
-                        help=f"Custom topic to publish/subscribe to")
+                        help="Custom topic to publish/subscribe to")
     parser.add_argument("-m", "--message",
                         type=str,
                         help=f"Message to send (ignored when action={SUBSCRIBE})")

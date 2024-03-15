@@ -307,16 +307,17 @@ class ArenaAuth:
                 res = request.urlopen(req, data=data, context=context)
             return res.read().decode("utf-8")
         except (requests.exceptions.ConnectionError, ConnectionError, URLError, HTTPError) as err:
-            print("{0}: ".format(err)+url)
+            print(f"{err}: {url}")
             if isinstance(err, HTTPError) and round(err.code, -2) == 400:
                 # user not authorized on website yet, they don"t have an ARENA username
-                base_url = "{0.scheme}://{0.netloc}".format(urlsplit(url))
+                us = urlsplit(url)
+                base_url = f"{us.scheme}://{us.netloc}"
                 print("Login with this account on the website first:")
                 print(f"Trying to open login page: {base_url}/user")
                 try:
                     webbrowser.open_new_tab(f"{base_url}/user")
-                except (webbrowser.Error) as err:
-                    print("Console-only login. {0}".format(err))
+                except (webbrowser.Error) as error:
+                    print(f"Console-only login. {error}")
             sys.exit("Terminating...")
 
 

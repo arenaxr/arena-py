@@ -14,8 +14,8 @@ with open("README.md", "r") as readme:
 setuptools.setup(
     name="arena-py",
     version="0.9.3",
-    author="Conix Research Center",
-    author_email="info@conix.io",
+    author="Carnegie Mellon University",
+    author_email="arenaxr@andrew.cmu.edu",
     license="BSD 3-clause \"New\" or \"Revised License\"",
     description="Draw objects and run programs in the ARENA using Python!",
     long_description=long_description,

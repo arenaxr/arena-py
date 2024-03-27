@@ -4,7 +4,7 @@ from .attribute import Attribute
 class MaterialExtras(Attribute):
     """
     MaterialExtras attribute class to manage its properties in the ARENA: Define extra material properties, namely texture encoding, whether to render the material's color and render order. The properties set here access directly Three.js material component.  More properties at <https://threejs.org/docs/#api/en/materials/Material> THREE.js Material.
-    Usage: material_extras=MaterialExtras(...)
+    Usage: `material_extras=MaterialExtras(...)`
 
     :param str colorSpace: The material colorspace. Allows [SRGBColorSpace, LinearSRGBColorSpace, DisplayP3ColorSpace, NoColorSpace] Defaults to 'SRGBColorSpace' (optional)
     :param bool colorWrite: Whether to render the material's color. Defaults to 'True' (optional)

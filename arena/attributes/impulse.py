@@ -5,7 +5,7 @@ from .position import Position
 class Impulse(Attribute):
     """
     Impulse attribute class to manage its properties in the ARENA: Apply an impulse to an object to set it in motion. This happens in conjunction with an event. Requires click-listener and physics.
-    Usage: impulse=Impulse(...)
+    Usage: `impulse=Impulse(...)`
 
     :param dict force: Impulse vector. Defaults to '{'x': 1, 'y': 1, 'z': 1}' (optional)
     :param str on: Event to listen 'on'. Allows [mousedown, mouseup] Defaults to 'mousedown' (optional)

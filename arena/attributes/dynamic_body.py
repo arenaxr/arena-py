@@ -4,7 +4,7 @@ from .attribute import Attribute
 class DynamicBody(Attribute):
     """
     DynamicBody attribute class to manage its properties in the ARENA: A freely-moving object. Dynamic bodies have mass, collide with other objects, bounce or slow during collisions, and fall if gravity is enabled. More properties at <https://github.com/c-frame/aframe-physics-system/blob/master/CannonDriver.md> A-Frame Physics System.
-    Usage: dynamic_body=DynamicBody(...)
+    Usage: `dynamic_body=DynamicBody(...)`
 
     :param float angularDamping: Resistance to rotation. Defaults to '0.01' (optional)
     :param str cylinderAxis: Override default axis of bounding cylinder. Requires shape:cylinder. Allows [x, y, z] Defaults to 'y' (optional)
@@ -25,5 +25,5 @@ class DynamicBody(Attribute):
 class Physics(DynamicBody):
     """
     Alternate name for DynamicBody.
-    Usage: dynamic_body=Physics(...) or physics=Physics(...)
+    Usage: `physics=Physics(...)`
     """

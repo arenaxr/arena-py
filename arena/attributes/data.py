@@ -16,7 +16,7 @@ from .video_control import VideoControl
 class Data(Attribute):
     """
     Data attribute class to manage its properties in the ARENA: Wraps all attributes in JSON.
-    Usage: data=Data(...)
+    Usage: `data=Data(...)`
 
     :param dict animation: Animate and tween values. More properties at <https://aframe.io/docs/1.5.0/components/animation.html> A-Frame Animation component. Easing properties are detailed at <https://easings.net> easings.net. (optional)
     :param dict animation_mixer: A list of available animations can usually be found by inspecting the model file or its documentation. All animations will play by default. To play only a specific set of animations, use wildcards: animation-mixer='clip: run_*'. More properties at <https://github.com/n5ro/aframe-extras/tree/master/src/loaders#animation> A-Frame Extras Animation. (optional)

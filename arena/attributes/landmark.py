@@ -5,7 +5,7 @@ from .position import Position
 class Landmark(Attribute):
     """
     Landmark attribute class to manage its properties in the ARENA: Define entities as a landmark; Landmarks appears in the landmark list and you can move (teleport) to them; You can define the behavior of the teleport: if you will be at a fixed or random distance, looking at the landmark, fixed offset or if it is constrained by a navmesh (when it exists).
-    Usage: landmark=Landmark(...)
+    Usage: `landmark=Landmark(...)`
 
     :param str constrainToNavMesh: Teleports should snap to navmesh. Allows [false, any, coplanar] Defaults to 'false' (optional)
     :param str label: Landmark description to display in the landmark list. (optional)

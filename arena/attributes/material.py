@@ -3,7 +3,7 @@ from .attribute import Attribute
 class Material(Attribute):
     """
     Material attribute class to manage its properties in the ARENA: The material properties of the object's surface. More properties at <https://aframe.io/docs/1.5.0/components/material.html> A-Frame Material.
-    Usage: material=Material(...)
+    Usage: `material=Material(...)`
 
     :param float alphaTest: Alpha test threshold for transparency. (optional)
     :param float anisotropy: The anisotropic filtering sample rate to use for the textures. A value of 0 means the default value will be used, see renderer. (optional)

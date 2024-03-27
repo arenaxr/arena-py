@@ -1,11 +1,14 @@
 import re
+
 import webcolors
+
 from .attribute import Attribute
+
 
 class Color(Attribute):
     """
     Color Attribute.
-    Usage: color=Color(red,green,blue)
+    Usage: `color=Color(red,green,blue)` or `color=(red,green,blue)`
     """
     def __init__(self, red=0, green=0, blue=0):
         if isinstance(red, str):

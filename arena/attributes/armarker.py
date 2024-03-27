@@ -4,7 +4,7 @@ from .attribute import Attribute
 class Armarker(Attribute):
     """
     Armarker attribute class to manage its properties in the ARENA: A location marker (such as an AprilTag, a lightAnchor, or an UWB tag), used to anchor scenes, or scene objects, in the real world.
-    Usage: armarker=Armarker(...)
+    Usage: `armarker=Armarker(...)`
 
     :param bool buildable: Whether tag has 'dynamic' toggled on click. Used to position a tag, then lock into position. (optional)
     :param bool dynamic: Dynamic tag, not used for localization. E.g., to move object to which this ARMarker component is attached to. Requires permissions to update the scene (if dynamic=true). (optional)

@@ -3,7 +3,7 @@ from .attribute import Attribute
 class VideoControl(Attribute):
     """
     VideoControl attribute class to manage its properties in the ARENA: Adds a video to an entity and controls its playback.
-    Usage: video_control=VideoControl(...)
+    Usage: `video_control=VideoControl(...)`
 
     :param bool anyone_clicks: Responds to clicks from any user. Defaults to 'True' (optional)
     :param bool autoplay: Video starts playing automatically. (optional)

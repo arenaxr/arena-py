@@ -4,7 +4,7 @@ from .attribute import Attribute
 class Blip(Attribute):
     """
     Blip attribute class to manage its properties in the ARENA: When the object is created or deleted, it will animate in/out of the scene instead of appearing/disappearing instantly. Must have a geometric mesh.
-    Usage: blip=Blip(...)
+    Usage: `blip=Blip(...)`
 
     :param bool applyDescendants: Apply blipout effect to include all descendents. Does not work for blipin. (optional)
     :param bool blipin: Animate in on create, set false to disable. Defaults to 'True' (optional)

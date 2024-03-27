@@ -4,7 +4,7 @@ from .attribute import Attribute
 class Attribution(Attribute):
     """
     Attribution attribute class to manage its properties in the ARENA: Attribution Component. Saves attribution data in any entity.
-    Usage: attribution=Attribution(...)
+    Usage: `attribution=Attribution(...)`
 
     :param str author: Author name; e.g. 'Vaptor-Studio'. Defaults to 'Unknown' (optional)
     :param str authorURL: Author homepage/profile; e.g. https://sketchfab.com/VapTor. (optional)

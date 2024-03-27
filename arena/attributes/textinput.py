@@ -4,7 +4,7 @@ from .attribute import Attribute
 class Textinput(Attribute):
     """
     Textinput attribute class to manage its properties in the ARENA: Opens an HTML prompt when clicked. Sends text input as an event on MQTT. Requires click-listener.
-    Usage: textinput=Textinput(...)
+    Usage: `textinput=Textinput(...)`
 
     :param str label: Text prompt label Defaults to 'Input text below (max is 140 characters).' (optional)
     :param str on: A case-sensitive string representing the event type to listen for. See <https://developer.mozilla.org/en-US/docs/Web/Events> Web Events Allows [mousedown, mouseup, mouseenter, mouseleave, triggerdown, triggerup, gripdown, gripup, menudown, menuup, systemdown, systemup, trackpaddown, trackpadup] Defaults to 'mousedown' (optional)
@@ -25,5 +25,5 @@ class Textinput(Attribute):
 class TextInput(Textinput):
     """
     Alternate name for Textinput.
-    Usage: textinput=TextInput(...)
+    Usage: `textinput=TextInput(...)`
     """

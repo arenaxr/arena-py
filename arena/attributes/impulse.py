@@ -8,7 +8,7 @@ class Impulse(Attribute):
     Usage: impulse=Impulse(...)
 
     :param dict force: Impulse vector. Defaults to '{'x': 1, 'y': 1, 'z': 1}' (optional)
-    :param str on: Event to listen 'on'. (optional)
+    :param str on: Event to listen 'on'. Allows [mousedown, mouseup] Defaults to 'mousedown' (optional)
     :param dict position: World position. Defaults to '{'x': 1, 'y': 1, 'z': 1}' (optional)
     """
     def __init__(self, on="mousedown", force=Position(0,0,0), position=Position(0,0,0), **kwargs):

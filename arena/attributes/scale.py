@@ -6,7 +6,7 @@ from collections.abc import Iterable
 class Scale(Attribute):
     """
     Scale attribute class to manage its properties in the ARENA: 3D object scale.
-    Usage: scale=Scale(x,y,z)
+    Usage: scale=Scale(...)
 
     :param float x:  Defaults to '1' (optional)
     :param float y:  Defaults to '1' (optional)

@@ -75,5 +75,5 @@ class SpeParticles(Attribute):
 class Particles(SpeParticles):
     """
     Alternate name for SpeParticles.
-`    Usage: `spe_particles=Particles(...)`
+    Usage: `spe_particles=Particles(...)`
     """

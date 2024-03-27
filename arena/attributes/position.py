@@ -9,9 +9,9 @@ class Position(Attribute):
     Position attribute class to manage its properties in the ARENA: 3D object position.
     Usage: position=Position(...)
 
-    :param float x:  (optional)
-    :param float y:  (optional)
-    :param float z:  (optional)
+    :param float x: x (optional)
+    :param float y: y (optional)
+    :param float z: z (optional)
     """
 
     def __init__(self, x=None, y=None, z=None):

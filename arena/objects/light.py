@@ -2,7 +2,7 @@ from .arena_object import Object
 
 class Light(Object):
     """
-    Light object class to manage its properties in the ARENA: A light.  More properties at (https://aframe.io/docs/1.5.0/components/light.html) A-Frame Light.
+    Light object class to manage its properties in the ARENA: A light. More properties at <https://aframe.io/docs/1.5.0/components/light.html> A-Frame Light.
 
     :param float angle: Maximum extent of spot light from its direction (in degrees). Requires type:spot. Defaults to '60' (optional)
     :param bool castShadow: Whether this light casts shadows on the scene. (optional)
@@ -12,7 +12,7 @@ class Light(Object):
     :param str envMap: Cube Map to load. (optional)
     :param str groundColor: Light color from below. Requires type:hemisphere. Defaults to '#ffffff' (optional)
     :param float intensity: Amount of light provided. Defaults to '1' (optional)
-    :param dict light:  (optional)
+    :param dict light: light (optional)
     :param float penumbra: Percent of the spotlight cone that is attenuated due to penumbra. Requires type:spot. (optional)
     :param float shadowBias: Offset depth when deciding whether a surface is in shadow. Tiny adjustments here (in the order of +/-0.0001) may reduce artifacts in shadows. (optional)
     :param float shadowCameraBottom: Bottom plane of shadow camera frustum. Requires type:directional. Defaults to '-5' (optional)

@@ -6,7 +6,7 @@ from .scale import Scale
 
 class Animation(Attribute):
     """
-    Animation attribute class to manage its properties in the ARENA: Animate and tween values.  More properties at (https://aframe.io/docs/1.5.0/components/animation.html) A-Frame Animation component. Easing properties are detailed at (https://easings.net) easings.net.
+    Animation attribute class to manage its properties in the ARENA: Animate and tween values. More properties at <https://aframe.io/docs/1.5.0/components/animation.html> A-Frame Animation component. Easing properties are detailed at <https://easings.net> easings.net.
     Usage: animation=Animation(...)
 
     :param bool autoplay: Whether or not the animation should autoplay. Should be specified if the animation is defined for the animation-timeline component (currently not supported). Defaults to 'True' (optional)

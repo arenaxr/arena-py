@@ -8,9 +8,9 @@ class Scale(Attribute):
     Scale attribute class to manage its properties in the ARENA: 3D object scale.
     Usage: scale=Scale(...)
 
-    :param float x:  Defaults to '1' (optional)
-    :param float y:  Defaults to '1' (optional)
-    :param float z:  Defaults to '1' (optional)
+    :param float x: x Defaults to '1' (optional)
+    :param float y: y Defaults to '1' (optional)
+    :param float z: z Defaults to '1' (optional)
     """
 
     def __init__(self, x=None, y=None, z=None):

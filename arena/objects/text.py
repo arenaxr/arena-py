@@ -1,8 +1,9 @@
 from .arena_object import Object
 
+
 class Text(Object):
     """
-    Text object class to manage its properties in the ARENA: Display text.  More properties at (https://aframe.io/docs/1.5.0/components/text.html) A-Frame Text.
+    Text object class to manage its properties in the ARENA: Display text. More properties at <https://aframe.io/docs/1.5.0/components/text.html> A-Frame Text.
 
     :param str align: Multi-line text alignment. Allows [left, center, right] Defaults to 'left' (optional)
     :param float alphaTest: Discard text pixels if alpha is less than this value. Defaults to '0.5' (optional)
@@ -19,7 +20,7 @@ class Text(Object):
     :param str side: Side to render. Allows [front, back, double] Defaults to 'double' (optional)
     :param float tabSize: Tab size in spaces. Defaults to '4' (optional)
     :param bool transparent: Whether text is transparent. Defaults to 'True' (optional)
-    :param str value: The actual content of the text. Line breaks and tabs are supported with \n and \t. (optional)
+    :param str value: The actual content of the text. Line breaks and tabs are supported with `\\n` and `\\t`. (optional)
     :param str whiteSpace: How whitespace should be handled. Allows [normal, pre, nowrap] Defaults to 'normal' (optional)
     :param float width: Width in meters. (derived from geometry if exists). Defaults to '5' (optional)
     :param float wrapCount: Number of characters before wrapping text (more or less). Defaults to '40' (optional)

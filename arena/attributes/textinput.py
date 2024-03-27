@@ -7,7 +7,7 @@ class Textinput(Attribute):
     Usage: textinput=Textinput(...)
 
     :param str label: Text prompt label Defaults to 'Input text below (max is 140 characters).' (optional)
-    :param str on: A case-sensitive string representing the event type to listen for, e.g. 'mousedown', 'mouseup'. See <a href='https://developer.mozilla.org/en-US/docs/Web/Events'>Web Events</a> Allows [mousedown, mouseup, mouseenter, mouseleave, triggerdown, triggerup, gripdown, gripup, menudown, menuup, systemdown, systemup, trackpaddown, trackpadup] Defaults to 'mousedown' (optional)
+    :param str on: A case-sensitive string representing the event type to listen for. See <https://developer.mozilla.org/en-US/docs/Web/Events> Web Events Allows [mousedown, mouseup, mouseenter, mouseleave, triggerdown, triggerup, gripdown, gripup, menudown, menuup, systemdown, systemup, trackpaddown, trackpadup] Defaults to 'mousedown' (optional)
     :param str placeholder: Text input place holder. Defaults to 'Type here' (optional)
     :param str title: The prompt title. Defaults to 'Text Input' (optional)
     """

@@ -2,7 +2,7 @@ from .arena_object import Object
 
 class PcdModel(Object):
     """
-    PcdModel object class to manage its properties in the ARENA: Load a PCD model.  Format: (https://pointclouds.org/documentation/tutorials/index.html) Point Clouds. See guidance to store paths under (https://docs.arenaxr.org/content/interface/filestore.html) ARENA File Store, CDN, or DropBox.
+    PcdModel object class to manage its properties in the ARENA: Load a PCD model. Format: <https://pointclouds.org/documentation/tutorials/index.html> Point Clouds. See guidance to store paths under <https://docs.arenaxr.org/content/interface/filestore.html> ARENA File Store, CDN, or DropBox.
 
     :param str pointColor: Color of the points. Defaults to '#7f7f7f' (optional)
     :param float pointSize: Size of the points. Defaults to '0.01' (optional)

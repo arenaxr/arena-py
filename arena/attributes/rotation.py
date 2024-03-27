@@ -9,10 +9,10 @@ class Rotation(Attribute):
     Rotation attribute class to manage its properties in the ARENA: 3D object rotation in quaternion representation; Right-handed coordinate system. Euler degrees are deprecated in wire message format.
     Usage: rotation=Rotation(...)
 
-    :param float w:  Defaults to '1' (optional)
-    :param float x:  (optional)
-    :param float y:  (optional)
-    :param float z:  (optional)
+    :param float w: w Defaults to '1' (optional)
+    :param float x: x (optional)
+    :param float y: y (optional)
+    :param float z: z (optional)
     """
 
     def __init__(self, x=None, y=None, z=None, w=None):

@@ -1,23 +1,25 @@
 from ..utils import *
 from .attribute import Attribute
-from .position import Position
-from .rotation import Rotation
+from .color import Color
+from .dynamic_body import Physics
 from .goto_url import GotoUrl
 from .jitsi_video import JitsiVideo
-from .dynamic_body import Physics
-from .scale import Scale
 from .material import Material
-from .color import Color
+from .position import Position
+from .rotation import Rotation
+from .scale import Scale
+from .translate import (ATTRIBUTE_CLASS_TRANSLATION,
+                        KEYWORD_ATTRIBUTE_TRANSLATION)
 from .video_control import VideoControl
-from .translate import ATTRIBUTE_CLASS_TRANSLATION, KEYWORD_ATTRIBUTE_TRANSLATION
+
 
 class Data(Attribute):
     """
     Data attribute class to manage its properties in the ARENA: Wraps all attributes in JSON.
     Usage: data=Data(...)
 
-    :param dict animation: Animate and tween values. (optional)
-    :param dict animation_mixer: A list of available animations can usually be found by inspecting the model file or its documentation. All animations will play by default. To play only a specific set of animations, use wildcards: animation-mixer='clip: run_*'. (optional)
+    :param dict animation: Animate and tween values. More properties at <https://aframe.io/docs/1.5.0/components/animation.html> A-Frame Animation component. Easing properties are detailed at <https://easings.net> easings.net. (optional)
+    :param dict animation_mixer: A list of available animations can usually be found by inspecting the model file or its documentation. All animations will play by default. To play only a specific set of animations, use wildcards: animation-mixer='clip: run_*'. More properties at <https://github.com/n5ro/aframe-extras/tree/master/src/loaders#animation> A-Frame Extras Animation. (optional)
     :param dict armarker: A location marker (such as an AprilTag, a lightAnchor, or an UWB tag), used to anchor scenes, or scene objects, in the real world. (optional)
     :param dict attribution: Attribution Component. Saves attribution data in any entity. (optional)
     :param dict blip: When the object is created or deleted, it will animate in/out of the scene instead of appearing/disappearing instantly. Must have a geometric mesh. (optional)
@@ -25,9 +27,9 @@ class Data(Attribute):
     :param bool buffer: Transform geometry into a BufferGeometry to reduce memory usage at the cost of being harder to manipulate (geometries only: box, circle, cone, ...). Defaults to 'True' (optional)
     :param dict click_listener: Object will listen for mouse events like clicks. (optional)
     :param str collision_listener: Name of the collision-listener, default can be empty string. Collisions trigger click events. (optional)
-    :param dict dynamic_body: A freely-moving object. Dynamic bodies have mass, collide with other objects, bounce or slow during collisions, and fall if gravity is enabled. (optional)
+    :param dict dynamic_body: A freely-moving object. Dynamic bodies have mass, collide with other objects, bounce or slow during collisions, and fall if gravity is enabled. More properties at <https://github.com/c-frame/aframe-physics-system/blob/master/CannonDriver.md> A-Frame Physics System. (optional)
     :param dict gltf_model_lod: Simple switch between the default gltf-model and a detailed one when a user camera is within specified distance (optional)
-    :param dict gltf_morph: Allows you to target and control a gltf model's morphTargets created in Blender. (optional)
+    :param dict gltf_morph: Allows you to target and control a gltf model's morphTargets created in Blender. More properties at <https://github.com/elbobo/aframe-gltf-morph-component> A-Frame GLTF Morph component. (optional)
     :param dict goto_landmark: Teleports user to the landmark with the given name. Requires click-listener. (optional)
     :param dict goto_url: Load new URL when object is clicked. Requires click-listener. (optional)
     :param bool hide_on_enter_ar: Hide object when entering AR. Remove component to *not* hide. (optional)
@@ -36,8 +38,8 @@ class Data(Attribute):
     :param dict jitsi_video: Apply a jitsi video source to the geometry. (optional)
     :param dict landmark: Define entities as a landmark; Landmarks appears in the landmark list and you can move (teleport) to them; You can define the behavior of the teleport: if you will be at a fixed or random distance, looking at the landmark, fixed offset or if it is constrained by a navmesh (when it exists). (optional)
     :param str look_at: The look-at component defines the behavior for an entity to dynamically rotate or face towards another entity or position. Use '#my-camera' to face the user camera, otherwise can take either a vec3 position or a query selector to another entity. (optional)
-    :param dict material: The material properties of the object's surface. (optional)
-    :param dict material_extras: Define extra material properties, namely texture encoding, whether to render the material's color and render order. (optional)
+    :param dict material: The material properties of the object's surface. More properties at <https://aframe.io/docs/1.5.0/components/material.html> A-Frame Material. (optional)
+    :param dict material_extras: Define extra material properties, namely texture encoding, whether to render the material's color and render order. The properties set here access directly Three.js material component.  More properties at <https://threejs.org/docs/#api/en/materials/Material> THREE.js Material. (optional)
     :param dict modelUpdate: The GLTF-specific `modelUpdate` attribute is an object with child component names as keys. The top-level keys are the names of the child components to be updated. The values of each are nested `position` and `rotation` attributes to set as new values, respectively. Either `position` or `rotation` can be omitted if unchanged. (optional)
     :param dict multisrc: Define multiple visual sources applied to an object. (optional)
     :param str parent: Parent's object_id. Child objects inherit attributes of their parent, for example scale and translation. (optional)
@@ -50,9 +52,9 @@ class Data(Attribute):
     :param bool show_on_enter_ar: Show object when entering AR. Hidden otherwise. (optional)
     :param bool show_on_enter_vr: Show object when entering VR. Hidden otherwise. (optional)
     :param bool skipCache: Disable retrieving the shared geometry object from the cache. (geometries only: box, circle, cone, ...). (optional)
-    :param dict sound: The sound component defines the entity as a source of sound or audio. The sound component is positional and is thus affected by the component's position. (optional)
-    :param dict spe_particles: GPU based particle systems in A-Frame. (optional)
-    :param dict static_body: A fixed-position or animated object. Other objects may collide with static bodies, but static bodies themselves are unaffected by gravity and collisions. (optional)
+    :param dict sound: The sound component defines the entity as a source of sound or audio. The sound component is positional and is thus affected by the component's position. More properties at <https://aframe.io/docs/1.5.0/components/sound.html> A-Frame Sound. (optional)
+    :param dict spe_particles: GPU based particle systems in A-Frame. More properties at <https://github.com/harlyq/aframe-spe-particles-component> A-Frame SPE Particles component. (optional)
+    :param dict static_body: A fixed-position or animated object. Other objects may collide with static bodies, but static bodies themselves are unaffected by gravity and collisions. More properties at <https://github.com/c-frame/aframe-physics-system/blob/master/CannonDriver.md> A-Frame Physics System. (optional)
     :param dict textinput: Opens an HTML prompt when clicked. Sends text input as an event on MQTT. Requires click-listener. (optional)
     :param str url: Use File Store paths under 'store/users/username', see CDN and other storage options in the description above. (optional)
     :param dict video_control: Adds a video to an entity and controls its playback. (optional)

@@ -2,7 +2,7 @@ from .attribute import Attribute
 
 class SpeParticles(Attribute):
     """
-    SpeParticles attribute class to manage its properties in the ARENA: GPU based particle systems in A-Frame.  More properties at (https://github.com/harlyq/aframe-spe-particles-component) A-Frame SPE Particles component.
+    SpeParticles attribute class to manage its properties in the ARENA: GPU based particle systems in A-Frame. More properties at <https://github.com/harlyq/aframe-spe-particles-component> A-Frame SPE Particles component.
     Usage: spe_particles=SpeParticles(...)
 
     :param dict acceleration: For sphere and disc distributions, only the x axis is used. Defaults to '{'x': 0, 'y': 0, 'z': 0}' (optional)
@@ -55,7 +55,7 @@ class SpeParticles(Attribute):
     :param bool rotationStatic: If true, the particles are fixed at their initial rotation value. if false, the particle will rotate from 0 to the 'rotation' value. (optional)
     :param list[float] size: Array of sizes over the particle's lifetime, max 4 elements. Defaults to '[1]' (optional)
     :param list[float] sizeSpread: Spread in size over the particle's lifetime, max 4 elements. Defaults to '[0]' (optional)
-    :param str texture: Texture to be used for each particle, may be a spritesheet.  Examples: [blob.png, fog.png, square.png, explosion_sheet.png, fireworks_sheet.png], like path 'static/images/textures/blob.png'. (optional)
+    :param str texture: Texture to be used for each particle, may be a spritesheet. Examples: [blob.png, fog.png, square.png, explosion_sheet.png, fireworks_sheet.png], like path 'static/images/textures/blob.png'. (optional)
     :param int textureFrameCount: Number of frames in the spritesheet, negative numbers default to textureFrames.x * textureFrames.y. Defaults to '-1' (optional)
     :param int textureFrameLoop: Number of times the spritesheet should be looped over the lifetime of a particle. Defaults to '1' (optional)
     :param dict textureFrames: X and Y frames for a spritesheet. each particle will transition through every frame of the spritesheet over its lifetime (see textureFramesLoop). Defaults to '{'x': 1, 'y': 1}' (optional)

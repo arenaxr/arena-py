@@ -3,7 +3,7 @@ from .attribute import Attribute
 
 class StaticBody(Attribute):
     """
-    StaticBody attribute class to manage its properties in the ARENA: A fixed-position or animated object. Other objects may collide with static bodies, but static bodies themselves are unaffected by gravity and collisions.  More properties at (https://github.com/c-frame/aframe-physics-system/blob/master/CannonDriver.md) A-Frame Physics System.
+    StaticBody attribute class to manage its properties in the ARENA: A fixed-position or animated object. Other objects may collide with static bodies, but static bodies themselves are unaffected by gravity and collisions. More properties at <https://github.com/c-frame/aframe-physics-system/blob/master/CannonDriver.md> A-Frame Physics System.
     Usage: static_body=StaticBody(...)
 
     :param str cylinderAxis: Override default axis of bounding cylinder. Requires shape:cylinder. Allows [x, y, z] Defaults to 'y' (optional)

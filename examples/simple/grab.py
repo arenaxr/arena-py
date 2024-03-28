@@ -15,6 +15,7 @@ def box_click(scene, evt, msg):
         hand = clicker.hands.get('handRight', None)
 
         if hand is not None and not grabbing:
+            print("grabbed")
             grabbing = True
             grab_dist = hand.data.position.distance_to(my_box.data.position)
             my_box.update_attributes(parent='rightHand', position=(0,0,-grab_dist))
@@ -22,6 +23,7 @@ def box_click(scene, evt, msg):
 
     elif evt.type == "mouseup":
         if grabbing:
+            print("released")
             grabbing = False
             my_box.update_attributes(parent=None, position=orig_position)
             scene.update_object(my_box)

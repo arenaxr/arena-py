@@ -1,7 +1,7 @@
 from arena import *
 
 import numpy as np
-from scipy.spatial.transform import Rotation
+from arena.utils import Utils
 
 scene = Scene(host="arenaxr.org", scene="grab")
 
@@ -18,7 +18,7 @@ def pose_matrix(position, rotation):
     scale = np.array((1, 1, 1))
 
     rotation_matrix = np.eye(4)
-    rotation_matrix[:3,:3] = Rotation.from_quat(rotation).as_matrix()
+    rotation_matrix[:3,:3] = Utils.quat_to_matrix3(rotation)
 
     scale_matrix = np.diag([scale[0], scale[1], scale[2], 1])
 
@@ -86,7 +86,7 @@ def move_box():
         new_pose = get_world_pose_when_parented(hand_pose, child_pose_relative_to_parent)
 
         new_position = (new_pose[0,3], new_pose[1,3], new_pose[2,3])
-        new_rotation = Rotation.from_matrix(new_pose[:3,:3]).as_quat()
+        new_rotation = Utils.matrix3_to_quat(new_pose[:3,:3])
         new_rotation = (new_rotation[3], new_rotation[0], new_rotation[1], new_rotation[2])
 
         my_box.update_attributes(position=new_position)#, rotation=new_rotation)

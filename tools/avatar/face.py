@@ -1,6 +1,5 @@
 from arena import Position, Rotation
 import numpy as np
-from scipy.spatial import distance
 
 from utils import *
 
@@ -50,16 +49,16 @@ class Face(object):
         return (landmarks - com) / (np.max(landmarks, axis=0)-np.min(landmarks, axis=0))
 
     def mouthAspect(self):
-        height1 = distance.euclidean(self.lipInnerPts[1], self.lipInnerPts[7])
-        height2 = distance.euclidean(self.lipInnerPts[2], self.lipInnerPts[6])
-        height3 = distance.euclidean(self.lipInnerPts[3], self.lipInnerPts[5])
-        width = distance.euclidean(self.lipInnerPts[0], self.lipInnerPts[4])
+        height1 = np.linalg.norm(self.lipInnerPts[1] - self.lipInnerPts[7])
+        height2 = np.linalg.norm(self.lipInnerPts[2] - self.lipInnerPts[6])
+        height3 = np.linalg.norm(self.lipInnerPts[3] - self.lipInnerPts[5])
+        width = np.linalg.norm(self.lipInnerPts[0] - self.lipInnerPts[4])
         return ((height1 + height2 + height3) / 3) / width
 
     def eyeAspect(self, eyePts):
-        height1 = distance.euclidean(eyePts[1], eyePts[5])
-        height2 = distance.euclidean(eyePts[2], eyePts[4])
-        width = distance.euclidean(eyePts[0], eyePts[3])
+        height1 = np.linalg.norm(eyePts[1] - eyePts[5])
+        height2 = np.linalg.norm(eyePts[2] - eyePts[4])
+        width = np.linalg.norm(eyePts[0] - eyePts[3])
         return ((height1 + height2) / 2) / width
 
     def get_expressions_vect(self):
@@ -70,7 +69,7 @@ class Face(object):
     def faceWidth(self):
         # Grab some point to normalize face with distance
         # Not sure if width of face is good?
-        return distance.euclidean(self.jawPts[0],self.jawPts[-1])
+        return np.linalg.norm(self.jawPts[0] - self.jawPts[-1])
 
     @property
     def blinkAmount(self):

@@ -4,7 +4,7 @@ import random
 from types import SimpleNamespace
 
 import numpy as np
-from scipy.spatial.transform import Rotation
+from arena.utils import Utils
 
 CLIENT_ID = 'apriltag_solver_' + str(random.randint(0, 100))
 HOST = "oz.andrew.cmu.edu"
@@ -48,9 +48,8 @@ def on_tag_detect(msg):
         rot = json_msg.vio.rotation
 
         vio_pose = np.identity(4)
-        vio_pose[0:3, 0:3] = Rotation.from_quat(
-            [rot._x, rot._y, rot._z, rot._w]
-        ).as_matrix()
+        vio_pose[0:3, 0:3] = Utils.quat_to_matrix3([rot._x, rot._y, rot._z, rot._w])
+
         vio_pose[0:3, 3] = [pos.x, pos.y, pos.z]
 
         dtag_pose = np.identity(4)
@@ -76,7 +75,7 @@ def on_tag_detect(msg):
             else:
                 ref_tag_pose = rig_pose @ vio_pose @ dtag_pose
                 ref_tag_pos = ref_tag_pose[0:3, 3]
-                ref_tag_rotq = Rotation.from_matrix(ref_tag_pose[0:3, 0:3]).as_quat()
+                ref_tag_rotq = Utils.matrix3_to_quat(ref_tag_pose[0:3, 0:3])
 
                 TAGS[detected_tag.id] = ref_tag_pose  # Store as reference
 
@@ -104,7 +103,7 @@ def on_tag_detect(msg):
                 return
             rig_pose = ref_tag_pose @ np.linalg.inv(dtag_pose) @ np.linalg.inv(vio_pose)
             rig_pos = rig_pose[0:3, 3]
-            rig_rotq = Rotation.from_matrix(rig_pose[0:3, 0:3]).as_quat()
+            rig_rotq = Utils.matrix3_to_quat(rig_pose[0:3, 0:3])
 
             RIGS[client_id] = rig_pose
             scene.updateRig(

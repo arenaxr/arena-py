@@ -1,6 +1,4 @@
 from arena import *
-import numpy as np
-from scipy.spatial import distance
 
 from utils import MeanFilter
 from face import Face

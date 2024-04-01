@@ -1,23 +1,21 @@
 import math
 import numpy as np
-from scipy.spatial.transform import Rotation
 
+from arena.utils import Utils
 
 def pose_to_matrix4(pos, rotq):
     mat = np.identity(4)
     if hasattr(rotq, '_x'):
-        mat[0:3, 0:3] = Rotation.from_quat([
-            rotq._x, rotq._y, rotq._z, rotq._w]).as_matrix()
+        mat[0:3, 0:3] = Utils.quat_to_matrix3([rotq._x, rotq._y, rotq._z, rotq._w])
     else:
-        mat[0:3, 0:3] = Rotation.from_quat([
-            rotq.x, rotq.y, rotq.z, rotq.w]).as_matrix()
+        mat[0:3, 0:3] = Utils.quat_to_matrix3([rotq.x, rotq.y, rotq.z, rotq.w])
     mat[0:3, 3] = [pos.x, pos.y, pos.z]
     return mat
 
 
 def matrix4_to_pose(mat):
     pos = mat[0:3, 3]
-    rotq = Rotation.from_matrix(mat[0:3, 0:3]).as_quat()
+    rotq = Utils.matrix3_to_quat(mat[0:3, 0:3])
     return pos, rotq
 
 

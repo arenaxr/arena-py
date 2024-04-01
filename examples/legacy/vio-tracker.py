@@ -8,7 +8,8 @@ from requests.auth import HTTPBasicAuth
 
 import numpy as np
 import paho.mqtt.client as mqtt
-from scipy.spatial.transform import Rotation
+
+from arena.utils import Utils
 
 with open("config.json") as config_file:
     CONFIG = json.load(config_file)
@@ -98,9 +99,8 @@ def on_camera_vio(client, userdata, msg):
             return
         # Construct pose matrix4 for camera
         vio_pose = np.identity(4)
-        vio_pose[0:3, 0:3] = Rotation.from_quat(
-            [rot.x, rot.y, rot.z, rot.w]
-        ).as_matrix()
+        vio_pose[0:3, 0:3] = Utils.quat_to_matrix3([rot.x, rot.y, rot.z, rot.w])
+
         vio_pose[0:3, 3] = [pos.x, pos.y, pos.z]
         #print( "vio pose:", vio_pose)
         # look for large(ish) jumps in vio
@@ -125,9 +125,8 @@ def on_tag_detect(client, userdata, msg):
 
         # Construct pose matrix4 for camera
         vio_pose = np.identity(4)
-        vio_pose[0:3, 0:3] = Rotation.from_quat(
-            [rot._x, rot._y, rot._z, rot._w]
-        ).as_matrix()
+        vio_pose[0:3, 0:3] = Utils.quat_to_matrix3([rot._x, rot._y, rot._z, rot._w])
+
         vio_pose[0:3, 3] = [pos.x, pos.y, pos.z]
 
         # Construct pose matrix for detected tag
@@ -166,7 +165,7 @@ def on_tag_detect(client, userdata, msg):
             # Calculate pose of apriltag
             ref_tag_pose = rig_pose @ vio_pose @ dtag_pose
             ref_tag_pos = ref_tag_pose[0:3, 3]
-            ref_tag_rotq = Rotation.from_matrix(ref_tag_pose[0:3, 0:3]).as_quat()
+            ref_tag_rotq = Utils.matrix3_to_quat(ref_tag_pose[0:3, 0:3])
 
             if not hasattr(json_msg, "geolocation"):
                 log("Builder provided no geolocation")
@@ -259,7 +258,7 @@ def on_tag_detect(client, userdata, msg):
                 return
             rig_pose = ref_tag_pose @ np.linalg.inv(dtag_pose) @ np.linalg.inv(vio_pose)
             rig_pos = rig_pose[0:3, 3]
-            rig_rotq = Rotation.from_matrix(rig_pose[0:3, 0:3]).as_quat()
+            rig_rotq = Utils.matrix3_to_quat(rig_pose[0:3, 0:3])
             RIGS[client_id] = rig_pose
             # fmt: off
             mqtt_response = {

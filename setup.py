@@ -1,4 +1,5 @@
 import os
+
 import setuptools
 
 with open("README.md", "r") as readme:
@@ -40,7 +41,8 @@ setuptools.setup(
         "google_auth_oauthlib~=1.0.0",
         "google-auth~=2.22.0",
         "PyJWT~=2.4.0",
-        "opentelemetry-exporter-otlp-proto-grpc==1.21.*"
+        "opentelemetry-exporter-otlp-proto-grpc==1.21.*",
+        "numpy>=1.22.0",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

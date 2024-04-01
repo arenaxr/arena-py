@@ -7,7 +7,8 @@
 
 import enum
 
-import scipy
+import scipy.spatial
+
 from arena import (Box, Circle, Color, Cone, Cylinder, Dodecahedron,
                    Icosahedron, Light, Material, Object, Octahedron, Plane,
                    Position, Ring, Rotation, Scale, Scene, Sphere, Tetrahedron,
@@ -517,14 +518,11 @@ def rotation_quat2radian(quat):
 
 
 def rotation_quat2euler(quat):
-    rotq = scipy.spatial.transform.Rotation.from_quat(list(quat))
-    return tuple(rotq.as_euler('xyz', degrees=True))
+    return Rotation.q2e(quat)
 
 
 def rotation_euler2quat(euler):
-    rote = scipy.spatial.transform.Rotation.from_euler(
-        'xyz', list(euler), degrees=True)
-    return tuple(rote.as_quat())
+    return Rotation.e2q(euler)
 
 
 def probable_quat(num):

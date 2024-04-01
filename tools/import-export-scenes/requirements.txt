@@ -19,7 +19,6 @@ PyYAML
 requests
 requests-oauthlib
 rsa
-scipy
 six
 urllib3
 webcolors

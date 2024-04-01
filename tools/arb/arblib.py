@@ -6,8 +6,7 @@
 # pylint: disable=missing-docstring
 
 import enum
-
-import scipy.spatial
+import math
 
 from arena import (Box, Circle, Color, Cone, Cylinder, Dodecahedron,
                    Icosahedron, Light, Material, Object, Octahedron, Plane,
@@ -513,8 +512,10 @@ def temp_rot_marker(position, rotation):
 
 
 def rotation_quat2radian(quat):
-    rotq = scipy.spatial.transform.Rotation.from_quat(list(quat))
-    return tuple(rotq.as_euler('xyz', degrees=False))
+    e = Rotation.q2e(quat)
+    return (math.radians(e[0]),
+            math.radians(e[1]),
+            math.radians(e[2]))
 
 
 def rotation_quat2euler(quat):

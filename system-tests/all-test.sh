@@ -100,6 +100,7 @@ tests+=("python3 examples/simple/earth-moon-laser.py -mh $host -n $namespace -s 
 tests+=("python3 examples/simple/earth-moon-simple.py -mh $host -n $namespace -s $scene")
 tests+=("python3 examples/simple/earth-moon.py -mh $host -n $namespace -s $scene")
 tests+=("python3 examples/simple/grab.py")
+tests+=("python3 examples/simple/grab2.py")
 tests+=("python3 examples/simple/green-boxes.py")
 tests+=("python3 examples/simple/hello.py")
 tests+=("python3 examples/simple/laser-pointer.py")

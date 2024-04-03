@@ -1,4 +1,3 @@
-import argparse
 import asyncio
 import json
 import os
@@ -7,9 +6,7 @@ import socket
 import ssl
 import sys
 from datetime import datetime
-from pathlib import Path
 
-import __main__ as main
 import paho.mqtt.client as mqtt
 
 from .auth import ArenaAuth
@@ -173,42 +170,6 @@ class ArenaMQTT(object):
         except Exception as err:
             print(f'MQTT connect error to {self.mqtt_host}, port={port}: Result Code={err}')
         self.mqttc.socket().setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
-
-    def parse_cli(self):
-        """
-        Reusable command-line options to give apps flexible options to avoid hard-coding locations.
-        """
-        parser = argparse.ArgumentParser(description=(f"{Path(main.__file__).name} (arena-py) Application CLI"),
-                                         epilog="Additional user-defined args are possible, see docs at https://docs.arenaxr.org/content/python/scenes for usage.")
-        parser.add_argument("-mh", "--host", type=str,
-                            help="ARENA webserver main host to connect to")
-        parser.add_argument("-n", "--namespace", type=str,
-                            help="Namespace of scene")
-        parser.add_argument("-s", "--scene", type=str, required=True,
-                            help="Scene to publish and listen to")
-        parser.add_argument("-d", "--device", type=str,
-                            help="Device to publish and listen to")
-        parser.add_argument("-p", "--position", nargs=3, type=float, default=(0, 0, 0),
-                            help="App position as cartesian.x cartesian.y cartesian.z")
-        parser.add_argument("-r", "--rotation", nargs=3, type=float, default=(0, 0, 0),
-                            help="App rotation as euler.x euler.y euler.z")
-        parser.add_argument("-c", "--scale", nargs=3, type=float, default=(1, 1, 1),
-                            help="App scale as cartesian.x cartesian.y cartesian.z")
-        parser.add_argument("-D", "--debug", action='store_true',
-                            help='Debug mode.', default=False)
-
-        # add unknown arguments for users to pull as strings
-        parsed, unknown = parser.parse_known_args()
-        for arg in unknown:
-            if arg.startswith(("-", "--")):
-                parser.add_argument(arg.split('=')[0], type=str)
-
-        args = parser.parse_args()
-        argdict = vars(args)
-        argdict["position"] = tuple(args.position)
-        argdict["rotation"] = tuple(args.rotation)
-        argdict["scale"] = tuple(args.scale)
-        return argdict
 
     def generate_client_id(self):
         """Returns a random 6 digit id"""

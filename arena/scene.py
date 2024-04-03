@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import json
 import os
@@ -7,6 +8,9 @@ import threading
 import uuid
 from datetime import datetime
 from inspect import signature
+from pathlib import Path
+
+import __main__ as main
 
 from .arena_mqtt import ArenaMQTT
 from .attributes import *
@@ -28,22 +32,21 @@ class Scene(ArenaMQTT):
     :param str scene: The name of the scene, without namespace (required).
     """
 
-    def __init__(
-                self,
-                host = "arenaxr.org",
-                realm = "realm",
-                network_latency_interval = 10000,  # run network latency update every 10s
-                on_msg_callback = None,
-                new_obj_callback = None,
-                user_join_callback = None,
-                user_left_callback = None,
-                delete_obj_callback = None,
-                end_program_callback = None,
-                video = False,
-                debug = False,
-                cli_args = False,
-                **kwargs
-            ):
+    def __init__(self,
+                 host="arenaxr.org",
+                 realm="realm",
+                 network_latency_interval=10000,  # run network latency update every 10s
+                 on_msg_callback=None,
+                 new_obj_callback=None,
+                 user_join_callback=None,
+                 user_left_callback=None,
+                 delete_obj_callback=None,
+                 end_program_callback=None,
+                 video=False,
+                 debug=False,
+                 cli_args=False,
+                 **kwargs
+                 ):
 
         # init telemetry
         self.telemetry = ArenaTelemetry()
@@ -57,7 +60,7 @@ class Scene(ArenaMQTT):
                                     start_cmd_event=self.connected_evt)
 
         if cli_args:
-            self.args = self.parse_cli()
+            self.args = self.parse_cli(cli_args)
             if self.args["host"]:
                 kwargs["host"] = self.args["host"]
             if self.args["namespace"]:
@@ -131,6 +134,48 @@ class Scene(ArenaMQTT):
             print(f"Loading: https://{self.web_host}/{self.namespace}/{self.scene}, realm={self.realm}")
 
             span.add_event(f"Loading: https://{self.web_host}/{self.namespace}/{self.scene}, realm={self.realm}")
+
+    def parse_cli(self, cli_args=False):
+        """
+        Reusable command-line options to give apps flexible options to avoid hard-coding locations.
+        """
+        parser = argparse.ArgumentParser(description=(f"{Path(main.__file__).name} (arena-py) Application CLI"),
+                                         epilog="Additional user-defined args are possible, see docs at https://docs.arenaxr.org/content/python/scenes for usage.")
+        parser.add_argument("-mh", "--host", type=str,
+                            help="ARENA webserver main host to connect to")
+        parser.add_argument("-n", "--namespace", type=str,
+                            help="Namespace of scene")
+        parser.add_argument("-s", "--scene", type=str,
+                            help="Scene to publish and listen to")
+        parser.add_argument("-d", "--device", type=str,
+                            help="Device to publish and listen to")
+        parser.add_argument("-p", "--position", nargs=3, type=float, default=(0, 0, 0),
+                            help="App position as cartesian.x cartesian.y cartesian.z")
+        parser.add_argument("-r", "--rotation", nargs=3, type=float, default=(0, 0, 0),
+                            help="App rotation as euler.x euler.y euler.z")
+        parser.add_argument("-c", "--scale", nargs=3, type=float, default=(1, 1, 1),
+                            help="App scale as cartesian.x cartesian.y cartesian.z")
+        parser.add_argument("-D", "--debug", action='store_true',
+                            help='Debug mode.', default=False)
+
+        # add known help descriptions
+        if isinstance(cli_args, dict):
+            for k in cli_args:
+                parser.add_argument(
+                    f"-{k}", f"--{k}", help=cli_args[k], required=False)
+
+        # add unknown arguments for users to pull as strings
+        parsed, unknown = parser.parse_known_args()
+        for arg in unknown:
+            if arg.startswith(("-", "--")):
+                parser.add_argument(arg.split('=')[0])
+
+        args = parser.parse_args()
+        argdict = vars(args)
+        argdict["position"] = tuple(args.position)
+        argdict["rotation"] = tuple(args.rotation)
+        argdict["scale"] = tuple(args.scale)
+        return argdict
 
     def exit(self, arg=0):
         """Custom exit to push errors to telemetry"""
@@ -631,7 +676,7 @@ class Scene(ArenaMQTT):
         return QueueStats(super().rcv_queue_len(),  super().pub_queue_len())
 
     def run_info_update(self, run_info):
-        """Callbak when program stats are updated; publish program object update"""
+        """Callback when program stats are updated; publish program object update"""
         # Add run info to program data object and publish program object update
         run_info.add_program_info(self.program.data)
         self._publish(self.program, "update")

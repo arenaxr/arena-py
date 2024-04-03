@@ -4,11 +4,8 @@ import re
 import sys
 
 from .arena_mqtt import ArenaMQTT
+from .env import DEVICE, _get_env
 
-from .env import (
-    DEVICE,
-    _get_env
-)
 
 class Device(ArenaMQTT):
     """
@@ -21,27 +18,15 @@ class Device(ArenaMQTT):
     :param str device: The name of the device, without namespace (required).
     """
 
-    def __init__(
-                self,
-                host = "arenaxr.org",
-                realm = "realm",
-                network_latency_interval = 10000,  # run network latency update every 10s
-                on_msg_callback = None,
-                end_program_callback = None,
-                debug = False,
-                cli_args = False,
-                **kwargs
-            ):
-        if cli_args:
-            self.args = self.parse_cli()
-            if self.args["host"]:
-                kwargs["host"] = self.args["host"]
-            if self.args["namespace"]:
-                kwargs["namespace"] = self.args["namespace"]
-            if self.args["device"]:
-                kwargs["device"] = self.args["device"]
-            if self.args["debug"]:
-                debug = self.args["debug"]
+    def __init__(self,
+                 host="arenaxr.org",
+                 realm="realm",
+                 network_latency_interval=10000,  # run network latency update every 10s
+                 on_msg_callback=None,
+                 end_program_callback=None,
+                 debug=False,
+                 **kwargs
+                 ):
 
         if os.environ.get(DEVICE):
             self.device = _get_env(DEVICE)
@@ -83,6 +68,6 @@ class Device(ArenaMQTT):
         self.mqttc.publish(topic, payload, qos=0)
         if self.debug: print("[publish]", topic, payload)
         return payload
-    
+
     def on_publish(self, client, userdata, mid):
         pass

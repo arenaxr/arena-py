@@ -4,6 +4,20 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [0.9.4](https://github.com/arenaxr/arena-py/compare/v0.9.3...v0.9.4) (2024-04-03)
+
+
+### Bug Fixes
+
+* allow arbirary args for Scene(cli_args=) ([ecd2fdd](https://github.com/arenaxr/arena-py/commit/ecd2fddb7bd8ccb4aa2e8c6464ba68f67ef0b996))
+* **auth:** display entire json in arena-py-permissions ([65b534a](https://github.com/arenaxr/arena-py/commit/65b534a915974e8b8b3230d44e30fddf9a81d49a))
+* property accesses ([75b3fc6](https://github.com/arenaxr/arena-py/commit/75b3fc6e0985d918b080d303ec2e6f6fea6d7497))
+
+
+### Documentation
+
+* update objects/attributes to latest schema ([325bc49](https://github.com/arenaxr/arena-py/commit/325bc49a1b58dcf631b2e46ae1686ea3cd8defae))
+
 ## [0.9.3](https://github.com/arenaxr/arena-py/compare/v0.9.2...v0.9.3) (2024-02-23)
 
 

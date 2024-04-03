@@ -9,8 +9,8 @@ See top-level python documentation for [Python requirements](https://github.com/
 
 ## Quick Start
 Usage: `arb` takes at minimum one argument, the first one, a scene name (`hello` in this example).
-```bash
-python3 tools/arb/arb.py hello
+```shell
+python3 tools/arb/arb.py -s hello
 ```
 (interact with the tool at the website address printed in the console: https://arenaxr.org/[your username]/hello)
 

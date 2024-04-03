@@ -13,6 +13,7 @@ from arena import (Box, Circle, Color, Cone, Cylinder, Dodecahedron,
                    Position, Ring, Rotation, Scale, Scene, Sphere, Tetrahedron,
                    Text, Torus, TorusKnot, Triangle)
 
+ARB_PARENT_ID = "arb-origin-parent"
 CLICKLINE_LEN_OBJ = 0.5  # meters
 CLICKLINE_LEN_MOD = 0.5  # meters
 CLICKLINE_SCL = Scale(1, 1, 1)  # meters
@@ -411,10 +412,16 @@ class Button:
 
 def init_origin(scene: Scene):
     """Origin object, construction cone, so user knows ARB is running."""
-    # TODO: migrate to shared-scene setting
     size = [0.2, 0.4, 0.2]
+    scene.add_object(Object(
+        object_id=ARB_PARENT_ID,
+        position=scene.args["position"],
+        rotation=scene.args["rotation"],
+        scale=scene.args["scale"],
+    ))
     scene.add_object(Cone(  # 370mm x 370mm # 750mm
         object_id="arb-origin",
+        parent=ARB_PARENT_ID,
         material=Material(
             color=Color(255, 114, 33),
             transparent=True,
@@ -424,11 +431,13 @@ def init_origin(scene: Scene):
         scale=Scale(size[0] / 2, size[1], size[2] / 2)))
     scene.add_object(Cone(
         object_id="arb-origin-hole",
+        parent=ARB_PARENT_ID,
         **{"material-extras": {"transparentOccluder": True}},
         position=Position(0, size[1] - (size[1] / 2 / 15), 0),
         scale=Scale(size[0] / 15, size[1] / 10, size[2] / 15)))
     scene.add_object(Box(
         object_id="arb-origin-base",
+        parent=ARB_PARENT_ID,
         material=Material(
             color=Color(0, 0, 0),
             transparent=True,
@@ -450,7 +459,7 @@ def occlude_obj(scene: Scene, object_id, occlude):
         # NOTE: transparency does not allow occlusion so remove transparency here.
         scene.update_object(scene.all_objects[object_id],
                             **{"material-extras": {"transparentOccluder": (occlude != BOOLS[1])}},
-                            #material=Material(transparent=False, opacity=1)
+                            # material=Material(transparent=False, opacity=1)
                             )
         print(f"Occluded {object_id}")
 

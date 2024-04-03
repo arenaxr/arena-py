@@ -14,34 +14,27 @@ import math
 import random
 import statistics
 
-from arena import (GLTF, Box, Circle, Color, Cone, Event, Line, Material,
-                   Object, Position, Rotation, Scale, Scene, ThickLine)
-
 import arblib
 from arblib import (EVT_MOUSEDOWN, EVT_MOUSEENTER, EVT_MOUSELEAVE, ButtonType,
                     Mode)
 
+from arena import (GLTF, Box, Circle, Color, Cone, Event, Line, Material,
+                   Object, Position, Rotation, Scale, Scene, ThickLine)
+
 MANIFEST = arblib.DEF_MANIFEST
-MODELS = []
 USERS = {}  # dictionary of user instances
 CONTROLS = {}  # dictionary of active controls
 SCL_CLICK = 0.1  # meters
 
 
-def init_args():
-    global MODELS, MANIFEST
-    args_models = "arb-manifest.json"
-    if args_models is not None:
-        mfile = open(args_models)
+def init_args(_scene: Scene):
+    global MANIFEST
+    if _scene.args["manifest"]:
+        mfile = open(_scene.args["manifest"])
         data = json.load(mfile)
-        MODELS = []
-        for i in data['models']:
-            print(i)
         mfile.close()
         MANIFEST = data['models']
-    for i in MANIFEST:
-        MODELS.append(i['name'])
-
+    print(f"ARB Model Manifest: {MANIFEST}")
 
 def handle_panel_event(event, dropdown=False):
     # naming order: camera_number_name_button_bname_dname
@@ -1040,7 +1033,7 @@ def create_obj(camname, clipboard, position):
         material=Material(color=clipboard.data.material.color,
                           transparent=False),
         url=clipboard.data.url,
-        clickable=True, # TODO: remove when AR target mousedown/up ignores parents
+        clickable=True,  # TODO: remove when AR target mousedown/up ignores parents
     )
     scene.add_object(new_obj)
     USERS[camname].target_id = new_obj.object_id
@@ -1157,7 +1150,7 @@ def make_wall(camname):
         scale=sca,
         material=Material(color=Color(200, 200, 200),
                           transparent=True, opacity=0.5),
-        clickable=True, # TODO: remove when AR target mousedown/up ignores parents
+        clickable=True,  # TODO: remove when AR target mousedown/up ignores parents
     )
     scene.add_object(new_wall)
     USERS[camname].target_id = new_wall.object_id
@@ -1348,22 +1341,24 @@ def scene_callback(_scene, event, msg):
             panel_callback(_scene, event, msg)
 
 
-def end_program_callback(_scene):
+def end_program_callback(_scene: Scene):
     for camname in USERS:
         USERS[camname].delete()
     show_redpill_scene(False)
-    # TODO: remove origin marker
+    _scene.delete_object(_scene.all_objects[arblib.ARB_PARENT_ID])
     for objid in CONTROLS:
         for ctrl in CONTROLS[objid]:
             _scene.delete_object(CONTROLS[objid][ctrl])
 
 
 # parse args and wait for events
-init_args()
 random.seed()
 scene = Scene(
+    #cli_args={"p": "JSON file path of optional GLTF models to import and place at will."},
     cli_args=True,
+
     on_msg_callback=scene_callback,
     end_program_callback=end_program_callback,
 )
+init_args(scene)
 scene.run_tasks()

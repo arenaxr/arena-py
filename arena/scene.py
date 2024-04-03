@@ -3,22 +3,19 @@ import json
 import os
 import re
 import sys
-from datetime import datetime
-from inspect import signature
 import threading
 import uuid
+from datetime import datetime
+from inspect import signature
 
 from .arena_mqtt import ArenaMQTT
 from .attributes import *
+from .env import PROGRAM_OBJECT_ID, SCENE, _get_env
 from .events import *
 from .objects import *
-from .utils import Utils, ArenaTelemetry, ArenaCmdInterpreter, ProgramRunInfo, QueueStats
+from .utils import (ArenaCmdInterpreter, ArenaTelemetry, ProgramRunInfo,
+                    QueueStats, Utils)
 
-from .env import (
-    SCENE,
-    PROGRAM_OBJECT_ID,
-    _get_env
-)
 
 class Scene(ArenaMQTT):
     """

@@ -11,16 +11,10 @@ from datetime import datetime
 import paho.mqtt.client as mqtt
 
 from .auth import ArenaAuth
+from .env import (ARENA_PASSWORD, ARENA_USERNAME, MQTTH, NAMESPACE, REALM,
+                  _get_env)
 from .event_loop import *
 
-from .env import (
-    MQTTH,
-    REALM,
-    ARENA_USERNAME,
-    ARENA_PASSWORD,
-    NAMESPACE,
-    _get_env
-)
 
 class ArenaMQTT(object):
     """
@@ -108,10 +102,10 @@ class ArenaMQTT(object):
 
         # set up topic variables
         if self.scene:
-            self.namespaced_target =  f"{self.namespace}/{self.scene}"
+            self.namespaced_target = f"{self.namespace}/{self.scene}"
             self.root_topic = f"{self.realm}/s/{self.namespaced_target}"
         elif self.device:
-            self.namespaced_target =  f"{self.namespace}/{self.device}"
+            self.namespaced_target = f"{self.namespace}/{self.device}"
             self.root_topic = f"{self.realm}/d/{self.namespaced_target}"
         self.subscribe_topic = f"{self.root_topic}/#"   # main topic for entire target
         self.latency_topic = self.config_data["ARENADefaults"]["latencyTopic"] # network graph latency update
@@ -166,7 +160,7 @@ class ArenaMQTT(object):
         if "port" in kwargs:
             port = kwargs["port"]
         else:
-            port = 8883 # ARENA broker TLS 1.2 connection port
+            port = 8883  # ARENA broker TLS 1.2 connection port
         if self.auth.verify(self.web_host):
             self.mqttc.tls_set()
         else:
@@ -182,7 +176,8 @@ class ArenaMQTT(object):
         """
         Reusable command-line options to give apps flexible options to avoid hard-coding locations.
         """
-        parser = argparse.ArgumentParser(description=("arena-py Application CLI"))
+        parser = argparse.ArgumentParser(description=("arena-py Application CLI"),
+                                         epilog="Additional user-defined args are possible, see docs at https://docs.arenaxr.org/content/python/scenes for usage.")
         parser.add_argument("-mh", "--host", type=str,
                             help="ARENA webserver main host to connect to")
         parser.add_argument("-n", "--namespace", type=str,
@@ -196,22 +191,22 @@ class ArenaMQTT(object):
         parser.add_argument("-r", "--rotation", nargs=3, type=float, default=(0, 0, 0),
                             help="App rotation as euler.x euler.y euler.z")
         parser.add_argument("-c", "--scale", nargs=3, type=float, default=(1, 1, 1),
-                            help="App scale in meters")
-        parser.add_argument("-D", "--debug", action='store_true', help='Debug mode.', default=False)
+                            help="App scale as cartesian.x cartesian.y cartesian.z")
+        parser.add_argument("-D", "--debug", action='store_true',
+                            help='Debug mode.', default=False)
+
+        # add unknown arguments for users to pull as strings
+        parsed, unknown = parser.parse_known_args()
+        for arg in unknown:
+            if arg.startswith(("-", "--")):
+                parser.add_argument(arg.split('=')[0], type=str)
+
         args = parser.parse_args()
-        app_position = tuple(args.position)
-        app_rotation = tuple(args.rotation)
-        app_scale = tuple(args.scale)
-        return {
-            "host": args.host,
-            "namespace": args.namespace,
-            "scene": args.scene,
-            "device": args.device,
-            "position": app_position,
-            "rotation": app_rotation,
-            "scale": app_scale,
-            "debug": args.debug,
-        }
+        argdict = vars(args)
+        argdict["position"] = tuple(args.position)
+        argdict["rotation"] = tuple(args.rotation)
+        argdict["scale"] = tuple(args.scale)
+        return argdict
 
     def generate_client_id(self):
         """Returns a random 6 digit id"""
@@ -339,15 +334,14 @@ class ArenaMQTT(object):
         self.mqttc.unsubscribe(sub)
         self.mqttc.message_callback_remove(sub)
 
-    def rcv_queue_len(self): 
+    def rcv_queue_len(self):
         """Return receive queue length"""
         self.msg_queue.qsize()
-        
-    def pub_queue_len(self): 
+
+    def pub_queue_len(self):
         """Return publish queue length"""
         return self.mqttc._out_packet
 
-    def client_id(self): 
+    def client_id(self):
         """Return client id"""
         return self.mqttc_id
-    

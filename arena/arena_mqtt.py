@@ -7,7 +7,9 @@ import socket
 import ssl
 import sys
 from datetime import datetime
+from pathlib import Path
 
+import __main__ as main
 import paho.mqtt.client as mqtt
 
 from .auth import ArenaAuth
@@ -176,13 +178,13 @@ class ArenaMQTT(object):
         """
         Reusable command-line options to give apps flexible options to avoid hard-coding locations.
         """
-        parser = argparse.ArgumentParser(description=("arena-py Application CLI"),
+        parser = argparse.ArgumentParser(description=(f"{Path(main.__file__).name} (arena-py) Application CLI"),
                                          epilog="Additional user-defined args are possible, see docs at https://docs.arenaxr.org/content/python/scenes for usage.")
         parser.add_argument("-mh", "--host", type=str,
                             help="ARENA webserver main host to connect to")
         parser.add_argument("-n", "--namespace", type=str,
                             help="Namespace of scene")
-        parser.add_argument("-s", "--scene", type=str,
+        parser.add_argument("-s", "--scene", type=str, required=True,
                             help="Scene to publish and listen to")
         parser.add_argument("-d", "--device", type=str,
                             help="Device to publish and listen to")

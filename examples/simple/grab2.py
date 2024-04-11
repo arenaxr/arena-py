@@ -7,10 +7,12 @@ scene = Scene(host="arenaxr.org", scene="grab")
 
 grabbing = False
 
-hand = None
+grabber = None
 child_pose_relative_to_parent = None
 
 orig_position = (0,1.5,-2)
+orig_scale = (0.5,0.5,0.5)
+grabbed_scale = (0.55,0.55,0.55)
 
 def pose_matrix(position, rotation):
     position = np.array((position.x, position.y, position.z))
@@ -41,7 +43,8 @@ def get_world_pose_when_parented(parent_pose, child_pose_relative_to_parent):
 def box_click(scene, evt, msg):
     global my_box
     global grabbing
-    global hand
+    global grabber
+    global orig_scale
     global child_pose_relative_to_parent
 
     if evt.type == "mousedown":
@@ -53,10 +56,10 @@ def box_click(scene, evt, msg):
             print("grabbed")
 
             if handRight is not None:
-                hand = handRight
+                grabber = handRight
 
                 grabbing = True
-                hand_pose = pose_matrix(hand.data.position, hand.data.rotation)
+                hand_pose = pose_matrix(grabber.data.position, grabber.data.rotation)
                 child_pose = pose_matrix(my_box.data.position, my_box.data.rotation)
                 child_pose_relative_to_parent = get_relative_pose_to_parent(hand_pose, child_pose)
 
@@ -64,11 +67,13 @@ def box_click(scene, evt, msg):
         if grabbing:
             print("released")
             grabbing = False
+            my_box.update_attributes(scale=orig_scale)
+            scene.update_object(my_box)
 
 my_box = Box(
     object_id="my_box",
     position=orig_position,
-    scale=(0.5,0.5,0.5),
+    scale=orig_scale,
     rotation=(1,0,0,0),
     color=(50,60,200),
     patent=None,
@@ -78,18 +83,20 @@ my_box = Box(
 
 @scene.run_forever(interval_ms=10)
 def move_box():
-    global hand
+    global my_box
+    global grabber
+    global grabbed_scale
     global child_pose_relative_to_parent
 
-    if hand is not None and child_pose_relative_to_parent is not None and grabbing:
-        hand_pose = pose_matrix(hand.data.position, hand.data.rotation)
+    if grabber is not None and child_pose_relative_to_parent is not None and grabbing:
+        hand_pose = pose_matrix(grabber.data.position, grabber.data.rotation)
         new_pose = get_world_pose_when_parented(hand_pose, child_pose_relative_to_parent)
 
         new_position = (new_pose[0,3], new_pose[1,3], new_pose[2,3])
         new_rotation = Utils.matrix3_to_quat(new_pose[:3,:3])
         new_rotation = (new_rotation[3], new_rotation[0], new_rotation[1], new_rotation[2])
 
-        my_box.update_attributes(position=new_position)#, rotation=new_rotation)
+        my_box.update_attributes(position=new_position, scale=grabbed_scale)#, rotation=new_rotation)
         scene.update_object(my_box)
 
 @scene.run_once

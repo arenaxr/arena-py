@@ -129,10 +129,10 @@ def load_mesh_data(mesh_data, write=False, target=False):
     """
     Taking in a mesh data, creates an Open3D TriangleMesh
     Optionally writes the mesh to a gltf file, and/or sets it as the target mesh
-    :param mesh_data: mesh data payload dictionary
-    :param write: whether to write the mesh to a gltf file
-    :param target: whether to set the mesh as the target mesh
-    :return: Open3D TriangleMesh
+    :param dict mesh_data: mesh data payload dictionary
+    :param bool write: whether to write the mesh to a gltf file
+    :param bool target: whether to set the mesh as the target mesh
+    :return open: Open3D TriangleMesh
     """
     vertices = mesh_data.get("vertices")
     indices = mesh_data.get("indices")
@@ -180,9 +180,9 @@ def create_pcd(mesh, points=10000, write=False, crop_y=0.5):
     """
     Creates a point cloud from a mesh using poisson disk sampling
     :param mesh: mesh to convert
-    :param points: how many points to produce for resuling point cloud
-    :param write: whether to write the point cloud to a pcd file
-    :param crop_y: how much to crop off the top and bottom of the mesh
+    :param int points: how many points to produce for resuling point cloud
+    :param bool write: whether to write the point cloud to a pcd file
+    :param float crop_y: how much to crop off the top and bottom of the mesh
     :return: Open3D PointCloud
     """
     pcd = mesh.sample_points_poisson_disk(
@@ -209,7 +209,7 @@ def create_pcd(mesh, points=10000, write=False, crop_y=0.5):
 def rotation_matrix_y(angle_degrees):
     """
     Creates a rotation matrix around the Y axis (only axis that should matter for ICP)
-    :param angle_degrees:
+    :param float angle_degrees:
     :return: numpy 4x4 transformation matrix
     """
     angle_radians = np.deg2rad(angle_degrees)
@@ -245,8 +245,8 @@ def icp(src, target, distance=0, rotations=8):
     Given a source and target point cloud, attempts to align the source to the target
     :param src: source point cloud
     :param target: target point cloud
-    :param distance: max distance between points to consider a match
-    :param rotations: how many sets of iterations to run by subdividing 360 degrees
+    :param float distance: max distance between points to consider a match
+    :param int rotations: how many sets of iterations to run by subdividing 360 degrees
                       into this many rotated initial transforms
     :return: Open3D registration result
     """
@@ -306,7 +306,7 @@ def icp(src, target, distance=0, rotations=8):
     return max(attempts, key=lambda x: x.fitness)
 
 
-scene = Scene(host="arena-dev1.conix.io", scene="blank")
+scene = Scene(namespace="public", scene="arena")
 scene.message_callback_add(LISTEN_TOPIC, msg_callback)
 
 if DEBUG:

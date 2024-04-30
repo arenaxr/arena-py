@@ -35,6 +35,7 @@ from .threejs_scene import *
 from .torus import *
 from .torus_knot import *
 from .triangle import *
+from .urdf_model import *
 from .videosphere import *
 
 OBJECT_TYPE_MAP = {
@@ -72,5 +73,6 @@ OBJECT_TYPE_MAP = {
     Torus.object_type: Torus,
     TorusKnot.object_type: TorusKnot,
     Triangle.object_type: Triangle,
+    UrdfModel.object_type: UrdfModel,
     Videosphere.object_type: Videosphere,
 }

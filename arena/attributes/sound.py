@@ -2,7 +2,7 @@ from .attribute import Attribute
 
 class Sound(Attribute):
     """
-    Sound attribute class to manage its properties in the ARENA: The sound component defines the entity as a source of sound or audio. The sound component is positional and is thus affected by the component's position. More properties at <https://aframe.io/docs/1.5.0/components/sound.html> A-Frame Sound.
+    Sound attribute class to manage its properties in the ARENA: The sound component defines the entity as a source of sound or audio. The sound component can be positional and is thus affected by the component's position. More properties at <https://aframe.io/docs/1.5.0/components/sound.html> A-Frame Sound.
     Usage: `sound=Sound(...)`
 
     :param bool autoplay: Whether to automatically play sound once set. (optional)

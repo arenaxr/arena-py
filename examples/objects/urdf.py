@@ -32,7 +32,6 @@ def bend_joints():
 
         offset = i * math.pi / 3
         ratio = max(0, math.sin(t + offset))
-        print(ratio)
 
         joints.append(f"HP{i}:{np.interp(ratio, [0, 1], [30, 0])}")
         joints.append(f"KP{i}:{np.interp(ratio, [0, 1], [90, 150])}")

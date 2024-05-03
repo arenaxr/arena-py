@@ -1,3 +1,8 @@
+import math
+import time
+
+import numpy as np
+
 from arena import *
 
 # setup library
@@ -17,16 +22,24 @@ def main():
     # add the model
     scene.add_object(athlete_model)
 
-@scene.run_after_interval(interval_ms=1000)
+
+@scene.run_forever(interval_ms=100)
 def bend_joints():
+    # animate the legs
     joints = []
-    for i in range(6):
-        joints.append(f"HP{i}:{30}")
-        joints.append(f"KP{i}:{120}")
-        joints.append(f"AP{i}:{-60}")
+    t = time.time() * 1000 / 3**2
+    for i in range(1, 6 + 1):
+
+        offset = i * math.pi / 3
+        ratio = max(0, math.sin(t + offset))
+        print(ratio)
+
+        joints.append(f"HP{i}:{np.interp(ratio, [0, 1], [30, 0])}")
+        joints.append(f"KP{i}:{np.interp(ratio, [0, 1], [90, 150])}")
+        joints.append(f"AP{i}:{np.interp(ratio, [0, 1], [-30, -60])}")
 
     # update joints
-    athlete_model.update_attributes(joints=",".join(joints))
+    athlete_model.update_attributes(joints=", ".join(joints))
     scene.update_object(athlete_model)
 
 

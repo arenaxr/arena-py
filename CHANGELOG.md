@@ -4,6 +4,18 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [0.10.0](https://github.com/arenaxr/arena-py/compare/v0.9.6...v0.10.0) (2024-05-06)
+
+
+### Features
+
+* **urdf:** add urdf model support ([04ebf90](https://github.com/arenaxr/arena-py/commit/04ebf904171399bc2ea638d5058f2015fb6545e0))
+
+
+### Documentation
+
+* update schema docstrings to latest version ([b792bf2](https://github.com/arenaxr/arena-py/commit/b792bf20c0d0b69178a1d458da817681015ea899))
+
 ## [0.9.6](https://github.com/arenaxr/arena-py/compare/v0.9.5...v0.9.6) (2024-04-08)
 
 

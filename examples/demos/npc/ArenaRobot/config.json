@@ -1,0 +1,115 @@
+{    
+    "ARENA": {
+        "HOST": "arenaxr.org",
+        "NAMESPACE": "public",
+        "SCENE": "arena"
+    },
+    
+    "NODE": {
+        "ENTER": "Enter",
+        "EXIT": "Exit"
+    },
+
+    "NPC": {
+        "NAME": "NPC_RobotBuddy",
+        "GLTF_URL": "https://arenaxr.org/store/users/johnchoi/Characters/RobotBuddy/RobotBuddyBlue.glb",
+        "ICON_URL": "https://arenaxr.org/store/users/johnchoi/Characters/RobotBuddy/RobotBuddyBlue.png"
+    },
+
+    "USE_DEFAULTS": {
+        "ANIMATIONS": true,
+        "MORPHS": true,
+        "SOUNDS": true
+    },
+    
+    "TIMERS": {
+        "RESET": {
+            "INTERVAL": 100,
+            "TIME": 300000
+        },
+        "TRANSFORM": {
+            "INTERVAL": 500,
+            "TIMER": 3000
+        },
+        "SPEECH": {
+            "INTERVAL" : 100,
+            "SPEED" : 3
+        }
+    },
+    
+    "UI": {
+        "USE_NAME_AS_TITLE": false,
+        "THEME": "light",
+        "VERTICAL_BUTTONS": true,
+        "FONT_SIZE": 0.05,
+        "TEXT_WIDTH": 0.5,
+        "ICON_WIDTH": 0.5,
+        "ICON_FILL": "cover"
+    },
+    
+    "ROOT": {
+        "PARENT": "",
+        "SCALE": {"x":0.8,"y":0.8,"z":0.8},
+        "SIZE": 0.2,
+        "POSITION": {"x":7.2,"y":0.0,"z":-2.8},
+        "ROTATION": {"x":0,"y":0,"z":0},
+        "COLOR": {"r":255,"g":100,"b":16},
+        "OPACITY": 0.5    
+    },
+    
+    "GLTF": {
+        "SCALE": {"x":1,"y":1,"z":1},
+        "POSITION": {"x":0,"y":0,"z":0},
+        "ROTATION": {"x":0,"y":180,"z":0} 
+    },
+
+    "PLANE": {
+        "SIZE": 1.2,
+        "SIZE_DURATION": 500,
+        "POSITION": {"x":1.5,"y":0.8,"z":0},
+        "ROTATION": {"x":0,"y":-15,"z":0},
+        "OPACITY": 0.9
+    },
+    
+    "SPEECH": {
+        "TEXT": {
+            "COLOR" : {"r":250,"g":100,"b":250},
+            "POSITION" : {"x":0,"y":1.6,"z":0},
+            "SCALE" : {"x":0.6,"y":0.7,"z":0.7}
+        },
+        "BUBBLE": {
+            "POSITION" : {"x":0,"y":1.7,"z":0},
+            "ROTATION" : {"x":0,"y":5,"z":0},
+            "SCALE" : {"x":1,"y":1,"z":1}
+        }
+    },
+
+    "CHOICE": {
+        "TEXT":{
+            "COLOR" : {"r":255,"g":255,"b":255},
+            "SCALE" : {"x":0.4, "y":2, "z":0.5}
+        },
+        "BUBBLE":{
+            "COLOR" : {"r":0,"g":0,"b":200},
+            "OPACITY" : 0.5,    
+            "POSITION" : {"x":-0.95,"y":0.6,"z":0.4},
+            "ROTATION" : {"x":0,"y":15,"z":0},
+            "OFFSET_Y" : 0.25,
+            "SCALE" : {"x":0.8, "y":0.8, "z":0.8}
+        }        
+    },
+    
+    "LINK": {
+        "TEXT": {
+            "COLOR" : {"r":255,"g":255,"b":255},
+            "SCALE" : {"x":0.2, "y":2, "z":0.5}
+        },
+        "BUBBLE": {
+            "COLOR" : {"r":0,"g":200,"b":100},
+            "OPACITY" : 0.8,
+            "POSITION" : {"x":0,"y":0.8,"z":0.7},
+            "ROTATION" : {"x":0,"y":0,"z":0},
+            "SCALE" : {"x":1.5, "y":0.2, "z":0.08}
+        }
+    }
+}

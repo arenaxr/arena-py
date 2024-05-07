@@ -1,0 +1,112 @@
+{
+    "DEFAULTS": {
+
+        "SOUND": {
+            "NEXT":    {"volume":1.0, "src":"https://arenaxr.org/store/users/johnchoi/Sounds/NPC/Next.wav"    },
+            "CHOICE":  {"volume":1.0, "src":"https://arenaxr.org/store/users/johnchoi/Sounds/NPC/Choice.wav"  },
+            "ENTER":   {"volume":0.8, "src":"https://arenaxr.org/store/users/johnchoi/Sounds/NPC/Enter.wav"   },
+            "EXIT":    {"volume":0.8, "src":"https://arenaxr.org/store/users/johnchoi/Sounds/NPC/Exit.wav"    },
+            "IMAGE":   {"volume":0.8, "src":"https://arenaxr.org/store/users/johnchoi/Sounds/NPC/Enter.wav"   },
+            "TALKING": {"volume":1.0, "src":"https://arenaxr.org/store/users/johnchoi/Sounds/NPC/Talking.wav" },
+            "WALKING": {"volume":1.0, "src":"https://arenaxr.org/store/users/johnchoi/Sounds/NPC/Walking.wav" }
+        },
+
+        "ANIMATION": {
+            "IDLE": {"clip": "Idle",       "loop": "repeat", "crossFadeDuration":0.5, "timeScale":1   },
+            "WALK": {"clip": "Walk",       "loop": "repeat", "crossFadeDuration":0.5, "timeScale":1.5 },
+            "TALK": {"clip": "Lookaround", "loop": "repeat", "crossFadeDuration":0.5, "timeScale":1   }
+        },
+
+        "MORPH": {
+            "OPEN"  :     [ {"morphtarget":"a","value":1.0} ],
+            "CLOSE" :     [ {"morphtarget":"a","value":0.0} ],
+            "BLINK_ON" :  [ {"morphtarget":"Blink","value":1.0} ],
+            "BLINK_OFF" : [ {"morphtarget":"Blink","value":0.0} ],
+            "RESET" :     [ {"morphtarget":"a","value":0.0}, {"morphtarget":"Blink","value":0.0} ]
+        },
+
+        "VIDEO_FRAME_OBJECT": "https://arenaxr.org/store/users/wiselab/images/conix-face-white.jpg"
+
+    },
+
+    "SOUND_MAPPINGS": [
+        { "NAME": "next",    "SOUND": {"volume": 1.0, "src": "https://arenaxr.org/store/users/johnchoi/Sounds/NPC/Next.wav"    } },
+        { "NAME": "choice",  "SOUND": {"volume": 1.0, "src": "https://arenaxr.org/store/users/johnchoi/Sounds/NPC/Choice.wav"  } },
+        { "NAME": "enter",   "SOUND": {"volume": 1.0, "src": "https://arenaxr.org/store/users/johnchoi/Sounds/NPC/Enter.wav"   } },
+        { "NAME": "exit",    "SOUND": {"volume": 1.0, "src": "https://arenaxr.org/store/users/johnchoi/Sounds/NPC/Exit.wav"    } },
+        { "NAME": "talking", "SOUND": {"volume": 1.0, "src": "https://arenaxr.org/store/users/johnchoi/Sounds/NPC/Talking.wav" } },
+        { "NAME": "jingle",  "SOUND": {"volume": 1.0, "src": "https://arenaxr.org/store/users/johnchoi/Sounds/jingle.wav"      } }
+    ],
+
+    "ANIMATION_MAPPINGS": [
+        { "NAME": "die",      "ANIMATION": {"clip": "Die",        "loop": "once",   "crossFadeDuration":0.5, "timeScale":1 } },
+        { "NAME": "hurt",     "ANIMATION": {"clip": "Hurt",       "loop": "once",   "crossFadeDuration":0.5, "timeScale":1 } },
+        { "NAME": "idle",     "ANIMATION": {"clip": "Idle",       "loop": "repeat", "crossFadeDuration":0.5, "timeScale":1 } },
+        { "NAME": "jump",     "ANIMATION": {"clip": "Jump",       "loop": "once",   "crossFadeDuration":0.5, "timeScale":1 } },
+        { "NAME": "jumpFall", "ANIMATION": {"clip": "JumpFall",   "loop": "once",   "crossFadeDuration":0.5, "timeScale":1 } },
+        { "NAME": "jumpLand", "ANIMATION": {"clip": "JumpLand",   "loop": "once",   "crossFadeDuration":0.5, "timeScale":1 } },
+        { "NAME": "jumpUp",   "ANIMATION": {"clip": "JumpUp",     "loop": "once",   "crossFadeDuration":0.5, "timeScale":1 } },
+        { "NAME": "look",     "ANIMATION": {"clip": "Lookaround", "loop": "repeat", "crossFadeDuration":0.5, "timeScale":1 } },
+        { "NAME": "roll",     "ANIMATION": {"clip": "Roll",       "loop": "once",   "crossFadeDuration":0.5, "timeScale":1 } },
+        { "NAME": "run",      "ANIMATION": {"clip": "Run",        "loop": "repeat", "crossFadeDuration":0.5, "timeScale":1 } },
+        { "NAME": "skid",     "ANIMATION": {"clip": "Skid",       "loop": "once",   "crossFadeDuration":0.5, "timeScale":1 } },
+        { "NAME": "t",        "ANIMATION": {"clip": "TStance",    "loop": "repeat", "crossFadeDuration":0.5, "timeScale":1 } },
+        { "NAME": "walk",     "ANIMATION": {"clip": "Walk",       "loop": "repeat", "crossFadeDuration":0.5, "timeScale":1 } }
+    ],
+    
+    "TRANSFORM_MAPPINGS": [
+        { "NAME": "zero",   "TRANSFORM": {"position":{"x":0,"y":0,"z":0},       "rotation":{"x":0,"y":0,"z":0}}   },
+        { "NAME": "rack",   "TRANSFORM": {"position":{"x":2,"y":0,"z":-2},      "rotation":{"x":0,"y":-45,"z":0}} },
+        { "NAME": "lambda", "TRANSFORM": {"position":{"x":-1.5,"y":0,"z":-0.8}, "rotation":{"x":0,"y":75,"z":0}}  },
+        { "NAME": "desks",  "TRANSFORM": {"position":{"x":0.5,"y":0,"z":1.2},   "rotation":{"x":0,"y":180,"z":0}} },
+        { "NAME": "enter",  "TRANSFORM": {"position":{"x":2.2,"y":0,"z":-0.5},  "rotation":{"x":0,"y":-90,"z":0}} },
+        { "NAME": "exit",   "TRANSFORM": {"position":{"x":4.3,"y":0,"z":-0.5},  "rotation":{"x":0,"y":90,"z":0}}  },
+        { "NAME": "couch",  "TRANSFORM": {"position":{"x":7.2,"y":0,"z":-2.8},  "rotation":{"x":0,"y":0,"z":0}}   }
+    ],
+    
+    "MORPH_MAPPINGS": [
+        { "NAME": "smile",  "MORPH": [ {"morphtarget": "Smile", "value":1.0} ] },
+        { "NAME": "blink",  "MORPH": [ {"morphtarget": "Blink", "value":1.0} ] },
+        { "NAME": "open",   "MORPH": [ {"morphtarget": "a",     "value":1.0} ] },
+        { "NAME": "squint", "MORPH": [ {"morphtarget": "><",    "value":1.0} ] },
+        { "NAME": "dizzy",  "MORPH": [ {"morphtarget": "@@",    "value":1.0} ] },
+        { "NAME": "reset",  "MORPH": [ {"morphtarget": "Smile", "value":0.0}, {"morphtarget": "Blink", "value":0.0} ] }
+    ],
+    
+    "URL_MAPPINGS": [
+        { "NAME": "youtube",   "GOTOURL": {"dest": "popup",   "url":"https://www.youtube.com/watch?v=cBkWhkAZ9ds"} },
+        { "NAME": "wikipedia", "GOTOURL": {"dest": "popup",   "url":"https://en.wikipedia.org/wiki/Fish"} },
+        { "NAME": "arena",     "GOTOURL": {"dest": "popup",   "url":"https://arenaxr.org/"} },
+        { "NAME": "conix",     "GOTOURL": {"dest": "newtab",  "url":"https://conix.io/"} },
+        { "NAME": "island",    "GOTOURL": {"dest": "sametab", "url":"https://arenaxr.org/public/island"} }
+    ],
+    
+    "IMAGE_MAPPINGS": [
+        { "NAME": "yarn",        "IMAGE": {"src": "https://arenaxr.org/store/users/johnchoi/Images/yarn.jpg",        "w":1340, "h":912}  },
+        { "NAME": "doge",        "IMAGE": {"src": "https://arenaxr.org/store/users/johnchoi/Images/doge.jpg",        "w":369,  "h":273}  },
+        { "NAME": "dragon",      "IMAGE": {"src": "https://arenaxr.org/store/users/johnchoi/Images/dragon.jpg",      "w":1200, "h":1200} },
+        { "NAME": "exclamation", "IMAGE": {"src": "https://arenaxr.org/store/users/johnchoi/Images/exclamation.png", "w":920,  "h":951}  },
+        { "NAME": "fish",        "IMAGE": {"src": "https://arenaxr.org/store/users/johnchoi/Images/fish.jpg",        "w":800,  "h":450}  },
+        { "NAME": "forest",      "IMAGE": {"src": "https://arenaxr.org/store/users/johnchoi/Images/forest.jpg",      "w":1500, "h":1000} },
+        { "NAME": "graph",       "IMAGE": {"src": "https://arenaxr.org/store/users/johnchoi/Images/graph.png",       "w":918,  "h":669}  },
+        { "NAME": "meme",        "IMAGE": {"src": "https://arenaxr.org/store/users/johnchoi/Images/meme.jpg",        "w":800,  "h":450}  },
+        { "NAME": "nyan",        "IMAGE": {"src": "https://arenaxr.org/store/users/johnchoi/Images/nyan.jpg",        "w":800,  "h":450}  },
+        { "NAME": "question",    "IMAGE": {"src": "https://arenaxr.org/store/users/johnchoi/Images/question.png",    "w":360,  "h":480}  },
+        { "NAME": "potato",      "IMAGE": {"src": "https://arenaxr.org/store/users/johnchoi/Images/potato.jpg",      "w":1920, "h":1080} },
+        { "NAME": "stonks",      "IMAGE": {"src": "https://arenaxr.org/store/users/johnchoi/Images/stonks.png",      "w":680,  "h":510}  },
+        { "NAME": "sushi",       "IMAGE": {"src": "https://arenaxr.org/store/users/johnchoi/Images/sushi.jpg",       "w":1240, "h":1995} }
+    ],
+    
+    "VIDEO_MAPPINGS": [
+        { "NAME": "1", "VIDEO": {"src": "https://arenaxr.org/store/users/johnchoi/Videos/ARENA/20200707_ARENA - A Collaborative Mixed Reality Environment.mp4", "w":1920, "h": 1080} },
+        { "NAME": "2", "VIDEO": {"src": "https://arenaxr.org/store/users/johnchoi/Videos/ARENA/20200819_ARENA Collaborative AR Authoring Tool Demo.mp4",        "w":1920, "h": 1080} },
+        { "NAME": "3", "VIDEO": {"src": "https://arenaxr.org/store/users/johnchoi/Videos/ARENA/20200819_ARENA Indoor Location Tracking Demo.mp4",               "w":1920, "h": 1080} },
+        { "NAME": "4", "VIDEO": {"src": "https://arenaxr.org/store/users/johnchoi/Videos/ARENA/20200819_ARENA Micro-UAV Swarm Control.mp4",                     "w":1920, "h": 1080} },
+        { "NAME": "5", "VIDEO": {"src": "https://arenaxr.org/store/users/johnchoi/Videos/ARENA/20200819_ARENA One Minute Madness.mp4",                          "w":1920, "h": 1080} },
+        { "NAME": "6", "VIDEO": {"src": "https://arenaxr.org/store/users/johnchoi/Videos/ARENA/20200819_ARENA Physical Object Capture (Digital Twin).mp4",      "w":1920, "h": 1080} },
+        { "NAME": "7", "VIDEO": {"src": "https://arenaxr.org/store/users/johnchoi/Videos/ARENA/20200819_ARENA Real-Time Face Performance Capture.mp4",          "w":1920, "h": 1080} },
+        { "NAME": "8", "VIDEO": {"src": "https://arenaxr.org/store/users/johnchoi/Videos/ARENA/20200819_ARENA Robot's First Steps.mp4",                         "w":1920, "h": 1080} },
+        { "NAME": "9", "VIDEO": {"src": "https://arenaxr.org/store/users/johnchoi/Videos/ARENA/20200819_ARENA Virtual Robot Arm.mp4",                           "w":1920, "h": 1080} }
+    ]
+
+}

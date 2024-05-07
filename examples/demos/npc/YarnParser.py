@@ -1,6 +1,5 @@
 from ColorPrinter import *
 
-import copy
 import json
 import re
 

@@ -42,10 +42,10 @@
 	{
 		"title": "Enter",
 		"tags": "",
-		"body": "Welcome to the WiSELab, Wireless Sensing and Embedded Systems Lab! <<image none>><<video none>>\nWhat do you want to do? [[Enter the ARENA]][[More WiSELab info]][[Who are you?]]",
+		"body": "Welcome to the WiSELab, Wireless Sensing and Embedded Systems Lab! <<transform couch>><<image none>><<video none>>\nWhat do you want to do? [[Enter the ARENA]][[More WiSELab info]][[Who are you?]]",
 		"position": {
-			"x": -3886,
-			"y": -1015
+			"x": -3885,
+			"y": -1014
 		},
 		"colorID": 4
 	},

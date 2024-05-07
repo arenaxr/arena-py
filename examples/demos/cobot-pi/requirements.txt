@@ -1,3 +1,2 @@
-arena-py
 pymycobot
 serial

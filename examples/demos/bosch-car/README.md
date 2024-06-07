@@ -1,17 +1,17 @@
 # Bosch Car Augmented Reality Live Digital Twin
-<img src="https://img.shields.io/badge/language-Python>=3.10-blue"/> 
-<img src="https://img.shields.io/badge/language-Arduino C++-blue"/> 
-<img src="https://img.shields.io/badge/platform-arenaxr.org-green"/> <img src="https://img.shields.io/badge/license-BSD 3 License-red"/> 
+<img src="https://img.shields.io/badge/language-Python>=3.10-blue"/> <img src="https://img.shields.io/badge/language-Arduino C++-blue"/> <img src="https://img.shields.io/badge/platform-arenaxr.org-green"/> <img src="https://img.shields.io/badge/license-BSD 3 License-red"/> 
 
 A demo showing a one-to-one mapping of a physical hardware component with a simulated digital twin. Here we see a toy car representing a common use case of machine maintenance and repair, and showing a live updated, real-time representation in a 3D virtual space overlaid in augmented reality.
 
 The toy car detects its state using sensors read by an Arduino, which it updates to a computer running a Python script using serial communication, whereby the state is then streamed to it's cloud digital twin counterpart in arenaxr.org.
 
-<img src="Images/Bosch_Car_Splash.gif" width="800"> *Augmented reality 3D scanned digital twin on left. Real physical hardware with human operator on right. 
+<img src="Images/Bosch_Car_Splash.gif" width="800"> 
+*Augmented reality 3D scanned digital twin on left. Real physical hardware with human operator on right. 
 
 Full video recorded on iPad Pro M2: https://www.youtube.com/watch?v=Dkri8WgtiOs*
 
-<img src="Images/Bosch_Car_POV.gif" width="800"> *First person mixed reality view of digital twin next to physical toy car disassembly process. 
+<img src="Images/Bosch_Car_POV.gif" width="800"> 
+*First person mixed reality view of digital twin next to physical toy car disassembly process. 
 
 Full video recorded on Meta Quest 3: https://youtu.be/GraLLFCjwF0*
 
@@ -33,7 +33,8 @@ py BoschCar.py -mh "arenaxr.org" -n "johnchoi" -s "BoschCarArduino" -p 0 0 0 -r 
 ```
  -mh = host | -n = namespace | -s = scene | -p = position | -r = rotation | -c = scale
 
-<img src="Images/Bosch_Car_Arena.png" width="800"> Scene link to digital twin: https://arenaxr.org/johnchoi/BoschCarArduino
+<img src="Images/Bosch_Car_Arena.png" width="800"> 
+Scene link to digital twin: https://arenaxr.org/johnchoi/BoschCarArduino
 
 *Note: Make sure that an Arduino Nano with `Bosch_Car.ino` loaded with the correct serial port name is attached! By default, the serial port name is `COM3` on Windows. Make sure to change line 19 in `BoschCar.py` with the correct serial port name for your computer.*
 
@@ -96,8 +97,8 @@ Here are some more useful diagrams of each module:
 
 ## How to Build
 Here is a step-by-step guide on how to build another one of these modified Bosch Cars with sensors for digital twins:
-<img src="Images/Assembly/Portrait/done.jpg" width="800">
 
+<img src="Images/Assembly/Portrait/done.jpg" width="800">
 
 |0|Step Description|Image|
 |-----------|-----------|------------------------------|

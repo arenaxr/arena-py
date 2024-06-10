@@ -56,25 +56,25 @@ def main():
 
 
 mmjoints = [
-    # 'base_link-base',  # limit: {lower: 0, upper: 0}
-    # 'flange-tool0',  # limit: {lower: 0, upper: 0}
-    'joint_1_s',  # limit: {lower: -2.9670597283903604, upper: 2.9670597283903604}
-    'joint_2_l',  # limit: {lower: -1.9198621771937625, upper: 2.2689280275926285}
-    'joint_3_u',  # limit: {lower: -1.1344640137963142, upper: 3.490658503988659}
-    'joint_4_r',  # limit: {lower: -3.490658503988659, upper: 3.490658503988659}
-    'joint_5_b',  # limit: {lower: -2.1467549799530254, upper: 2.1467549799530254}
-    'joint_6_t',  # limit: {lower: -7.941248096574199, upper: 7.941248096574199}
-    # 'joint_6_t-flange',  # limit: {lower: 0, upper: 0}
+    # 'base_link-base',  # limit: {lower: 0, upper: 0}, fixed
+    # 'flange-tool0',  # limit: {lower: 0, upper: 0}, fixed
+    'joint_1_s',  # limit: {lower: -2.9670597283903604, upper: 2.9670597283903604}, revolute
+    'joint_2_l',  # limit: {lower: -1.9198621771937625, upper: 2.2689280275926285}, revolute
+    'joint_3_u',  # limit: {lower: -1.1344640137963142, upper: 3.490658503988659}, revolute
+    'joint_4_r',  # limit: {lower: -3.490658503988659, upper: 3.490658503988659}, revolute
+    'joint_5_b',  # limit: {lower: -2.1467549799530254, upper: 2.1467549799530254}, revolute
+    'joint_6_t',  # limit: {lower: -7.941248096574199, upper: 7.941248096574199}, revolute
+    # 'joint_6_t-flange',  # limit: {lower: 0, upper: 0}, fixed
 ]
 mpjoints = [
-    # 'base_footprint_joint',  # limit: {lower: 0, upper: 0}
-    # 'lidar_1_joint',  # limit: {lower: 0, upper: 0}
-    'mp_400_wheel_back_left_joint',  # limit: {lower: -10000000000000000, upper: 10000000000000000}
-    'mp_400_wheel_back_right_joint',  # limit: {lower: -10000000000000000, upper: 10000000000000000}
-    'mp_400_wheel_front_left_joint',  # limit: {lower: -10000000000000000, upper: 10000000000000000}
-    'mp_400_wheel_front_right_joint',  # limit: {lower: -10000000000000000, upper: 10000000000000000}
-    'mp_400_wheel_left_joint',  # limit: {lower: -10000000000000000, upper: 10000000000000000}
-    'mp_400_wheel_right_joint',  # limit: {lower: -10000000000000000, upper: 10000000000000000}
+    # 'base_footprint_joint',  # limit: {lower: 0, upper: 0}, fixed
+    # 'lidar_1_joint',  # limit: {lower: 0, upper: 0}, fixed
+    'mp_400_wheel_back_left_joint',  # limit: {lower: -10000000000000000, upper: 10000000000000000}, fixed
+    'mp_400_wheel_back_right_joint',  # limit: {lower: -10000000000000000, upper: 10000000000000000}, fixed
+    'mp_400_wheel_front_left_joint',  # limit: {lower: -10000000000000000, upper: 10000000000000000}, fixed
+    'mp_400_wheel_front_right_joint',  # limit: {lower: -10000000000000000, upper: 10000000000000000}, fixed
+    'mp_400_wheel_left_joint',  # limit: {lower: -10000000000000000, upper: 10000000000000000}, fixed
+    'mp_400_wheel_right_joint',  # limit: {lower: -10000000000000000, upper: 10000000000000000}, fixed
 ]
 sec_range = 10
 
@@ -115,24 +115,3 @@ scene.run_tasks()
 # way points
 # {"object_id":"wp1","persist":true,"type":"object","action":"update","data":{"object_type":"entity","position":{"x":-4.06,"y":0.06,"z":-4.37}}}
 # {"object_id":"wp2","persist":true,"type":"object","action":"update","data":{"object_type":"entity","position":{"x":-1.85,"y":0.06,"z":20.69}}}
-
-# motoman.getObject3D('mesh').joints
-# dY {isObject3D: true, uuid: '58518d01-2224-4bb8-93ef-383038637514', name: 'base_link-base', type: 'URDFJoint', parent: d$, …}
-# dY {isObject3D: true, uuid: 'ccd1c2bb-20be-4679-8e61-3205a79ff0a8', name: 'flange-tool0', type: 'URDFJoint', parent: dX, …}
-# dY {isObject3D: true, uuid: 'eb34929e-7d83-4f32-a57b-635ea138293d', name: 'joint_1_s', type: 'URDFJoint', parent: d$, …}
-# dY {isObject3D: true, uuid: '9282662a-cf40-4770-aaa9-5945a73507a4', name: 'joint_2_l', type: 'URDFJoint', parent: dX, …}
-# dY {isObject3D: true, uuid: 'f2315018-4721-401f-a5a9-5295ebdcbafc', name: 'joint_3_u', type: 'URDFJoint', parent: dX, …}
-# dY {isObject3D: true, uuid: '93f1dfa3-3625-40c4-8ceb-60a19302d42c', name: 'joint_4_r', type: 'URDFJoint', parent: dX, …}
-# dY {isObject3D: true, uuid: '006e718d-14b6-4dab-a772-fe15ea61ba4b', name: 'joint_5_b', type: 'URDFJoint', parent: dX, …}
-# dY {isObject3D: true, uuid: '5a5c3073-080a-403c-bcd4-8411e39ec45c', name: 'joint_6_t', type: 'URDFJoint', parent: dX, …}
-# dY {isObject3D: true, uuid: 'e776933e-3873-48fe-9d22-198f45f1add2', name: 'joint_6_t-flange', type: 'URDFJoint', parent: dX, …}
-
-# mp400.getObject3D('mesh').joints
-# dY {isObject3D: true, uuid: 'd26db5dd-7606-428e-9501-6db85af53d9b', name: 'base_footprint_joint', type: 'URDFJoint', parent: d$, …}
-# dY {isObject3D: true, uuid: 'cef17b8e-f57a-4771-a2de-828eeacdc80a', name: 'lidar_1_joint', type: 'URDFJoint', parent: d$, …}
-# dY {isObject3D: true, uuid: 'e7c6432b-2e4c-45c4-926e-d3c67294c73b', name: 'mp_400_wheel_back_left_joint', type: 'URDFJoint', parent: dX, …}
-# dY {isObject3D: true, uuid: '50c02b1c-6813-494d-a607-54823baab1d1', name: 'mp_400_wheel_back_right_joint', type: 'URDFJoint', parent: dX, …}
-# dY {isObject3D: true, uuid: '2a3181b6-dde9-42c2-a863-6da0332596f8', name: 'mp_400_wheel_front_left_joint', type: 'URDFJoint', parent: dX, …}
-# dY {isObject3D: true, uuid: '18fb6071-e2d4-4a3b-b519-8ed11e06e9e5', name: 'mp_400_wheel_front_right_joint', type: 'URDFJoint', parent: dX, …}
-# dY {isObject3D: true, uuid: 'c2c6780c-4306-43f9-a466-31ec8c5aea85', name: 'mp_400_wheel_left_joint', type: 'URDFJoint', parent: dX, …}
-# dY {isObject3D: true, uuid: '1b43fddd-5515-43a7-80fd-25ba94a12cd7', name: 'mp_400_wheel_right_joint', type: 'URDFJoint', parent: dX, …}

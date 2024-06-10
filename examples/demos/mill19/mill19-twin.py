@@ -58,7 +58,7 @@ def main():
 mmjoints = [
     # 'base_link-base',  # limit: {lower: 0, upper: 0}
     # 'flange-tool0',  # limit: {lower: 0, upper: 0}
-    'joint_1_s',  # limit: {lower: -2.9670597283903604, upper: 2.9670597283903604
+    'joint_1_s',  # limit: {lower: -2.9670597283903604, upper: 2.9670597283903604}
     'joint_2_l',  # limit: {lower: -1.9198621771937625, upper: 2.2689280275926285}
     'joint_3_u',  # limit: {lower: -1.1344640137963142, upper: 3.490658503988659}
     'joint_4_r',  # limit: {lower: -3.490658503988659, upper: 3.490658503988659}
@@ -109,8 +109,8 @@ scene.run_tasks()
 # named joint lower upper: motoman.getObject3D('mesh').joints.joint_1_s.limit.upper
 
 # high bay model and second floor
-# {"object_id":"highbay","persist":true,"type":"object","action":"update","data":{"object_type":"gltf-model","url":"/store/users/agr/scans/mill19_2M_8K_v2.glb","position":{"x":0,"y":0.02108,"z":0},"rotation":{"w":1,"x":0,"y":0,"z":0},"scale":{"x":1,"y":1,"z":1},"hide-on-enter-ar":true}}
-# {"object_id":"floor2","persist":true,"type":"object","action":"update","data":{"object_type":"plane","height":12.31,"width":7.58,"position":{"x":5.20345,"y":4.536,"z":16.907},"rotation":{"w":0.7064337796563814,"x":0.7064337647694028,"y":0.03084356492222166,"z":-0.03084356427224214},"material":{"color":"#111111","side":"double"},"hide-on-enter-ar":true}}
+# {"object_id":"highbay","persist":true,"type":"object","action":"update","data":{"object_type":"gltf-model","url":"/store/users/agr/scans/mill19_2M_8K_v2.glb","position":{"x":0,"y":0,"z":0},"rotation":{"w":1,"x":0,"y":0,"z":0},"scale":{"x":1,"y":1,"z":1},"hide-on-enter-ar":true}}
+# {"object_id":"floor2","persist":true,"type":"object","action":"update","data":{"object_type":"plane","height":12.31,"width":7.58,"position":{"x":5.20345,"y":4.556,"z":16.907},"rotation":{"w":0.7064337796563814,"x":0.7064337647694028,"y":0.03084356492222166,"z":-0.03084356427224214},"material":{"color":"#111111","side":"double"},"hide-on-enter-ar":true}}
 
 # way points
 # {"object_id":"wp1","persist":true,"type":"object","action":"update","data":{"object_type":"entity","position":{"x":-4.06,"y":0.06,"z":-4.37}}}

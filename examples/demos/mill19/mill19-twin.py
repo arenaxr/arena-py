@@ -56,25 +56,25 @@ def main():
 
 
 mmjoints = [
-    # 'base_link-base',
-    # 'flange-tool0',
-    'joint_1_s',
-    'joint_2_l',
-    'joint_3_u',
-    'joint_4_r',
-    'joint_5_b',
-    'joint_6_t',
-    # 'joint_6_t-flange',
+    # 'base_link-base',  # limit: {lower: 0, upper: 0}
+    # 'flange-tool0',  # limit: {lower: 0, upper: 0}
+    'joint_1_s',  # limit: {lower: -2.9670597283903604, upper: 2.9670597283903604
+    'joint_2_l',  # limit: {lower: -1.9198621771937625, upper: 2.2689280275926285}
+    'joint_3_u',  # limit: {lower: -1.1344640137963142, upper: 3.490658503988659}
+    'joint_4_r',  # limit: {lower: -3.490658503988659, upper: 3.490658503988659}
+    'joint_5_b',  # limit: {lower: -2.1467549799530254, upper: 2.1467549799530254}
+    'joint_6_t',  # limit: {lower: -7.941248096574199, upper: 7.941248096574199}
+    # 'joint_6_t-flange',  # limit: {lower: 0, upper: 0}
 ]
 mpjoints = [
-    # 'base_footprint_joint',
-    # 'lidar_1_joint',
-    'mp_400_wheel_back_left_joint',
-    'mp_400_wheel_back_right_joint',
-    'mp_400_wheel_front_left_joint',
-    'mp_400_wheel_front_right_joint',
-    'mp_400_wheel_left_joint',
-    'mp_400_wheel_right_joint',
+    # 'base_footprint_joint',  # limit: {lower: 0, upper: 0}
+    # 'lidar_1_joint',  # limit: {lower: 0, upper: 0}
+    'mp_400_wheel_back_left_joint',  # limit: {lower: -10000000000000000, upper: 10000000000000000}
+    'mp_400_wheel_back_right_joint',  # limit: {lower: -10000000000000000, upper: 10000000000000000}
+    'mp_400_wheel_front_left_joint',  # limit: {lower: -10000000000000000, upper: 10000000000000000}
+    'mp_400_wheel_front_right_joint',  # limit: {lower: -10000000000000000, upper: 10000000000000000}
+    'mp_400_wheel_left_joint',  # limit: {lower: -10000000000000000, upper: 10000000000000000}
+    'mp_400_wheel_right_joint',  # limit: {lower: -10000000000000000, upper: 10000000000000000}
 ]
 sec_range = 10
 
@@ -104,7 +104,9 @@ def bend_joints():
 scene.run_tasks()
 
 # for docs
-# motoman.getObject3D('mesh').joints
+# names: motoman.getObject3D('mesh').joints
+# named joint lower limit: motoman.getObject3D('mesh').joints.joint_1_s.limit.lower
+# named joint lower upper: motoman.getObject3D('mesh').joints.joint_1_s.limit.upper
 
 # high bay model and second floor
 # {"object_id":"highbay","persist":true,"type":"object","action":"update","data":{"object_type":"gltf-model","url":"/store/users/agr/scans/mill19_2M_8K_v2.glb","position":{"x":0,"y":0.02108,"z":0},"rotation":{"w":1,"x":0,"y":0,"z":0},"scale":{"x":1,"y":1,"z":1},"hide-on-enter-ar":true}}
@@ -125,7 +127,7 @@ scene.run_tasks()
 # dY {isObject3D: true, uuid: '5a5c3073-080a-403c-bcd4-8411e39ec45c', name: 'joint_6_t', type: 'URDFJoint', parent: dX, …}
 # dY {isObject3D: true, uuid: 'e776933e-3873-48fe-9d22-198f45f1add2', name: 'joint_6_t-flange', type: 'URDFJoint', parent: dX, …}
 
-# mp400_model.getObject3D('mesh').joints
+# mp400.getObject3D('mesh').joints
 # dY {isObject3D: true, uuid: 'd26db5dd-7606-428e-9501-6db85af53d9b', name: 'base_footprint_joint', type: 'URDFJoint', parent: d$, …}
 # dY {isObject3D: true, uuid: 'cef17b8e-f57a-4771-a2de-828eeacdc80a', name: 'lidar_1_joint', type: 'URDFJoint', parent: d$, …}
 # dY {isObject3D: true, uuid: 'e7c6432b-2e4c-45c4-926e-d3c67294c73b', name: 'mp_400_wheel_back_left_joint', type: 'URDFJoint', parent: dX, …}

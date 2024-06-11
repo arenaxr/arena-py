@@ -55,7 +55,7 @@ wps = [
 motoman = UrdfModel(
     object_id="motoman",
     position={"x": 6.22, "y": 5.40, "z": 16.84},
-    rotation={"w": 0.70711, "x": -0.70711, "y": 0, "z": 0},
+    rotation={"x": -90, "y": 0, "z": 0},
     scale={"x": 1, "y": 1, "z": 1},
     url="store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
     urlBase="/store/users/mwfarb/xacro/motoman_gp4_support",
@@ -65,7 +65,7 @@ motoman_sign = ArenauiCard(
     object_id="motoman_sign",
     parent=motoman.object_id,
     title="Motoman GP7 GP8",
-    body="You found me!!!",
+    body="Awaiting status update...",
     position=(0, 0, 1),
     look_at="#my-camera",
     persist=True,
@@ -73,8 +73,8 @@ motoman_sign = ArenauiCard(
 # {"object_id":"mp400","persist":true,"type":"object","action":"update","data":{"object_type":"urdf-model","url":"store/users/mwfarb/xacro/neo_mp_400/robot_model/mp_400/mp_400.urdf.xacro","urlBase":"/store/users/mwfarb/xacro/neo_mp_400","position":{"x":-4.068,"y":0.06,"z":-4.37729},"rotation":{"w":0.707,"x":-0.707,"y":0,"z":0},"scale":{"x":1,"y":1,"z":1}}}
 mp400 = UrdfModel(
     object_id="mp400",
-    position=wps[1],
-    rotation={"w": 0.70711, "x": -0.70711, "y": 0, "z": 0},
+    position=wps[0],
+    rotation={"x": -90, "y": -90, "z": 0},
     scale={"x": 1, "y": 1, "z": 1},
     url="store/users/mwfarb/xacro/neo_mp_400/robot_model/mp_400/mp_400.urdf.xacro",
     urlBase="/store/users/mwfarb/xacro/neo_mp_400",
@@ -82,10 +82,10 @@ mp400 = UrdfModel(
 )
 mp400_sign = ArenauiCard(
     object_id="mp400_sign",
-    parent=mp400.object_id,
+    # parent=mp400.object_id,
     title="Mobile Robot MP-400",
-    body="Follow me!!!",
-    position=(0, 0, 1),
+    body="Awaiting status update...",
+    position=(wps[3]['x'], wps[3]['y']+1, wps[3]['z']),
     look_at="#my-camera",
     persist=True,
 )
@@ -104,14 +104,12 @@ def main():
 
 
 @scene.run_forever(interval_ms=100)
-def update_bots():
+def update_motoman():
     mmj = []
     t = time.time()
-
     # bend motoman arm joints
     offset = math.pi
     ratio = math.sin(t + offset)
-    print(ratio)
     for jointname, joint in mmjoints.items():
         lower_deg = math.degrees(joint['limit']['lower'])
         upper_deg = math.degrees(joint['limit']['upper'])
@@ -124,13 +122,40 @@ def update_bots():
         mmj).replace(':', '\t'), persist=False)
     scene.update_object(motoman_sign)
 
+
+@scene.run_forever(interval_ms=100)
+def update_mp400():
+    t = time.time()
     # move mp400 along floor
-    x = np.interp(ratio, [-1, 1], [wps[0]['x'], wps[1]['x']])
-    z = np.interp(ratio, [-1, 1], [wps[0]['z'], wps[1]['z']])
-    position = {'x': x, 'y': wps[0]['y'], 'z': z}
-    mp400.update_attributes(position=position, persist=False)
+    offset = math.pi
+    ratio = math.sin(t + offset)
+    if -1 <= ratio <= -.5:
+        wp1 = 0
+        wp2 = 1
+        r = -90
+    elif -.5 <= ratio <= 0:
+        wp1 = 1
+        wp2 = 2
+        r = -180
+    elif 0 <= ratio <= .5:
+        wp1 = 2
+        wp2 = 3
+        r = -270
+    else:
+        wp1 = 3
+        wp2 = 0
+        r = 0
+    xp = [-1+(wp1*.5), -.5+(wp1*.5)]
+
+    x = np.interp(ratio, xp, [wps[wp1]['x'], wps[wp2]['x']])
+    z = np.interp(ratio, xp, [wps[wp1]['z'], wps[wp2]['z']])
+    position = {'x': x, 'y': wps[wp1]['y'], 'z': z}
+    rotation = {'x': -90, 'y': r, 'z': 0}
+    mp400.update_attributes(
+        position=position, rotation=rotation, persist=False)
     scene.update_object(mp400)
-    mp400_sign.update_attributes(body=json.dumps(position), persist=False)
+    mp400_sign.update_attributes(
+        body=json.dumps({'position': position, 'rotation': rotation}, indent=4), persist=False)
     scene.update_object(mp400_sign)
 
 

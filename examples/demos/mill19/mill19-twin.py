@@ -114,8 +114,8 @@ def update_bots():
     print(ratio)
     for jointname, joint in mmjoints.items():
         lower_deg = math.degrees(joint['limit']['lower'])
-        uppper_deg = math.degrees(joint['limit']['upper'])
-        angle = np.interp(ratio, [-1, 1], [lower_deg, uppper_deg])
+        upper_deg = math.degrees(joint['limit']['upper'])
+        angle = np.interp(ratio, [-1, 1], [lower_deg, upper_deg])
         mmj.append(f"{jointname}:{angle}")
 
     motoman.update_attributes(joints=", ".join(mmj), persist=False)
@@ -125,9 +125,12 @@ def update_bots():
     scene.update_object(motoman_sign)
 
     # move mp400 along floor
-    # mp400.update_attributes(joints=", ".join(mmj), persist=False)
-    # scene.update_object(mp400)
-    mp400_sign.update_attributes(body=json.dumps(wps[1]), persist=False)
+    x = np.interp(ratio, [-1, 1], [wps[0]['x'], wps[1]['x']])
+    z = np.interp(ratio, [-1, 1], [wps[0]['z'], wps[1]['z']])
+    position = {'x': x, 'y': wps[0]['y'], 'z': z}
+    mp400.update_attributes(position=position, persist=False)
+    scene.update_object(mp400)
+    mp400_sign.update_attributes(body=json.dumps(position), persist=False)
     scene.update_object(mp400_sign)
 
 

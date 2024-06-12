@@ -6,7 +6,7 @@ import numpy as np
 
 from arena import *
 
-scene = Scene(host="arena-dev1.conix.io", namespace="mwfarb", scene="mill19")
+scene = Scene(host="arenaxr.org", namespace="agr", scene="mill19")
 
 # motoman joints
 mmjoints = {

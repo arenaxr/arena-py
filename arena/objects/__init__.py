@@ -21,6 +21,7 @@ from .icosahedron import *
 from .image import *
 from .light import *
 from .line import *
+from .obj_model import *
 from .ocean import *
 from .octahedron import *
 from .pcd_model import *
@@ -59,6 +60,7 @@ OBJECT_TYPE_MAP = {
     Image.object_type: Image,
     Light.object_type: Light,
     Line.object_type: Line,
+    ObjModel.object_type: ObjModel,
     Ocean.object_type: Ocean,
     Octahedron.object_type: Octahedron,
     PcdModel.object_type: PcdModel,

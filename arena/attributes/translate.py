@@ -73,6 +73,7 @@ ATTRIBUTE_KEYWORD_TRANSLATION = {
     "textinput": "textinput",
     "url": "url",
     "video_control": "video-control",
+    "visible": "visible",
 }
 
 KEYWORD_ATTRIBUTE_TRANSLATION = {
@@ -116,6 +117,7 @@ KEYWORD_ATTRIBUTE_TRANSLATION = {
     "textinput": "textinput",
     "url": "url",
     "video-control": "video_control",
+    "visible": "visible",
 }
 
 ATTRIBUTE_CLASS_TRANSLATION = {

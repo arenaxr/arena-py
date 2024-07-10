@@ -7,6 +7,7 @@ class UrdfModel(Object):
 
     :param str joints: Set joint values (in degrees) in the form 'JointName1: ValueInDegrees1, JointName2: ValueInDegrees2, ...'.  (optional)
     :param str url: Use File Store paths under 'store/users/username', see CDN and other storage options in the description above. (optional)
+    :param str urlBase: Base path for xacro/urdf package includes. This must be an absolute path with no trailing slash, e.g. '/store/users/username/robot' (optional)
     """
     object_type = "urdf-model"
 

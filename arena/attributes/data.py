@@ -58,6 +58,7 @@ class Data(Attribute):
     :param dict textinput: Opens an HTML prompt when clicked. Sends text input as an event on MQTT. Requires click-listener. (optional)
     :param str url: Use File Store paths under 'store/users/username', see CDN and other storage options in the description above. (optional)
     :param dict video_control: Adds a video to an entity and controls its playback. (optional)
+    :param bool visible: Whether object is visible. Property is inherited. Defaults to 'True' (optional)
     """
     def __init__(self, **kwargs):
         data = {}

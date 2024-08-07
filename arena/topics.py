@@ -1,6 +1,12 @@
 from types import SimpleNamespace
 from string import Template
 
+TOPIC_TYPES = SimpleNamespace(**{
+    'SCENE': 's',
+    'PROC': 'proc',
+    'DEVICE': 'd',
+})
+
 TOPIC_TOKENS = SimpleNamespace(**{
     'REALM': 0,
     'TYPE': 1,

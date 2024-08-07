@@ -17,7 +17,7 @@ from .attributes import *
 from .env import PROGRAM_OBJECT_ID, SCENE, _get_env
 from .events import *
 from .objects import *
-from .topics import TOPIC_TOKENS, TOPIC_TYPES, SCENE_MSGTYPES
+from .topics import TOPIC_TOKENS, TOPIC_TYPES, SCENE_MSGTYPES, PUBLISH_TOPICS
 from .utils import (ArenaCmdInterpreter, ArenaTelemetry, ProgramRunInfo,
                     QueueStats, Utils)
 
@@ -578,7 +578,7 @@ class Scene(ArenaMQTT):
         if "type" in obj:
             obj_type = obj["type"]
         with self.telemetry.start_publish_span(obj["object_id"], action, obj_type) as span:
-            if not self.can_publish:
+            if not self.can_publish_obj:
                 self.telemetry.set_error(f"ERROR: Publish failed! You do not have permission to publish to topic {self.root_topic} on {self.web_host}", span)
 
             topic = f"{self.root_topic}/{self.mqttc_id}/{obj['object_id']}"

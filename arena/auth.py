@@ -21,6 +21,8 @@ from google.auth import jwt as gJWT
 from google.auth.transport.requests import AuthorizedSession, Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 
+from .utils import topic_matches_sub
+
 _gauth_file = ".arena_google_auth"
 _mqtt_token_file = ".arena_mqtt_auth"
 _arena_user_dir = f"{str(Path.home())}/.arena"
@@ -162,7 +164,7 @@ class ArenaAuth:
         """
         tok = jwt.decode(token, options={"verify_signature": False})
         for pub in tok["publ"]:
-            if (topic.startswith(pub.strip().rstrip("/").rstrip("#"))):
+            if topic_matches_sub(pub.strip(), topic):
                 return True
         return False
 

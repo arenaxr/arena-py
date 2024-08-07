@@ -18,7 +18,7 @@ SUBSCRIBE = "sub"
 
 
 def on_msg_callback(scene, obj, msg, scene_msgtype):
-    print(f"<{scene.root_topic}> \"{msg}\"")
+    print(f"<{scene.root_topic}/{scene_msgtype}> \"{msg}\"")
 
 
 def on_custom_topic_callback(client, userdata, msg):
@@ -34,11 +34,13 @@ def send_msg(scene, topic, msg):
         # use object topic name if possible
         try:
             json_msg = json.loads(msg)
-            obj_topic = f"{scene.root_topic}/{json_msg['object_id']}"
+            obj_topic = PUBLISH_TOPICS.SCENE_OBJECTS.substitute(
+                {**scene.topicParams, **{"object_id": json_msg["object_id"]}}
+            )
+            print(f"Publishing to topic: <{obj_topic}>... ", end="")
+            scene.mqttc.publish(obj_topic, msg)
         except:
-            obj_topic = scene.root_topic
-        print(f"Publishing to topic: <{obj_topic}>... ", end="")
-        scene.mqttc.publish(obj_topic, msg)
+            print("Invalid message format!")
     else:
         print(f"Publishing to topic: <{topic}>... ", end="")
         scene.mqttc.publish(topic, msg)

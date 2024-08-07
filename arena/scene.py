@@ -581,7 +581,9 @@ class Scene(ArenaMQTT):
             if not self.can_publish_obj:
                 self.telemetry.set_error(f"ERROR: Publish failed! You do not have permission to publish to topic {self.root_topic} on {self.web_host}", span)
 
-            topic = f"{self.root_topic}/{self.mqttc_id}/{obj['object_id']}"
+            topic = PUBLISH_TOPICS.SCENE_OBJECTS.substitute(
+                {**self.topicParams, **{"object_id": obj['object_id']}}
+            )
             d = datetime.utcnow().isoformat()[:-3]+"Z"
 
             if custom_payload:

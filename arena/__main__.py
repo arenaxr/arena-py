@@ -9,6 +9,7 @@ import argparse
 import json
 
 from arena import *
+from .topics import PUBLISH_TOPICS
 
 # define defaults
 DEFAULT_WEB_HOST = "arenaxr.org"
@@ -16,7 +17,7 @@ PUBLISH = "pub"
 SUBSCRIBE = "sub"
 
 
-def on_msg_callback(scene, obj, msg):
+def on_msg_callback(scene, obj, msg, scene_msgtype):
     print(f"<{scene.root_topic}> \"{msg}\"")
 
 
@@ -51,7 +52,7 @@ def main(host, realm, scene, namespace, action, topic, message):
 
     if action == SUBSCRIBE:
         if topic is None:
-            print(f"Subscribing to topic: <{scene.subscribe_topic}>... ", end="")
+            print(f"Subscribing to topic(s): <{','.join(scene.subscribe_topics.values)}>... ", end="")
             scene.on_msg_callback = on_msg_callback
         else:
             print(f"Subscribing to topic: <{topic}>... ", end="")

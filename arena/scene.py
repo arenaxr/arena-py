@@ -177,13 +177,13 @@ class Scene(ArenaMQTT):
         argdict["scale"] = tuple(args.scale)
         return argdict
 
-    def exit(self, arg=0):
+    def exit(self, arg=None):
         """Custom exit to push errors to telemetry"""
         error_msg=None
-        if arg != 0:
+        if arg != None and arg != 0:
             error_msg = f"Exiting with sys.exit('{arg}')"
         self.telemetry.exit(error_msg)
-        os._exit(arg)
+        os._exit(0 if error_msg == None else 1)
 
     def on_connect(self, client, userdata, flags, rc):
         super().on_connect(client, userdata, flags, rc)
@@ -633,20 +633,24 @@ class Scene(ArenaMQTT):
                     # note: object from our list (not from persist)
                     persisted_obj = self.all_objects[object_id]
                     persisted_obj.persist = True
-                elif object_type != None:
-                    # note: instantiate even with empty attributes if object_type is unknown to arena-py
-                    obj_class = OBJECT_TYPE_MAP.get(object_type, Object)
-                    persisted_obj = obj_class(object_id=object_id, data=data)
-                    persisted_obj.persist = True
 
                     # replace program object, if matches our program id
                     if object_type == Program.object_type:
                         if os.environ.get(PROGRAM_OBJECT_ID) == object_id:
+                            print("PROGRAM_OBJECT_ID", PROGRAM_OBJECT_ID)
                             persisted_obj.persist = True
-                            self.program = persisted_obj
+                            self.program = Program(object_id=object_id, **data)
                         else:
-                            # dont persist program objet if not ours
+                            # dont persist program object if not ours
                             persisted_obj.persist = False
+
+                elif object_type != None:
+                    # note: instantiate even with empty attributes if object_type is unknown to arena-py
+                    obj_class = OBJECT_TYPE_MAP.get(object_type, Object)
+                    print("obj_class", obj_class)
+                    persisted_obj = obj_class(object_id=object_id, data=data)
+                    persisted_obj.persist = True
+
 
                 if persisted_obj is not None:
                     objs[object_id] = persisted_obj

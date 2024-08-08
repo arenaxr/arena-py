@@ -264,6 +264,7 @@ class ArenaMQTT(object):
 
         else:
             print(f"Connection error! Result code={rc}")
+            os._exit(1)
 
     def on_message(self, client, userdata, msg):
         # ignore own messages
@@ -280,6 +281,8 @@ class ArenaMQTT(object):
             print("Disconnected from the ARENA!")
         else:
             print(f"Disconnected! Result code={rc}.")
+
+        os._exit(rc)
 
     def disconnect(self):
         """Disconnects Paho MQTT client"""

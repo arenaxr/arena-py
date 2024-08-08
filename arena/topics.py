@@ -7,6 +7,13 @@ TOPIC_TYPES = SimpleNamespace(**{
     'DEVICE': 'd',
 })
 
+DEVICE_TOPIC_TOKENS = SimpleNamespace(**{
+    'REALM': 0,
+    'TYPE': 1,
+    'DEVICE_NAME': 2,
+    'UUID': 3,
+})
+
 TOPIC_TOKENS = SimpleNamespace(**{
     'REALM': 0,
     'TYPE': 1,
@@ -30,7 +37,7 @@ SCENE_MSGTYPES = SimpleNamespace(**{
 
 SUBSCRIBE_TOPICS = SimpleNamespace(**{
     'NETWORK':                '$NETWORK',
-    'DEVICE':                 Template('${realm}/d/${userName}/#'), # All client placeholder
+    'DEVICE':                 Template('${realm}/d/${deviceName}/#'), # All client placeholder
     'PROC_REG':               Template('${realm}/proc/reg'),
     'PROC_CTL':               Template('${realm}/proc/control/${uuid}/#'),
     'PROC_DBG':               Template('${realm}/proc/debug/${uuid}'),
@@ -41,7 +48,7 @@ SUBSCRIBE_TOPICS = SimpleNamespace(**{
 
 PUBLISH_TOPICS = SimpleNamespace(**{
     'NETWORK_LATENCY':        '$NETWORK/latency',
-    'DEVICE':                 Template('${realm}/d/${nameSpace}/${sceneName}/${idTag}'),
+    'DEVICE':                 Template('${realm}/d/${deviceName}/${idTag}'),
     'PROC_REG':               Template('${realm}/proc/reg'),
     'PROC_CTL':               Template('${realm}/proc/control'),
     'PROC_DBG':               Template('${realm}/proc/debug/${uuid}'),

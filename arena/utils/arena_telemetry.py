@@ -123,10 +123,12 @@ class ArenaTelemetry():
         # make sure we end parent span
         atexit.register(self.exit) 
              
-    def exit(self, error_msg=None):
+    def exit(self, error_msg=None, print_msg=True):
         """Record exit status on error """
+        if error_msg and print_msg: print(error_msg)
         if not self.enabled: return
-        if error_msg: self.parent_span.set_status(Status(StatusCode.ERROR, error_msg))
+        if error_msg: 
+            self.parent_span.set_status(Status(StatusCode.ERROR, error_msg))
         self.parent_span.end()
         self.exporter.force_flush()
         self.parent_span = INVALID_SPAN

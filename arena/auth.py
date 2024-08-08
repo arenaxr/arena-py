@@ -388,8 +388,14 @@ def _remove_credentials(cred_dir, expire=False):
             print(f"{err}, {test_mqtt_path}")
             os.remove(test_mqtt_path)
             return
-        mqtt_claims = jwt.decode(mqtt_token["token"], options={
-            "verify_signature": False})
+        try:
+            mqtt_claims = jwt.decode(mqtt_token["token"], options={
+                "verify_signature": False})
+        except Exception as err:
+            print(f"{err}, {test_mqtt_path}")
+            os.remove(test_mqtt_path)
+            return
+
         exp = float(mqtt_claims["exp"])
         now = time.time()
         if expire and now < exp:

@@ -308,16 +308,12 @@ class ArenaAuth:
             return res.read().decode("utf-8")
         except (requests.exceptions.ConnectionError, ConnectionError, URLError, HTTPError) as err:
             print(f"{err}: {url}")
-            if isinstance(err, HTTPError) and round(err.code, -2) == 400:
+            if isinstance(err, HTTPError) and err.code in (401, 403):
                 # user not authorized on website yet, they don"t have an ARENA username
                 us = urlsplit(url)
                 base_url = f"{us.scheme}://{us.netloc}"
-                print("Login with this account on the website first:")
-                print(f"Trying to open login page: {base_url}/user")
-                try:
-                    webbrowser.open_new_tab(f"{base_url}/user")
-                except (webbrowser.Error) as error:
-                    print(f"Console-only login. {error}")
+                print(f"Do you have a valid ARENA account on {base_url}?")
+                print(f"You can create an account in a web browser at: {base_url}/user")
             sys.exit("Terminating...")
 
 

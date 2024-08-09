@@ -290,6 +290,7 @@ class ArenaAuth:
         :param str csrf: The csrftoken.
         """
         urlparts = urlsplit(url)
+        res = None
         try:
             req = request.Request(url)
             if creds:
@@ -299,21 +300,25 @@ class ArenaAuth:
                 req.add_header("Cookie", f"csrftoken={csrf}")
                 req.add_header("X-CSRFToken", csrf)
             if self.verify(urlparts.netloc):
-                res = request.urlopen(req, data=data)
+                with request.urlopen(req, data=data) as f:
+                    res = f.read().decode("utf-8")
             else:
                 context = ssl.create_default_context()
                 context.check_hostname = False
                 context.verify_mode = ssl.CERT_NONE
-                res = request.urlopen(req, data=data, context=context)
-            return res.read().decode("utf-8")
+                with request.urlopen(req, data=data, context=context) as f:
+                    res = f.read().decode("utf-8")
+            return res
         except (requests.exceptions.ConnectionError, ConnectionError, URLError, HTTPError) as err:
             print(f"{err}: {url}")
+            if res is not None:
+                print(res)  # show additional errors in response if present
             if isinstance(err, HTTPError) and err.code in (401, 403):
                 # user not authorized on website yet, they don"t have an ARENA username
                 us = urlsplit(url)
                 base_url = f"{us.scheme}://{us.netloc}"
                 print(f"Do you have a valid ARENA account on {base_url}?")
-                print(f"You can create an account in a web browser at: {base_url}/user")
+                print(f"Create an account in a web browser at: {base_url}/user")
             sys.exit("Terminating...")
 
 

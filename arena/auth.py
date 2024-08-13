@@ -147,7 +147,7 @@ class ArenaAuth:
             if not os.path.exists(device_auth_dir):
                 os.makedirs(device_auth_dir)
             print(
-                f"Generate a token for this device at https://{web_host}/user/profile")
+                f"Generate a token for this device at https://{web_host}/user/v2/profile")
             mqtt_json = input(
                 "Paste auth MQTT full JSON here for this device: ")
             # save mqtt_token
@@ -231,7 +231,7 @@ class ArenaAuth:
 
     def _get_csrftoken(self, web_host):
         # get the csrftoken for django
-        csrf_url = f"https://{web_host}/user/login"
+        csrf_url = f"https://{web_host}/user/v2/login"
         client = requests.session()
         client.get(csrf_url, verify=self.verify(web_host))  # sets cookie
         if "csrftoken" in client.cookies:
@@ -247,7 +247,7 @@ class ArenaAuth:
         return self.urlopen(url)
 
     def _get_my_scenes(self, web_host, id_token):
-        url = f"https://{web_host}/user/my_scenes"
+        url = f"https://{web_host}/user/v2/my_scenes"
         if not self._csrftoken:
             self._csrftoken = self._get_csrftoken(web_host)
         params = {"id_token": id_token}
@@ -256,7 +256,7 @@ class ArenaAuth:
         return self.urlopen(url, data=data, csrf=self._csrftoken)
 
     def _get_user_state(self, web_host, id_token):
-        url = f"https://{web_host}/user/user_state"
+        url = f"https://{web_host}/user/v2/user_state"
         if not self._csrftoken:
             self._csrftoken = self._get_csrftoken(web_host)
         params = {"id_token": id_token}
@@ -265,7 +265,7 @@ class ArenaAuth:
         return self.urlopen(url, data=data, csrf=self._csrftoken)
 
     def _get_mqtt_token(self, web_host, realm, scene, username, id_token, video):
-        url = f"https://{web_host}/user/mqtt_auth"
+        url = f"https://{web_host}/user/v2/mqtt_auth"
         if not self._csrftoken:
             self._csrftoken = self._get_csrftoken(web_host)
         params = {

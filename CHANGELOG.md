@@ -4,6 +4,13 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [0.10.2](https://github.com/arenaxr/arena-py/compare/v0.10.1...v0.10.2) (2024-08-13)
+
+
+### Bug Fixes
+
+* bump requests dependancy ([e3b8a04](https://github.com/arenaxr/arena-py/commit/e3b8a048356de5256d97e4427bac81c8aa386948))
+
 ## [0.10.1](https://github.com/arenaxr/arena-py/compare/v0.10.0...v0.10.1) (2024-08-09)
 
 

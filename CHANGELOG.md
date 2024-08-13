@@ -4,6 +4,19 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [0.10.1](https://github.com/arenaxr/arena-py/compare/v0.10.0...v0.10.1) (2024-08-09)
+
+
+### Bug Fixes
+
+* add exit() when disconnected ([28944e2](https://github.com/arenaxr/arena-py/commit/28944e28fce168860137e531221a214282fc8761))
+* **auth:** log additional error messages during http errors ([bce90b7](https://github.com/arenaxr/arena-py/commit/bce90b7bce28d9694c55839620593b3fb07cdfa8))
+* **auth:** remove automatic browser open for 4xx status ([937a867](https://github.com/arenaxr/arena-py/commit/937a867b95c5ac3544148d4728dbcee068ef905e))
+* better error handling on malformed tokens ([0dd7a62](https://github.com/arenaxr/arena-py/commit/0dd7a620c93d4e677f9ddc379237df830762e75e))
+* **obj-model:** sync with latest schema, add ObjModel ([646baea](https://github.com/arenaxr/arena-py/commit/646baeab5e0bfa89d7ac183e64cc977ef2918087))
+* print error msgs on exit ([2200159](https://github.com/arenaxr/arena-py/commit/220015928c71e1172e0b3022f385844bc3188537))
+* replace program object from persist ([ca9b71a](https://github.com/arenaxr/arena-py/commit/ca9b71ac7623d537ff8d7d1f4836896fffe04ed5))
+
 ## [0.10.0](https://github.com/arenaxr/arena-py/compare/v0.9.6...v0.10.0) (2024-05-06)
 
 

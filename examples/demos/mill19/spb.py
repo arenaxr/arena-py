@@ -33,7 +33,7 @@ JOINTMAP = {
     "yk_architect.joint.6.position": "joint_6_t",
 }
 
-scene = Scene(host="arenaxr.org", namespace="agr", scene="mill19")
+scene = Scene(host="arenaxr.org", namespace="public", scene="mill19-mezzlab")
 
 # motoman joints
 mmjoints = {
@@ -58,9 +58,11 @@ mmjoints = {
 # {"object_id":"motoman","persist":true,"type":"object","action":"update","data":{"object_type":"urdf-model","url":"store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro","urlBase":"/store/users/mwfarb/xacro/motoman_gp4_support","position":{"x":6.22109,"y":5.30667,"z":16.84618},"rotation":{"w":0.707,"x":-0.707,"y":0,"z":0},"scale":{"x":1,"y":1,"z":1}}}
 moto_arch = UrdfModel(
     object_id="moto_arch",
-    position={"x": 7, "y": 6.40, "z": 16.35},
-    rotation={"x": -90, "y": 180, "z": 0},
-    scale={"x": 0.75, "y": 0.75, "z": 0.75},
+    # position={"x": 7, "y": 6.40, "z": 16.25},
+    position={"x": 0, "y": 0.66, "z": -0.45},
+    # rotation={"x": -90, "y": 180, "z": 0},
+    rotation={"x": -90, "y": -90, "z": 0},
+    scale={"x": 0.8, "y": 0.8, "z": 0.8},
     url="store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
     urlBase="/store/users/mwfarb/xacro/motoman_gp4_support",
     persist=True,
@@ -78,9 +80,11 @@ moto_arch_sign = ArenauiCard(
 
 moto_dest = UrdfModel(
     object_id="moto_dest",
-    position={"x": 6.22, "y": 6.40, "z": 16.25},
-    rotation={"x": -90, "y": 0, "z": 0},
-    scale={"x": 0.75, "y": 0.75, "z": 0.75},
+    # position={"x": 6.22, "y": 6.40, "z": 16.25},
+    position={"x": 0, "y": 0.66, "z": 0.4},
+    # rotation={"x": -90, "y": 0, "z": 0},
+    rotation={"x": -90, "y": 90, "z": 0},
+    scale={"x": 0.8, "y": 0.8, "z": 0.8},
     url="store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
     urlBase="/store/users/mwfarb/xacro/motoman_gp4_support",
     persist=True,
@@ -140,18 +144,18 @@ def callback_app_message(topic, payload):
                 updates = []
                 str_mmj_arch = ", ".join(mmj_arch)
                 str_mmj_dest = ", ".join(mmj_dest)
-                if str_mmj_arch != last_arch and len(mmj_arch) > 0:
+                if len(mmj_arch) > 0 and str_mmj_arch != last_arch:
                     last_arch = str_mmj_arch
                     moto_arch.update_attributes(joints=str_mmj_arch)
                     updates.append(moto_arch)
-                    moto_arch_sign.update_attributes(                        body="\n".join(mmj_arch).replace(":", "\t")                    )
+                    moto_arch_sign.update_attributes(body="\n".join(mmj_arch).replace(":", "\t"))
                     updates.append(moto_arch_sign)
 
-                if str_mmj_dest != last_dest and len(mmj_dest) > 0:
+                if len(mmj_dest) > 0 and str_mmj_dest != last_dest:
                     last_dest = str_mmj_dest
                     moto_dest.update_attributes(joints=str_mmj_dest)
                     updates.append(moto_dest)
-                    moto_dest_sign.update_attributes(                        body="\n".join(mmj_dest).replace(":", "\t")                    )
+                    moto_dest_sign.update_attributes(body="\n".join(mmj_dest).replace(":", "\t"))
                     updates.append(moto_dest_sign)
 
                 scene.update_objects(updates)

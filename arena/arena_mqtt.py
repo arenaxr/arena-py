@@ -13,8 +13,7 @@ from .auth import ArenaAuth
 from .env import (ARENA_PASSWORD, ARENA_USERNAME, MQTTH, NAMESPACE, REALM,
                   _get_env)
 from .event_loop import *
-
-from .topics import SUBSCRIBE_TOPICS, TOPIC_TYPES, PUBLISH_TOPICS
+from .topics import PUBLISH_TOPICS, SUBSCRIBE_TOPICS, TOPIC_TYPES
 
 
 class ArenaMQTT(object):
@@ -141,7 +140,7 @@ class ArenaMQTT(object):
         # check for valid permissions to write to all objects topics
         self.can_publish_obj = self.auth.has_publish_rights(
             token,
-            PUBLISH_TOPICS.SCENE_OBJECTS.substitute({**self.topicParams, **{"object_id": "anyfoobject"}})
+            PUBLISH_TOPICS.SCENE_OBJECTS.substitute({**self.topicParams, **{"objectId": "anyfoobject"}})
         )
 
         self.mqttc.username_pw_set(username=self.username, password=token)

@@ -9,6 +9,7 @@ import argparse
 import json
 
 from arena import *
+
 from .topics import PUBLISH_TOPICS
 
 # define defaults
@@ -35,7 +36,7 @@ def send_msg(scene, topic, msg):
         try:
             json_msg = json.loads(msg)
             obj_topic = PUBLISH_TOPICS.SCENE_OBJECTS.substitute(
-                {**scene.topicParams, **{"object_id": json_msg["object_id"]}}
+                {**scene.topicParams, **{"objectId": json_msg["object_id"]}}
             )
             print(f"Publishing to topic: <{obj_topic}>... ", end="")
             scene.mqttc.publish(obj_topic, msg)

@@ -17,7 +17,7 @@ from .attributes import *
 from .env import PROGRAM_OBJECT_ID, SCENE, _get_env
 from .events import *
 from .objects import *
-from .topics import TOPIC_TOKENS, TOPIC_TYPES, SCENE_MSGTYPES, PUBLISH_TOPICS
+from .topics import PUBLISH_TOPICS, SCENE_MSGTYPES, TOPIC_TOKENS, TOPIC_TYPES
 from .utils import (ArenaCmdInterpreter, ArenaTelemetry, ProgramRunInfo,
                     QueueStats, Utils)
 
@@ -238,7 +238,7 @@ class Scene(ArenaMQTT):
                 # Object updates only in these scene msg types
                 if scene_msgtype not in [
                     SCENE_MSGTYPES.USER,
-                    SCENE_MSGTYPES.OBJECT,
+                    SCENE_MSGTYPES.OBJECTS,
                     SCENE_MSGTYPES.PROGRAM
                 ]:
                     return
@@ -582,7 +582,7 @@ class Scene(ArenaMQTT):
                 self.telemetry.set_error(f"ERROR: Publish failed! You do not have permission to publish to topic {self.root_topic} on {self.web_host}", span)
 
             topic = PUBLISH_TOPICS.SCENE_OBJECTS.substitute(
-                {**self.topicParams, **{"object_id": obj['object_id']}}
+                {**self.topicParams, **{"objectId": obj['object_id']}}
             )
             d = datetime.utcnow().isoformat()[:-3]+"Z"
 

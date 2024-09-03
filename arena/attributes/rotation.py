@@ -1,7 +1,7 @@
 import math
 from ..utils import Utils
 from .attribute import Attribute
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 
 
 class Rotation(Attribute):
@@ -9,15 +9,28 @@ class Rotation(Attribute):
     Rotation attribute class to manage its properties in the ARENA: 3D object rotation in quaternion representation; Right-handed coordinate system. Euler degrees are deprecated in wire message format.
     Usage: `rotation=Rotation(...)` or `rotation=Rotation(x,y,z,w)` or `rotation=Rotation(x,y,z)` or `rotation=(x,y,z,w)` or `rotation=(x,y,z)`
 
-    :param float w: w Defaults to '1' (optional)
+    :param float|Iterable|Mapping w: w Defaults to '1' (optional)
     :param float x: x (optional)
     :param float y: y (optional)
     :param float z: z (optional)
     """
 
     def __init__(self, x=None, y=None, z=None, w=None):
-        if x is not None and (y is None or z is None or isinstance(x, Iterable)):
-            raise ValueError("Rotation takes x,y,z or x,y,z,w")
+        if isinstance(x, Mapping):
+            if "w" in x:
+                w = x["w"]
+            if "x" in x and "y" in x and "z" in x:
+                x, y, z = x["x"], x["y"], x["z"]
+            else:
+                raise ValueError("Rotation takes x,y,z,(w); a 3-4 element array or list; or a dict with {x,y,z,(w)}")
+        elif isinstance(x, Iterable):
+            if y is None and 3 <= len(x) <= 4:
+                if len(x) == 4:
+                    x, y, z = x
+                else:
+                    x, y, z, w = x
+            else:
+                raise ValueError("Rotation takes x,y,z,(w); a 3-4 element array or list; or a dict with {x,y,z,(w)}")
         x = x or 0
         y = y or 0
         z = z or 0
@@ -62,6 +75,16 @@ class Rotation(Attribute):
     def array(self):
         q = self.quaternion
         return [q.x, q.y, q.z, q.w]
+
+    @array.setter
+    def array(self, value):
+        if not isinstance(value, Iterable) or len(value) not in [3, 4] or isinstance(value, Mapping):
+            raise ValueError("Rotation array takes a 3-4 element array or list")
+        if len(value) == 3:
+            self.x, self.y, self.z = value
+            self.w = None
+        else:
+            self.x, self.y, self.z, self.w = value
 
     @classmethod
     def q2e(cls, q):

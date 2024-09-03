@@ -8,7 +8,7 @@ import time
 
 
 DEBUG = False  # Enable open3d debug messages, including ICP iteration details
-VISUALIZE = True  # Enable visualization of incoming meshes and ICP results
+VISUALIZE = False  # Enable visualization of incoming meshes and ICP results
 SAVE_MESHES = True  # Enable saving of incoming meshes to gltf files
 MIN_FITNESS_THRESHOLD = 0.9  # TODO: figure out cutoff for "wrong room mesh"
 USE_CUDA = False  # Enable CUDA acceleration. Requires CUDA GPU, build o3d from source
@@ -23,9 +23,10 @@ cuda_device = o3d.core.Device("CUDA:0")
 
 # This removes artificial boundary box created in Quest3 room meshes
 QUEST_CROP = 0.06
+QUEST_Y_CROP = 0.25
 
 
-def filter_registration_results(results, threshold=4):
+def filter_registration_results(results, threshold=1):
     filtered_results = []
     for result in results:
         if USE_CUDA:
@@ -146,7 +147,8 @@ def draw_registration_result(source, icp_transform, uniform_color=None):
         uniform_color = [0, 0, 1]
     if USE_CUDA:
         source_transformed = source.to_legacy()
-        icp_transform = icp_transform.cpu().numpy()
+        if icp_transform.cpu is not None:
+            icp_transform = icp_transform.cpu().numpy()
     else:
         source_transformed = o3d.geometry.PointCloud(source)
     source_transformed.transform(icp_transform)
@@ -205,7 +207,7 @@ def load_mesh_data(mesh_data, write=False, target=False):
     return mesh
 
 
-def create_pcd(mesh, point_density=300, write=False, crop_bounds=QUEST_CROP):
+def create_pcd(mesh, point_density=100, write=False, crop_bounds=QUEST_Y_CROP):
     """
     Creates a point cloud from a mesh using poisson disk sampling
     :param mesh: mesh to convert
@@ -216,26 +218,34 @@ def create_pcd(mesh, point_density=300, write=False, crop_bounds=QUEST_CROP):
     """
     area = mesh.get_surface_area()
     points = int(area * point_density)
+    start = time.time()
     pcd = mesh.sample_points_poisson_disk(
-        number_of_points=points, use_triangle_normal=True
+        number_of_points=points, use_triangle_normal=True, init_factor=5
     )
+    print("Poisson disk sampling time: ", time.time() - start)
+    distances = pcd.compute_nearest_neighbor_distance()
+    # Calculate standard deviation of distances
+    mean_dist = np.mean(distances)
+    std_dist = np.std(distances)
+    print("Mean distance: ", mean_dist, "std deviation: ", std_dist)
 
     if crop_bounds > 0:
-        obb = pcd.get_minimal_oriented_bounding_box(robust=True)
-        pcd.rotate(np.linalg.inv(obb.R))
+        # obb = pcd.get_minimal_oriented_bounding_box(robust=True)
+        # pcd.rotate(np.linalg.inv(obb.R))
         aabb = pcd.get_axis_aligned_bounding_box()
         min_bound = np.array(aabb.min_bound)
         max_bound = np.array(aabb.max_bound)
-        min_bound += crop_bounds
-        max_bound -= crop_bounds
+        min_bound[1] += crop_bounds
+        max_bound[1] -= crop_bounds
         aabb.min_bound = min_bound
         aabb.max_bound = max_bound
         pcd = pcd.crop(aabb)
-        pcd.rotate(obb.R)
+        # pcd.rotate(obb.R)
 
     if write:
         print("Writing target.pcd")
         o3d.io.write_point_cloud("target.pcd", pcd)
+    print("PCD creation time: ", time.time() - start, "total points: ", len(pcd.points))
     return pcd
 
 
@@ -272,7 +282,7 @@ def set_target_distance():
         print("Target distance: ", target_distance)
 
 
-def icp(src, target, distance=0, rotations=6):
+def icp(src, target, distance=0, rotations=12):
     """
     Given a source and target point cloud, attempts to align the source to the target
     :param src: source point cloud
@@ -308,7 +318,7 @@ def icp(src, target, distance=0, rotations=6):
     rot_matrix = rotation_matrix_y(360 / rotations)
 
     # Tukey loss function for robustness
-    sigma = 1
+    sigma = 200 / 1000
     if not USE_CUDA:
         loss = o3d.pipelines.registration.TukeyLoss(k=sigma)
         p2pl = o3d.pipelines.registration.TransformationEstimationPointToPlane(loss)
@@ -416,16 +426,17 @@ if target_pcd is not None:
 #     print("ICP fitness: ", res.fitness, ", transform:", res.transformation)
 #     draw_registration_result(src_pcd, res.transformation)
 
-# src_mesh = o3d.io.read_triangle_mesh("./meshes/mesh_64941_131610.glb")
+# start = time.time()
+# src_mesh = o3d.io.read_triangle_mesh("./meshes/mesh_77043_155502.glb")
 # if not src_mesh.has_triangle_normals():
 #     src_mesh.compute_triangle_normals()
 # if not src_mesh.has_vertex_normals():
 #     src_mesh.compute_vertex_normals()
-# src_pcd = create_pcd(src_mesh)
-# o3d.io.write_point_cloud("src.pcd", src_pcd)
+# src_pcd = create_pcd(src_mesh, point_density=200)
+# # o3d.io.write_point_cloud("src.pcd", src_pcd)
 #
-# src_pcd = o3d.io.read_point_cloud("src.pcd")
-# RANDOM_ROTATE = 50
+# # src_pcd = o3d.io.read_point_cloud("src.pcd")
+# RANDOM_ROTATE = -50
 # if RANDOM_ROTATE:
 #     src_pcd.rotate(rotation_matrix_y(RANDOM_ROTATE)[:3, :3])
 # src_pcd.paint_uniform_color([1, 0, 0])

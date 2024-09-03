@@ -4,6 +4,13 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [0.10.3](https://github.com/arenaxr/arena-py/compare/v0.10.2...v0.10.3) (2024-09-03)
+
+
+### Bug Fixes
+
+* typo len check of rot input ([e0af8c5](https://github.com/arenaxr/arena-py/commit/e0af8c56ee0029aba865496ccc1eb24f8eb6d133))
+
 ## [0.10.2](https://github.com/arenaxr/arena-py/compare/v0.10.1...v0.10.2) (2024-08-13)
 
 

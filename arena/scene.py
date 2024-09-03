@@ -5,7 +5,7 @@ import os
 import re
 import sys
 import threading
-import uuid
+import traceback
 from datetime import datetime
 from inspect import signature
 from pathlib import Path
@@ -335,7 +335,13 @@ class Scene(ArenaMQTT):
                         self.telemetry.set_error("No object id!", span)
 
                 except Exception as e:
-                    self.telemetry.set_error(f"Something went wrong, ignoring: {payload}. {e}")
+                    self.telemetry.set_error(
+                        f"Something went wrong!\n"
+                        f"-----------------------------\n"
+                        f"Source:\n{traceback.format_exc()}\n\n"
+                        f"Exception occured when processing payload: {payload}\n"
+                        f"-----------------------------\n"
+                    )
 
     def callback_wrapper(self, func, arg, msg):
         """Checks for number of arguments for callback"""
@@ -349,7 +355,7 @@ class Scene(ArenaMQTT):
         """Publishes an custom event. Could be user or library defined"""
         return self._publish(evt, action)
 
-    def generate_click_event(self, obj, type="mousedown", **kwargs):
+    def generate_click_event(self, obj: Object, type="mousedown", **kwargs):
         """Publishes an click event"""
         _type = type
         evt = Event(object_id=obj.object_id,
@@ -441,7 +447,7 @@ class Scene(ArenaMQTT):
             self.add_object(obj)
         return len(objs)
 
-    def update_object(self, obj, **kwargs):
+    def update_object(self, obj: Object, **kwargs):
         """Public function to update an object"""
         if kwargs:
             obj.update_attributes(**kwargs)
@@ -487,7 +493,7 @@ class Scene(ArenaMQTT):
         Object.remove(obj)
         return self._publish(payload, "delete", custom_payload=True)
 
-    def delete_attributes(self, obj, attributes=None):
+    def delete_attributes(self, obj: Object, attributes=None):
         """Public function to delete a list of 'attributes' as a string[], updating each to null"""
         updated_data = {}
         for attr in attributes:
@@ -501,9 +507,9 @@ class Scene(ArenaMQTT):
         }
         return self._publish(payload, "update", custom_payload=True)
 
-    def run_animations(self, obj):
+    def run_animations(self, obj: Object):
         """Runs all dispatched animations"""
-        if obj.animations:
+        if isinstance(obj, Object):
             payload = {
                 "object_id": obj.object_id,
                 "type": obj.type,
@@ -520,8 +526,10 @@ class Scene(ArenaMQTT):
                     self.create_delayed_task(obj, anim)
             obj.clear_animations()
             return self._publish(payload, "update", custom_payload=True)
+        else:
+            raise ValueError("obj must be of type Object!")
 
-    def create_delayed_task(self, obj, anim):
+    def create_delayed_task(self, obj: Object, anim: Animation | AnimationMixer):
         """
         Creates a delayed task to push the end state of an animation after the expected
         duration. Uses async sleep to avoid blocking.
@@ -550,7 +558,7 @@ class Scene(ArenaMQTT):
         delayed_task.object_id = obj.object_id
         return delayed_task
 
-    def _publish(self, obj, action, custom_payload=False):
+    def _publish(self, obj: Object, action, custom_payload=False):
         """Publishes to mqtt broker with "action":action"""
         obj_type = None
         if "type" in obj:
@@ -603,6 +611,9 @@ class Scene(ArenaMQTT):
                     persist_obj = obj_class(object_id=obj_id, data=data)
                     persist_obj.persist = True
 
+        if not persist_obj:
+            raise ValueError(f"object with object_id=\"{object_id}\" not found in persist!")
+
         return persist_obj
 
     def get_persisted_objs(self):
@@ -647,10 +658,8 @@ class Scene(ArenaMQTT):
                 elif object_type != None:
                     # note: instantiate even with empty attributes if object_type is unknown to arena-py
                     obj_class = OBJECT_TYPE_MAP.get(object_type, Object)
-                    print("obj_class", obj_class)
                     persisted_obj = obj_class(object_id=object_id, data=data)
                     persisted_obj.persist = True
-
 
                 if persisted_obj is not None:
                     objs[object_id] = persisted_obj
@@ -667,7 +676,7 @@ class Scene(ArenaMQTT):
 
     def get_writable_scenes(self):
         """ Request list of scene names for logged in user account that user has publish permission for.
-        Returns: list of scenes.
+            Returns: list of scenes.
         """
         return self.auth.get_writable_scenes(web_host=self.web_host)
 

@@ -9,7 +9,7 @@ class Position(Attribute):
     Position attribute class to manage its properties in the ARENA: 3D object position.
     Usage: `position=Position(...)` or `position=Position(x,y,z)` or `position=(x,y,z)`
 
-    :param float|Iterable|Mapping] x: x Defaults to '0' (optional)
+    :param float|Iterable|Mapping x: x Defaults to '0' (optional)
     :param float y: y (optional)
     :param float z: z (optional)
     """

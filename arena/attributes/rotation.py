@@ -25,7 +25,7 @@ class Rotation(Attribute):
                 raise ValueError("Rotation takes x,y,z,(w); a 3-4 element array or list; or a dict with {x,y,z,(w)}")
         elif isinstance(x, Iterable):
             if y is None and 3 <= len(x) <= 4:
-                if len(x) == 4:
+                if len(x) == 3:
                     x, y, z = x
                 else:
                     x, y, z, w = x

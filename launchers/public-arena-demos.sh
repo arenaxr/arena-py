@@ -1,7 +1,7 @@
 #!/bin/bash
 # Launch multiple programs per scene
 
-host="arena-dev1.conix.io"
+host="arenaxr.org"
 namespace="public"
 scene="arena"
 

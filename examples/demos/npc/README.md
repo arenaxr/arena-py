@@ -43,56 +43,110 @@ Each NPC "brain" is stored in a folder with three files, with the following name
 The `config.json` file contains all basic settings for the NPC you want to run. Here is a full list of what each configuration option does:
 
 ### ARENA
+These are connection settings that specify which server, account and room the NPC should live and run in.
+
 |SETTING|DESCRIPTION|SYNTAX|
 |-|-|-|
 |HOST|Which ARENA server we want to connect to. Should be "arenaxr.org" for most users.|STRING|
-|HOST|Which ARENA server we want to connect to. Should be "arenaxr.org" for most users.|STRING|
-|HOST|Which ARENA server we want to connect to. Should be "arenaxr.org" for most users.|STRING|
+|NAMESPACE|What user's domain we want to connect to. If scene is on user [USERNAME]'s account, change to [USERNAME]. Default is "public" for publically hosted scenes.|STRING|
+|SCENE|Which scene we want to connect to within the specified domain namespace. Default is "arena". |STRING|
 
 ### NODE
+This specifies which dialogue nodes the NPC should start and end at. There must be matching node names in `dialogue.json`.
+
 |SETTING|DESCRIPTION|SYNTAX|
 |-|-|-|
+|ENTER| Defines which node we start at in 'dialogue.json' file. Enter node name must match node name in 'dialogue.json'. |STRING|
+|EXIT| Defines which node to go to if out of bounds of 'dialogue.json' file. Exit node name must match node name in 'dialogue.json'. NPC dialogue will jump to this node when out of range. *(Note: range-based dialogue exit not implemented.)* |STRING|
 
 ### NPC
-|SETTING|DESCRIPTION|SYNTAX|
-|-|-|-|
+This defines basic visual settings of the NPC, in particular, the NPC's name, the NPC's 3D model, and the NPC's 2D icon.
 
-### USE_DEFAULTS
 |SETTING|DESCRIPTION|SYNTAX|
 |-|-|-|
+|NAME|Defines the name of the NPC. This is a prefix that is appended to all objects under this NPC to make it more easily searchable in the ArenaXR web editor. For example, if `NAME` is set to "MyNPC", all of its child objects will be prefixed with "MyNPC_".|STRING|
+|GLTF_URL|This is a URL to a 3D GLTF/GLB model in the ARENA filestore to represent the NPC. The model should have blendshapes and animations preconfigured to match the animation/blendshape names in `mappings.json` for more expressive behaviours.|STRING|
+|ICON_URL|This is a URL to a 2D image icon in the ARENA filestore to represent the NPC in its chat bubble. While not required, it is recommended to have an image with a square aspect ratio.|STRING|
+  
+### USE_DEFAULTS
+The NPC will automatically play default animations, blendshape morphs, and sounds for initializing, interacting, talking, idling, moving and blinking without requiring designated commands in every node in `dialogue.json` if these settings are enabled and the defaults are configured correctly in `mappings.json`.
+
+|SETTING|DESCRIPTION|SYNTAX|
+|-|-|-|
+|ANIMATIONS|If the model has default animations specified in `mappings.json`, set this to true, and false otherwise.|BOOLEAN|
+|MORPHS|If the model has default blendshape morphs specified in `mappings.json`, set this to true, and false otherwise.|BOOLEAN|
+|SOUNDS|If the model has default sound effects specified in `mappings.json`, set this to true, and false otherwise.|BOOLEAN|
 
 ### TIMERS
+The NPC will check the status of various timers at specified intervals before triggering resets, transforms, and speech. Note that we do not check the status of these timers every frame, as we do not want to spam/overload ArenaXR's servers with redundant messages.
+
 |SETTING|DESCRIPTION|SYNTAX|
 |-|-|-|
+|RESET| `INTERVAL` Number of milliseconds to elapse before checking this timer again. <br/> `TIME` Number of milliseconds with no activity to elapse before resetting this NPC. <br/> |{"INTERVAL": INT, "TIME": INT}|
+|TRANSFORM| `INTERVAL` Number of milliseconds to elapse before checking this timer again. <br/> `TIMER` The amount of time it takes to complete a transform command. <br/> |{"INTERVAL": INT, "TIMER": INT}|
+|SPEECH| `INTERVAL` Number of milliseconds to elapse before checking this timer again. <br/> `SPEED` The rate at which the NPC "speaks" by incrementally filling in chat text. <br/> |{"INTERVAL": INT, "SPEED": INT}|
 
 ### UI
+These are quick visual appearance settings for the NPC's speech and choice bubbles, which use [ArenaXR's Card UI templates.](https://docs.arenaxr.org/content/python-api/objects/arenaui_card.html)
+
 |SETTING|DESCRIPTION|SYNTAX|
 |-|-|-|
+|USE_NAME_AS_TITLE|Sets the NPC's speech bubble label as [NPC_NAME] if set to true, and removes speech bubble label if false.|BOOLEAN|
+|THEME|Set to "light" for light mode, and "dark" for dark mode.|STRING|
+|VERTICAL_BUTTONS|Sets user dialogue response choice bubbles vertically if true, and horizontally if false.|BOOLEAN|
+|FONT_SIZE|Sets the master font size of the NPC's speech and choice bubbles.|FLOAT|
+|TEXT_WIDTH|Sets the width of the text section of the NPC's speech bubble.|FLOAT|
+|ICON_WIDTH|Sets the width of the image icon section of the NPC's speech bubble.|FLOAT|
+|ICON_FILL|Sets the image icon's fill type of the NPC's speech bubble. Is either "cover", "contain", or "stretch". |STRING|
 
 ### ROOT
+The ROOT node is an invisible parent cube object that all NPC objects are children of. Move/rotate/scale the root, and all children NPC objects will follow accordingly.
+
 |SETTING|DESCRIPTION|SYNTAX|
 |-|-|-|
+|PARENT|Set [PARENT] to another object's name if you want the NPC's ROOT cube object to follow another object. Set this to "" if otherwise.|STRING|
+|SCALE|Sets the scale of NPC root cube object. By default, this should be {"x": 1,"y": 1,"z": 1}. *Note: It is highly recommended to keep all dimensions uniform to prevent weird scaling bugs.*|{"x": FLOAT,"y": FLOAT,"z": FLOAT}|
+|SIZE|This is the default width/height/depth dimension of the NPC ROOT debugging cube. Default is 0.2.|FLOAT|
+|POSITION|This is the default starting position of the NPC character. If you do not want the NPC to "hug" the center of the scene (making it hard to calibrate for AR), move this to something other than {"x": 0,"y": 0,"z": 0}.|{"x": FLOAT,"y": FLOAT,"z": FLOAT}|
+|ROTATION|This is the starting rotation of the NPC character, which is by default at a zero rotation: {"x": 0,"y": 0,"z": 0}.|{"x": FLOAT,"y": FLOAT,"z": FLOAT}|
+|COLOR|This is the color of the invisible NPC ROOT cube. Used for debugging purposes only. Each value goes from 0-255. Default {"r": 0, "g": 255, "b": 0}.|{"r": INT, "g": INT, "b": INT}|
+|OPACITY|This is opacity of the NPC ROOT cube, ranging from 0-1. Used for debugging purposes only. Set it to 0 to hide the cube. Set it to 1 to fully show it. Set it to 0.5 to make it half transparent.|FLOAT|
 
 ### GLTF
+This sets the position, rotation and scale offsets of the GLTF/GLB 3D object representation of the NPC. *Note: Not to be confused with the NPC ROOT position, rotation, and scale. Change ROOT if you want to "move/rotate/scale" the NPC. Change GLTF if you want to merely add offsets to the 3D model.*
+
 |SETTING|DESCRIPTION|SYNTAX|
 |-|-|-|
+|SCALE|This is the scale offset of the GLTF/GLB model, relative to the NPC ROOT cube object. By default, this should be {"x": 1,"y": 1,"z": 1}. |{"x": FLOAT,"y": FLOAT,"z": FLOAT}|
+|POSITION|This is the position offset of the GLTF/GLB model, relative to the NPC ROOT cube object. By default, this should be {"x": 0,"y": 0,"z": 0}. |{"x": FLOAT,"y": FLOAT,"z": FLOAT}|
+|ROTATION|This is the rotation offset of the GLTF/GLB model, relative to the NPC ROOT cube object. By default, this should be {"x": 0,"y": 0,"z": 0}. |{"x": FLOAT,"y": FLOAT,"z": FLOAT}|
 
 ### PLANE
 |SETTING|DESCRIPTION|SYNTAX|
 |-|-|-|
+|SIZE|Description...|STRING|
+|SIZE_DURATION|Description...|STRING|
+|POSITION|Description...|STRING|
+|ROTATION|Description...|STRING|
+|OPACITY|Description...|STRING|
 
 ### SPEECH
 |SETTING|DESCRIPTION|SYNTAX|
 |-|-|-|
+|EXIT|Description...|STRING|
+|EXIT|Description...|STRING|
 
 ### CHOICE
 |SETTING|DESCRIPTION|SYNTAX|
 |-|-|-|
+|EXIT|Description...|STRING|
+|EXIT|Description...|STRING|
 
 ### LINK
 |SETTING|DESCRIPTION|SYNTAX|
 |-|-|-|
-
+|EXIT|Description...|STRING|
+|EXIT|Description...|STRING|
 
 
 ## NPC mappings.json file

@@ -84,6 +84,54 @@ moto_dest_sign = ArenauiCard(
     look_at="#my-camera",
     persist=True,
 )
+moto_dest_sensor = Sphere(
+    object_id="moto_dest_sensor",
+    parent=moto_dest.object_id,
+    position=(0, 0, 1),
+    scale={"x": .1, "y": .1, "z": .1},
+    material={"color": "#00ff00"},
+    clickable=True,
+    persist=True,
+)
+
+def box_callback(scene, evt, msg):
+    global moto_dest_sensor
+    if evt.type == "mousedown":
+        # moto_dest_sensor.dispatch_animation(
+        moto_dest_sensor.update_attributes(
+            animation={
+                "property": "components.material.material.color",
+                "type": "color",
+                "from": "#00ff00",
+                "to": "#ff0000",
+                "dur": 1000,
+                "easing": "easeInOutBounce",
+                "loop": "once",
+                "autoplay": True,
+            },
+            persist=False,
+        )
+        scene.update_object(moto_dest_sensor)
+        # scene.run_animations(moto_dest_sensor)
+
+
+moto_dest_on = Box(
+    object_id="moto_dest_on",
+    position={"x": (6.22 - 4), "y": 6.40, "z": 16.25},
+    scale={"x": .1, "y": .1, "z": .1},
+    material={"color": "#00ff00"},
+    evt_handler=box_callback,
+    clickable=True,
+    persist=True,
+)
+moto_dest_off = Box(
+    object_id="moto_dest_off",
+    position={"x": (6.22 - 4.1), "y": 6.40, "z": 16.25},
+    scale={"x": .1, "y": .1, "z": .1},
+    material={"color": "#ff0000"},
+    clickable=True,
+    persist=True,
+)
 
 mp400 = UrdfModel(
     object_id="mp400",
@@ -109,7 +157,10 @@ mp400_sign = ArenauiCard(
 def main():
     scene.add_object(moto_dest_base)
     scene.add_object(moto_dest)
+    scene.add_object(moto_dest_sensor)
     scene.add_object(moto_dest_sign)
+    scene.add_object(moto_dest_on)
+    scene.add_object(moto_dest_off)
     scene.add_object(mp400)
     scene.add_object(mp400_sign)
     # scene.add_object(Sphere(scale=(.1, .1, .1), position=waypoints[0]))

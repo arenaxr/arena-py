@@ -54,7 +54,7 @@ wps = [
 moto_dest_base = Object(
     object_id="moto_dest_base",
     position={"x": 6.22, "y": 6.40, "z": 16.25},
-    #position={"x": 0, "y": 0.66, "z": 0.4},
+    # position={"x": 0, "y": 0.66, "z": 0.4},
     animation={
         "property": "rotation",
         "from": "0 0 0",
@@ -87,32 +87,30 @@ moto_dest_sign = ArenauiCard(
 moto_dest_sensor = Sphere(
     object_id="moto_dest_sensor",
     parent=moto_dest.object_id,
-    position=(0, 0, 1),
+    position=(0, 0, -.5),
     scale={"x": .1, "y": .1, "z": .1},
     material={"color": "#00ff00"},
     clickable=True,
     persist=True,
 )
 
+
 def box_callback(scene, evt, msg):
     global moto_dest_sensor
     if evt.type == "mousedown":
-        # moto_dest_sensor.dispatch_animation(
         moto_dest_sensor.update_attributes(
             animation={
                 "property": "components.material.material.color",
                 "type": "color",
                 "from": "#00ff00",
                 "to": "#ff0000",
-                "dur": 1000,
-                "easing": "easeInOutBounce",
+                "dur": 3000,
+                "easings": "easeInOutBounce",
                 "loop": "once",
                 "autoplay": True,
             },
-            persist=False,
         )
         scene.update_object(moto_dest_sensor)
-        # scene.run_animations(moto_dest_sensor)
 
 
 moto_dest_on = Box(

@@ -51,26 +51,40 @@ wps = [
     {"x": 7.95, "y": 4.60, "z": 17.90},
 ]
 
-# {"object_id":"motoman","persist":true,"type":"object","action":"update","data":{"object_type":"urdf-model","url":"store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro","urlBase":"/store/users/mwfarb/xacro/motoman_gp4_support","position":{"x":6.22109,"y":5.30667,"z":16.84618},"rotation":{"w":0.707,"x":-0.707,"y":0,"z":0},"scale":{"x":1,"y":1,"z":1}}}
-motoman = UrdfModel(
-    object_id="motoman",
-    position={"x": 6.22, "y": 5.40, "z": 16.84},
-    rotation={"x": -90, "y": 0, "z": 0},
+moto_dest_base = Object(
+    object_id="moto_dest_base",
+    position={"x": 6.22, "y": 6.40, "z": 16.25},
+    #position={"x": 0, "y": 0.66, "z": 0.4},
+    animation={
+        "property": "rotation",
+        "from": "0 0 0",
+        "to": "0 360 0",
+        "loop": True,
+        "dur": 20000,
+        "easing": "linear"
+    },
+    persist=True,
+)
+moto_dest = UrdfModel(
+    object_id="moto_dest",
+    parent="moto_dest_base",
+    # rotation={"x": -90, "y": 0, "z": 0},
+    rotation={"x": -90, "y": 90, "z": 0},
     scale={"x": 1, "y": 1, "z": 1},
     url="store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
     urlBase="/store/users/mwfarb/xacro/motoman_gp4_support",
     persist=True,
 )
-motoman_sign = ArenauiCard(
-    object_id="motoman_sign",
-    parent=motoman.object_id,
+moto_dest_sign = ArenauiCard(
+    object_id="moto_dest_sign",
+    parent=moto_dest.object_id,
     title="Motoman GP7 GP8",
     body="Awaiting status update...",
     position=(0, 0, 1),
     look_at="#my-camera",
     persist=True,
 )
-# {"object_id":"mp400","persist":true,"type":"object","action":"update","data":{"object_type":"urdf-model","url":"store/users/mwfarb/xacro/neo_mp_400/robot_model/mp_400/mp_400.urdf.xacro","urlBase":"/store/users/mwfarb/xacro/neo_mp_400","position":{"x":-4.068,"y":0.06,"z":-4.37729},"rotation":{"w":0.707,"x":-0.707,"y":0,"z":0},"scale":{"x":1,"y":1,"z":1}}}
+
 mp400 = UrdfModel(
     object_id="mp400",
     position=wps[0],
@@ -93,8 +107,9 @@ mp400_sign = ArenauiCard(
 
 @scene.run_once
 def main():
-    scene.add_object(motoman)
-    scene.add_object(motoman_sign)
+    scene.add_object(moto_dest_base)
+    scene.add_object(moto_dest)
+    scene.add_object(moto_dest_sign)
     scene.add_object(mp400)
     scene.add_object(mp400_sign)
     # scene.add_object(Sphere(scale=(.1, .1, .1), position=waypoints[0]))
@@ -104,7 +119,7 @@ def main():
 
 
 @scene.run_forever(interval_ms=100)
-def update_motoman():
+def update_moto_dest():
     mmj = []
     t = time.time()
     # bend motoman arm joints
@@ -116,11 +131,11 @@ def update_motoman():
         angle = np.interp(ratio, [-1, 1], [lower_deg, upper_deg])
         mmj.append(f"{jointname}:{angle}")
 
-    motoman.update_attributes(joints=", ".join(mmj), persist=False)
-    scene.update_object(motoman)
-    motoman_sign.update_attributes(body="\n".join(
+    moto_dest.update_attributes(joints=", ".join(mmj), persist=False)
+    scene.update_object(moto_dest)
+    moto_dest_sign.update_attributes(body="\n".join(
         mmj).replace(':', '\t'), persist=False)
-    scene.update_object(motoman_sign)
+    scene.update_object(moto_dest_sign)
 
 
 @scene.run_forever(interval_ms=100)

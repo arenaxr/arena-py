@@ -87,24 +87,32 @@ moto_dest_sign = ArenauiCard(
 moto_dest_sensor = Sphere(
     object_id="moto_dest_sensor",
     parent=moto_dest.object_id,
-    position=(0, 0, -.5),
+    position=(0, 0, .75),
     scale={"x": .1, "y": .1, "z": .1},
-    material={"color": "#00ff00"},
+    material={"color": "#00ff00", "opacity": .75},
     clickable=True,
     persist=True,
 )
 
 
-def box_callback(scene, evt, msg):
+def sensor_on_callback(scene, evt, msg):
+    sensor_animate(scene, evt, "#00ff00", "#ff0000", 2000)
+
+
+def sensor_off_callback(scene, evt, msg):
+    sensor_animate(scene, evt, "#ff0000", "#00ff00", 500)
+
+
+def sensor_animate(scene, evt, start, end, dur):
     global moto_dest_sensor
     if evt.type == "mousedown":
         moto_dest_sensor.update_attributes(
             animation={
                 "property": "components.material.material.color",
                 "type": "color",
-                "from": "#00ff00",
-                "to": "#ff0000",
-                "dur": 3000,
+                "from": start,
+                "to": end,
+                "dur": dur,
                 "easings": "easeInOutBounce",
                 "loop": "once",
                 "autoplay": True,
@@ -118,7 +126,7 @@ moto_dest_on = Box(
     position={"x": (6.22 - 4), "y": 6.40, "z": 16.25},
     scale={"x": .1, "y": .1, "z": .1},
     material={"color": "#00ff00"},
-    evt_handler=box_callback,
+    evt_handler=sensor_on_callback,
     clickable=True,
     persist=True,
 )
@@ -127,6 +135,7 @@ moto_dest_off = Box(
     position={"x": (6.22 - 4.1), "y": 6.40, "z": 16.25},
     scale={"x": .1, "y": .1, "z": .1},
     material={"color": "#ff0000"},
+    evt_handler=sensor_off_callback,
     clickable=True,
     persist=True,
 )

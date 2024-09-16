@@ -1,4 +1,5 @@
 import asyncio
+import math
 import threading
 import time
 
@@ -41,8 +42,8 @@ scene = Scene(host="arenaxr.org", namespace="public", scene="mill19-mezzlab")
 
 # motoman joints
 mmjoints = {
-    # 'base_link-base',  # limit: {lower: 0, upper: 0}, fixed
-    # 'flange-tool0',  # limit: {lower: 0, upper: 0}, fixed
+    # 'base_link-base', # limit: {lower: 0, upper: 0}, fixed
+    # 'flange-tool0', # limit: {lower: 0, upper: 0}, fixed
     # revolute
     "joint_1_s": {"limit": {"lower": -2.9670597283903604, "upper": 2.9670597283903604}},
     # revolute
@@ -55,7 +56,7 @@ mmjoints = {
     "joint_5_b": {"limit": {"lower": -2.1467549799530254, "upper": 2.1467549799530254}},
     # revolute
     "joint_6_t": {"limit": {"lower": -7.941248096574199, "upper": 7.941248096574199}},
-    # 'joint_6_t-flange',  # limit: {lower: 0, upper: 0}, fixed
+    # 'joint_6_t-flange', # limit: {lower: 0, upper: 0}, fixed
 }
 
 
@@ -65,11 +66,12 @@ table = Box(
     depth=1.5,
     height=1,
     width=6,
-    position={"x": -2.5, "y": -0.5, "z": 0},
+    position=(-2.5, -0.5, 0),
     material={"color": "#7f7f7f"},
     material_extras={"transparentOccluder": True},
     persist=True,
-    hide_on_enter_ar=True,
+    hide_on_enter_ar=False,
+    hide_on_enter_vr=True,
 )
 
 
@@ -81,11 +83,11 @@ mo = (0, -.66, 0)
 # ########### moto_arch ##########
 moto_arch = UrdfModel(
     object_id="moto_arch",
-    # position={"x": 7, "y": 6.40, "z": 16.25},
-    position={"x": 0+mo[0], "y": 0.66+mo[1], "z": -0.45+mo[2]},
-    # rotation={"x": -90, "y": 180, "z": 0},
-    rotation={"x": -90, "y": -90, "z": 0},
-    scale={"x": 0.8, "y": 0.8, "z": 0.8},
+    # position=(7, 6.40, 16.25),
+    position=(0+mo[0], 0.66+mo[1], -0.45+mo[2]),
+    # rotation=(-90, 180, 0),
+    rotation=(-90, -90, 0),
+    scale=(0.8, 0.8, 0.8),
     url="store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
     urlBase="/store/users/mwfarb/xacro/motoman_gp4_support",
     persist=True,
@@ -106,9 +108,9 @@ moto_arch_sign = ArenauiCard(
 # ########### moto_dest ##########
 moto_dest_base = Object(
     object_id="moto_dest_base",
-    # position={"x": 6.22, "y": 6.40, "z": 16.25},
-    position={"x": 0+mo[0], "y": 0.66+mo[1], "z": 0.4+mo[2]},
-    scale={"x": 0.8, "y": 0.8, "z": 0.8},
+    # position=(6.22, 6.40, 16.25},
+    position=(0+mo[0], 0.66+mo[1], 0.4+mo[2]),
+    scale=(0.8, 0.8, 0.8),
     animation=None,
     # animation={
     #     "property": "rotation",
@@ -123,9 +125,9 @@ moto_dest_base = Object(
 moto_dest = UrdfModel(
     object_id="moto_dest",
     parent="moto_dest_base",
-    # rotation={"x": -90, "y": 0, "z": 0},
-    rotation={"x": -90, "y": 90, "z": 0},
-    scale={"x": 1, "y": 1, "z": 1},
+    # rotation=(-90, 0, 0),
+    rotation=(-90, 90, 0),
+    scale=(1, 1, 1),
     url="store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
     urlBase="/store/users/mwfarb/xacro/motoman_gp4_support",
     persist=True,
@@ -148,7 +150,7 @@ moto_dest_sensor = Sphere(
     # parent=moto_dest.object_id,
     # position=(.2, .2, 0),
     position=(-.1, 0, .1),
-    scale={"x": .1, "y": .1, "z": .1},
+    scale=(.1, .1, .1),
     material={"color": "#00ff00", "opacity": 0},
     clickable=True,
     persist=True,
@@ -205,9 +207,9 @@ def sensor_animate(scene, evt, start, end, dur):
 
 moto_dest_on = Box(
     object_id="moto_dest_on",
-    position={"x": (0 - 4), "y": 0.66, "z": 0.4},
-    # position={"x": (6.22 - 4), "y": 6.40, "z": 16.25},
-    scale={"x": .1, "y": .1, "z": .1},
+    position=((0 - 4), 0.66, 0.4),
+    # position=((6.22 - 4), 6.40, 16.25),
+    scale=(.1, .1, .1),
     material={"color": "#00ff00"},
     evt_handler=sensor_on_callback,
     clickable=True,
@@ -216,9 +218,9 @@ moto_dest_on = Box(
 )
 moto_dest_off = Box(
     object_id="moto_dest_off",
-    position={"x": (0 - 4.1), "y": 0.66, "z": 0.4},
-    # position={"x": (6.22 - 4.1), "y": 6.40, "z": 16.25},
-    scale={"x": .1, "y": .1, "z": .1},
+    position=((0 - 4.1), 0.66, 0.4),
+    # position=((6.22 - 4.1), 6.40, 16.25),
+    scale=(.1, .1, .1),
     material={"color": "#ff0000"},
     evt_handler=sensor_off_callback,
     clickable=True,
@@ -227,43 +229,68 @@ moto_dest_off = Box(
 )
 
 # ########### AMR MP400 ##########
-# {"x": 5.20, "y": 4.60, "z": 17.90},
-# {"x": 5.20, "y": 4.60, "z": 12.90},
-# {"x": 7.95, "y": 4.60, "z": 12.90},
-# {"x": 7.95, "y": 4.60, "z": 17.90},
+# (5.20, 4.60, 17.90),
+# (5.20, 4.60, 12.90),
+# (7.95, 4.60, 12.90),
+# (7.95, 4.60, 17.90),
+
+x1, x2 = 1.1, -3
 y1 = -1
-
-x1 = 1.1
-x2 = -3
-
-z1 = -2
-z2 = 1.5
-
+z1, z2 = -2, 1.5
+duration_s = 10
 wps = [
-    {"x": x1, "y": y1, "z": z1},
-    {"x": x1, "y": y1, "z": z2},
-    {"x": x2, "y": y1, "z": z2},
-    {"x": x2, "y": y1, "z": z1},
-
-    # {"x": x1, "y": y1, "z": z2},
-    # {"x": x2, "y": y1, "z": z2},
-    # {"x": x2, "y": y1, "z": z2},
-    # {"x": x1, "y": y1, "z": z2},
+    (x1, y1, z1),
+    (x1, y1, z2),
+    (x2, y1, z2),
+    (x2, y1, z1),
 ]
+dist_total = 0.0
+for i, wp in enumerate(wps):
+    wp1 = i
+    if i == len(wps) - 1:
+        wp2 = 0
+    else:
+        wp2 = i + 1
+    dist_total = dist_total + math.dist(np.array(wps[wp1]), np.array(wps[wp2]))
+
+
+def pos_by_time(sec: float):
+    global wps, duration_s, dist_total
+    ratio_total = sec / duration_s
+    dist_total_target = ratio_total * dist_total
+    ratio = 1.0
+    dist = 0.0
+    for i, wp in enumerate(wps):
+        wp1 = i
+        if i == len(wps) - 1:
+            wp2 = 0
+        else:
+            wp2 = i + 1
+        dist_seg = math.dist(np.array(wps[wp1]), np.array(wps[wp2]))
+
+        if (dist + dist_seg) < dist_total_target:
+            dist = dist + dist_seg
+        else:
+            ratio = (dist_total_target - dist) / dist_seg
+            break
+    # return ratio of the current segment
+    return ratio, wp1, wp2
+
+
 mp400_base = Object(
     object_id="mp400_base",
     position=wps[0],
     # position=(1.1, -1, -2),
-    rotation={"x": 0, "y": 90, "z": 0},
-    scale={"x": 1, "y": 1, "z": 1},
+    rotation=(0, 90, 0),
+    scale=(1, 1, 1),
     persist=True,
 )
 mp400 = UrdfModel(
     object_id="mp400",
     parent="mp400_base",
-    position={'x': 0, 'y': 0, 'z': 0},
-    rotation={'x': -90, 'y': 270, 'z': 0},
-    scale={"x": 1, "y": 1, "z": 1},
+    position=(0, 0, 0),
+    rotation=(-90, 270, 0),
+    scale=(1, 1, 1),
     url="store/users/mwfarb/xacro/neo_mp_400/robot_model/mp_400/mp_400.urdf.xacro",
     urlBase="/store/users/mwfarb/xacro/neo_mp_400",
     persist=True,
@@ -271,9 +298,9 @@ mp400 = UrdfModel(
 )
 mp400_sign = ArenauiCard(
     object_id="mp400_sign",
-    title="Mobile Robot MP-400",
+    title="Autonomous Mobile Robot (AMR) MP-400",
     body="Awaiting status update...",
-    position=(wps[0]['x'], wps[0]['y']+2, wps[0]['z']),
+    position=(wps[0][0], wps[0][1] + 2, wps[0][2]),
     look_at="#my-camera",
     persist=True,
 )
@@ -294,46 +321,27 @@ def main():
     scene.add_object(mp400)
     scene.add_object(mp400_sign)
     scene.add_object(table)
-    # scene.add_object(
-    #     Sphere(scale=(.1, .1, .1), position=wps[0], remote_render={"enabled": False}))
-    # scene.add_object(
-    #     Sphere(scale=(.1, .1, .1), position=wps[1], remote_render={"enabled": False}))
-    # scene.add_object(
-    #     Sphere(scale=(.1, .1, .1), position=wps[2], remote_render={"enabled": False}))
-    # scene.add_object(
-    #     Sphere(scale=(.1, .1, .1), position=wps[3], remote_render={"enabled": False}))
+    for wp in wps:
+        scene.add_object(
+            Sphere(scale=(.1, .1, .1), position=wp, remote_render={"enabled": False}))
 
 
 @ scene.run_forever(interval_ms=100)
 def update_mp400():
+    global duration_s
     t = time.time()
     # move mp400 along floor
-    offset = math.pi
-    ratio = math.sin(t + offset)
-    if -1 <= ratio <= -.5:
-        wp1 = 0
-        wp2 = 1
-        r = -180
-    elif -.5 <= ratio <= 0:
-        wp1 = 1
-        wp2 = 2
-        r = -180
-    elif 0 <= ratio <= .5:
-        wp1 = 2
-        wp2 = 3
-        r = -180
-    else:
-        wp1 = 3
-        wp2 = 0
-        r = -180
-    xp = [-1+(wp1*.5), -.5+(wp1*.5)]
+    sec = (t % duration_s)
+    ratio, wp1, wp2 = pos_by_time(sec)
+    xp = [0, 1]
 
-    x = np.interp(ratio, xp, [wps[wp1]['x'], wps[wp2]['x']])
-    z = np.interp(ratio, xp, [wps[wp1]['z'], wps[wp2]['z']])
-    position = {'x': x, 'y': wps[wp1]['y'], 'z': z}
+    x = np.interp(ratio, xp, [wps[wp1][0], wps[wp2][0]])
+    y = np.interp(ratio, xp, [wps[wp1][1], wps[wp2][1]])
+    z = np.interp(ratio, xp, [wps[wp1][2], wps[wp2][2]])
+    position = (x, y, z)
     mp400_base.update_attributes(
         position=position,
-        look_at=f"{wps[wp2]['x']} {wps[wp2]['y']} {wps[wp2]['z']}",
+        look_at=f"{wps[wp2][0]} {wps[wp2][1]} {wps[wp2][2]}",
         persist=False
     )
     scene.update_object(mp400_base)

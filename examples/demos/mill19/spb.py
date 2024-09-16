@@ -58,9 +58,25 @@ mmjoints = {
     # 'joint_6_t-flange',  # limit: {lower: 0, upper: 0}, fixed
 }
 
+
+# ########### table ##########
+table = Box(
+    object_id="table",
+    depth=1.5,
+    height=1,
+    width=6,
+    position={"x": -2.5, "y": -0.5, "z": 0},
+    material={"color": "#7f7f7f"},
+    material_extras={"transparentOccluder": True},
+    persist=True,
+    hide_on_enter_ar=True,
+)
+
+
 # motoman robots offset
 mo = (0, -.66, 0)
 # mo = (0, -10, 0)
+
 
 # ########### moto_arch ##########
 moto_arch = UrdfModel(
@@ -277,6 +293,7 @@ def main():
     scene.add_object(mp400_base)
     scene.add_object(mp400)
     scene.add_object(mp400_sign)
+    scene.add_object(table)
     # scene.add_object(
     #     Sphere(scale=(.1, .1, .1), position=wps[0], remote_render={"enabled": False}))
     # scene.add_object(

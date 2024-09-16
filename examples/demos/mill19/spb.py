@@ -64,7 +64,6 @@ mo = (0, -.66, 0)
 
 # ########### moto_arch ##########
 moto_arch = UrdfModel(
-    # moto_arch = Object(
     object_id="moto_arch",
     # position={"x": 7, "y": 6.40, "z": 16.25},
     position={"x": 0+mo[0], "y": 0.66+mo[1], "z": -0.45+mo[2]},
@@ -106,7 +105,6 @@ moto_dest_base = Object(
     persist=True,
 )
 moto_dest = UrdfModel(
-    # moto_dest = Object(
     object_id="moto_dest",
     parent="moto_dest_base",
     # rotation={"x": -90, "y": 0, "z": 0},
@@ -121,7 +119,7 @@ moto_dest = UrdfModel(
 moto_dest_sign = ArenauiCard(
     object_id="moto_dest_sign",
     parent=moto_dest.object_id,
-    title="Motoman GP7 GP8",
+    title="Motoman Destroyer",
     body="Awaiting status update...",
     position=(0, 0, 1.5),
     look_at="#my-camera",
@@ -226,38 +224,29 @@ z1 = -2
 z2 = 1.5
 
 wps = [
-    # {"x": x1, "y": y1, "z": z1},
-    # {"x": x1, "y": y1, "z": z2},
-    # {"x": x2, "y": y1, "z": z1},
-    # {"x": x2, "y": y1, "z": z2},
+    {"x": x1, "y": y1, "z": z1},
+    {"x": x1, "y": y1, "z": z2},
+    {"x": x2, "y": y1, "z": z2},
+    {"x": x2, "y": y1, "z": z1},
 
-    {"x": x1, "y": y1, "z": z2},
-    {"x": x2, "y": y1, "z": z2},
-    {"x": x2, "y": y1, "z": z2},
-    {"x": x1, "y": y1, "z": z2},
+    # {"x": x1, "y": y1, "z": z2},
+    # {"x": x2, "y": y1, "z": z2},
+    # {"x": x2, "y": y1, "z": z2},
+    # {"x": x1, "y": y1, "z": z2},
 ]
-# mp400_base = Object(
-#     object_id="mp400_base",
-#     # position={"x": 6.22, "y": 6.40, "z": 16.25},
-#     position={"x": 0+mo[0], "y": 0.66+mo[1], "z": 0.4+mo[2]},
-#     scale={"x": 0.8, "y": 0.8, "z": 0.8},
-#     animation=None,
-#     # animation={
-#     #     "property": "rotation",
-#     #     "from": "0 0 0",
-#     #     "to": "0 360 0",
-#     #     "loop": True,
-#     #     "dur": 20000,
-#     #     "easing": "linear"
-#     # },
-#     persist=True,
-# )
-# mp400 = UrdfModel(
-mp400 = Object(
+mp400_base = Object(
+    object_id="mp400_base",
+    position=wps[0],
+    # position=(1.1, -1, -2),
+    rotation={"x": 0, "y": 90, "z": 0},
+    scale={"x": 1, "y": 1, "z": 1},
+    persist=True,
+)
+mp400 = UrdfModel(
     object_id="mp400",
-    # position=wps[0],
-    position=(1.1, -1, -2),
-    rotation={"x": -90, "y": 90, "z": 0},
+    parent="mp400_base",
+    position={'x': 0, 'y': 0, 'z': 0},
+    rotation={'x': -90, 'y': 270, 'z': 0},
     scale={"x": 1, "y": 1, "z": 1},
     url="store/users/mwfarb/xacro/neo_mp_400/robot_model/mp_400/mp_400.urdf.xacro",
     urlBase="/store/users/mwfarb/xacro/neo_mp_400",
@@ -266,7 +255,6 @@ mp400 = Object(
 )
 mp400_sign = ArenauiCard(
     object_id="mp400_sign",
-    # parent=mp400.object_id,
     title="Mobile Robot MP-400",
     body="Awaiting status update...",
     position=(wps[0]['x'], wps[0]['y']+2, wps[0]['z']),
@@ -275,12 +263,36 @@ mp400_sign = ArenauiCard(
 )
 
 
+# ########### INIT ##########
+@ scene.run_once
+def main():
+    scene.add_object(moto_arch)
+    scene.add_object(moto_arch_sign)
+    scene.add_object(moto_dest_base)
+    scene.add_object(moto_dest)
+    scene.add_object(moto_dest_sensor)
+    scene.add_object(moto_dest_sign)
+    scene.add_object(moto_dest_on)
+    scene.add_object(moto_dest_off)
+    scene.add_object(mp400_base)
+    scene.add_object(mp400)
+    scene.add_object(mp400_sign)
+    # scene.add_object(
+    #     Sphere(scale=(.1, .1, .1), position=wps[0], remote_render={"enabled": False}))
+    # scene.add_object(
+    #     Sphere(scale=(.1, .1, .1), position=wps[1], remote_render={"enabled": False}))
+    # scene.add_object(
+    #     Sphere(scale=(.1, .1, .1), position=wps[2], remote_render={"enabled": False}))
+    # scene.add_object(
+    #     Sphere(scale=(.1, .1, .1), position=wps[3], remote_render={"enabled": False}))
+
+
 @ scene.run_forever(interval_ms=100)
 def update_mp400():
     t = time.time()
     # move mp400 along floor
     offset = math.pi
-    ratio = math.sin(t + offset)/5
+    ratio = math.sin(t + offset)
     if -1 <= ratio <= -.5:
         wp1 = 0
         wp2 = 1
@@ -302,40 +314,15 @@ def update_mp400():
     x = np.interp(ratio, xp, [wps[wp1]['x'], wps[wp2]['x']])
     z = np.interp(ratio, xp, [wps[wp1]['z'], wps[wp2]['z']])
     position = {'x': x, 'y': wps[wp1]['y'], 'z': z}
-    rotation = {'x': -90, 'y': r, 'z': 0}
-    mp400.update_attributes(
+    mp400_base.update_attributes(
         position=position,
-        rotation=rotation,
-        # look_at=f"{wps[wp2]['x']} {wps[wp2]['y']} {wps[wp2]['z']}",
+        look_at=f"{wps[wp2]['x']} {wps[wp2]['y']} {wps[wp2]['z']}",
         persist=False
     )
-    scene.update_object(mp400)
+    scene.update_object(mp400_base)
     mp400_sign.update_attributes(
-        body=json.dumps({'position': position, 'rotation': rotation}, indent=4), persist=False)
+        body=json.dumps({'position': position}, indent=4), persist=False)
     scene.update_object(mp400_sign)
-
-
-# ########### INIT ##########
-@ scene.run_once
-def main():
-    scene.add_object(moto_arch)
-    scene.add_object(moto_arch_sign)
-    scene.add_object(moto_dest_base)
-    scene.add_object(moto_dest)
-    scene.add_object(moto_dest_sensor)
-    scene.add_object(moto_dest_sign)
-    scene.add_object(moto_dest_on)
-    scene.add_object(moto_dest_off)
-    scene.add_object(mp400)
-    scene.add_object(mp400_sign)
-    scene.add_object(
-        Sphere(scale=(.1, .1, .1), position=wps[0], remote_render={"enabled": False}))
-    scene.add_object(
-        Sphere(scale=(.1, .1, .1), position=wps[1], remote_render={"enabled": False}))
-    scene.add_object(
-        Sphere(scale=(.1, .1, .1), position=wps[2], remote_render={"enabled": False}))
-    scene.add_object(
-        Sphere(scale=(.1, .1, .1), position=wps[3], remote_render={"enabled": False}))
 
 
 # ########### MQTT motoman Bridge ##########

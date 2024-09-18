@@ -328,8 +328,9 @@ class ArenaAuth:
 
 
 def signout():
+    auth_files = [_mqtt_token_file, _gauth_file]
     for root, dirs, files in os.walk(_arena_user_dir):
-        if _mqtt_token_file in files:
+        if any(map(lambda v: v in auth_files, files)):
             _remove_credentials(root)
     if os.path.exists(_local_mqtt_path):
         _remove_credentials(_local_mqtt_path)

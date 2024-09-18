@@ -3,6 +3,7 @@ auth.py - Authentication methods for accessing the ARENA.
 """
 
 import datetime
+import io
 import json
 import os
 import pickle
@@ -28,6 +29,11 @@ _mqtt_token_file = ".arena_mqtt_auth"
 _arena_user_dir = f"{str(Path.home())}/.arena"
 _local_mqtt_path = f"{_mqtt_token_file}"
 _rt = None
+
+
+class JSONObject:
+    def __init__(self, dictionary):
+        self.__dict__ = dictionary
 
 
 class ArenaAuth:
@@ -98,10 +104,11 @@ class ArenaAuth:
                 print("3 headless {headless}")
                 if headless:
                     # limited input device auth flow for local client
-                    device_resp = self._get_device_code(
+                    device_resp, status = self._get_device_code(
                         client_id=gauth["installed"]["client_id"]
                     )
                     print(device_resp)
+                    print(status)
                     # render user code/link and poll for OOB response
                     device = json.loads(device_resp)
                     print(
@@ -109,15 +116,40 @@ class ArenaAuth:
                     )
                     print(f"2. Enter this code: {device['user_code']}")
                     exp = time.time() + device["expires_in"]
-                    global _rt
-                    _rt = timer.RepeatedTimer(
-                        device["interval"],
-                        self._request_google_device_auth,
-                        exp_time=exp,
-                        client_id=gauth["installed"]["client_id"],
-                        client_secret=gauth["installed"]["client_secret"],
-                        device_code=device["device_code"],
-                    )
+                    # global _rt
+                    # _rt = timer.RepeatedTimer(
+                    #     device["interval"],
+                    #     self._request_google_device_auth,
+                    #     exp_time=exp,
+                    #     client_id=gauth["installed"]["client_id"],
+                    #     client_secret=gauth["installed"]["client_secret"],
+                    #     device_code=device["device_code"],
+                    # )
+                    delay = device["interval"]
+                    next_time = time.time() + delay
+                    while True:
+                        time.sleep(max(0, next_time - time.time()))
+
+                        access_resp, status = self._get_device_access(
+                            client_id=gauth["installed"]["client_id"],
+                            client_secret=gauth["installed"]["client_secret"],
+                            device_code=device["device_code"],
+                        )
+                        print(access_resp)
+                        print(status)
+                        if status == 200:
+                            # bytes_data = str.encode(access_resp)
+                            # buffer = io.BytesIO(bytes_data)
+                            # reader = io.BufferedReader(buffer)
+                            # # creds = pickle.load(reader)
+                            creds = json.loads(
+                                access_resp, object_hook=lambda d: JSONObject(d)
+                            )
+                            session = AuthorizedSession(creds)
+                            break
+
+                        # skip tasks if we are behind schedule:
+                        next_time += (time.time() - next_time) // delay * delay + delay
                 else:
                     # automated browser flow for local client
                     flow = InstalledAppFlow.from_client_config(
@@ -148,13 +180,14 @@ class ArenaAuth:
         now = time.time()
         if now < exp_time:
             print(f"{now} _request_google_device_auth, exp: {exp_time}")
-            access_resp = self._get_device_access(
+            access_resp, status = self._get_device_access(
                 client_id=client_id,
                 client_secret=client_secret,
                 device_code=device_code,
             )
             access = json.loads(access_resp)
-            print(access)
+            print(access_resp)
+            print(status)
         else:
             global _rt
             _rt.stop()
@@ -315,7 +348,8 @@ class ArenaAuth:
         }
         query_string = parse.urlencode(params)
         data = query_string.encode("ascii")
-        return self.urlopen(url, data=data)
+        body, status = self.urlopen_def(url, data=data)
+        return body, status
 
     def _get_device_access(self, client_id, client_secret, device_code):
         url = "https://oauth2.googleapis.com/token"
@@ -327,7 +361,8 @@ class ArenaAuth:
         }
         query_string = parse.urlencode(params)
         data = query_string.encode("ascii")
-        return self.urlopen(url, data=data)
+        body, status = self.urlopen_def(url, data=data)
+        return body, status
 
     def _get_my_scenes(self, web_host, id_token):
         url = f"https://{web_host}/user/my_scenes"
@@ -366,6 +401,30 @@ class ArenaAuth:
 
     def verify(self, web_host):
         return web_host != "localhost"
+
+    def urlopen_def(self, url, data=None):
+        """urlopen is for non-ARENA URL connections.
+        :param str url: the url to POST/GET.
+        :param str data: None for GET, add params for POST.
+        """
+        res = None
+        status = None
+        try:
+            req = request.Request(url)
+            with request.urlopen(req, data=data) as f:
+                status = f.status
+                res = f.read().decode("utf-8")
+        except (
+            requests.exceptions.ConnectionError,
+            ConnectionError,
+            URLError,
+            HTTPError,
+        ) as err:
+            print(f"{err}: {url}")
+            status = err.code
+            if res is not None:
+                print(res)  # show additional errors in response if present
+        return res, status
 
     def urlopen(self, url, data=None, creds=False, csrf=None):
         """urlopen is for ARENA URL connections.

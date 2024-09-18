@@ -45,6 +45,7 @@ class Scene(ArenaMQTT):
                  video=False,
                  debug=False,
                  cli_args=False,
+                 headless=False,
                  **kwargs
                  ):
 
@@ -90,6 +91,7 @@ class Scene(ArenaMQTT):
             end_program_callback,
             video,
             debug,
+            headless,
             **kwargs
         )
 

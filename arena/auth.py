@@ -95,7 +95,6 @@ class ArenaAuth:
                 session = AuthorizedSession(creds)
             else:
                 print("Requesting new Google authentication.")
-<<<<<<< HEAD
                 print("3 headless {headless}")
                 if headless:
                     # limited input device auth flow for local client
@@ -126,13 +125,6 @@ class ArenaAuth:
                     )
                     creds = flow.run_local_server(port=0)
                     session = flow.authorized_session()
-=======
-                # automated browser flow for local client
-                flow = InstalledAppFlow.from_client_config(
-                    json.loads(gauth_json), self._scopes
-                )
-                creds = flow.run_local_server(port=0)
->>>>>>> master
 
             with open(scene_gauth_path, "wb") as token:
                 # save the credentials for the next run

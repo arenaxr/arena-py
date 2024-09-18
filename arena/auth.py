@@ -29,9 +29,11 @@ _local_mqtt_path = f"{_mqtt_token_file}"
 
 class ArenaAuth:
 
-    _scopes = ["openid",
-               "https://www.googleapis.com/auth/userinfo.profile",
-               "https://www.googleapis.com/auth/userinfo.email"]
+    _scopes = [
+        "openid",
+        "https://www.googleapis.com/auth/userinfo.profile",
+        "https://www.googleapis.com/auth/userinfo.email",
+    ]
 
     def __init__(self):
         self._csrftoken = None
@@ -80,7 +82,8 @@ class ArenaAuth:
                 print("Requesting new Google authentication.")
                 # automated browser flow for local client
                 flow = InstalledAppFlow.from_client_config(
-                    json.loads(gauth_json), self._scopes)
+                    json.loads(gauth_json), self._scopes
+                )
                 creds = flow.run_local_server(port=0)
 
                 session = flow.authorized_session()
@@ -95,14 +98,13 @@ class ArenaAuth:
         _user_info = json.loads(user_info)
         if "authenticated" in _user_info and "username" in _user_info:
             username = _user_info["username"]
-        profile_info = session.get(
-            "https://www.googleapis.com/userinfo/v2/me").json()
+        profile_info = session.get("https://www.googleapis.com/userinfo/v2/me").json()
         if profile_info:
             print(f"Authenticated Google account: {profile_info['email']}")
         return username
 
     def authenticate_scene(self, web_host, realm, scene, username, video=False):
-        """ End authentication flow, requesting permissions may change by owner
+        """End authentication flow, requesting permissions may change by owner
         or admin, for now, get a fresh mqtt_token each time.
 
         :param str web_host: The hostname of the ARENA webserver.
@@ -117,7 +119,8 @@ class ArenaAuth:
 
         print("Using remote-authenticated MQTT token.")
         mqtt_json = self._get_mqtt_token(
-            web_host, realm, scene, username, self._id_token, video)
+            web_host, realm, scene, username, self._id_token, video
+        )
         # save mqtt_token
         with open(scene_mqtt_path, mode="w") as d:
             d.write(mqtt_json)
@@ -145,9 +148,9 @@ class ArenaAuth:
             if not os.path.exists(device_auth_dir):
                 os.makedirs(device_auth_dir)
             print(
-                f"Generate a token for this device at https://{web_host}/user/profile")
-            mqtt_json = input(
-                "Paste auth MQTT full JSON here for this device: ")
+                f"Generate a token for this device at https://{web_host}/user/profile"
+            )
+            mqtt_json = input("Paste auth MQTT full JSON here for this device: ")
             # save mqtt_token
             with open(device_mqtt_path, mode="w") as d:
                 d.write(mqtt_json)
@@ -158,11 +161,10 @@ class ArenaAuth:
         return self._mqtt_token
 
     def has_publish_rights(self, token, topic):
-        """ Check the MQTT token for permission to publish to topic.
-        """
+        """Check the MQTT token for permission to publish to topic."""
         tok = jwt.decode(token, options={"verify_signature": False})
         for pub in tok["publ"]:
-            if (topic.startswith(pub.strip().rstrip("/").rstrip("#"))):
+            if topic.startswith(pub.strip().rstrip("/").rstrip("#")):
                 return True
         return False
 
@@ -173,7 +175,7 @@ class ArenaAuth:
         return f"{_arena_user_dir}/python/{web_host}/d"
 
     def get_writable_scenes(self, web_host):
-        """ Request list of scene names for logged in user that user has publish permission for.
+        """Request list of scene names for logged in user that user has publish permission for.
 
         :param str web_host: The hostname of the ARENA webserver.
         :return: list of scenes.
@@ -191,11 +193,10 @@ class ArenaAuth:
         print(f"ARENA Token Username: {username}")
 
         now = time.time()
-        tok = jwt.decode(self._mqtt_token["token"], options={
-                         "verify_signature": False})
+        tok = jwt.decode(self._mqtt_token["token"], options={"verify_signature": False})
         exp = float(tok["exp"])
-        delta = (exp - now)
-        dur_str = str(datetime.timedelta(milliseconds=delta*1000))
+        delta = exp - now
+        dur_str = str(datetime.timedelta(milliseconds=delta * 1000))
         print(f"ARENA Token valid for: {dur_str}h")
 
     def store_environment_auth(self, username, token):
@@ -271,7 +272,7 @@ class ArenaAuth:
             "username": username,
             "id_token": id_token,
             "realm": realm,
-            "scene": scene
+            "scene": scene,
         }
         if video:
             params["camid"] = True
@@ -283,7 +284,7 @@ class ArenaAuth:
         return web_host != "localhost"
 
     def urlopen(self, url, data=None, creds=False, csrf=None):
-        """ urlopen is for ARENA URL connections.
+        """urlopen is for ARENA URL connections.
         :param str url: the url to POST/GET.
         :param str data: None for GET, add params for POST.
         :param bool creds: True to pass the MQTT token as a cookie.
@@ -294,8 +295,7 @@ class ArenaAuth:
         try:
             req = request.Request(url)
             if creds:
-                req.add_header(
-                    "Cookie", f"mqtt_token={self._mqtt_token['token']}")
+                req.add_header("Cookie", f"mqtt_token={self._mqtt_token['token']}")
             if csrf:
                 req.add_header("Cookie", f"csrftoken={csrf}")
                 req.add_header("X-CSRFToken", csrf)
@@ -309,7 +309,12 @@ class ArenaAuth:
                 with request.urlopen(req, data=data, context=context) as f:
                     res = f.read().decode("utf-8")
             return res
-        except (requests.exceptions.ConnectionError, ConnectionError, URLError, HTTPError) as err:
+        except (
+            requests.exceptions.ConnectionError,
+            ConnectionError,
+            URLError,
+            HTTPError,
+        ) as err:
             print(f"{err}: {url}")
             if res is not None:
                 print(res)  # show additional errors in response if present
@@ -345,10 +350,10 @@ def permissions():
     # env storage auth
     if os.environ.get("ARENA_USERNAME") and os.environ.get("ARENA_PASSWORD"):
         mqtt_token = os.environ["ARENA_PASSWORD"]
-        mqtt_claims = jwt.decode(mqtt_token["token"], options={
-            "verify_signature": False})
-        _print_mqtt_token(
-            "environment variable 'ARENA_PASSWORD'", mqtt_claims)
+        mqtt_claims = jwt.decode(
+            mqtt_token["token"], options={"verify_signature": False}
+        )
+        _print_mqtt_token("environment variable 'ARENA_PASSWORD'", mqtt_claims)
     # file storage auth
     token_paths = []
     for root, dirs, files in os.walk(_arena_user_dir):
@@ -362,11 +367,12 @@ def permissions():
         f.close()
         try:
             mqtt_token = json.loads(mqtt_json)
-        except (json.decoder.JSONDecodeError) as err:
+        except json.decoder.JSONDecodeError as err:
             print(f"{err}, {mqtt_path}")
             continue
-        mqtt_claims = jwt.decode(mqtt_token["token"], options={
-            "verify_signature": False})
+        mqtt_claims = jwt.decode(
+            mqtt_token["token"], options={"verify_signature": False}
+        )
         _print_mqtt_token(mqtt_path, mqtt_claims)
     # no permissions
     if not mqtt_claims:
@@ -385,13 +391,14 @@ def _remove_credentials(cred_dir, expire=False):
         f.close()
         try:
             mqtt_token = json.loads(mqtt_json)
-        except (json.decoder.JSONDecodeError) as err:
+        except json.decoder.JSONDecodeError as err:
             print(f"{err}, {test_mqtt_path}")
             os.remove(test_mqtt_path)
             return
         try:
-            mqtt_claims = jwt.decode(mqtt_token["token"], options={
-                "verify_signature": False})
+            mqtt_claims = jwt.decode(
+                mqtt_token["token"], options={"verify_signature": False}
+            )
         except Exception as err:
             print(f"{err}, {test_mqtt_path}")
             os.remove(test_mqtt_path)

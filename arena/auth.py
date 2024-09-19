@@ -103,9 +103,7 @@ class ArenaAuth:
                 else:
                     # automated browser flow for local client
                     print("Requesting new browser Google authentication.")
-                    flow = InstalledAppFlow.from_client_config(
-                        json.loads(gauth_json), self._scopes
-                    )
+                    flow = InstalledAppFlow.from_client_config(json.loads(gauth_json), self._scopes)
                     creds = flow.run_local_server(port=0)
 
             with open(scene_gauth_path, "wb") as token:
@@ -188,9 +186,7 @@ class ArenaAuth:
         scene_mqtt_path = f"{scene_auth_dir}/{_mqtt_token_file}"
 
         print("Using remote-authenticated MQTT token.")
-        mqtt_json = self._get_mqtt_token(
-            web_host, realm, scene, username, self._id_token, video
-        )
+        mqtt_json = self._get_mqtt_token(web_host, realm, scene, username, self._id_token, video)
         # save mqtt_token
         with open(scene_mqtt_path, mode="w") as d:
             d.write(mqtt_json)
@@ -217,9 +213,7 @@ class ArenaAuth:
         else:
             if not os.path.exists(device_auth_dir):
                 os.makedirs(device_auth_dir)
-            print(
-                f"Generate a token for this device at https://{web_host}/user/profile"
-            )
+            print(f"Generate a token for this device at https://{web_host}/user/profile")
             mqtt_json = input("Paste auth MQTT full JSON here for this device: ")
             # save mqtt_token
             with open(device_mqtt_path, mode="w") as d:
@@ -471,9 +465,7 @@ def permissions():
     # env storage auth
     if os.environ.get("ARENA_USERNAME") and os.environ.get("ARENA_PASSWORD"):
         mqtt_token = os.environ["ARENA_PASSWORD"]
-        mqtt_claims = jwt.decode(
-            mqtt_token["token"], options={"verify_signature": False}
-        )
+        mqtt_claims = jwt.decode(mqtt_token["token"], options={"verify_signature": False})
         _print_mqtt_token("environment variable 'ARENA_PASSWORD'", mqtt_claims)
     # file storage auth
     token_paths = []
@@ -491,9 +483,7 @@ def permissions():
         except json.decoder.JSONDecodeError as err:
             print(f"{err}, {mqtt_path}")
             continue
-        mqtt_claims = jwt.decode(
-            mqtt_token["token"], options={"verify_signature": False}
-        )
+        mqtt_claims = jwt.decode(mqtt_token["token"], options={"verify_signature": False})
         _print_mqtt_token(mqtt_path, mqtt_claims)
     # no permissions
     if not mqtt_claims:
@@ -517,9 +507,7 @@ def _remove_credentials(cred_dir, expire=False):
             os.remove(test_mqtt_path)
             return
         try:
-            mqtt_claims = jwt.decode(
-                mqtt_token["token"], options={"verify_signature": False}
-            )
+            mqtt_claims = jwt.decode(mqtt_token["token"], options={"verify_signature": False})
         except Exception as err:
             print(f"{err}, {test_mqtt_path}")
             os.remove(test_mqtt_path)

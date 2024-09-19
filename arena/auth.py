@@ -3,7 +3,6 @@ auth.py - Authentication methods for accessing the ARENA.
 """
 
 import datetime
-import io
 import json
 import os
 import pickle
@@ -19,16 +18,14 @@ from urllib.parse import urlsplit
 import jwt
 import requests
 from google.auth import jwt as gJWT
-from google.auth.transport.requests import AuthorizedSession, Request
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
-
-from arena.utils import timer
 
 _gauth_file = ".arena_google_auth"
 _mqtt_token_file = ".arena_mqtt_auth"
 _arena_user_dir = f"{str(Path.home())}/.arena"
 _local_mqtt_path = f"{_mqtt_token_file}"
-_rt = None
 
 
 class JSONObject:
@@ -58,15 +55,13 @@ class ArenaAuth:
         :return: Username from arena-account, or None.
         """
         print("Signing in to the ARENA...")
-        print(f"1 headless {headless}")
         try:
             # test for valid browser before starting browser-required auth-flow
             webbrowser.get()
         except webbrowser.Error as err:
             headless = True
-            print("Console-only environment detected. {0} ".format(err))
+            print(f"Console-only environment detected. {err} ")
 
-        print(f"2 headless {headless}")
         if headless:
             gauth_json = self._get_gauthid_limited(web_host)
         else:
@@ -83,7 +78,6 @@ class ArenaAuth:
         if os.path.exists(scene_gauth_path):
             with open(scene_gauth_path, "rb") as token:
                 creds = pickle.load(token)
-            session = AuthorizedSession(creds)
             id_claims = gJWT.decode(creds.id_token, verify=False)
 
             # for reuse, client_id must still match
@@ -98,65 +92,21 @@ class ArenaAuth:
             if creds and creds.expired and creds.refresh_token:
                 print("Requesting refreshed Google authentication.")
                 creds.refresh(Request())
-                session = AuthorizedSession(creds)
             else:
-                print("Requesting new Google authentication.")
-                print("3 headless {headless}")
                 if headless:
                     # limited input device auth flow for local client
-                    device_resp, status = self._get_device_code(
-                        client_id=gauth["installed"]["client_id"]
+                    print("Requesting new device Google authentication.")
+                    creds = self.run_device_auth_flow(
+                        client_id=gauth["installed"]["client_id"],
+                        client_secret=gauth["installed"]["client_secret"],
                     )
-                    print(device_resp)
-                    print(status)
-                    # render user code/link and poll for OOB response
-                    device = json.loads(device_resp)
-                    print(
-                        f"1. Use another device to open: {device['verification_url']}"
-                    )
-                    print(f"2. Enter this code: {device['user_code']}")
-                    exp = time.time() + device["expires_in"]
-                    # global _rt
-                    # _rt = timer.RepeatedTimer(
-                    #     device["interval"],
-                    #     self._request_google_device_auth,
-                    #     exp_time=exp,
-                    #     client_id=gauth["installed"]["client_id"],
-                    #     client_secret=gauth["installed"]["client_secret"],
-                    #     device_code=device["device_code"],
-                    # )
-                    delay = device["interval"]
-                    next_time = time.time() + delay
-                    while True:
-                        time.sleep(max(0, next_time - time.time()))
-
-                        access_resp, status = self._get_device_access(
-                            client_id=gauth["installed"]["client_id"],
-                            client_secret=gauth["installed"]["client_secret"],
-                            device_code=device["device_code"],
-                        )
-                        print(access_resp)
-                        print(status)
-                        if status == 200:
-                            # bytes_data = str.encode(access_resp)
-                            # buffer = io.BytesIO(bytes_data)
-                            # reader = io.BufferedReader(buffer)
-                            # # creds = pickle.load(reader)
-                            creds = json.loads(
-                                access_resp, object_hook=lambda d: JSONObject(d)
-                            )
-                            session = AuthorizedSession(creds)
-                            break
-
-                        # skip tasks if we are behind schedule:
-                        next_time += (time.time() - next_time) // delay * delay + delay
                 else:
                     # automated browser flow for local client
+                    print("Requesting new browser Google authentication.")
                     flow = InstalledAppFlow.from_client_config(
                         json.loads(gauth_json), self._scopes
                     )
                     creds = flow.run_local_server(port=0)
-                    session = flow.authorized_session()
 
             with open(scene_gauth_path, "wb") as token:
                 # save the credentials for the next run
@@ -169,30 +119,59 @@ class ArenaAuth:
         _user_info = json.loads(user_info)
         if "authenticated" in _user_info and "username" in _user_info:
             username = _user_info["username"]
-        profile_info = session.get("https://www.googleapis.com/userinfo/v2/me").json()
-        if profile_info:
-            print(f"Authenticated Google account: {profile_info['email']}")
+        id_claims = gJWT.decode(creds.id_token, verify=False)
+        print(f"Authenticated Google account: {id_claims['email']}")
         return username
 
-    def _request_google_device_auth(
-        self, exp_time, client_id, client_secret, device_code
-    ):
-        now = time.time()
-        if now < exp_time:
-            print(f"{now} _request_google_device_auth, exp: {exp_time}")
+    def run_device_auth_flow(self, client_id, client_secret):
+        device_resp, status = self._get_device_code(client_id=client_id)
+        # render user code/link and poll for OOB response
+        device = json.loads(device_resp)
+        print(f"1. Open page other device: {device['verification_url']}")
+        print(f"2. Enter this code on that page: {device['user_code']}")
+        exp = time.time() + device["expires_in"]
+        delay = device["interval"]
+
+        next_time = time.time() + delay
+        while True:
+            time.sleep(max(0, next_time - time.time()))
+
+            if time.time() > exp:
+                print("Device auth request expired.")
+                sys.exit("Terminating...")
+
             access_resp, status = self._get_device_access(
                 client_id=client_id,
                 client_secret=client_secret,
-                device_code=device_code,
+                device_code=device["device_code"],
             )
-            access = json.loads(access_resp)
-            print(access_resp)
-            print(status)
-        else:
-            global _rt
-            _rt.stop()
-            print("Device auth request expired.")
-            sys.exit("Terminating...")
+            # print(access_resp)
+            if 200 <= status <= 299:  # success
+                print(access_resp)
+                # creds = json.loads(
+                #     access_resp,
+                #     object_hook=lambda d: JSONObject(d),
+                # )
+                access = json.loads(access_resp)
+                creds = Credentials(
+                    token=None,
+                    # access_token=access["access_token"],
+                    # expires_in=access["expires_in"],
+                    refresh_token=access["refresh_token"],
+                    scopes=access["scope"],
+                    # token_type=access["token_type"],
+                    id_token=access["id_token"],
+                    client_id=client_id,
+                    client_secret=client_secret,
+                    token_uri="https://oauth2.googleapis.com/token",
+                )
+                return creds
+            if status == 428:  # awaiting remote user code and approval
+                # skip tasks if we are behind schedule:
+                next_time += (time.time() - next_time) // delay * delay + delay
+            else:
+                print(access_resp)
+                sys.exit("Terminating...")
 
     def authenticate_scene(self, web_host, realm, scene, username, video=False):
         """End authentication flow, requesting permissions may change by owner
@@ -420,10 +399,8 @@ class ArenaAuth:
             URLError,
             HTTPError,
         ) as err:
-            print(f"{err}: {url}")
+            # do not log errors, allow consumer to decide
             status = err.code
-            if res is not None:
-                print(res)  # show additional errors in response if present
         return res, status
 
     def urlopen(self, url, data=None, creds=False, csrf=None):

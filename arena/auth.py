@@ -215,9 +215,8 @@ class ArenaAuth:
         # load device token if valid
         if os.path.exists(device_mqtt_path):
             print("Using user long-term device MQTT token.")
-            f = open(device_mqtt_path, "r")
-            mqtt_json = f.read()
-            f.close()
+            with open(device_mqtt_path, "r", encoding="utf8") as f:
+                mqtt_json = f.read()
         else:
             if not os.path.exists(device_auth_dir):
                 os.makedirs(device_auth_dir)
@@ -292,9 +291,8 @@ class ArenaAuth:
         # load local token if valid
         if os.path.exists(_local_mqtt_path):
             print("Using local MQTT token.")
-            f = open(_local_mqtt_path, "r")
-            mqtt_json = f.read()
-            f.close()
+            with open(_local_mqtt_path, "r", encoding="utf8") as f:
+                mqtt_json = f.read()
             self._mqtt_token = json.loads(mqtt_json)
             self._log_token()
             return self._mqtt_token
@@ -492,9 +490,8 @@ def permissions():
     if os.path.exists(_local_mqtt_path):
         token_paths.append(_local_mqtt_path)
     for mqtt_path in token_paths:
-        f = open(mqtt_path, "r")
-        mqtt_json = f.read()
-        f.close()
+        with open(mqtt_path, "r", encoding="utf8") as f:
+            mqtt_json = f.read()
         try:
             mqtt_token = json.loads(mqtt_json)
         except json.decoder.JSONDecodeError as err:
@@ -514,9 +511,8 @@ def _remove_credentials(cred_dir, expire=False):
     test_gauth_path = f"{cred_dir}/{_gauth_file}"
     test_mqtt_path = f"{cred_dir}/{_mqtt_token_file}"
     if os.path.exists(test_mqtt_path):
-        f = open(test_mqtt_path, "r")
-        mqtt_json = f.read()
-        f.close()
+        with open(test_mqtt_path, "r", encoding="utf8") as f:
+            mqtt_json = f.read()
         try:
             mqtt_token = json.loads(mqtt_json)
         except json.decoder.JSONDecodeError as err:

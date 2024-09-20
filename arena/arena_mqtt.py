@@ -33,6 +33,7 @@ class ArenaMQTT(object):
                 end_program_callback = None,
                 video = False,
                 debug = False,
+                headless = False,
                 **kwargs
             ):
         if os.environ.get(MQTTH):
@@ -80,7 +81,7 @@ class ArenaMQTT(object):
             else:
                 if self.scene:
                     # auth 3rd: use the user account online
-                    self.username = self.auth.authenticate_user(self.web_host)
+                    self.username = self.auth.authenticate_user(self.web_host, headless)
 
         if os.environ.get(NAMESPACE):
             self.namespace = _get_env(NAMESPACE)

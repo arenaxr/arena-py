@@ -5,7 +5,6 @@ auth.py - Authentication methods for accessing the ARENA.
 import datetime
 import json
 import os
-import pickle
 import ssl
 import sys
 import time
@@ -18,7 +17,6 @@ from urllib.parse import urlsplit
 import jwt
 import requests
 from google.auth import jwt as gJWT
-from google.auth.transport.requests import AuthorizedSession, Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 _gauth_file = ".arena_google_auth"
@@ -40,7 +38,7 @@ class ArenaAuth:
         self._mqtt_token = None
         self._id_token = None
 
-    def authenticate_user(self, web_host):
+    def authenticate_user(self, web_host, headless):
         """
         Begins authentication flow, getting Google auth, opening web browser if
         needed, getting username and state from ARENA server.
@@ -49,8 +47,22 @@ class ArenaAuth:
         :return: Username from arena-account, or None.
         """
         print("Signing in to the ARENA...")
-        gauth_json = self._get_gauthid(web_host)
+        try:
+            # test for valid browser before starting browser-required auth-flow
+            webbrowser.get()
+        except webbrowser.Error as err:
+            headless = True
+            print(f"Console-only environment detected. {err} ")
+
+        if headless:
+            gauth_json = self._get_gauthid_limited(web_host)
+        else:
+            gauth_json = self._get_gauthid_desktop(web_host)
+        gauth = json.loads(gauth_json)
+        if "installed" not in gauth or "client_id" not in gauth["installed"]:
+            return None
         creds = None
+        refresh_token = None
         scene_auth_dir = self._get_scene_auth_path(web_host)
         scene_gauth_path = f"{scene_auth_dir}/{_gauth_file}"
 
@@ -59,49 +71,113 @@ class ArenaAuth:
 
         # store the user's access and refresh tokens
         if os.path.exists(scene_gauth_path):
-            with open(scene_gauth_path, "rb") as token:
-                creds = pickle.load(token)
-            session = AuthorizedSession(creds)
-            id_claims = gJWT.decode(creds.id_token, verify=False)
+            try:
+                with open(scene_gauth_path, "r", encoding="utf-8") as token:
+                    creds = json.load(token)
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                creds = None  # bad/old storage format
 
-            # for reuse, client_id must still match
-            gauth = json.loads(gauth_json)
-            if "installed" not in gauth or "client_id" not in gauth["installed"]:
-                creds = None
-            if id_claims["aud"] != gauth["installed"]["client_id"]:
-                creds = None
             if creds:
-                print("Using cached Google authentication.")
-        # if no credentials available, let the user log in.
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                print("Requesting refreshed Google authentication.")
-                creds.refresh(Request())
-                session = AuthorizedSession(creds)
-            else:
-                print("Requesting new Google authentication.")
-                # automated browser flow for local client
-                flow = InstalledAppFlow.from_client_config(
-                    json.loads(gauth_json), self._scopes
-                )
-                creds = flow.run_local_server(port=0)
+                # for reuse, client_id must still match
+                id_claims = gJWT.decode(creds["id_token"], verify=False)
+                if id_claims["aud"] != gauth["installed"]["client_id"]:
+                    creds = None  # switched auth systems
+            if id_claims["exp"]:
+                exp = float(id_claims["exp"])
+                if exp <= time.time():
+                    refresh_token = creds["refresh_token"]
+                    creds = None  # expired token
 
-                session = flow.authorized_session()
-            with open(scene_gauth_path, "wb") as token:
+        if creds:
+            print("Using cached Google authentication.")
+        else:
+            if refresh_token:
+                print("Requesting refreshed Google authentication.")
+                creds_jstr = self._run_gauth_token_refresh(
+                    client_id=gauth["installed"]["client_id"],
+                    client_secret=gauth["installed"]["client_secret"],
+                    refresh_token=refresh_token,
+                )
+                creds = json.loads(creds_jstr)
+            else:
+                # if no credentials available, let the user log in.
+                if headless:
+                    # limited input device auth flow for local client
+                    print("Requesting new device Google authentication.")
+                    creds_jstr = self._run_gauth_device_flow(
+                        client_id=gauth["installed"]["client_id"],
+                        client_secret=gauth["installed"]["client_secret"],
+                    )
+                    creds = json.loads(creds_jstr)
+                else:
+                    # automated browser flow for local client
+                    print("Requesting new browser Google authentication.")
+                    flow = InstalledAppFlow.from_client_config(json.loads(gauth_json), self._scopes)
+                    credentials = flow.run_local_server(port=0)
+                    creds_jstr = credentials.to_json()
+                    creds = json.loads(creds_jstr)
+                    creds["id_token"] = credentials.id_token
+
+            with open(scene_gauth_path, "w", encoding="utf-8") as token:
                 # save the credentials for the next run
-                pickle.dump(creds, token)
+                json.dump(creds, token)
             os.chmod(scene_gauth_path, 0o600)  # set user-only perms.
 
         username = None
-        self._id_token = creds.id_token
+        self._id_token = creds["id_token"]
         user_info = self._get_user_state(web_host, self._id_token)
         _user_info = json.loads(user_info)
         if "authenticated" in _user_info and "username" in _user_info:
             username = _user_info["username"]
-        profile_info = session.get("https://www.googleapis.com/userinfo/v2/me").json()
-        if profile_info:
-            print(f"Authenticated Google account: {profile_info['email']}")
+        id_claims = gJWT.decode(creds["id_token"], verify=False)
+        print(f"Authenticated Google account: {id_claims['email']}")
         return username
+
+    def _run_gauth_token_refresh(self, client_id, client_secret, refresh_token):
+        refresh_resp, status, url = self._get_gauth_refresh_token(
+            client_id=client_id,
+            client_secret=client_secret,
+            refresh_token=refresh_token,
+        )
+        if 200 <= status <= 299:  # success
+            return refresh_resp
+        else:  # error
+            print(f"HTTP error {status}: {url}\n{refresh_resp}")
+            sys.exit("Terminating...")
+
+    def _run_gauth_device_flow(self, client_id, client_secret):
+        device_resp, status, url = self._get_gauth_device_code(client_id=client_id)
+        if 200 > status > 299:  # error
+            print(f"HTTP error {status}: {url}\n{device_resp}")
+            sys.exit("Terminating...")
+        # render user code/link and poll for OOB response
+        device = json.loads(device_resp)
+        print(f"1. Go to this page on any device: {device['verification_url']}")
+        print(f"2. Enter this code on that page: {device['user_code']}")
+        exp = time.time() + device["expires_in"]
+        delay = device["interval"]
+
+        next_time = time.time() + delay
+        while True:
+            time.sleep(max(0, next_time - time.time()))
+
+            if time.time() > exp:
+                print(f"Device auth request expired after {delay/60} minutes.")
+                sys.exit("Terminating...")
+
+            access_resp, status, url = self._get_gauth_device_token(
+                client_id=client_id,
+                client_secret=client_secret,
+                device_code=device["device_code"],
+            )
+            if 200 <= status <= 299:  # success
+                return access_resp
+            if status == 428:  # awaiting remote user code and approval
+                # skip tasks if we are behind schedule:
+                next_time += (time.time() - next_time) // delay * delay + delay
+            else:  # error
+                print(f"HTTP error {status}: {url}\n{access_resp}")
+                sys.exit("Terminating...")
 
     def authenticate_scene(self, web_host, realm, scene, username, video=False):
         """End authentication flow, requesting permissions may change by owner
@@ -118,11 +194,9 @@ class ArenaAuth:
         scene_mqtt_path = f"{scene_auth_dir}/{_mqtt_token_file}"
 
         print("Using remote-authenticated MQTT token.")
-        mqtt_json = self._get_mqtt_token(
-            web_host, realm, scene, username, self._id_token, video
-        )
+        mqtt_json = self._get_mqtt_token(web_host, realm, scene, username, self._id_token, video)
         # save mqtt_token
-        with open(scene_mqtt_path, mode="w") as d:
+        with open(scene_mqtt_path, "w", encoding="utf-8") as d:
             d.write(mqtt_json)
         os.chmod(scene_mqtt_path, 0o600)  # set user-only perms.
 
@@ -141,18 +215,15 @@ class ArenaAuth:
         # load device token if valid
         if os.path.exists(device_mqtt_path):
             print("Using user long-term device MQTT token.")
-            f = open(device_mqtt_path, "r")
-            mqtt_json = f.read()
-            f.close()
+            with open(device_mqtt_path, "r", encoding="utf8") as f:
+                mqtt_json = f.read()
         else:
             if not os.path.exists(device_auth_dir):
                 os.makedirs(device_auth_dir)
-            print(
-                f"Generate a token for this device at https://{web_host}/user/profile"
-            )
+            print(f"Generate a token for this device at https://{web_host}/user/profile")
             mqtt_json = input("Paste auth MQTT full JSON here for this device: ")
             # save mqtt_token
-            with open(device_mqtt_path, mode="w") as d:
+            with open(device_mqtt_path, "w", encoding="utf-8") as d:
                 d.write(mqtt_json)
             os.chmod(device_mqtt_path, 0o600)  # set user-only perms.
 
@@ -220,13 +291,17 @@ class ArenaAuth:
         # load local token if valid
         if os.path.exists(_local_mqtt_path):
             print("Using local MQTT token.")
-            f = open(_local_mqtt_path, "r")
-            mqtt_json = f.read()
-            f.close()
+            with open(_local_mqtt_path, "r", encoding="utf8") as f:
+                mqtt_json = f.read()
             self._mqtt_token = json.loads(mqtt_json)
             self._log_token()
             return self._mqtt_token
         return None
+
+    def _encode_params(self, params):
+        query_string = parse.urlencode(params)
+        data = query_string.encode("ascii")
+        return data
 
     def _get_csrftoken(self, web_host):
         # get the csrftoken for django
@@ -241,27 +316,58 @@ class ArenaAuth:
             self._csrftoken = None
         return self._csrftoken
 
-    def _get_gauthid(self, web_host):
+    def _get_gauthid_desktop(self, web_host):
         url = f"https://{web_host}/conf/gauth.json"
         return self.urlopen(url)
+
+    def _get_gauthid_limited(self, web_host):
+        url = f"https://{web_host}/conf/gauth-device.json"
+        return self.urlopen(url)
+
+    def _get_gauth_device_code(self, client_id):
+        url = "https://oauth2.googleapis.com/device/code"
+        params = {
+            "client_id": client_id,
+            "scope": "email profile",
+        }
+        body, status = self.urlopen_def(url, data=self._encode_params(params))
+        return body, status, url
+
+    def _get_gauth_device_token(self, client_id, client_secret, device_code):
+        url = "https://oauth2.googleapis.com/token"
+        params = {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "device_code": device_code,
+            "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
+        }
+        body, status = self.urlopen_def(url, data=self._encode_params(params))
+        return body, status, url
+
+    def _get_gauth_refresh_token(self, client_id, client_secret, refresh_token):
+        url = "https://oauth2.googleapis.com/token"
+        params = {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "refresh_token": refresh_token,
+            "grant_type": "refresh_token",
+        }
+        body, status = self.urlopen_def(url, data=self._encode_params(params))
+        return body, status, url
 
     def _get_my_scenes(self, web_host, id_token):
         url = f"https://{web_host}/user/my_scenes"
         if not self._csrftoken:
             self._csrftoken = self._get_csrftoken(web_host)
         params = {"id_token": id_token}
-        query_string = parse.urlencode(params)
-        data = query_string.encode("ascii")
-        return self.urlopen(url, data=data, csrf=self._csrftoken)
+        return self.urlopen(url, data=self._encode_params(params), csrf=self._csrftoken)
 
     def _get_user_state(self, web_host, id_token):
         url = f"https://{web_host}/user/user_state"
         if not self._csrftoken:
             self._csrftoken = self._get_csrftoken(web_host)
         params = {"id_token": id_token}
-        query_string = parse.urlencode(params)
-        data = query_string.encode("ascii")
-        return self.urlopen(url, data=data, csrf=self._csrftoken)
+        return self.urlopen(url, data=self._encode_params(params), csrf=self._csrftoken)
 
     def _get_mqtt_token(self, web_host, realm, scene, username, id_token, video):
         url = f"https://{web_host}/user/mqtt_auth"
@@ -276,12 +382,34 @@ class ArenaAuth:
         }
         if video:
             params["camid"] = True
-        query_string = parse.urlencode(params)
-        data = query_string.encode("ascii")
-        return self.urlopen(url, data=data, csrf=self._csrftoken)
+        return self.urlopen(url, data=self._encode_params(params), csrf=self._csrftoken)
 
     def verify(self, web_host):
         return web_host != "localhost"
+
+    def urlopen_def(self, url, data=None):
+        """urlopen default is for non-ARENA URL connections.
+        :param str url: the url to POST/GET.
+        :param str data: None for GET, add params for POST.
+        """
+        body, status = None, None
+        try:
+            req = request.Request(url)
+            with request.urlopen(req, data=data) as f:
+                status = f.status
+                body = f.read().decode("utf-8")
+        except HTTPError as err:
+            # do not log errors, allow consumer to decide
+            status = err.code
+            body = err.read().decode("utf-8")
+        except (
+            requests.exceptions.ConnectionError,
+            ConnectionError,
+            URLError,
+        ) as err:
+            print(f"{err}: {url}")
+
+        return body, status
 
     def urlopen(self, url, data=None, creds=False, csrf=None):
         """urlopen is for ARENA URL connections.
@@ -291,7 +419,7 @@ class ArenaAuth:
         :param str csrf: The csrftoken.
         """
         urlparts = urlsplit(url)
-        res = None
+        body = None
         try:
             req = request.Request(url)
             if creds:
@@ -301,29 +429,30 @@ class ArenaAuth:
                 req.add_header("X-CSRFToken", csrf)
             if self.verify(urlparts.netloc):
                 with request.urlopen(req, data=data) as f:
-                    res = f.read().decode("utf-8")
+                    body = f.read().decode("utf-8")
             else:
                 context = ssl.create_default_context()
                 context.check_hostname = False
                 context.verify_mode = ssl.CERT_NONE
                 with request.urlopen(req, data=data, context=context) as f:
-                    res = f.read().decode("utf-8")
-            return res
-        except (
-            requests.exceptions.ConnectionError,
-            ConnectionError,
-            URLError,
-            HTTPError,
-        ) as err:
+                    body = f.read().decode("utf-8")
+            return body
+        except HTTPError as err:
             print(f"{err}: {url}")
-            if res is not None:
-                print(res)  # show additional errors in response if present
-            if isinstance(err, HTTPError) and err.code in (401, 403):
+            print(err.read().decode("utf-8"))  # show additional errors in response if present
+            if err.code in (401, 403):
                 # user not authorized on website yet, they don"t have an ARENA username
                 us = urlsplit(url)
                 base_url = f"{us.scheme}://{us.netloc}"
                 print(f"Do you have a valid ARENA account on {base_url}?")
                 print(f"Create an account in a web browser at: {base_url}/user")
+            sys.exit("Terminating...")
+        except (
+            requests.exceptions.ConnectionError,
+            ConnectionError,
+            URLError,
+        ) as err:
+            print(f"{err}: {url}")
             sys.exit("Terminating...")
 
 
@@ -351,9 +480,7 @@ def permissions():
     # env storage auth
     if os.environ.get("ARENA_USERNAME") and os.environ.get("ARENA_PASSWORD"):
         mqtt_token = os.environ["ARENA_PASSWORD"]
-        mqtt_claims = jwt.decode(
-            mqtt_token["token"], options={"verify_signature": False}
-        )
+        mqtt_claims = jwt.decode(mqtt_token["token"], options={"verify_signature": False})
         _print_mqtt_token("environment variable 'ARENA_PASSWORD'", mqtt_claims)
     # file storage auth
     token_paths = []
@@ -363,17 +490,14 @@ def permissions():
     if os.path.exists(_local_mqtt_path):
         token_paths.append(_local_mqtt_path)
     for mqtt_path in token_paths:
-        f = open(mqtt_path, "r")
-        mqtt_json = f.read()
-        f.close()
+        with open(mqtt_path, "r", encoding="utf8") as f:
+            mqtt_json = f.read()
         try:
             mqtt_token = json.loads(mqtt_json)
         except json.decoder.JSONDecodeError as err:
             print(f"{err}, {mqtt_path}")
             continue
-        mqtt_claims = jwt.decode(
-            mqtt_token["token"], options={"verify_signature": False}
-        )
+        mqtt_claims = jwt.decode(mqtt_token["token"], options={"verify_signature": False})
         _print_mqtt_token(mqtt_path, mqtt_claims)
     # no permissions
     if not mqtt_claims:
@@ -387,9 +511,8 @@ def _remove_credentials(cred_dir, expire=False):
     test_gauth_path = f"{cred_dir}/{_gauth_file}"
     test_mqtt_path = f"{cred_dir}/{_mqtt_token_file}"
     if os.path.exists(test_mqtt_path):
-        f = open(test_mqtt_path, "r")
-        mqtt_json = f.read()
-        f.close()
+        with open(test_mqtt_path, "r", encoding="utf8") as f:
+            mqtt_json = f.read()
         try:
             mqtt_token = json.loads(mqtt_json)
         except json.decoder.JSONDecodeError as err:
@@ -397,9 +520,7 @@ def _remove_credentials(cred_dir, expire=False):
             os.remove(test_mqtt_path)
             return
         try:
-            mqtt_claims = jwt.decode(
-                mqtt_token["token"], options={"verify_signature": False}
-            )
+            mqtt_claims = jwt.decode(mqtt_token["token"], options={"verify_signature": False})
         except Exception as err:
             print(f"{err}, {test_mqtt_path}")
             os.remove(test_mqtt_path)

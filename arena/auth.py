@@ -300,6 +300,11 @@ class ArenaAuth:
             return self._mqtt_token
         return None
 
+    def _encode_params(self, params):
+        query_string = parse.urlencode(params)
+        data = query_string.encode("ascii")
+        return data
+
     def _get_csrftoken(self, web_host):
         # get the csrftoken for django
         csrf_url = f"https://{web_host}/user/login"
@@ -327,9 +332,7 @@ class ArenaAuth:
             "client_id": client_id,
             "scope": "email profile",
         }
-        query_string = parse.urlencode(params)
-        data = query_string.encode("ascii")
-        body, status = self.urlopen_def(url, data=data)
+        body, status = self.urlopen_def(url, data=self._encode_params(params))
         return body, status, url
 
     def _get_gauth_device_token(self, client_id, client_secret, device_code):
@@ -340,9 +343,7 @@ class ArenaAuth:
             "device_code": device_code,
             "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
         }
-        query_string = parse.urlencode(params)
-        data = query_string.encode("ascii")
-        body, status = self.urlopen_def(url, data=data)
+        body, status = self.urlopen_def(url, data=self._encode_params(params))
         return body, status, url
 
     def _get_gauth_refresh_token(self, client_id, client_secret, refresh_token):
@@ -353,9 +354,7 @@ class ArenaAuth:
             "refresh_token": refresh_token,
             "grant_type": "refresh_token",
         }
-        query_string = parse.urlencode(params)
-        data = query_string.encode("ascii")
-        body, status = self.urlopen_def(url, data=data)
+        body, status = self.urlopen_def(url, data=self._encode_params(params))
         return body, status, url
 
     def _get_my_scenes(self, web_host, id_token):
@@ -363,18 +362,14 @@ class ArenaAuth:
         if not self._csrftoken:
             self._csrftoken = self._get_csrftoken(web_host)
         params = {"id_token": id_token}
-        query_string = parse.urlencode(params)
-        data = query_string.encode("ascii")
-        return self.urlopen(url, data=data, csrf=self._csrftoken)
+        return self.urlopen(url, data=self._encode_params(params), csrf=self._csrftoken)
 
     def _get_user_state(self, web_host, id_token):
         url = f"https://{web_host}/user/user_state"
         if not self._csrftoken:
             self._csrftoken = self._get_csrftoken(web_host)
         params = {"id_token": id_token}
-        query_string = parse.urlencode(params)
-        data = query_string.encode("ascii")
-        return self.urlopen(url, data=data, csrf=self._csrftoken)
+        return self.urlopen(url, data=self._encode_params(params), csrf=self._csrftoken)
 
     def _get_mqtt_token(self, web_host, realm, scene, username, id_token, video):
         url = f"https://{web_host}/user/mqtt_auth"
@@ -389,9 +384,7 @@ class ArenaAuth:
         }
         if video:
             params["camid"] = True
-        query_string = parse.urlencode(params)
-        data = query_string.encode("ascii")
-        return self.urlopen(url, data=data, csrf=self._csrftoken)
+        return self.urlopen(url, data=self._encode_params(params), csrf=self._csrftoken)
 
     def verify(self, web_host):
         return web_host != "localhost"
@@ -449,7 +442,7 @@ class ArenaAuth:
         except HTTPError as err:
             print(f"{err}: {url}")
             print(err.read().decode("utf-8"))  # show additional errors in response if present
-            if isinstance(err, HTTPError) and err.code in (401, 403):
+            if err.code in (401, 403):
                 # user not authorized on website yet, they don"t have an ARENA username
                 us = urlsplit(url)
                 base_url = f"{us.scheme}://{us.netloc}"

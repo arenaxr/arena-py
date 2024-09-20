@@ -4,6 +4,18 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [0.11.0](https://github.com/arenaxr/arena-py/compare/v0.10.3...v0.11.0) (2024-09-20)
+
+
+### Features
+
+* **auth:** add google limited input device auth flow ([#195](https://github.com/arenaxr/arena-py/issues/195)) ([7e2bfef](https://github.com/arenaxr/arena-py/commit/7e2bfef8e7bad45d0b9754d7998ab82235ca8860))
+
+
+### Bug Fixes
+
+* **auth:** fixed signout not removing gauth token ([7d15b3f](https://github.com/arenaxr/arena-py/commit/7d15b3f7e48e6e0538c2488941b984005d182d43))
+
 ## [0.10.3](https://github.com/arenaxr/arena-py/compare/v0.10.2...v0.10.3) (2024-09-03)
 
 

@@ -93,7 +93,7 @@ class ArenaAuth:
         else:
             if refresh_token:
                 print("Requesting refreshed Google authentication.")
-                creds_jstr = self._run_token_refresh(
+                creds_jstr = self._run_gauth_token_refresh(
                     client_id=gauth["installed"]["client_id"],
                     client_secret=gauth["installed"]["client_secret"],
                     refresh_token=refresh_token,
@@ -104,7 +104,7 @@ class ArenaAuth:
                 if headless:
                     # limited input device auth flow for local client
                     print("Requesting new device Google authentication.")
-                    creds_jstr = self.run_device_auth_flow(
+                    creds_jstr = self._run_gauth_device_flow(
                         client_id=gauth["installed"]["client_id"],
                         client_secret=gauth["installed"]["client_secret"],
                     )
@@ -133,7 +133,7 @@ class ArenaAuth:
         print(f"Authenticated Google account: {id_claims['email']}")
         return username
 
-    def run_token_refresh(self, client_id, client_secret, refresh_token):
+    def _run_gauth_token_refresh(self, client_id, client_secret, refresh_token):
         refresh_resp, status, url = self._get_gauth_refresh_token(
             client_id=client_id,
             client_secret=client_secret,
@@ -145,7 +145,7 @@ class ArenaAuth:
             print(f"HTTP error {status}: {url}\n{refresh_resp}")
             sys.exit("Terminating...")
 
-    def run_device_auth_flow(self, client_id, client_secret):
+    def _run_gauth_device_flow(self, client_id, client_secret):
         device_resp, status, url = self._get_gauth_device_code(client_id=client_id)
         if 200 > status > 299:  # error
             print(f"HTTP error {status}: {url}\n{device_resp}")

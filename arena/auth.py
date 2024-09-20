@@ -25,11 +25,6 @@ _arena_user_dir = f"{str(Path.home())}/.arena"
 _local_mqtt_path = f"{_mqtt_token_file}"
 
 
-class JSONObject:
-    def __init__(self, dictionary):
-        self.__dict__ = dictionary
-
-
 class ArenaAuth:
 
     _scopes = [
@@ -98,7 +93,7 @@ class ArenaAuth:
         else:
             if refresh_token:
                 print("Requesting refreshed Google authentication.")
-                creds_jstr, status = self._get_gauth_refresh_token(
+                creds_jstr = self._run_token_refresh(
                     client_id=gauth["installed"]["client_id"],
                     client_secret=gauth["installed"]["client_secret"],
                     refresh_token=refresh_token,
@@ -138,11 +133,26 @@ class ArenaAuth:
         print(f"Authenticated Google account: {id_claims['email']}")
         return username
 
+    def run_token_refresh(self, client_id, client_secret, refresh_token):
+        refresh_resp, status, url = self._get_gauth_refresh_token(
+            client_id=client_id,
+            client_secret=client_secret,
+            refresh_token=refresh_token,
+        )
+        if 200 <= status <= 299:  # success
+            return refresh_resp
+        else:  # error
+            print(f"HTTP error {status}: {url}\n{refresh_resp}")
+            sys.exit("Terminating...")
+
     def run_device_auth_flow(self, client_id, client_secret):
-        device_resp, status = self._get_gauth_device_code(client_id=client_id)
+        device_resp, status, url = self._get_gauth_device_code(client_id=client_id)
+        if 200 > status > 299:  # error
+            print(f"HTTP error {status}: {url}\n{device_resp}")
+            sys.exit("Terminating...")
         # render user code/link and poll for OOB response
         device = json.loads(device_resp)
-        print(f"1. Open page other device: {device['verification_url']}")
+        print(f"1. Go to this page on any device: {device['verification_url']}")
         print(f"2. Enter this code on that page: {device['user_code']}")
         exp = time.time() + device["expires_in"]
         delay = device["interval"]
@@ -155,7 +165,7 @@ class ArenaAuth:
                 print(f"Device auth request expired after {delay/60} minutes.")
                 sys.exit("Terminating...")
 
-            access_resp, status = self._get_gauth_device_token(
+            access_resp, status, url = self._get_gauth_device_token(
                 client_id=client_id,
                 client_secret=client_secret,
                 device_code=device["device_code"],
@@ -165,8 +175,8 @@ class ArenaAuth:
             if status == 428:  # awaiting remote user code and approval
                 # skip tasks if we are behind schedule:
                 next_time += (time.time() - next_time) // delay * delay + delay
-            else:
-                print(access_resp)
+            else:  # error
+                print(f"HTTP error {status}: {url}\n{access_resp}")
                 sys.exit("Terminating...")
 
     def authenticate_scene(self, web_host, realm, scene, username, video=False):
@@ -320,7 +330,7 @@ class ArenaAuth:
         query_string = parse.urlencode(params)
         data = query_string.encode("ascii")
         body, status = self.urlopen_def(url, data=data)
-        return body, status
+        return body, status, url
 
     def _get_gauth_device_token(self, client_id, client_secret, device_code):
         url = "https://oauth2.googleapis.com/token"
@@ -333,7 +343,7 @@ class ArenaAuth:
         query_string = parse.urlencode(params)
         data = query_string.encode("ascii")
         body, status = self.urlopen_def(url, data=data)
-        return body, status
+        return body, status, url
 
     def _get_gauth_refresh_token(self, client_id, client_secret, refresh_token):
         url = "https://oauth2.googleapis.com/token"
@@ -346,7 +356,7 @@ class ArenaAuth:
         query_string = parse.urlencode(params)
         data = query_string.encode("ascii")
         body, status = self.urlopen_def(url, data=data)
-        return body, status
+        return body, status, url
 
     def _get_my_scenes(self, web_host, id_token):
         url = f"https://{web_host}/user/my_scenes"
@@ -387,26 +397,28 @@ class ArenaAuth:
         return web_host != "localhost"
 
     def urlopen_def(self, url, data=None):
-        """urlopen is for non-ARENA URL connections.
+        """urlopen default is for non-ARENA URL connections.
         :param str url: the url to POST/GET.
         :param str data: None for GET, add params for POST.
         """
-        res = None
-        status = None
+        body, status = None, None
         try:
             req = request.Request(url)
             with request.urlopen(req, data=data) as f:
                 status = f.status
-                res = f.read().decode("utf-8")
+                body = f.read().decode("utf-8")
+        except HTTPError as err:
+            # do not log errors, allow consumer to decide
+            status = err.code
+            body = err.read().decode("utf-8")
         except (
             requests.exceptions.ConnectionError,
             ConnectionError,
             URLError,
-            HTTPError,
         ) as err:
-            # do not log errors, allow consumer to decide
-            status = err.code
-        return res, status
+            print(f"{err}: {url}")
+
+        return body, status
 
     def urlopen(self, url, data=None, creds=False, csrf=None):
         """urlopen is for ARENA URL connections.
@@ -416,7 +428,7 @@ class ArenaAuth:
         :param str csrf: The csrftoken.
         """
         urlparts = urlsplit(url)
-        res = None
+        body = None
         try:
             req = request.Request(url)
             if creds:
@@ -426,29 +438,30 @@ class ArenaAuth:
                 req.add_header("X-CSRFToken", csrf)
             if self.verify(urlparts.netloc):
                 with request.urlopen(req, data=data) as f:
-                    res = f.read().decode("utf-8")
+                    body = f.read().decode("utf-8")
             else:
                 context = ssl.create_default_context()
                 context.check_hostname = False
                 context.verify_mode = ssl.CERT_NONE
                 with request.urlopen(req, data=data, context=context) as f:
-                    res = f.read().decode("utf-8")
-            return res
-        except (
-            requests.exceptions.ConnectionError,
-            ConnectionError,
-            URLError,
-            HTTPError,
-        ) as err:
+                    body = f.read().decode("utf-8")
+            return body
+        except HTTPError as err:
             print(f"{err}: {url}")
-            if res is not None:
-                print(res)  # show additional errors in response if present
+            print(err.read().decode("utf-8"))  # show additional errors in response if present
             if isinstance(err, HTTPError) and err.code in (401, 403):
                 # user not authorized on website yet, they don"t have an ARENA username
                 us = urlsplit(url)
                 base_url = f"{us.scheme}://{us.netloc}"
                 print(f"Do you have a valid ARENA account on {base_url}?")
                 print(f"Create an account in a web browser at: {base_url}/user")
+            sys.exit("Terminating...")
+        except (
+            requests.exceptions.ConnectionError,
+            ConnectionError,
+            URLError,
+        ) as err:
+            print(f"{err}: {url}")
             sys.exit("Terminating...")
 
 

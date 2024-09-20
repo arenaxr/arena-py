@@ -17,8 +17,6 @@ from urllib.parse import urlsplit
 import jwt
 import requests
 from google.auth import jwt as gJWT
-from google.auth.external_account_authorized_user import Credentials
-from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 _gauth_file = ".arena_google_auth"
@@ -69,6 +67,7 @@ class ArenaAuth:
         if "installed" not in gauth or "client_id" not in gauth["installed"]:
             return None
         creds = None
+        refresh_token = None
         scene_auth_dir = self._get_scene_auth_path(web_host)
         scene_gauth_path = f"{scene_auth_dir}/{_gauth_file}"
 
@@ -81,29 +80,32 @@ class ArenaAuth:
                 with open(scene_gauth_path, "r", encoding="utf-8") as token:
                     creds = json.load(token)
             except (json.JSONDecodeError, UnicodeDecodeError):
-                creds = None
+                creds = None  # bad/old storage format
 
-            # for reuse, client_id must still match
             if creds:
+                # for reuse, client_id must still match
                 id_claims = gJWT.decode(creds["id_token"], verify=False)
                 if id_claims["aud"] != gauth["installed"]["client_id"]:
-                    creds = None
+                    creds = None  # switched auth systems
+            if id_claims["exp"]:
                 exp = float(id_claims["exp"])
                 if exp <= time.time():
-                    creds = None
-                if creds:
-                    print("Using cached Google authentication.")
-        # if no credentials available, let the user log in.
-        if not creds:
-            if creds and creds["refresh_token"]:
+                    refresh_token = creds["refresh_token"]
+                    creds = None  # expired token
+
+        if creds:
+            print("Using cached Google authentication.")
+        else:
+            if refresh_token:
                 print("Requesting refreshed Google authentication.")
                 creds_jstr, status = self._get_gauth_refresh_token(
                     client_id=gauth["installed"]["client_id"],
                     client_secret=gauth["installed"]["client_secret"],
-                    refresh_token=creds["refresh_token"],
+                    refresh_token=refresh_token,
                 )
                 creds = json.loads(creds_jstr)
             else:
+                # if no credentials available, let the user log in.
                 if headless:
                     # limited input device auth flow for local client
                     print("Requesting new device Google authentication.")
@@ -121,7 +123,6 @@ class ArenaAuth:
                     creds = json.loads(creds_jstr)
                     creds["id_token"] = credentials.id_token
 
-            print(creds)  # TODO remove
             with open(scene_gauth_path, "w", encoding="utf-8") as token:
                 # save the credentials for the next run
                 json.dump(creds, token)
@@ -151,7 +152,7 @@ class ArenaAuth:
             time.sleep(max(0, next_time - time.time()))
 
             if time.time() > exp:
-                print("Device auth request expired.")
+                print(f"Device auth request expired after {delay/60} minutes.")
                 sys.exit("Terminating...")
 
             access_resp, status = self._get_gauth_device_token(

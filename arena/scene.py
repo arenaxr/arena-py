@@ -17,8 +17,13 @@ from .attributes import *
 from .env import PROGRAM_OBJECT_ID, SCENE, _get_env
 from .events import *
 from .objects import *
-from .utils import (ArenaCmdInterpreter, ArenaTelemetry, ProgramRunInfo,
-                    QueueStats, Utils)
+from .utils import (
+    ArenaCmdInterpreter,
+    ArenaTelemetry,
+    ProgramRunInfo,
+    QueueStats,
+    Utils,
+)
 
 
 class Scene(ArenaMQTT):
@@ -30,24 +35,36 @@ class Scene(ArenaMQTT):
     :param str realm: Reserved topic fork for future use (optional).
     :param str namespace: Username of authenticated user or other namespace (automatic).
     :param str scene: The name of the scene, without namespace (required).
+    :param int network_latency_interval: Interval (in ms) to run network graph latency update. Default value is 10000 (10 secs). Ignore this parameter.
+    :param func on_msg_callback: Called on all MQTT messages received. Default = None.
+    :param func new_obj_callback: Called on object 'create' MQTT messages received. Default = None.
+    :param func user_join_callback: Called on user id 'new' MQTT messages received. Default = None.
+    :param func user_left_callback: Called on user id 'delete' MQTT messages received. Default = None.
+    :param func delete_obj_callback: Called on object 'delete' MQTT messages received. Default = None.
+    :param func end_program_callback: Called on MQTT disconnect. Default = None.
+    :param bool video: If true, request permissions for video conference. Default = False.
+    :param bool debug: If true, print a log of all publish messages from this client. Default = False.
+    :param bool cli_args: If true, require CLI standardized parameters. Default = False.
+    :param bool headless: If true, force limited input device auth flow. Default = False.
     """
 
-    def __init__(self,
-                 host="arenaxr.org",
-                 realm="realm",
-                 network_latency_interval=10000,  # run network latency update every 10s
-                 on_msg_callback=None,
-                 new_obj_callback=None,
-                 user_join_callback=None,
-                 user_left_callback=None,
-                 delete_obj_callback=None,
-                 end_program_callback=None,
-                 video=False,
-                 debug=False,
-                 cli_args=False,
-                 headless=False,
-                 **kwargs
-                 ):
+    def __init__(
+        self,
+        host="arenaxr.org",
+        realm="realm",
+        network_latency_interval=10000,  # run network latency update every 10s
+        on_msg_callback=None,
+        new_obj_callback=None,
+        user_join_callback=None,
+        user_left_callback=None,
+        delete_obj_callback=None,
+        end_program_callback=None,
+        video=False,
+        debug=False,
+        cli_args=False,
+        headless=False,
+        **kwargs,
+    ):
 
         # init telemetry
         self.telemetry = ArenaTelemetry()
@@ -56,9 +73,12 @@ class Scene(ArenaMQTT):
         self.connected_evt = threading.Event()
 
         # start the command interpreter (if enabled by env variable)
-        self.cmd_interpreter = ArenaCmdInterpreter(self, show_attrs=('config_data', 'scene', 'users', 'all_objects', 'run_info'),
-                                    get_callables=('persisted_objs', 'persisted_scene_option', 'writable_scenes', 'user_list'),
-                                    start_cmd_event=self.connected_evt)
+        self.cmd_interpreter = ArenaCmdInterpreter(
+            self,
+            show_attrs=("config_data", "scene", "users", "all_objects", "run_info"),
+            get_callables=("persisted_objs", "persisted_scene_option", "writable_scenes", "user_list"),
+            start_cmd_event=self.connected_evt,
+        )
 
         if cli_args:
             self.args = self.parse_cli(cli_args)
@@ -92,7 +112,7 @@ class Scene(ArenaMQTT):
             video,
             debug,
             headless,
-            **kwargs
+            **kwargs,
         )
 
         with self.telemetry.start_span(f"init {self.namespace}/{self.scene}") as span:
@@ -101,10 +121,12 @@ class Scene(ArenaMQTT):
             # create a program object to describe this program
             # PROGRAM_OBJECT_ID allows to match the object id of persisted program object
             # when a program object with PROGRAM_OBJECT_ID is loaded from persist, it will replace this one
-            self.program = Program(object_id=_get_env(PROGRAM_OBJECT_ID, super().client_id()),
-                                   name=f"{self.namespace}/{self.scene}",
-                                   filename=sys.argv[0],
-                                   filetype="PY")
+            self.program = Program(
+                object_id=_get_env(PROGRAM_OBJECT_ID, super().client_id()),
+                name=f"{self.namespace}/{self.scene}",
+                filename=sys.argv[0],
+                filetype="PY",
+            )
 
             self.persist_host = self.config_data["ARENADefaults"]["persistHost"]
             self.persist_path = self.config_data["ARENADefaults"]["persistPath"]
@@ -117,20 +139,20 @@ class Scene(ArenaMQTT):
             self.user_join_callback = user_join_callback
             self.user_left_callback = user_left_callback
 
-            self.unspecified_object_ids = set() # objects that exist in the scene,
-                                                # but this scene instance does not
-                                                # have a reference to
-            self.users = {} # dict of all users
+            # objects that exist in the scene, but this scene instance does not have a reference to
+            self.unspecified_object_ids = set()
+            self.users = {}  # dict of all users
 
             # setup program run info to collect stats
-            self.run_info = ProgramRunInfo(self.event_loop,
-                                           queue_len_callable=lambda: self.get_rcv_pub_queue_len(),
-                                           update_callback=self.run_info_update,
-                                           web_host=self.web_host,
-                                           namespace=self.namespace,
-                                           scene=self.scene,
-                                           realm=self.realm
-                                           )
+            self.run_info = ProgramRunInfo(
+                self.event_loop,
+                queue_len_callable=lambda: self.get_rcv_pub_queue_len(),
+                update_callback=self.run_info_update,
+                web_host=self.web_host,
+                namespace=self.namespace,
+                scene=self.scene,
+                realm=self.realm,
+            )
 
             # Always use the the hostname specified by the user, or defaults.
             print(f"Loading: https://{self.web_host}/{self.namespace}/{self.scene}, realm={self.realm}")
@@ -141,36 +163,29 @@ class Scene(ArenaMQTT):
         """
         Reusable command-line options to give apps flexible options to avoid hard-coding locations.
         """
-        parser = argparse.ArgumentParser(description=(f"{Path(main.__file__).name} (arena-py) Application CLI"),
-                                         epilog="Additional user-defined args are possible, see docs at https://docs.arenaxr.org/content/python/scenes for usage.")
-        parser.add_argument("-mh", "--host", type=str,
-                            help="ARENA webserver main host to connect to")
-        parser.add_argument("-n", "--namespace", type=str,
-                            help="Namespace of scene")
-        parser.add_argument("-s", "--scene", type=str,
-                            help="Scene to publish and listen to")
-        parser.add_argument("-d", "--device", type=str,
-                            help="Device to publish and listen to")
-        parser.add_argument("-p", "--position", nargs=3, type=float, default=(0, 0, 0),
-                            help="App position as cartesian.x cartesian.y cartesian.z")
-        parser.add_argument("-r", "--rotation", nargs=3, type=float, default=(0, 0, 0),
-                            help="App rotation as euler.x euler.y euler.z")
-        parser.add_argument("-c", "--scale", nargs=3, type=float, default=(1, 1, 1),
-                            help="App scale as cartesian.x cartesian.y cartesian.z")
-        parser.add_argument("-D", "--debug", action='store_true',
-                            help='Debug mode.', default=False)
+        parser = argparse.ArgumentParser(
+            description=(f"{Path(main.__file__).name} (arena-py) Application CLI"),
+            epilog="Additional user-defined args are possible, see docs at https://docs.arenaxr.org/content/python/scenes for usage.",
+        )
+        parser.add_argument("-mh", "--host", type=str, help="ARENA webserver main host to connect to")
+        parser.add_argument("-n", "--namespace", type=str, help="Namespace of scene")
+        parser.add_argument("-s", "--scene", type=str, help="Scene to publish and listen to")
+        parser.add_argument("-d", "--device", type=str, help="Device to publish and listen to")
+        parser.add_argument("-p", "--position", nargs=3, type=float, default=(0, 0, 0), help="App position as 'x y z'")
+        parser.add_argument("-r", "--rotation", nargs=3, type=float, default=(0, 0, 0), help="App rotation as 'x y z'")
+        parser.add_argument("-c", "--scale", nargs=3, type=float, default=(0, 0, 0), help="App scale as 'x y z'")
+        parser.add_argument("-D", "--debug", action="store_true", help="Debug mode.", default=False)
 
         # add known help descriptions
         if isinstance(cli_args, dict):
             for k in cli_args:
-                parser.add_argument(
-                    f"-{k}", f"--{k}", help=cli_args[k], required=False)
+                parser.add_argument(f"-{k}", f"--{k}", help=cli_args[k], required=False)
 
         # add unknown arguments for users to pull as strings
         parsed, unknown = parser.parse_known_args()
         for arg in unknown:
             if arg.startswith(("-", "--")):
-                parser.add_argument(arg.split('=')[0])
+                parser.add_argument(arg.split("=")[0])
 
         args = parser.parse_args()
         argdict = vars(args)
@@ -181,7 +196,7 @@ class Scene(ArenaMQTT):
 
     def exit(self, arg=None):
         """Custom exit to push errors to telemetry"""
-        error_msg=None
+        error_msg = None
         if arg != None and arg != 0:
             error_msg = f"Exiting with sys.exit('{arg}')"
         self.telemetry.exit(error_msg)
@@ -248,30 +263,29 @@ class Scene(ArenaMQTT):
                                     continue
                                 span.add_event("Client event: {event}")
 
-
                             elif action == "delete":
-                                if Camera.object_type in object_id: # object is a camera
+                                if Camera.object_type in object_id:
+                                    # object is a camera
                                     if object_id in self.users:
                                         if self.user_left_callback:
                                             self.callback_wrapper(
-                                                    self.user_left_callback,
-                                                    self.users[object_id],
-                                                    payload
-                                                )
+                                                self.user_left_callback, self.users[object_id], payload
+                                            )
                                         del self.users[object_id]
-                                elif HandLeft.object_type in object_id or HandRight.object_type in object_id: # object is a hand/controller
+                                elif HandLeft.object_type in object_id or HandRight.object_type in object_id:
+                                    # object is a hand/controller
                                     if "dep" in obj.data:
                                         user_id = obj.data.dep
                                         if user_id in self.users:
                                             user = self.users[user_id]
                                             if obj in user.hands.values():
                                                 if user.hand_remove_callback:
-                                                    self.callback_wrapper(
-                                                            user.hand_remove_callback,
-                                                            obj,
-                                                            payload
-                                                        )
-                                                hand_key = HandLeft.object_type if HandLeft.object_type in object_id else HandRight.object_type
+                                                    self.callback_wrapper(user.hand_remove_callback, obj, payload)
+                                                hand_key = (
+                                                    HandLeft.object_type
+                                                    if HandLeft.object_type in object_id
+                                                    else HandRight.object_type
+                                                )
                                                 del user.hands[hand_key]
                                 elif self.delete_obj_callback:
                                     self.callback_wrapper(self.delete_obj_callback, obj, payload)
@@ -280,7 +294,7 @@ class Scene(ArenaMQTT):
 
                                 continue
 
-                            else: # create/update
+                            else:  # create/update
                                 obj.update_attributes(**payload)
                                 span.add_event("Object attributes update.")
 
@@ -304,11 +318,7 @@ class Scene(ArenaMQTT):
                                         self.users[object_id] = Camera(**payload)
 
                                     if self.user_join_callback:
-                                        self.callback_wrapper(
-                                                self.user_join_callback,
-                                                self.users[object_id],
-                                                payload
-                                            )
+                                        self.callback_wrapper(self.user_join_callback, self.users[object_id], payload)
 
                             elif object_type == HandLeft.object_type or object_type == HandRight.object_type:
                                 if "dep" in obj.data:
@@ -320,11 +330,7 @@ class Scene(ArenaMQTT):
                                             obj.camera = user
 
                                             if user.hand_found_callback:
-                                                self.callback_wrapper(
-                                                    user.hand_found_callback,
-                                                    obj,
-                                                    payload
-                                                )
+                                                self.callback_wrapper(user.hand_found_callback, obj, payload)
 
                         # if its an object the library has not seen before, call new object callback
                         elif object_id not in self.unspecified_object_ids and self.new_obj_callback:
@@ -360,11 +366,7 @@ class Scene(ArenaMQTT):
     def generate_click_event(self, obj: Object, type="mousedown", **kwargs):
         """Publishes an click event"""
         _type = type
-        evt = Event(object_id=obj.object_id,
-                    type=_type,
-                    position=obj.data.position,
-                    source=self.mqttc_id,
-                    **kwargs)
+        evt = Event(object_id=obj.object_id, type=_type, position=obj.data.position, source=self.mqttc_id, **kwargs)
         return self.generate_custom_event(evt, action="clientEvent")
 
     def manipulate_camera(self, cam, **kwargs):
@@ -385,10 +387,7 @@ class Scene(ArenaMQTT):
             object_id = cam.object_id
         else:
             object_id = cam
-        evt = Event(object_id=object_id,
-                    type="camera-override",
-                    object_type=Camera.object_type,
-                    **kwargs)
+        evt = Event(object_id=object_id, type="camera-override", object_type=Camera.object_type, **kwargs)
         return self.generate_custom_event(evt, action="update")
 
     def look_at(self, cam, target):
@@ -404,10 +403,7 @@ class Scene(ArenaMQTT):
             object_id = cam.object_id
         else:
             object_id = cam
-        evt = Event(object_id=object_id,
-                    type="camera-override",
-                    object_type="look-at",
-                    target=target)
+        evt = Event(object_id=object_id, type="camera-override", object_type="look-at", target=target)
         return self.generate_custom_event(evt, action="update")
 
     def teleport_to_landmark(self, cam, target):
@@ -426,10 +422,9 @@ class Scene(ArenaMQTT):
         else:
             raise ValueError("cam must be an ARENA object or string object_id")
 
-        evt = Event(object_id=object_id,
-                    type="camera-override",
-                    object_type="teleport-to-landmark",
-                    landmarkObj=target_id)
+        evt = Event(
+            object_id=object_id, type="camera-override", object_type="teleport-to-landmark", landmarkObj=target_id
+        )
         return self.generate_custom_event(evt, action="update")
 
     @property
@@ -471,9 +466,7 @@ class Scene(ArenaMQTT):
                     task_to_cancel = obj.delayed_prop_tasks[k]
                     task_to_cancel.cancel()
                     del task_to_cancel
-                    obj.dispatch_animation(
-                        Animation(property=k, enabled=False, dur=0)
-                    )
+                    obj.dispatch_animation(Animation(property=k, enabled=False, dur=0))
             if need_to_run_animations:
                 self.run_animations(obj)
 
@@ -489,9 +482,7 @@ class Scene(ArenaMQTT):
 
     def delete_object(self, obj):
         """Public function to delete an object"""
-        payload = {
-            "object_id": obj.object_id
-        }
+        payload = {"object_id": obj.object_id}
         Object.remove(obj)
         return self._publish(payload, "delete", custom_payload=True)
 
@@ -500,24 +491,20 @@ class Scene(ArenaMQTT):
         updated_data = {}
         for attr in attributes:
             obj.data[attr] = None  # remove from large internal storage
-            updated_data[attr] = None # remove from small external publish
+            updated_data[attr] = None  # remove from small external publish
         payload = {
             "object_id": obj.object_id,
             "type": obj.type,
             "persist": obj.persist,
-            "data": updated_data  # dashes handled from string array
+            "data": updated_data,  # dashes handled from string array
         }
         return self._publish(payload, "update", custom_payload=True)
 
     def run_animations(self, obj: Object):
         """Runs all dispatched animations"""
         if isinstance(obj, Object):
-            payload = {
-                "object_id": obj.object_id,
-                "type": obj.type,
-                "data": {"object_type": obj.data.object_type}
-            }
-            for i,animation in enumerate(obj.animations):
+            payload = {"object_id": obj.object_id, "type": obj.type, "data": {"object_type": obj.data.object_type}}
+            for i, animation in enumerate(obj.animations):
                 if isinstance(animation, AnimationMixer):
                     payload["data"][f"animation-mixer"] = vars(animation)
                 else:
@@ -542,10 +529,9 @@ class Scene(ArenaMQTT):
 
         async def _delayed_task():
             try:
-                sleep_dur = (anim.get('dur', 0) + anim.get('delay', 0)) / 1000
+                sleep_dur = (anim.get("dur", 0) + anim.get("delay", 0)) / 1000
                 await asyncio.sleep(sleep_dur)  # this is in seconds
-                final_state = anim["from"] if anim.get("dir", "normal") == "reverse"\
-                    else anim["to"]
+                final_state = anim["from"] if anim.get("dir", "normal") == "reverse" else anim["to"]
                 obj.update_attributes(**{anim["property"]: final_state})
                 self.update_object(obj)
                 obj.delayed_prop_tasks.pop(anim["property"], None)
@@ -567,10 +553,13 @@ class Scene(ArenaMQTT):
             obj_type = obj["type"]
         with self.telemetry.start_publish_span(obj["object_id"], action, obj_type) as span:
             if not self.can_publish:
-                self.telemetry.set_error(f"ERROR: Publish failed! You do not have permission to publish to topic {self.root_topic} on {self.web_host}", span)
+                self.telemetry.set_error(
+                    f"ERROR: Publish failed! You do not have permission to publish to topic {self.root_topic} on {self.web_host}",
+                    span,
+                )
 
             topic = f"{self.root_topic}/{self.mqttc_id}/{obj['object_id']}"
-            d = datetime.utcnow().isoformat()[:-3]+"Z"
+            d = datetime.utcnow().isoformat()[:-3] + "Z"
 
             if custom_payload:
                 payload = obj
@@ -588,7 +577,7 @@ class Scene(ArenaMQTT):
     def get_persisted_obj(self, object_id):
         """Returns a dictionary for a persisted object.
 
-           If object is known by arena-py, return local object, not persisted
+        If object is known by arena-py, return local object, not persisted
         """
         persist_obj = None
         if object_id in self.all_objects:
@@ -606,7 +595,8 @@ class Scene(ArenaMQTT):
                 object_type = data.get("object_type")
 
                 # special case for Program type
-                if persist_obj.get("type") == Program.object_type: object_type = Program.object_type
+                if persist_obj.get("type") == Program.object_type:
+                    object_type = Program.object_type
 
                 if object_type != None:
                     obj_class = OBJECT_TYPE_MAP.get(object_type, Object)
@@ -614,16 +604,16 @@ class Scene(ArenaMQTT):
                     persist_obj.persist = True
 
         if not persist_obj:
-            raise ValueError(f"object with object_id=\"{object_id}\" not found in persist!")
+            raise ValueError(f'object with object_id="{object_id}" not found in persist!')
 
         return persist_obj
 
     def get_persisted_objs(self):
         """Returns a dictionary of persisted objects.
 
-           If object is known by arena-py, return our local object, not persisted
-           Silently fails/skip objects without object_id and object_type (except programs)
-           Instantiates generic Object if object_type is given but unknown to arena-py
+        If object is known by arena-py, return our local object, not persisted
+        Silently fails/skip objects without object_id and object_type (except programs)
+        Instantiates generic Object if object_type is given but unknown to arena-py
         """
         objs = {}
         # pass token to persist
@@ -672,13 +662,13 @@ class Scene(ArenaMQTT):
         """Returns a dictionary for scene-options. [TODO] wrap the output as a BaseObject"""
         scene_opts_url = f"{self.persist_url}?type=scene-options"
         # pass token to persist
-        data = self.auth.urlopen(url=scene_opts_url, creds=True )
+        data = self.auth.urlopen(url=scene_opts_url, creds=True)
         output = json.loads(data)
         return output
 
     def get_writable_scenes(self):
-        """ Request list of scene names for logged in user account that user has publish permission for.
-            Returns: list of scenes.
+        """Request list of scene names for logged in user account that user has publish permission for.
+        Returns: list of scenes.
         """
         return self.auth.get_writable_scenes(web_host=self.web_host)
 
@@ -688,13 +678,14 @@ class Scene(ArenaMQTT):
 
     def get_rcv_pub_queue_len(self):
         """Return QueueStats object with receive and publish queue length"""
-        return QueueStats(super().rcv_queue_len(),  super().pub_queue_len())
+        return QueueStats(super().rcv_queue_len(), super().pub_queue_len())
 
     def run_info_update(self, run_info):
         """Callback when program stats are updated; publish program object update"""
         # Add run info to program data object and publish program object update
         run_info.add_program_info(self.program.data)
         self._publish(self.program, "update")
+
 
 class Arena(Scene):
     """

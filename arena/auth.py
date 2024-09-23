@@ -82,11 +82,11 @@ class ArenaAuth:
                 id_claims = gJWT.decode(creds["id_token"], verify=False)
                 if id_claims["aud"] != gauth["installed"]["client_id"]:
                     creds = None  # switched auth systems
-            if id_claims["exp"]:
-                exp = float(id_claims["exp"])
-                if exp <= time.time():
-                    refresh_token = creds["refresh_token"]
-                    creds = None  # expired token
+                if creds and "refresh_token" in creds and "exp" in id_claims:
+                    exp = float(id_claims["exp"])
+                    if exp <= time.time():
+                        refresh_token = creds["refresh_token"]
+                        creds = None  # expired token
 
         if creds:
             print("Using cached Google authentication.")

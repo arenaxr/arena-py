@@ -10,8 +10,8 @@ class Position(Attribute):
     Usage: `position=Position(...)` or `position=Position(x,y,z)` or `position=(x,y,z)`
 
     :param float|Iterable|Mapping x: x Defaults to '0' (optional)
-    :param float y: y (optional)
-    :param float z: z (optional)
+    :param float y: y Defaults to '0' (optional)
+    :param float z: z Defaults to '0' (optional)
     """
 
     def __init__(self, x=None, y=None, z=None):

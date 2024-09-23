@@ -6,7 +6,7 @@ class VideoControl(Attribute):
     Usage: `video_control=VideoControl(...)`
 
     :param bool anyone_clicks: Responds to clicks from any user. Defaults to 'True' (optional)
-    :param bool autoplay: Video starts playing automatically. (optional)
+    :param bool autoplay: Video starts playing automatically. Defaults to 'False' (optional)
     :param bool cleanup: Automatically remove HTML5 video and img assets from DOM on object removal. Defaults to 'True' (optional)
     :param str frame_object: URL of a thumbnail image, e.g. 'store/users/wiselab/images/conix-face-white.jpg'. (optional)
     :param bool video_loop: Video automatically loops. Defaults to 'True' (optional)

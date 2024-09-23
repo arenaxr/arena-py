@@ -10,9 +10,9 @@ class Rotation(Attribute):
     Usage: `rotation=Rotation(...)` or `rotation=Rotation(x,y,z,w)` or `rotation=Rotation(x,y,z)` or `rotation=(x,y,z,w)` or `rotation=(x,y,z)`
 
     :param float|Iterable|Mapping w: w Defaults to '1' (optional)
-    :param float x: x (optional)
-    :param float y: y (optional)
-    :param float z: z (optional)
+    :param float x: x Defaults to '0' (optional)
+    :param float y: y Defaults to '0' (optional)
+    :param float z: z Defaults to '0' (optional)
     """
 
     def __init__(self, x=None, y=None, z=None, w=None):

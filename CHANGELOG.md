@@ -4,6 +4,14 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [0.11.1](https://github.com/arenaxr/arena-py/compare/v0.11.0...v0.11.1) (2024-09-23)
+
+
+### Bug Fixes
+
+* **auth:** fix failed auth when switching browser vs headless ([2d22acb](https://github.com/arenaxr/arena-py/commit/2d22acb06d70b619b37be72ee0c834ae4fe0df67))
+* **docstring:** add falsy default values to docstring params ([9d831d8](https://github.com/arenaxr/arena-py/commit/9d831d8cc4f84056b6c37adfb630641a175a596f))
+
 ## [0.11.0](https://github.com/arenaxr/arena-py/compare/v0.10.3...v0.11.0) (2024-09-20)
 
 

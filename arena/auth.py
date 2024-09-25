@@ -79,16 +79,17 @@ class ArenaAuth:
             except (json.JSONDecodeError, UnicodeDecodeError):
                 creds = None  # bad/old storage format
 
-            if creds:
-                # for reuse, client_id must still match
+            if creds and "id_token" in creds:
                 id_claims = gJWT.decode(creds["id_token"], verify=False)
+                # for reuse, client_id must still match
                 if id_claims["aud"] != gauth["installed"]["client_id"]:
                     creds = None  # switched auth systems
-                if creds and "refresh_token" in creds and "exp" in id_claims:
-                    exp = float(id_claims["exp"])
-                    if exp <= time.time():
-                        refresh_token = creds["refresh_token"]
-                        creds = None  # expired token
+            if creds and "refresh_token" in creds:
+                refresh_token = creds["refresh_token"]
+            if creds and id_claims:
+                exp = float(id_claims["exp"])
+                if exp <= time.time():
+                    creds = None  # expired token
 
         if creds:
             print("Using cached Google authentication.")

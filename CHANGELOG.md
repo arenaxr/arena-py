@@ -4,6 +4,13 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [0.11.2](https://github.com/arenaxr/arena-py/compare/v0.11.1...v0.11.2) (2024-09-25)
+
+
+### Bug Fixes
+
+* **auth:** handle cases of missing google refresh token ([7c28970](https://github.com/arenaxr/arena-py/commit/7c289702d944cf46b04cca60aad0c72c8687ae01))
+
 ## [0.11.1](https://github.com/arenaxr/arena-py/compare/v0.11.0...v0.11.1) (2024-09-23)
 
 

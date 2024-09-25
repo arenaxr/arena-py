@@ -4,6 +4,53 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [0.11.1](https://github.com/arenaxr/arena-py/compare/v0.11.0...v0.11.1) (2024-09-23)
+
+
+### Bug Fixes
+
+* **auth:** fix failed auth when switching browser vs headless ([2d22acb](https://github.com/arenaxr/arena-py/commit/2d22acb06d70b619b37be72ee0c834ae4fe0df67))
+* **docstring:** add falsy default values to docstring params ([9d831d8](https://github.com/arenaxr/arena-py/commit/9d831d8cc4f84056b6c37adfb630641a175a596f))
+
+## [0.11.0](https://github.com/arenaxr/arena-py/compare/v0.10.3...v0.11.0) (2024-09-20)
+
+
+### Features
+
+* **auth:** add google limited input device auth flow ([#195](https://github.com/arenaxr/arena-py/issues/195)) ([7e2bfef](https://github.com/arenaxr/arena-py/commit/7e2bfef8e7bad45d0b9754d7998ab82235ca8860))
+
+
+### Bug Fixes
+
+* **auth:** fixed signout not removing gauth token ([7d15b3f](https://github.com/arenaxr/arena-py/commit/7d15b3f7e48e6e0538c2488941b984005d182d43))
+
+## [0.10.3](https://github.com/arenaxr/arena-py/compare/v0.10.2...v0.10.3) (2024-09-03)
+
+
+### Bug Fixes
+
+* typo len check of rot input ([e0af8c5](https://github.com/arenaxr/arena-py/commit/e0af8c56ee0029aba865496ccc1eb24f8eb6d133))
+
+## [0.10.2](https://github.com/arenaxr/arena-py/compare/v0.10.1...v0.10.2) (2024-08-13)
+
+
+### Bug Fixes
+
+* bump requests dependancy ([e3b8a04](https://github.com/arenaxr/arena-py/commit/e3b8a048356de5256d97e4427bac81c8aa386948))
+
+## [0.10.1](https://github.com/arenaxr/arena-py/compare/v0.10.0...v0.10.1) (2024-08-09)
+
+
+### Bug Fixes
+
+* add exit() when disconnected ([28944e2](https://github.com/arenaxr/arena-py/commit/28944e28fce168860137e531221a214282fc8761))
+* **auth:** log additional error messages during http errors ([bce90b7](https://github.com/arenaxr/arena-py/commit/bce90b7bce28d9694c55839620593b3fb07cdfa8))
+* **auth:** remove automatic browser open for 4xx status ([937a867](https://github.com/arenaxr/arena-py/commit/937a867b95c5ac3544148d4728dbcee068ef905e))
+* better error handling on malformed tokens ([0dd7a62](https://github.com/arenaxr/arena-py/commit/0dd7a620c93d4e677f9ddc379237df830762e75e))
+* **obj-model:** sync with latest schema, add ObjModel ([646baea](https://github.com/arenaxr/arena-py/commit/646baeab5e0bfa89d7ac183e64cc977ef2918087))
+* print error msgs on exit ([2200159](https://github.com/arenaxr/arena-py/commit/220015928c71e1172e0b3022f385844bc3188537))
+* replace program object from persist ([ca9b71a](https://github.com/arenaxr/arena-py/commit/ca9b71ac7623d537ff8d7d1f4836896fffe04ed5))
+
 ## [0.10.0](https://github.com/arenaxr/arena-py/compare/v0.9.6...v0.10.0) (2024-05-06)
 
 

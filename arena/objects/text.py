@@ -13,7 +13,7 @@ class Text(Object):
     :param str font: Font to render text, either the name of one of A-Frame's stock fonts or a URL to a font file. Allows [aileronsemibold, dejavu, exo2bold, exo2semibold, kelsonsans, monoid, mozillavr, roboto, sourcecodepro] Defaults to 'roboto' (optional)
     :param str fontImage: Font image texture path to render text. Defaults to the font's name with extension replaced to .png. Don't need to specify if using a stock font. (derived from font name). (optional)
     :param float height: Height of text block. (derived from text size). (optional)
-    :param float letterSpacing: Letter spacing in pixels. (optional)
+    :param float letterSpacing: Letter spacing in pixels. Defaults to '0' (optional)
     :param float lineHeight: Line height in pixels. (derived from font file). (optional)
     :param float opacity: Opacity, on a scale from 0 to 1, where 0 means fully transparent and 1 means fully opaque. Defaults to '1' (optional)
     :param str shader: Shader used to render text. Allows [portal, flat, standard, sdf, msdf, ios10hls, skyshader, gradientshader] Defaults to 'sdf' (optional)
@@ -25,7 +25,7 @@ class Text(Object):
     :param float width: Width in meters. (derived from geometry if exists). Defaults to '5' (optional)
     :param float wrapCount: Number of characters before wrapping text (more or less). Defaults to '40' (optional)
     :param float wrapPixels: Number of pixels before wrapping text. (derived from wrapCount). (optional)
-    :param float xOffset: X-offset to apply to add padding. (optional)
+    :param float xOffset: X-offset to apply to add padding. Defaults to '0' (optional)
     :param float zOffset: Z-offset to apply to avoid Z-fighting if using with a geometry as a background. Defaults to '0.001' (optional)
     """
     object_type = "text"

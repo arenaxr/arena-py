@@ -16,17 +16,22 @@ class Device(ArenaMQTT):
     :param str realm: Reserved topic fork for future use (optional).
     :param str namespace: Username of authenticated user or other namespace (automatic).
     :param str device: The name of the device, without namespace (required).
+    :param int network_latency_interval: Interval (in ms) to run network graph latency update. Default value is 10000 (10 secs). Ignore this parameter.
+    :param func on_msg_callback: Called on all MQTT messages received. Default = None.
+    :param func end_program_callback: Called on MQTT disconnect. Default = None.
+    :param bool debug: If true, print a log of all publish messages from this client. Default = False.
     """
 
-    def __init__(self,
-                 host="arenaxr.org",
-                 realm="realm",
-                 network_latency_interval=10000,  # run network latency update every 10s
-                 on_msg_callback=None,
-                 end_program_callback=None,
-                 debug=False,
-                 **kwargs
-                 ):
+    def __init__(
+        self,
+        host="arenaxr.org",
+        realm="realm",
+        network_latency_interval=10000,  # run network latency update every 10s
+        on_msg_callback=None,
+        end_program_callback=None,
+        debug=False,
+        **kwargs,
+    ):
 
         if os.environ.get(DEVICE):
             self.device = _get_env(DEVICE)
@@ -39,15 +44,7 @@ class Device(ArenaMQTT):
         else:
             sys.exit("Device argument (device) is unspecified or None, aborting...")
 
-        super().__init__(
-            host,
-            realm,
-            network_latency_interval,
-            on_msg_callback,
-            end_program_callback,
-            debug,
-            **kwargs
-        )
+        super().__init__(host, realm, network_latency_interval, on_msg_callback, end_program_callback, debug, **kwargs)
         print(f"Device topic ready: {self.realm}/d/{self.namespace}/{self.device}, mqtt_host={self.mqtt_host}")
 
     async def process_message(self):
@@ -66,7 +63,8 @@ class Device(ArenaMQTT):
         """Publishes to mqtt broker."""
         payload = json.dumps(payload_obj)
         self.mqttc.publish(topic, payload, qos=0)
-        if self.debug: print("[publish]", topic, payload)
+        if self.debug:
+            print("[publish]", topic, payload)
         return payload
 
     def on_publish(self, client, userdata, mid):

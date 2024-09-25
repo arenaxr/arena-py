@@ -45,37 +45,106 @@ mpjoints = [
 ]
 # waypoints, 2nd floor
 wps = [
-    {"x": 5.20, "y": 4.60, "z": 17.90},
-    {"x": 5.20, "y": 4.60, "z": 12.90},
-    {"x": 7.95, "y": 4.60, "z": 12.90},
-    {"x": 7.95, "y": 4.60, "z": 17.90},
+    (5.20, 4.60, 17.90),
+    (5.20, 4.60, 12.90),
+    (7.95, 4.60, 12.90),
+    (7.95, 4.60, 17.90),
 ]
 
-# {"object_id":"motoman","persist":true,"type":"object","action":"update","data":{"object_type":"urdf-model","url":"store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro","urlBase":"/store/users/mwfarb/xacro/motoman_gp4_support","position":{"x":6.22109,"y":5.30667,"z":16.84618},"rotation":{"w":0.707,"x":-0.707,"y":0,"z":0},"scale":{"x":1,"y":1,"z":1}}}
-motoman = UrdfModel(
-    object_id="motoman",
-    position={"x": 6.22, "y": 5.40, "z": 16.84},
-    rotation={"x": -90, "y": 0, "z": 0},
-    scale={"x": 1, "y": 1, "z": 1},
+moto_dest_base = Object(
+    object_id="moto_dest_base",
+    position=(6.22, 6.40, 16.25),
+    # position=(0, 0.66, 0.4),
+    animation={
+        "property": "rotation",
+        "from": "0 0 0",
+        "to": "0 360 0",
+        "loop": True,
+        "dur": 20000,
+        "easing": "linear"
+    },
+    persist=True,
+)
+moto_dest = UrdfModel(
+    object_id="moto_dest",
+    parent="moto_dest_base",
+    # rotation=(-90, 0, 0),
+    rotation=(-90, 90, 0),
+    scale=(1, 1, 1),
     url="store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
     urlBase="/store/users/mwfarb/xacro/motoman_gp4_support",
     persist=True,
 )
-motoman_sign = ArenauiCard(
-    object_id="motoman_sign",
-    parent=motoman.object_id,
+moto_dest_sign = ArenauiCard(
+    object_id="moto_dest_sign",
+    parent=moto_dest.object_id,
     title="Motoman GP7 GP8",
     body="Awaiting status update...",
     position=(0, 0, 1),
     look_at="#my-camera",
     persist=True,
 )
-# {"object_id":"mp400","persist":true,"type":"object","action":"update","data":{"object_type":"urdf-model","url":"store/users/mwfarb/xacro/neo_mp_400/robot_model/mp_400/mp_400.urdf.xacro","urlBase":"/store/users/mwfarb/xacro/neo_mp_400","position":{"x":-4.068,"y":0.06,"z":-4.37729},"rotation":{"w":0.707,"x":-0.707,"y":0,"z":0},"scale":{"x":1,"y":1,"z":1}}}
+moto_dest_sensor = Sphere(
+    object_id="moto_dest_sensor",
+    parent=moto_dest.object_id,
+    position=(0, 0, .75),
+    scale=(.1, .1, .1),
+    material={"color": "#00ff00", "opacity": .75},
+    clickable=True,
+    persist=True,
+)
+
+
+def sensor_on_callback(scene, evt, msg):
+    sensor_animate(scene, evt, "#00ff00", "#ff0000", 2000)
+
+
+def sensor_off_callback(scene, evt, msg):
+    sensor_animate(scene, evt, "#ff0000", "#00ff00", 500)
+
+
+def sensor_animate(scene, evt, start, end, dur):
+    global moto_dest_sensor
+    if evt.type == "mousedown":
+        moto_dest_sensor.update_attributes(
+            animation={
+                "property": "components.material.material.color",
+                "type": "color",
+                "from": start,
+                "to": end,
+                "dur": dur,
+                "easings": "easeInOutBounce",
+                "loop": "once",
+                "autoplay": True,
+            },
+        )
+        scene.update_object(moto_dest_sensor)
+
+
+moto_dest_on = Box(
+    object_id="moto_dest_on",
+    position=((6.22 - 4), 6.40, 16.25),
+    scale=(.1, .1, .1),
+    material={"color": "#00ff00"},
+    evt_handler=sensor_on_callback,
+    clickable=True,
+    persist=True,
+)
+moto_dest_off = Box(
+    object_id="moto_dest_off",
+    position=((6.22 - 4.1), 6.40, 16.25),
+    scale=(.1, .1, .1),
+    material={"color": "#ff0000"},
+    evt_handler=sensor_off_callback,
+    clickable=True,
+    persist=True,
+)
+
 mp400 = UrdfModel(
     object_id="mp400",
     position=wps[0],
-    rotation={"x": -90, "y": -90, "z": 0},
-    scale={"x": 1, "y": 1, "z": 1},
+    rotation=(-90, -90, 0),
+    scale=(1, 1, 1),
     url="store/users/mwfarb/xacro/neo_mp_400/robot_model/mp_400/mp_400.urdf.xacro",
     urlBase="/store/users/mwfarb/xacro/neo_mp_400",
     persist=True,
@@ -85,7 +154,7 @@ mp400_sign = ArenauiCard(
     # parent=mp400.object_id,
     title="Mobile Robot MP-400",
     body="Awaiting status update...",
-    position=(wps[3]['x'], wps[3]['y']+1, wps[3]['z']),
+    position=(wps[3][0], wps[3][1] + 1, wps[3][2]),
     look_at="#my-camera",
     persist=True,
 )
@@ -93,8 +162,12 @@ mp400_sign = ArenauiCard(
 
 @scene.run_once
 def main():
-    scene.add_object(motoman)
-    scene.add_object(motoman_sign)
+    scene.add_object(moto_dest_base)
+    scene.add_object(moto_dest)
+    scene.add_object(moto_dest_sensor)
+    scene.add_object(moto_dest_sign)
+    scene.add_object(moto_dest_on)
+    scene.add_object(moto_dest_off)
     scene.add_object(mp400)
     scene.add_object(mp400_sign)
     # scene.add_object(Sphere(scale=(.1, .1, .1), position=waypoints[0]))
@@ -104,7 +177,7 @@ def main():
 
 
 @scene.run_forever(interval_ms=100)
-def update_motoman():
+def update_moto_dest():
     mmj = []
     t = time.time()
     # bend motoman arm joints
@@ -116,11 +189,11 @@ def update_motoman():
         angle = np.interp(ratio, [-1, 1], [lower_deg, upper_deg])
         mmj.append(f"{jointname}:{angle}")
 
-    motoman.update_attributes(joints=", ".join(mmj), persist=False)
-    scene.update_object(motoman)
-    motoman_sign.update_attributes(body="\n".join(
+    moto_dest.update_attributes(joints=", ".join(mmj), persist=False)
+    scene.update_object(moto_dest)
+    moto_dest_sign.update_attributes(body="\n".join(
         mmj).replace(':', '\t'), persist=False)
-    scene.update_object(motoman_sign)
+    scene.update_object(moto_dest_sign)
 
 
 @scene.run_forever(interval_ms=100)
@@ -145,12 +218,12 @@ def update_mp400():
         wp1 = 3
         wp2 = 0
         r = 0
-    xp = [-1+(wp1*.5), -.5+(wp1*.5)]
+    xp = [-1 + (wp1 * .5), -.5 + (wp1 * .5)]
 
-    x = np.interp(ratio, xp, [wps[wp1]['x'], wps[wp2]['x']])
-    z = np.interp(ratio, xp, [wps[wp1]['z'], wps[wp2]['z']])
-    position = {'x': x, 'y': wps[wp1]['y'], 'z': z}
-    rotation = {'x': -90, 'y': r, 'z': 0}
+    x = np.interp(ratio, xp, [wps[wp1][0], wps[wp2][0]])
+    z = np.interp(ratio, xp, [wps[wp1][2], wps[wp2][2]])
+    position = (x, wps[wp1][1], z)
+    rotation = (-90, r, 0)
     mp400.update_attributes(
         position=position, rotation=rotation, persist=False)
     scene.update_object(mp400)

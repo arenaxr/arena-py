@@ -9,7 +9,7 @@ class Ring(Object):
     :param int segmentsPhi: segments phi Defaults to '10' (optional)
     :param int segmentsTheta: segments theta Defaults to '32' (optional)
     :param float thetaLength: theta length Defaults to '360' (optional)
-    :param float thetaStart: theta start (optional)
+    :param float thetaStart: theta start Defaults to '0' (optional)
     """
     object_type = "ring"
 

@@ -21,9 +21,10 @@ cobot_rpi_start="bash examples/demos/cobot-pi/autostart_python.sh"
 cobot_rpi_run="python3 examples/demos/cobot-pi/MyCobotPi320.py"
 
 # run from arduno connected to COM4
-car_arduino="python3 examples/demos/bosch-car/Python/BoschCar.py"
+car_arduino="python3 examples/demos/bosch-car/Python/BoschCar.py -mh $host -n $namespace -s $scene -p 0.4 1.0 -3.3 -r 0 180 0"
 
 # launch all apps
 # Press Ctrl+C to kill them all
-sh -c "$chess & $npc_arena & wait"
+# sh -c "$car_arduino & wait"
+# sh -c "$npc_arena & wait"
 # parameters to run demos in the arena main demo scene

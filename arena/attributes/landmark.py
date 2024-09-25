@@ -8,12 +8,12 @@ class Landmark(Attribute):
     Usage: `landmark=Landmark(...)`
 
     :param str constrainToNavMesh: Teleports should snap to navmesh. Allows [false, any, coplanar] Defaults to 'false' (optional)
-    :param str label: Landmark description to display in the landmark list. (optional)
+    :param str label: Landmark description to display in the landmark list. Defaults to '' (optional)
     :param bool lookAtLandmark: Set to true to make users face the landmark when teleported to it. Defaults to 'True' (optional)
     :param dict offsetPosition: Use as a static teleport x,y,z offset. Defaults to '{'x': 0, 'y': 1.6, 'z': 0}' (optional)
-    :param float randomRadiusMax: Maximum radius from the landmark to teleport to. (optional)
-    :param float randomRadiusMin: Minimum radius from the landmark to teleport to. (randomRadiusMax must > 0). (optional)
-    :param bool startingPosition: Set to true to use this landmark as a scene start (spawn) position. If several landmarks with startingPosition=true exist in a scene, one will be randomly selected. (optional)
+    :param float randomRadiusMax: Maximum radius from the landmark to teleport to. Defaults to '0' (optional)
+    :param float randomRadiusMin: Minimum radius from the landmark to teleport to. (randomRadiusMax must > 0). Defaults to '0' (optional)
+    :param bool startingPosition: Set to true to use this landmark as a scene start (spawn) position. If several landmarks with startingPosition=true exist in a scene, one will be randomly selected. Defaults to 'False' (optional)
     """
     def __init__(self, **kwargs):
         if "offsetPosition" in kwargs:

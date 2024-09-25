@@ -7,7 +7,7 @@ class Circle(Object):
     :param float radius: radius Defaults to '1' (optional)
     :param int segments: segments Defaults to '32' (optional)
     :param float thetaLength: theta length Defaults to '360' (optional)
-    :param float thetaStart: theta start (optional)
+    :param float thetaStart: theta start Defaults to '0' (optional)
     """
     object_type = "circle"
 

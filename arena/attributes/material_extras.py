@@ -9,9 +9,9 @@ class MaterialExtras(Attribute):
     :param str colorSpace: The material colorspace. Allows [SRGBColorSpace, LinearSRGBColorSpace, DisplayP3ColorSpace, NoColorSpace] Defaults to 'SRGBColorSpace' (optional)
     :param bool colorWrite: Whether to render the material's color. Defaults to 'True' (optional)
     :param float gltfOpacity: Opacity value to apply to the model. 1 is fully opaque, 0 is fully transparent. Defaults to '1' (optional)
-    :param str overrideSrc: Overrides the material source in all meshes of an object (e.g. a basic shape or a GLTF); Use, for example, to change the texture of a GLTF. (optional)
+    :param str overrideSrc: Overrides the material source in all meshes of an object (e.g. a basic shape or a GLTF); Use, for example, to change the texture of a GLTF. Defaults to '' (optional)
     :param float renderOrder: Allows the default rendering order of scene graph objects to be overridden. Defaults to '1' (optional)
-    :param bool transparentOccluder: If `true`, will set `colorWrite=false` and `renderOrder=0` to make the material a transparent occluder. (optional)
+    :param bool transparentOccluder: If `true`, will set `colorWrite=false` and `renderOrder=0` to make the material a transparent occluder. Defaults to 'False' (optional)
     """
 
     def __init__(self, **kwargs):

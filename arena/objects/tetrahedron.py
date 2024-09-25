@@ -4,7 +4,7 @@ class Tetrahedron(Object):
     """
     Tetrahedron object class to manage its properties in the ARENA: Tetrahedron Geometry.
 
-    :param int detail: detail (optional)
+    :param int detail: detail Defaults to '0' (optional)
     :param float radius: radius Defaults to '1' (optional)
     """
     object_type = "tetrahedron"

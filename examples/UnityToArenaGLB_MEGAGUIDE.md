@@ -131,27 +131,18 @@ This sets the position, rotation and scale offsets of the GLTF/GLB 3D object rep
 |OPACITY|Description...|FLOAT|
 
 ### SPEECH
-
-Deprecated
-
 |SETTING|DESCRIPTION|SYNTAX|
 |-|-|-|
 |TEXT| `COLOR` Color of the text. <br> `POSITION` <br> `SCALE` <br> | {"r": INT, "g": INT, "b": INT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> |
 |BUBBLE | `POSITION` <br> `ROTATION` <br> `SCALE` <br> | {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> |
 
 ### CHOICE
-
-Deprecated
-
 |SETTING|DESCRIPTION|SYNTAX|
 |-|-|-|
 |TEXT| `COLOR` <br> `SCALE` <br> | {"r": INT, "g": INT, "b": INT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> |
 |BUBBLE | `COLOR` <br> `OPACITY` <br> `POSITION` <br> `ROTATION` <br> `OFFSET_Y` <br> `SCALE` <br> |  {"r": INT, "g": INT, "b": INT} <br> FLOAT <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> FLOAT <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> |
 
 ### LINK
-
-Not deprecated
-
 |SETTING|DESCRIPTION|SYNTAX|
 |-|-|-|
 |TEXT| `COLOR` <br> `SCALE` <br> | {"r": INT, "g": INT, "b": INT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> |
@@ -159,81 +150,27 @@ Not deprecated
 
 
 ## NPC mappings.json file
-The mappings.json file contains a list of trigger action mappings that the `dialogue.json` file references. The majority of these mappings are full path names and more detailed representations of the Yarn dialogue syntax - full detailed instructions on how to use these are described in the following NPC dialogue.json file.
+The mappings.json file contains a list of trigger action mappings that the dialogue.json file references.
 
-### [DEFAULTS]
-These are default mappings for sounds effects, animations, and morph targets. These do not require designated trigger calls to be marked in the `dialogue.json` file, and will be played automatically when the NPC is talking, moving, activated or interacted with by users.
+The majority of these mappings are full path names and more detailed 
+
+
+### DEFAULTS
 
 #### SOUND
-
-**Syntax**: `[PROPERTY]: {"volume":[FLOAT 0-1], "src":[STRING URL]}`
-
-|Property|Description|
-|-|-|
-|"NEXT"|Plays this sound when user clicks the NEXT button in the dialogue choices.|
-|"CHOICE"|Plays this sound when user clicks the CHOICE button in the dialogue choices.|
-|"ENTER"|Plays this sound when a user goes to the ENTER node.|
-|"EXIT"|Plays this sound when a user goes to the EXIT node.|
-|"IMAGE"|Plays the sound when an Image or Video triggered.|
-|"TALKING"|Plays this sound in a loop while the NPC is talking.|
-|"WALKING"|Plays this sound in a loop while the NPC is moving.|
-
 #### ANIMATION
-
-**Syntax**: `[PROPERTY]: {"clip":[STRING name], "loop": ["once", "repeat", "pingpong"], "crossFadeDuration":[FLOAT duration], "timeScale":[FLOAT speed]}`
-
-|Property|Description|
-|-|-|
-|"IDLE"|Plays this animation while the NPC is idling.|
-|"WALK"|Plays this animation while the NPC is walking.|
-|"TALK"|Plays this animation while the NPC is talking.|
-
 #### MORPH
-
-**Syntax**: `[PROPERTY]: [{"morphtarget":[STRING name], "value":[FLOAT 0-1]}]`
-
-|Property|Description|
-|-|-|
-|"OPEN"|Switches between OPEN and CLOSE blendshape morph lists while NPC is talking.|
-|"CLOSE"|Switches between OPEN and CLOSE blendshape morph lists while NPC is talking.|
-|"BLINK_ON"|Switches between BLINK_ON and BLINK_OFF blendshape morph lists across random time intervals to make the NPC blink.|
-|"BLINK_OFF"|Switches between BLINK_ON and BLINK_OFF blendshape morph lists across random time intervals to make the NPC blink.|
-|"RESET"|This is a blendshape morph list of the default blendshape targets. Called when NPC starts or resets.|
-
-
 #### MISCELLANEOUS
-|SETTING|DESCRIPTION|SYNTAX|
-|-|-|-|
-|VIDEO FRAME OBJECT|This is a default starting image to cover the video player plane while a video is loading or no video is currently loaded.|[STRING IMAGE URL]|
+VIDEO FRAME OBJECT
 
-### [MAPPINGS]
+### MAPPINGS
 
 #### SOUND_MAPPINGS
-This is a list of sounds that can be called with custom `<<sound [SOUND MAPPING]>>` command triggers in `dialogue.json`. 
-```{verbatim}
-"SOUND_MAPPINGS": [
-	{ "NAME": [STRING NAME 1], "SOUND": {"volume": [FLOAT 0-1], "src": [STRING URL 1]} },
-	{ "NAME": [STRING NAME 2], "SOUND": {"volume": [FLOAT 0-1], "src": [STRING URL 2]} },
-	{ "NAME": [STRING NAME 3], "SOUND": {"volume": [FLOAT 0-1], "src": [STRING URL 3]} }
-],
-```
-*Note: You can have as many sound mappings as you want.*
-
 #### ANIMATION_MAPPINGS
-
-
 #### TRANSFORM_MAPPINGS
-
-
 #### MORPH_MAPPINGS
-
-
 #### URL_MAPPINGS
-
-
 #### IMAGE_MAPPINGS
-
-
 #### VIDEO_MAPPINGS
 
 
@@ -261,6 +198,7 @@ Here is a closer view of the nodes and color highlights:
 Here is a layout list of all example triggers in same the `dialogue.json` file in the ArenaRobot folder. 
 <img src="Documentation/Triggers.png" width="800">
 *Note: These nodes shown above are not reachable in the ArenaRobot `dialogue.json` without changing the `NODE ENTER` name in the config.json file in same folder.*
+
 
 Here is a list of all the possible Trigger Action Commands. Custom trigger action commands can be added by manually editing `ArenaDialogueBubbleGroup.py`, `mappings.py`, and `mapping.json`.
 

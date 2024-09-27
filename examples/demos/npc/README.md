@@ -6,14 +6,8 @@ This demo repository contains scripts, tools, and examples for adding animated, 
 <img src="Documentation/NPC_Splash.gif" width="800"> 
 *A quick demo of a human operator interacting with a robot NPC avatar learning about the ARENA platform in mixed reality.*
 
-NPCs utilize conversational dialogue trees parsed from JSON files that can be easily created with *YarnClassic*, a visual node-based editor for crafting dialogue trees. 
-
-- YarnClassic's official repository on Github (MIT license):
-https://github.com/blurymind/YarnClassic
-- Download the YarnClassic editor for your platform here: (supports Mac/Windows/Linux)
-https://github.com/blurymind/YarnClassic/releases
-- Alternatively, you can use the web app here to create dialogue files:
-https://blurymind.github.io/YarnClassic/
+Full video recorded on iPad Pro M2: https://www.youtube.com/watch?v=Dkri8WgtiOs*
+Full video recorded on Meta Quest 3: https://www.youtube.com/watch?v=Nnf1OC6Ogmo*
 
 ## Setup
 Install package using pip ([https://pypi.org/project/arena-py/](https://pypi.org/project/arena-py/)):
@@ -21,6 +15,15 @@ Install package using pip ([https://pypi.org/project/arena-py/](https://pypi.org
 pip3 install arena-py
 pip3 install colorama
 ```
+
+NPCs utilize conversational dialogue trees parsed from JSON files that can be easily created with *YarnClassic*, a visual node-based editor for crafting dialogue trees. If you want to create your own dialogue trees, download YarnClassic from the following links:
+
+- YarnClassic's official repository on Github (MIT license):
+https://github.com/blurymind/YarnClassic
+- Download the YarnClassic editor for your platform here: (supports Mac/Windows/Linux)
+https://github.com/blurymind/YarnClassic/releases
+- Alternatively, you can use the web app here to create dialogue files:
+https://blurymind.github.io/YarnClassic/
 
 ## How to run an NPC
 Run the terminal command:

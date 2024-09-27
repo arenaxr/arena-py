@@ -1159,7 +1159,7 @@ def make_wall(camname):
     # TODO: push wall front side flush with markers (position-(wall/2))
 
 
-def scene_callback(_scene, event, msg):
+def scene_callback(_scene, event, msg, _scene_msgtype):
     # This is the MQTT message callback function for the scene
     object_id = action = msg_type = object_type = None
     if "object_id" in msg:

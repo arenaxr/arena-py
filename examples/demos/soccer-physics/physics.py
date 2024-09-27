@@ -94,12 +94,13 @@ class PhysicsSystem:
         self.scene.run_async(self.sync_world)
         self.scene.run_tasks()
 
-    def new_user_handler(self, _scene, obj, _payload):
+    def new_user_handler(self, _scene, obj, _payload, _scene_msgtype):
         """
         Model users as 0.4m static spheres
         :param _scene:
         :param obj:
         :param _payload:
+        :param _scene_msgtype
         :return:
         """
         d = obj.data
@@ -122,7 +123,7 @@ class PhysicsSystem:
             "timestamp": time.time(),
         }
 
-    def left_user_handler(self, _scene, obj, _payload):
+    def left_user_handler(self, _scene, obj, _payload, _scene_msgtype):
         if self.user_cams.get(obj.object_id):
             p.removeBody(self.user_cams.pop(obj.object_id)["phys_id"])
 

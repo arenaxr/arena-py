@@ -8,11 +8,11 @@ import json
 
 TOPIC = "$NETWORK"
 
-def objects_callback(scene, obj, msg):
+def objects_callback(_scene, _obj, msg, _scene_msgtype):
     print("Object message: "+str(msg))
 
 
-def secondary_callback(scene, obj, msg):
+def secondary_callback(_scene, _obj, msg, _scene_msgtype):
     print("-----")
     print(f"Secondary message:\nTopic: {str(msg.topic)}\nPayload: {json.loads(msg.payload)}")
     print("-----")

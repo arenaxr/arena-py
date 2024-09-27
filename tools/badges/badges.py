@@ -114,7 +114,7 @@ def publish_badge(scene, badge_idx, cam_id, badge_icon):
     # TODO: push config into parsable yaml
 
 
-def scene_callback(scene, obj, msg):
+def scene_callback(scene, _obj, msg, _scene_msgtype):
     global ACTUSERS, config, data
     object_id = action = msg_type = object_type = None
     if "object_id" in msg:

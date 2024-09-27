@@ -122,41 +122,39 @@ This sets the position, rotation and scale offsets of the GLTF/GLB 3D object rep
 |ROTATION|This is the rotation offset of the GLTF/GLB model, relative to the NPC ROOT cube object. By default, this should be {"x": 0,"y": 0,"z": 0}. |{"x": FLOAT,"y": FLOAT,"z": FLOAT}|
 
 ### PLANE
+The plane is a PowerPoint-style presentation billboard that is displayed next to the NPC character when a Video or Image command trigger is called. Useful for the NPC to play videos, show images, and more.
+
 |SETTING|DESCRIPTION|SYNTAX|
 |-|-|-|
-|SIZE|Description...|FLOAT|
-|SIZE_DURATION|Description...|STRING|
-|POSITION|Description...|{"x": FLOAT,"y": FLOAT,"z": FLOAT}|
-|ROTATION|Description...|{"x": FLOAT,"y": FLOAT,"z": FLOAT}|
-|OPACITY|Description...|FLOAT|
+|SIZE|This is the size scale multiplier of the image or video plane. By default, this should be 1.|FLOAT|
+|SIZE_DURATION|This is the amount of milliseconds it takes for the image or video plane to appear/disappear when a Video or Image command trigger is called. By default, this is 500 miliseconds.|INT|
+|POSITION|This is the position offset of the billboard plane relative to the NPC ROOT cube object. Default is {"x":1,"y":1, "z":0}|{"x": FLOAT,"y": FLOAT,"z": FLOAT}|
+|ROTATION|This is the rotation offset of the billboard plane relative to the NPC ROOT cube object. Default is {"x":0, "y":15, "z":0}|{"x": FLOAT,"y": FLOAT,"z": FLOAT}|
+|OPACITY|This is opacity of the billboard plane, ranging from 0-1. Set it to 0 to hide the billboard plane. Set it to 1 to fully show it. Set it to 0.5 to make it half transparent.|FLOAT|
 
 ### SPEECH
-
-Deprecated
+While the NPC is talking, it will show a text box on the NPC with speech text from the current node with characters that get incrementally added over time. The speech text object is parented to the speech text bubble object, and the speech text bubble object is parented to the NPC ROOT cube. The following parameters control the appearance of the NPC's speech bubble. *Note: This section is deprecated. Use UI parameters instead to control speech bubble settings.*
 
 |SETTING|DESCRIPTION|SYNTAX|
 |-|-|-|
-|TEXT| `COLOR` Color of the text. <br> `POSITION` <br> `SCALE` <br> | {"r": INT, "g": INT, "b": INT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> |
-|BUBBLE | `POSITION` <br> `ROTATION` <br> `SCALE` <br> | {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> |
+|TEXT| `COLOR` Color of the speech text. <br> `POSITION` Position of the speech text. <br> `SCALE` Scale of the speech text. <br> | {"r": INT, "g": INT, "b": INT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> |
+|BUBBLE | `POSITION` Position of speech text bubble. <br> `ROTATION` Rotation of the speech text bubble. <br> `SCALE` Scale of the speech text bubble. <br> | {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> |
 
 ### CHOICE
-
-Deprecated
+When the NPC is done talking, it will show a set of dialogue response choices from the current node that the user can click on to interact with the NPC. The choice text object is parented to the choice text bubble object, and choice text bubble objects are parented to the NPC ROOT cube. The following parameters control the appearance of these dialogue response choices. *Note: This section is deprecated. Use UI parameters instead to control choice bubble settings.*
 
 |SETTING|DESCRIPTION|SYNTAX|
 |-|-|-|
-|TEXT| `COLOR` <br> `SCALE` <br> | {"r": INT, "g": INT, "b": INT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> |
-|BUBBLE | `COLOR` <br> `OPACITY` <br> `POSITION` <br> `ROTATION` <br> `OFFSET_Y` <br> `SCALE` <br> |  {"r": INT, "g": INT, "b": INT} <br> FLOAT <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> FLOAT <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> |
+|TEXT| `COLOR` Color of the choice text. <br> `SCALE` Scale of the choice text. <br> | {"r": INT, "g": INT, "b": INT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> |
+|BUBBLE | `COLOR` Color of the choice text bubble. <br> `OPACITY` Opacity of the choice text bubble. <br> `POSITION` Position of the choice text bubble. <br> `ROTATION` Rotation of the choice text bubble. <br> `OFFSET_Y` Amount of spacing between choice text bubbles. <br> `SCALE` Scale of each text bubble. <br> |  {"r": INT, "g": INT, "b": INT} <br> FLOAT <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> FLOAT <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> |
 
 ### LINK
-
-Not deprecated
+The link is an interactable box with a text overlaid on the front, that when clicked, will open a website to the designated URL. The link text object is parented to the text bubble object, and the link text bubble object is parented to the NPC ROOT cube. The link box will be displayed when a URL command trigger is called.
 
 |SETTING|DESCRIPTION|SYNTAX|
 |-|-|-|
-|TEXT| `COLOR` <br> `SCALE` <br> | {"r": INT, "g": INT, "b": INT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> |
-|BUBBLE | `POSITION` <br> `ROTATION` <br> `SCALE` <br> | {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> |
-
+|TEXT| `COLOR` Color of the link text. <br> `SCALE` Scale of the link text. <br> | {"r": INT, "g": INT, "b": INT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> |
+|BUBBLE | `POSITION` Position offset of the link text bubble. <br> `ROTATION` Rotation offset of the link text bubble. <br> `SCALE` Scale offset of the link text bubble. <br> | {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> {"x": FLOAT,"y": FLOAT,"z": FLOAT} <br> |
 
 ## NPC mappings.json file
 The mappings.json file contains a list of trigger action mappings that the `dialogue.json` file references. The majority of these mappings are full path names and more detailed representations of the Yarn dialogue syntax - full detailed instructions on how to use these are described in the following NPC dialogue.json file.
@@ -200,42 +198,85 @@ These are default mappings for sounds effects, animations, and morph targets. Th
 |"BLINK_OFF"|Switches between BLINK_ON and BLINK_OFF blendshape morph lists across random time intervals to make the NPC blink.|
 |"RESET"|This is a blendshape morph list of the default blendshape targets. Called when NPC starts or resets.|
 
-
 #### MISCELLANEOUS
 |SETTING|DESCRIPTION|SYNTAX|
 |-|-|-|
 |VIDEO FRAME OBJECT|This is a default starting image to cover the video player plane while a video is loading or no video is currently loaded.|[STRING IMAGE URL]|
 
 ### [MAPPINGS]
+These are a list of custom mappings to trigger commands that will be called when entering nodes with trigger actions specified. If the mapping exists, the NPC will attempt to play them, and ignore them if the mapping does not exist. Mappings can be made for playing sounds, animations, transforms, morphs, gotoURLs, images and videos.
+
+*Note: You can have as many or as little of the following custom mappings as you want.*
 
 #### SOUND_MAPPINGS
 This is a list of sounds that can be called with custom `<<sound [SOUND MAPPING]>>` command triggers in `dialogue.json`. 
 ```{verbatim}
 "SOUND_MAPPINGS": [
-	{ "NAME": [STRING NAME 1], "SOUND": {"volume": [FLOAT 0-1], "src": [STRING URL 1]} },
-	{ "NAME": [STRING NAME 2], "SOUND": {"volume": [FLOAT 0-1], "src": [STRING URL 2]} },
-	{ "NAME": [STRING NAME 3], "SOUND": {"volume": [FLOAT 0-1], "src": [STRING URL 3]} }
+	{ "NAME": [STRING name 1], "SOUND": {"volume": [FLOAT 0-1], "src": [STRING URL 1]} },
+	{ "NAME": [STRING name 2], "SOUND": {"volume": [FLOAT 0-1], "src": [STRING URL 2]} },
+	{ "NAME": [STRING name 3], "SOUND": {"volume": [FLOAT 0-1], "src": [STRING URL 3]} }
 ],
 ```
-*Note: You can have as many sound mappings as you want.*
 
 #### ANIMATION_MAPPINGS
-
+This is a list of animations that can be called with custom `<<animation [ANIMATION MAPPING]>>` command triggers in `dialogue.json`. 
+```{verbatim}
+"ANIMATION_MAPPINGS": [
+	{ "NAME": [STRING name 1], "ANIMATION": {"clip":[STRING clip 1], "loop": ["once", "repeat", "pingpong"], "crossFadeDuration":[FLOAT duration], "timeScale":[FLOAT speed]},
+	{ "NAME": [STRING name 2], "ANIMATION": {"clip":[STRING clip 2], "loop": ["once", "repeat", "pingpong"], "crossFadeDuration":[FLOAT duration], "timeScale":[FLOAT speed]},
+	{ "NAME": [STRING name 3], "ANIMATION": {"clip":[STRING clip 3], "loop": ["once", "repeat", "pingpong"], "crossFadeDuration":[FLOAT duration], "timeScale":[FLOAT speed]},
+],
+```
 
 #### TRANSFORM_MAPPINGS
-
+This is a list of transforms that can be called with custom `<<transform [TRANSFORM MAPPING]>>` command triggers in `dialogue.json`. 
+```{verbatim}
+"TRANSFORM_MAPPINGS": [
+	{ "NAME": [STRING name 1], "TRANSFORM": {"position":{"x":[FLOAT],"y":[FLOAT],"z":[FLOAT]}, "rotation":{"x":[FLOAT],"y":[FLOAT],"z":[FLOAT]}} },
+    { "NAME": [STRING name 2], "TRANSFORM": {"position":{"x":[FLOAT],"y":[FLOAT],"z":[FLOAT]}, "rotation":{"x":[FLOAT],"y":[FLOAT],"z":[FLOAT]}} },
+    { "NAME": [STRING name 3], "TRANSFORM": {"position":{"x":[FLOAT],"y":[FLOAT],"z":[FLOAT]}, "rotation":{"x":[FLOAT],"y":[FLOAT],"z":[FLOAT]}} },
+],
+```
 
 #### MORPH_MAPPINGS
-
+This is a list of of a list of blendshape morphtargets that can be called with custom `<<morph [MORPH MAPPING]>>` command triggers in `dialogue.json`. 
+```{verbatim}
+"MORPH_MAPPINGS": [
+    { "NAME": [STRING name 1], "MORPH": [ {"morphtarget": [STRING morph 1], "value":[FLOAT 0-1]} ] },
+    { "NAME": [STRING name 2], "MORPH": [ {"morphtarget": [STRING morph 2], "value":[FLOAT 0-1]} ] },
+    { "NAME": [STRING name 3], "MORPH": [ {"morphtarget": [STRING morph 3], "value":[FLOAT 0-1]} ] },
+],
+```
 
 #### URL_MAPPINGS
-
+This is a list of URL web pages that can be launched with custom `<<url [URL MAPPING]>>` command triggers in `dialogue.json`. 
+```{verbatim}
+"URL_MAPPINGS": [
+	{ "NAME": [STRING name 1], "GOTOURL": {"dest": ["popup", "newtab", "sametab"], "url":[STRING url 1]} },
+	{ "NAME": [STRING name 2], "GOTOURL": {"dest": ["popup", "newtab", "sametab"], "url":[STRING url 2]} },
+	{ "NAME": [STRING name 3], "GOTOURL": {"dest": ["popup", "newtab", "sametab"], "url":[STRING url 3]} },
+],
+```
 
 #### IMAGE_MAPPINGS
-
+This is a list of images that can be displayed with custom `<<image [IMAGE MAPPING]>>` command triggers in `dialogue.json`. 
+```{verbatim}
+"IMAGE_MAPPINGS": [
+	{ "NAME": [STRING name 1], "IMAGE": {"src": [STRING url 1], "w":[INT width], "h":[INT height]} },
+	{ "NAME": [STRING name 2], "IMAGE": {"src": [STRING url 2], "w":[INT width], "h":[INT height]} },
+	{ "NAME": [STRING name 3], "IMAGE": {"src": [STRING url 3], "w":[INT width], "h":[INT height]} },
+],
+```
 
 #### VIDEO_MAPPINGS
-
+This is a list of videos that can be displayed with custom `<<video [VIDEO MAPPING]>>` command triggers in `dialogue.json`. 
+```{verbatim}
+"VIDEO_MAPPINGS": [
+	{ "NAME": [STRING name 1], "VIDEO": {"src": [STRING url 1], "w":[INT width], "h": [INT height]} },
+	{ "NAME": [STRING name 2], "VIDEO": {"src": [STRING url 2], "w":[INT width], "h": [INT height]} },
+	{ "NAME": [STRING name 3], "VIDEO": {"src": [STRING url 3], "w":[INT width], "h": [INT height]} },
+],
+```
 
 ## NPC dialogue.json file
 Here is an example `dialogue.json` file in the ArenaRobot folder, which creates dialogue for a cute robot character that talks about Wiselab and the ARENA, and shows off the basic example capabilities of NPC avatars. 

@@ -19,6 +19,8 @@ import requests
 from google.auth import jwt as gJWT
 from google_auth_oauthlib.flow import InstalledAppFlow
 
+from .utils import topic_matches_sub
+
 _gauth_file = ".arena_google_auth"
 _mqtt_token_file = ".arena_mqtt_auth"
 _arena_user_dir = f"{str(Path.home())}/.arena"
@@ -221,7 +223,7 @@ class ArenaAuth:
         else:
             if not os.path.exists(device_auth_dir):
                 os.makedirs(device_auth_dir)
-            print(f"Generate a token for this device at https://{web_host}/user/profile")
+            print(f"Generate a token for this device at https://{web_host}/user/v2/profile")
             mqtt_json = input("Paste auth MQTT full JSON here for this device: ")
             # save mqtt_token
             with open(device_mqtt_path, "w", encoding="utf-8") as d:
@@ -236,7 +238,7 @@ class ArenaAuth:
         """Check the MQTT token for permission to publish to topic."""
         tok = jwt.decode(token, options={"verify_signature": False})
         for pub in tok["publ"]:
-            if topic.startswith(pub.strip().rstrip("/").rstrip("#")):
+            if topic_matches_sub(pub.strip(), topic):
                 return True
         return False
 
@@ -306,7 +308,7 @@ class ArenaAuth:
 
     def _get_csrftoken(self, web_host):
         # get the csrftoken for django
-        csrf_url = f"https://{web_host}/user/login"
+        csrf_url = f"https://{web_host}/user/v2/login"
         client = requests.session()
         client.get(csrf_url, verify=self.verify(web_host))  # sets cookie
         if "csrftoken" in client.cookies:
@@ -357,21 +359,21 @@ class ArenaAuth:
         return body, status, url
 
     def _get_my_scenes(self, web_host, id_token):
-        url = f"https://{web_host}/user/my_scenes"
+        url = f"https://{web_host}/user/v2/my_scenes"
         if not self._csrftoken:
             self._csrftoken = self._get_csrftoken(web_host)
         params = {"id_token": id_token}
         return self.urlopen(url, data=self._encode_params(params), csrf=self._csrftoken)
 
     def _get_user_state(self, web_host, id_token):
-        url = f"https://{web_host}/user/user_state"
+        url = f"https://{web_host}/user/v2/user_state"
         if not self._csrftoken:
             self._csrftoken = self._get_csrftoken(web_host)
         params = {"id_token": id_token}
         return self.urlopen(url, data=self._encode_params(params), csrf=self._csrftoken)
 
     def _get_mqtt_token(self, web_host, realm, scene, username, id_token, video):
-        url = f"https://{web_host}/user/mqtt_auth"
+        url = f"https://{web_host}/user/v2/mqtt_auth"
         if not self._csrftoken:
             self._csrftoken = self._get_csrftoken(web_host)
         params = {

@@ -13,6 +13,7 @@ from .auth import ArenaAuth
 from .env import (ARENA_PASSWORD, ARENA_USERNAME, MQTTH, NAMESPACE, REALM,
                   _get_env)
 from .event_loop import *
+from .topics import PUBLISH_TOPICS, SUBSCRIBE_TOPICS, TOPIC_TYPES
 
 
 class ArenaMQTT(object):
@@ -100,16 +101,29 @@ class ArenaMQTT(object):
 
         self.mqtt_host = self.config_data["ARENADefaults"]["mqttHost"]
 
+        self.topicParams = {  # Reusable topic param dict
+            'realm': self.realm,
+            'nameSpace': self.namespace,
+            'sceneName': self.scene,
+            'idTag': self.mqttc_id
+        }
+
         # set up topic variables
         if self.scene:
             self.namespaced_target = f"{self.namespace}/{self.scene}"
-            self.root_topic = f"{self.realm}/s/{self.namespaced_target}"
+            self.root_topic = f"{self.realm}/{TOPIC_TYPES.SCENE}/{self.namespaced_target}"
+            self.subscribe_topics = {
+                'public': SUBSCRIBE_TOPICS.SCENE_PUBLIC.substitute(self.topicParams),
+                'private': SUBSCRIBE_TOPICS.SCENE_PRIVATE.substitute(self.topicParams)
+            }
         elif self.device:
             self.namespaced_target = f"{self.namespace}/{self.device}"
-            self.root_topic = f"{self.realm}/d/{self.namespaced_target}"
-        self.subscribe_topic = f"{self.root_topic}/#"   # main topic for entire target
-        self.latency_topic = self.config_data["ARENADefaults"]["latencyTopic"] # network graph latency update
-        self.ignore_topic = f"{self.root_topic}/{self.mqttc_id}/#" # ignore own messages
+            self.root_topic = f"{self.realm}/{TOPIC_TYPES.DEVICE}/{self.namespaced_target}"
+            self.subscribe_topics = {
+                'public': SUBSCRIBE_TOPICS.DEVICE.substitute(self.topicParams),
+            }
+        self.latency_topic = self.config_data["ARENADefaults"]["latencyTopic"]  # network graph latency update
+        self.ignore_topic = SUBSCRIBE_TOPICS.SCENE_PUBLIC_SELF.substitute(self.topicParams)
 
         self.mqttc = mqtt.Client(
             self.mqttc_id, clean_session=True
@@ -124,8 +138,11 @@ class ArenaMQTT(object):
                 token = data["token"]
                 self.remote_auth_token = data
 
-        # check for valid permissions to write to the topic
-        self.can_publish = self.auth.has_publish_rights(token, self.root_topic)
+        # check for valid permissions to write to all objects topics
+        self.can_publish_obj = self.auth.has_publish_rights(
+            token,
+            PUBLISH_TOPICS.SCENE_OBJECTS.substitute({**self.topicParams, **{"objectId": "anyfoobject"}})
+        )
 
         self.mqttc.username_pw_set(username=self.username, password=token)
         print("=====")
@@ -254,8 +271,12 @@ class ArenaMQTT(object):
             self.mqtt_connect_evt.set()
 
             # listen to all messages in scene
-            client.subscribe(self.subscribe_topic)
-            client.message_callback_add(self.subscribe_topic, self.on_message)
+            client.subscribe(self.subscribe_topics['public'])
+            client.message_callback_add(self.subscribe_topics['public'], self.on_message)
+
+            if self.subscribe_topics.get('private'):
+                client.subscribe(self.subscribe_topics['private'])
+                client.message_callback_add(self.subscribe_topics['private'], self.on_message_private)
 
             # reset msg rate time
             self.msg_rate_time_start = datetime.now()
@@ -271,6 +292,10 @@ class ArenaMQTT(object):
         # ignore own messages
         if mqtt.topic_matches_sub(self.ignore_topic, msg.topic):
             return
+        self.msg_queue.put_nowait(msg)
+
+    def on_message_private(self, client, userdata, msg):
+        # Private messages are never reflected to self, no check required
         self.msg_queue.put_nowait(msg)
 
     async def process_message(self):

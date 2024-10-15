@@ -19,6 +19,7 @@ class Text(Object):
     :param str shader: Shader used to render text. Allows [portal, flat, standard, sdf, msdf, ios10hls, skyshader, gradientshader] Defaults to 'sdf' (optional)
     :param str side: Side to render. Allows [front, back, double] Defaults to 'double' (optional)
     :param float tabSize: Tab size in spaces. Defaults to '4' (optional)
+    :param str text: ***DEPRECATED**: data.text is **deprecated** for object_type: text, use data.value instead.* (deprecated)
     :param bool transparent: Whether text is transparent. Defaults to 'True' (optional)
     :param str value: The actual content of the text. Line breaks and tabs are supported with `\\n` and `\\t`. (optional)
     :param str whiteSpace: How whitespace should be handled. Allows [normal, pre, nowrap] Defaults to 'normal' (optional)

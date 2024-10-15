@@ -6,7 +6,7 @@ from collections.abc import Iterable, Mapping
 
 class Rotation(Attribute):
     """
-    Rotation attribute class to manage its properties in the ARENA: 3D object rotation in quaternion representation; Right-handed coordinate system. Euler degrees are deprecated in wire message format.
+    Rotation attribute class to manage its properties in the ARENA: 3D object rotation in quaternion representation; Right-handed coordinate system. Euler degrees are **deprecated** in wire message format.
     Usage: `rotation=Rotation(...)` or `rotation=Rotation(x,y,z,w)` or `rotation=Rotation(x,y,z)` or `rotation=(x,y,z,w)` or `rotation=(x,y,z)`
 
     :param float|Iterable|Mapping w: w Defaults to '1' (optional)

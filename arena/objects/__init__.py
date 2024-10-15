@@ -10,6 +10,7 @@ from .camera import *
 from .capsule import *
 from .circle import *
 from .cone import *
+from .cube import *
 from .cylinder import *
 from .dodecahedron import *
 from .entity import *
@@ -49,6 +50,7 @@ OBJECT_TYPE_MAP = {
     Capsule.object_type: Capsule,
     Circle.object_type: Circle,
     Cone.object_type: Cone,
+    Cube.object_type: Cube,
     Cylinder.object_type: Cylinder,
     Dodecahedron.object_type: Dodecahedron,
     Entity.object_type: Entity,

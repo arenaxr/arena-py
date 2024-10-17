@@ -15,11 +15,9 @@ import random
 import statistics
 
 import arblib
-from arblib import (EVT_MOUSEDOWN, EVT_MOUSEENTER, EVT_MOUSELEAVE, ButtonType,
-                    Mode)
+from arblib import EVT_MOUSEDOWN, EVT_MOUSEENTER, EVT_MOUSELEAVE, ButtonType, Mode
 
-from arena import (GLTF, Box, Circle, Color, Cone, Event, Line, Material,
-                   Object, Position, Rotation, Scale, Scene, ThickLine)
+from arena import *
 
 MANIFEST = arblib.DEF_MANIFEST
 USERS = {}  # dictionary of user instances
@@ -131,17 +129,17 @@ def handle_clickline_event(event, mode):
             obj = scene.get_persisted_obj(object_id)
             # determine direction of 2d gesture in 3d
             if click_id[1][0] == "y":
-                val = event.data.positionStart.y - event.data.position.y
+                val = event.data.positionStart.y - event.data.targetPosition.y
             elif click_id[1][0] == "x":
-                if event.data.clickPos.z > obj.data.position.z:
-                    val = event.data.positionStart.x - event.data.position.x
+                if event.data.originPosition.z > obj.data.position.z:
+                    val = event.data.positionStart.x - event.data.targetPosition.x
                 else:
-                    val = event.data.positionStart.x + event.data.position.x
+                    val = event.data.positionStart.x + event.data.targetPosition.x
             else:  # click_id[1][0] == "z":
-                if event.data.clickPos.x < obj.data.position.x:
-                    val = event.data.positionStart.x - event.data.position.x
+                if event.data.originPosition.x < obj.data.position.x:
+                    val = event.data.positionStart.x - event.data.targetPosition.x
                 else:
-                    val = event.data.positionStart.x + event.data.position.x
+                    val = event.data.positionStart.x + event.data.targetPosition.x
             if val >= 0:
                 direction = f"{(click_id[1])[0:1]}p"
                 move = f"p{(click_id[1])[2:4]}"
@@ -1044,15 +1042,15 @@ def clipboard_callback(_scene, event, msg):
     camname = handle_clip_event(event)
     if not camname:
         return
-    position = event.data.position
-    clickPos = event.data.clickPos
-    if clickPos.x == 0 and clickPos.y == 0 and clickPos.z == 0:
-        print('Invalid click position: event clickPos is uninitialized! Ignoring.')
+    targetPosition = event.data.targetPosition
+    originPosition = event.data.originPosition
+    if originPosition.x == 0 and originPosition.y == 0 and originPosition.z == 0:
+        print('Invalid click position: event originPosition is uninitialized! Ignoring.')
         return
     if USERS[camname].mode == Mode.CREATE or USERS[camname].mode == Mode.MODEL:
-        create_obj(camname, USERS[camname].get_clipboard(), position)
+        create_obj(camname, USERS[camname].get_clipboard(), targetPosition)
     elif USERS[camname].mode == Mode.MOVE:
-        do_move_relocate(camname, position)
+        do_move_relocate(camname, targetPosition)
 
 
 def wall_callback(_scene, event, msg):

@@ -1,5 +1,7 @@
-from arena import *
 from config import *
+
+from arena import *
+
 
 class DisplayBoard(Object):
     """
@@ -77,11 +79,11 @@ class DisplayBoard(Object):
 
     ###Scene Setup Functions ###
     def scroll_up_mouse_handler(self, scene, evt, msg):
-        if evt.type == "mousedown" and evt['data']['position'].distance_to(evt['data']['clickPos']) < MAX_CLICK_DISTANCE:
+        if evt.type == "mousedown" and evt['data']['targetPosition'].distance_to(evt['data']['originPosition']) < MAX_CLICK_DISTANCE:
             self.scroll_up()
 
     def scroll_down_mouse_handler(self, scene, evt, msg):
-        if evt.type == "mousedown" and evt['data']['position'].distance_to(evt['data']['clickPos']) < MAX_CLICK_DISTANCE:
+        if evt.type == "mousedown" and evt['data']['targetPosition'].distance_to(evt['data']['originPosition']) < MAX_CLICK_DISTANCE:
             self.scroll_down()
 
     #enable scrolling events

@@ -385,7 +385,7 @@ class Scene(ArenaMQTT):
     def generate_click_event(self, obj: Object, type="mousedown", **kwargs):
         """Publishes an click event"""
         _type = type
-        evt = Event(object_id=obj.object_id, type=_type, position=obj.data.position, source=self.mqttc_id, **kwargs)
+        evt = Event(object_id=obj.object_id, type=_type, originPosition=obj.data.position, source=self.mqttc_id, **kwargs)
         return self.generate_custom_event(evt, action="clientEvent")
 
     def manipulate_camera(self, cam, **kwargs):

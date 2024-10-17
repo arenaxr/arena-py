@@ -4,9 +4,11 @@
 # The program simulates its own synchronous physics for the pinata.  The colored squares from the explosion
 # use globally asynchronous client-side physics (not consistent across viewers).
 
-from arena import *
 import random
 import time
+
+from arena import *
+
 
 def end_program_callback(scene: Scene):
     global pinata
@@ -74,8 +76,8 @@ def explode():
 def click(scene, evt, msg):
     global pinata_loc, vy, pinata_state, hit_counter, hit_text
     if evt.type == "mousedown":
-        start = evt.data.clickPos
-        end = evt.data.position
+        start = evt.data.originPosition
+        end = evt.data.targetPosition
         # Minor offset in drawing the line so a user can see their own trail
         start.x-=.1
         start.y-=.1

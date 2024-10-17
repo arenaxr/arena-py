@@ -1,5 +1,6 @@
-from arena import *
 import time
+
+from arena import *
 
 scene = Scene(host="arenaxr.org",scene="etc-room")
 
@@ -78,8 +79,8 @@ def click_handler(scene,evt,msg):
             scene.update_object(sign) # can also use update_object to run dispatched animations
             print( "Poster Switch")
         else:
-            start = evt.data.clickPos
-            end = evt.data.position
+            start = evt.data.originPosition
+            end = evt.data.targetPosition
             start.y=start.y-.1
             start.x=start.x-.1
             start.z=start.z-.1

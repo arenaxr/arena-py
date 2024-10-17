@@ -20,10 +20,11 @@ oh-boards.py
 '''
 
 import math
-from arena import *
 
-from question_board import QBoard
 from config import *
+from question_board import QBoard
+
+from arena import *
 
 scene = Scene(host="arenaxr.org", realm="realm", scene="officehours")
 
@@ -119,7 +120,7 @@ def setup():
 
     #remove student from main queue and TA boards
     def remove_student_question(scene, evt, msg):
-        if evt.type == "mousedown" and evt['data']['position'].distance_to(evt['data']['clickPos']) < MAX_CLICK_DISTANCE:
+        if evt.type == "mousedown" and evt['data']['targetPosition'].distance_to(evt['data']['originPosition']) < MAX_CLICK_DISTANCE:
             #extracts which board was pressed, but will need to adjust if len(TABoards) > 9
             board_num = int(evt['object_id'][len(ta_id)])
             #extracts which button was pressed, but will need to adjust if MAX_DISPLAY_AMOUNT > 9
@@ -127,7 +128,7 @@ def setup():
             student_id  = qboard.TABoards[board_num].start_display + button_num
             student = qboard.dequeue(student_id)
             teleport(TA_POS, student)                    #for testing purposes
-            #teleport(evt['data']['position'],student)  <-- uncomment to teleport student to TA
+            #teleport(evt['data']['targetPosition'],student)  <-- uncomment to teleport student to TA
 
     #enable dequeuing buttons on the TA boards
     for board in qboard.TABoards:

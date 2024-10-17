@@ -20,13 +20,13 @@ arm_scale = 0.01
 button_scale = (0.5, 0.1, 0.5)
 
 
-def draw_ray(clickPos, position):
+def draw_ray(originPosition, targetPosition):
     line = ThickLine(
         ttl=1,
         lineWidth=5,
         # slightly below camera so you can see line vs head-on
-        path=((clickPos.x, clickPos.y-0.2, clickPos.z),
-              (position.x, position.y, position.z)),
+        path=((originPosition.x, originPosition.y-0.2, originPosition.z),
+              (targetPosition.x, targetPosition.y, targetPosition.z)),
         color="#FF00FF",
     )
     arena.add_object(line)
@@ -35,7 +35,7 @@ def draw_ray(clickPos, position):
 def start_handler(scene, evt, msg):
     global arm_model
     if evt.type == "mousedown":
-        draw_ray(evt.data.clickPos, evt.data.position)
+        draw_ray(evt.data.originPosition, evt.data.targetPosition)
         arm_model.dispatch_animation(
             AnimationMixer(clip="Armature.002|Armature.002Action.001")
         )
@@ -45,7 +45,7 @@ def start_handler(scene, evt, msg):
 def stop_handler(scene, evt, msg):
     global arm_model
     if evt.type == "mousedown":
-        draw_ray(evt.data.clickPos, evt.data.position)
+        draw_ray(evt.data.originPosition, evt.data.targetPosition)
         arm_model.dispatch_animation(
             AnimationMixer(clip="pause")
         )
@@ -54,7 +54,7 @@ def stop_handler(scene, evt, msg):
 
 def arm_click_handler(scene, evt, msg):
     if evt.type == "mousedown":
-        draw_ray(evt.data.clickPos, evt.data.position)
+        draw_ray(evt.data.originPosition, evt.data.position)
 
 
 @arena.run_once

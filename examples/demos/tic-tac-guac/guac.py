@@ -226,13 +226,13 @@ def animate_loss():
     delete_cubes()
 
 
-def draw_ray(clickPos, position):
+def draw_ray(originPosition, targetPosition):
     line = ThickLine(
         ttl=1,
         lineWidth=5,
         # slightly below camera so you can see line vs head-on
-        path=((clickPos.x, clickPos.y-0.2, clickPos.z),
-              (position.x, position.y, position.z)),
+        path=((originPosition.x, originPosition.y-0.2, originPosition.z),
+              (targetPosition.x, targetPosition.y, targetPosition.z)),
         color="#FF00FF",
     )
     arena.add_object(line)
@@ -243,7 +243,7 @@ def guac_callback(scene, evt, msg):
     # only mousedown messages
     if evt.type == "mousedown":
         # draw a ray from clicker to cube
-        draw_ray(evt.data.clickPos, evt.data.position)
+        draw_ray(evt.data.originPosition, evt.data.targetPosition)
 
         color = redblue[counter % 2]
         x = int(evt.object_id.split("_")[1])

@@ -442,7 +442,9 @@ class ArenaAuth:
             return body
         except HTTPError as err:
             print(f"{err}: {url}")
-            print(err.read().decode("utf-8"))  # show additional errors in response if present
+            body = err.read().decode("utf-8")
+            if "<!doctype html>" not in body.lower():
+                print(body)  # show additional errors in response if present
             if err.code in (401, 403):
                 # user not authorized on website yet, they don"t have an ARENA username
                 us = urlsplit(url)

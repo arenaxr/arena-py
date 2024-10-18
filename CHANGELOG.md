@@ -4,6 +4,22 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [1.0.0](https://github.com/arenaxr/arena-py/compare/v0.11.2...v1.0.0) (2024-10-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* Refactored topic structure for more granular flow and access ([#191](https://github.com/arenaxr/arena-py/issues/191))
+
+### Features
+
+* Refactored topic structure for more granular flow and access ([#191](https://github.com/arenaxr/arena-py/issues/191)) ([1413e9f](https://github.com/arenaxr/arena-py/commit/1413e9fe422dcf6863abe92019d62c6ca43e834e))
+
+
+### Documentation
+
+* add deprecated docstring attributes and highlight ([1f627c8](https://github.com/arenaxr/arena-py/commit/1f627c8a4a4840896e3dc978f9261baa3bbd85c3))
+
 ## [0.11.2](https://github.com/arenaxr/arena-py/compare/v0.11.1...v0.11.2) (2024-09-25)
 
 

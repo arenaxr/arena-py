@@ -10,8 +10,7 @@ from datetime import datetime
 import paho.mqtt.client as mqtt
 
 from .auth import ArenaAuth
-from .env import (ARENA_PASSWORD, ARENA_USERNAME, MQTTH, NAMESPACE, REALM,
-                  _get_env)
+from .env import ARENA_PASSWORD, ARENA_USERNAME, MQTTH, NAMESPACE, REALM, _get_env
 from .event_loop import *
 from .topics import PUBLISH_TOPICS, SUBSCRIBE_TOPICS, TOPIC_TYPES
 
@@ -100,6 +99,7 @@ class ArenaMQTT(object):
         self.config_data = json.loads(self.auth.urlopen(self.config_url))
 
         self.mqtt_host = self.config_data["ARENADefaults"]["mqttHost"]
+        self.subscriptions = {}
 
         self.topicParams = {  # Reusable topic param dict
             'realm': self.realm,
@@ -163,6 +163,7 @@ class ArenaMQTT(object):
         self.mqttc.on_connect = self.on_connect
         self.mqttc.on_disconnect = self.on_disconnect
         self.mqttc.on_publish = self.on_publish
+        self.mqttc.on_subscribe = self.on_subscribe
 
         # add main message processing + callbacks loop to tasks
         self.run_async(self.process_message)
@@ -254,7 +255,7 @@ class ArenaMQTT(object):
 
     def run_tasks(self):
         """Run event loop"""
-        print("Connecting to the ARENA... ", end="", flush=True)
+        print("Connecting to the ARENA...")
         self.event_loop.run()
 
     def stop_tasks(self):
@@ -271,12 +272,9 @@ class ArenaMQTT(object):
             self.mqtt_connect_evt.set()
 
             # listen to all messages in scene
-            client.subscribe(self.subscribe_topics['public'])
-            client.message_callback_add(self.subscribe_topics['public'], self.on_message)
-
+            self.do_subscribe(client, self.subscribe_topics['public'], self.on_message)
             if self.subscribe_topics.get('private'):
-                client.subscribe(self.subscribe_topics['private'])
-                client.message_callback_add(self.subscribe_topics['private'], self.on_message_private)
+                self.do_subscribe(client, self.subscribe_topics['private'], self.on_message_private)
 
             # reset msg rate time
             self.msg_rate_time_start = datetime.now()
@@ -287,6 +285,14 @@ class ArenaMQTT(object):
         else:
             print(f"Connection error! Result code={rc}")
             os._exit(1)
+
+    def do_subscribe(self, client, topic, callback):
+        result, mid = client.subscribe(topic)
+        if result == mqtt.MQTT_ERR_SUCCESS:
+            self.subscriptions[mid] = topic
+        else:
+            print(f"Subscribe ERROR!!! topic={topic} result code={result}")
+        client.message_callback_add(topic, callback)
 
     def on_message(self, client, userdata, msg):
         # ignore own messages
@@ -300,6 +306,15 @@ class ArenaMQTT(object):
 
     async def process_message(self):
         raise NotImplementedError("Must override process_message")
+
+    def on_subscribe(self, client, userdata, mid, granted_qos, properties=None):
+        if self.debug:
+            print(f"[subscribe ack]: topic={self.subscriptions[mid]} granted qos={granted_qos}")
+        for qos in granted_qos:
+            if qos == 128:
+                print(f"ERROR!!! Subscribing to topic {self.subscriptions[mid]}, Invalid Permissions ")
+            elif qos not in range(0, 2):
+                print(f"ERROR!!! Subscribing to topic{self.subscriptions[mid]}, SUB ACK={qos}")
 
     def on_disconnect(self, client, userdata, rc):
         """Paho MQTT client on_disconnect callback"""

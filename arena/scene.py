@@ -258,7 +258,7 @@ class Scene(ArenaMQTT):
                     return
                 scene_msgtype = topic_split[TOPIC_TOKENS.SCENE_MSGTYPE]
                 # Object updates only in these scene msg types
-                if scene_msgtype not in [SCENE_MSGTYPES.USER, SCENE_MSGTYPES.OBJECTS, SCENE_MSGTYPES.PROGRAM]:
+                if scene_msgtype not in [SCENE_MSGTYPES.PRESENCE, SCENE_MSGTYPES.USER, SCENE_MSGTYPES.OBJECTS, SCENE_MSGTYPES.PROGRAM]:
                     return
 
             with self.telemetry.start_process_msg_span(object_id, action) as span:
@@ -287,9 +287,16 @@ class Scene(ArenaMQTT):
                                     self.callback_wrapper(obj.evt_handler, event, payload)
                                     continue
                             span.add_event("Client event: {event}")
-
+                        elif action == "leave":
+                            # special user presence message, new way to remove user
+                            if object_id in self.users:
+                                if self.user_left_callback:
+                                    self.callback_wrapper(self.user_left_callback, self.users[object_id], payload)
+                                del self.users[object_id]
+                            span.add_event("User left.")
                         elif action == "delete":
                             if Camera.object_type in object_id:  # object is a camera
+                                # old way to remove user
                                 if object_id in self.users:
                                     if self.user_left_callback:
                                         self.callback_wrapper(self.user_left_callback, self.users[object_id], payload)

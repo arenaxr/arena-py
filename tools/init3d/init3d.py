@@ -7,10 +7,10 @@ import os
 import re
 import uuid
 
-from arena import *
-
 from artsrequests import Action, ARTSRESTRequest, FileType
 from module import Module
+
+from arena import *
 
 CFG_FILE = 'config.json'
 PRG_FILE = 'programs.json'

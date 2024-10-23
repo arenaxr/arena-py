@@ -3,16 +3,17 @@
 messages from the secondary topic within the same program.
 '''
 
-from arena import *
 import json
+
+from arena import *
 
 TOPIC = "$NETWORK"
 
-def objects_callback(_scene, _obj, msg, _scene_msgtype):
+def objects_callback(_scene, _obj, msg):
     print("Object message: "+str(msg))
 
 
-def secondary_callback(_scene, _obj, msg, _scene_msgtype):
+def secondary_callback(_scene, _obj, msg):
     print("-----")
     print(f"Secondary message:\nTopic: {str(msg.topic)}\nPayload: {json.loads(msg.payload)}")
     print("-----")

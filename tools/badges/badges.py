@@ -4,9 +4,9 @@
 import argparse
 
 import yaml
-from arena import *
-
 from gstable import GoogleSheetTable
+
+from arena import *
 
 DFT_CONFIG_FILENAME = './config.yaml'
 ACTUSERS = {}  # actual users by camera id
@@ -114,7 +114,7 @@ def publish_badge(scene, badge_idx, cam_id, badge_icon):
     # TODO: push config into parsable yaml
 
 
-def scene_callback(scene, _obj, msg, _scene_msgtype):
+def scene_callback(scene, _obj, msg):
     global ACTUSERS, config, data
     object_id = action = msg_type = object_type = None
     if "object_id" in msg:

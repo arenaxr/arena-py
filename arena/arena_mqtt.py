@@ -311,10 +311,8 @@ class ArenaMQTT(object):
         if self.debug:
             print(f"[subscribe ack]: topic={self.subscriptions[mid]} granted qos={granted_qos}")
         for qos in granted_qos:
-            if qos == 128:
-                print(f"ERROR!!! Subscribing to topic {self.subscriptions[mid]}, Invalid Permissions ")
-            elif qos not in range(0, 2):
-                print(f"ERROR!!! Subscribing to topic{self.subscriptions[mid]}, SUB ACK={qos}")
+            if qos not in range(0, 2):
+                print(f"FAILURE!!! Subscribing to topic {self.subscriptions[mid]}")
 
     def on_disconnect(self, client, userdata, rc):
         """Paho MQTT client on_disconnect callback"""

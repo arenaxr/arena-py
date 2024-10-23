@@ -240,6 +240,10 @@ class Scene(ArenaMQTT):
                 self.telemetry.add_event(f"Malformed payload: {payload_str}. {e}.")
                 return
 
+            if self.debug:
+                # log messages received for debugging
+                self.telemetry.add_event(f"[received] {msg.topic} {payload}")
+
             object_id = payload.get("object_id", None)
             action = payload.get("action", None)
             topic_split = msg.topic.split("/")
@@ -275,9 +279,12 @@ class Scene(ArenaMQTT):
                     if action:
                         if action == "clientEvent":
                             event = Event(**payload)
-                            if obj.evt_handler:
-                                self.callback_wrapper(obj.evt_handler, event, payload, scene_msgtype)
-                                continue
+                            # get object from target
+                            if "target" in data and data["target"] in self.all_objects:
+                                obj = self.all_objects[data["target"]]
+                                if obj.evt_handler:
+                                    self.callback_wrapper(obj.evt_handler, event, payload, scene_msgtype)
+                                    continue
                             span.add_event("Client event: {event}")
 
                         elif action == "delete":
@@ -385,7 +392,7 @@ class Scene(ArenaMQTT):
     def generate_click_event(self, obj: Object, type="mousedown", **kwargs):
         """Publishes an click event"""
         _type = type
-        evt = Event(object_id=obj.object_id, type=_type, originPosition=obj.data.position, source=self.mqttc_id, **kwargs)
+        evt = Event(object_id=self.mqttc_id, type=_type, targetPosition=obj.data.position, target=obj.object_id, **kwargs)
         return self.generate_custom_event(evt, action="clientEvent")
 
     def manipulate_camera(self, cam, **kwargs):

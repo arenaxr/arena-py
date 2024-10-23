@@ -1,9 +1,9 @@
-from types import SimpleNamespace
 from string import Template
+from types import SimpleNamespace
 
 TOPIC_TYPES = SimpleNamespace(**{
     'SCENE': 's',
-    'PROC': 'proc',
+    'PROC': 'p',
     'DEVICE': 'd',
 })
 
@@ -37,7 +37,7 @@ SCENE_MSGTYPES = SimpleNamespace(**{
 
 SUBSCRIBE_TOPICS = SimpleNamespace(**{
     'NETWORK':                '$NETWORK',
-    'DEVICE':                 Template('${realm}/d/${deviceName}/#'), # All client placeholder
+    'DEVICE':                 Template('${realm}/d/${deviceName}/#'),  # All client placeholder
     'PROC_REG':               Template('${realm}/proc/reg'),
     'PROC_CTL':               Template('${realm}/proc/control/${uuid}/#'),
     'PROC_DBG':               Template('${realm}/proc/debug/${uuid}'),

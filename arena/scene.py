@@ -40,7 +40,7 @@ class Scene(ArenaMQTT):
     :param func on_msg_callback: Called on all MQTT messages received. Default = None.
     :param func new_obj_callback: Called on object 'create' MQTT messages received. Default = None.
     :param func user_join_callback: Called on user id 'new' MQTT messages received. Default = None.
-    :param func user_left_callback: Called on user id 'delete' MQTT messages received. Default = None.
+    :param func user_left_callback: Called on user id 'leave' MQTT messages received. Default = None.
     :param func delete_obj_callback: Called on object 'delete' MQTT messages received. Default = None.
     :param func end_program_callback: Called on MQTT disconnect. Default = None.
     :param bool video: If true, request permissions for video conference. Default = False.
@@ -244,6 +244,7 @@ class Scene(ArenaMQTT):
                 # log messages received for debugging
                 self.telemetry.add_event(f"[received] {msg.topic} {payload}")
 
+            payload["topic"] = msg.topic  # add topic for downstream callbacks/handlers
             object_id = payload.get("object_id", None)
             action = payload.get("action", None)
             topic_split = msg.topic.split("/")
@@ -283,7 +284,7 @@ class Scene(ArenaMQTT):
                             if "target" in data and data["target"] in self.all_objects:
                                 obj = self.all_objects[data["target"]]
                                 if obj.evt_handler:
-                                    self.callback_wrapper(obj.evt_handler, event, payload, scene_msgtype)
+                                    self.callback_wrapper(obj.evt_handler, event, payload)
                                     continue
                             span.add_event("Client event: {event}")
 
@@ -291,9 +292,7 @@ class Scene(ArenaMQTT):
                             if Camera.object_type in object_id:  # object is a camera
                                 if object_id in self.users:
                                     if self.user_left_callback:
-                                        self.callback_wrapper(
-                                            self.user_left_callback, self.users[object_id], payload, scene_msgtype
-                                        )
+                                        self.callback_wrapper(self.user_left_callback, self.users[object_id], payload)
                                     del self.users[object_id]
                             elif (
                                 HandLeft.object_type in object_id or HandRight.object_type in object_id
@@ -304,9 +303,7 @@ class Scene(ArenaMQTT):
                                         user = self.users[user_id]
                                         if obj in user.hands.values():
                                             if user.hand_remove_callback:
-                                                self.callback_wrapper(
-                                                    user.hand_remove_callback, obj, payload, scene_msgtype
-                                                )
+                                                self.callback_wrapper(user.hand_remove_callback, obj, payload)
                                             hand_key = (
                                                 HandLeft.object_type
                                                 if HandLeft.object_type in object_id
@@ -314,7 +311,7 @@ class Scene(ArenaMQTT):
                                             )
                                             del user.hands[hand_key]
                             elif self.delete_obj_callback:
-                                self.callback_wrapper(self.delete_obj_callback, obj, payload, scene_msgtype)
+                                self.callback_wrapper(self.delete_obj_callback, obj, payload)
                             Object.remove(obj)
                             span.add_event("Object delete.")
 
@@ -330,9 +327,9 @@ class Scene(ArenaMQTT):
                     # call new message callback for all messages
                     if self.on_msg_callback:
                         if not event:
-                            self.callback_wrapper(self.on_msg_callback, obj, payload, scene_msgtype)
+                            self.callback_wrapper(self.on_msg_callback, obj, payload)
                         else:
-                            self.callback_wrapper(self.on_msg_callback, event, payload, scene_msgtype)
+                            self.callback_wrapper(self.on_msg_callback, event, payload)
 
                     if object_type:
                         # run user_join_callback when user is found
@@ -344,9 +341,7 @@ class Scene(ArenaMQTT):
                                     self.users[object_id] = Camera(**payload)
 
                                 if self.user_join_callback:
-                                    self.callback_wrapper(
-                                        self.user_join_callback, self.users[object_id], payload, scene_msgtype
-                                    )
+                                    self.callback_wrapper(self.user_join_callback, self.users[object_id], payload)
 
                         elif object_type == HandLeft.object_type or object_type == HandRight.object_type:
                             if "dep" in obj.data:
@@ -358,11 +353,11 @@ class Scene(ArenaMQTT):
                                         obj.camera = user
 
                                         if user.hand_found_callback:
-                                            self.callback_wrapper(user.hand_found_callback, obj, payload, scene_msgtype)
+                                            self.callback_wrapper(user.hand_found_callback, obj, payload)
 
                     # if its an object the library has not seen before, call new object callback
                     elif object_id not in self.unspecified_object_ids and self.new_obj_callback:
-                        self.callback_wrapper(self.new_obj_callback, obj, payload, scene_msgtype)
+                        self.callback_wrapper(self.new_obj_callback, obj, payload)
                         self.unspecified_object_ids.add(object_id)
                         span.add_event("New Object.")
 
@@ -377,13 +372,13 @@ class Scene(ArenaMQTT):
                         f"-----------------------------\n"
                     )
 
-    def callback_wrapper(self, func, arg, msg, scenemsg_type=None):
+    def callback_wrapper(self, func, arg, msg):
         """Checks for number of arguments for callback"""
-        if len(signature(func).parameters) != 4:
-            print("[DEPRECATED]", "Callbacks and handlers now take 4 arguments: (scene, obj/evt, msg, scenemsg_type)!")
+        if len(signature(func).parameters) != 3:
+            print("[DEPRECATED]", "Callbacks and handlers now take 3 arguments: (scene, obj/evt, msg)!")
             func(arg)
         else:
-            func(self, arg, msg, scenemsg_type)
+            func(self, arg, msg)
 
     def generate_custom_event(self, evt, action="clientEvent"):
         """Publishes an custom event. Could be user or library defined"""
@@ -392,7 +387,9 @@ class Scene(ArenaMQTT):
     def generate_click_event(self, obj: Object, type="mousedown", **kwargs):
         """Publishes an click event"""
         _type = type
-        evt = Event(object_id=self.mqttc_id, type=_type, targetPosition=obj.data.position, target=obj.object_id, **kwargs)
+        evt = Event(
+            object_id=self.mqttc_id, type=_type, targetPosition=obj.data.position, target=obj.object_id, **kwargs
+        )
         return self.generate_custom_event(evt, action="clientEvent")
 
     def manipulate_camera(self, cam, **kwargs):

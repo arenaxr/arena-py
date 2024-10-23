@@ -18,8 +18,8 @@ PUBLISH = "pub"
 SUBSCRIBE = "sub"
 
 
-def on_msg_callback(scene, obj, msg, scene_msgtype):
-    print(f"<{scene.root_topic}/{scene_msgtype}> \"{msg}\"")
+def on_msg_callback(scene, obj, msg):
+    print(f"<{msg['topic']}> \"{msg}\"")
 
 
 def on_custom_topic_callback(client, userdata, msg):

@@ -1,5 +1,4 @@
 import asyncio
-import math
 import threading
 import time
 
@@ -8,57 +7,21 @@ from mqtt_spb_wrapper import *
 
 from arena import *
 
-domain_name = "CMU Devices"
-app_entity_name = "ROS1 Node"
-data_topic = "spBv1.0/CMU Devices/DDATA/ROS1 Node/ROS1Bridge"
-
-app = MqttSpbEntityApplication(domain_name, app_entity_name)
-
-
-_connected = False
-while not _connected:
-    print("Trying to connect to SPB broker...")
-    _connected = app.connect("wiselambda1.andrew.local.cmu.edu", 1883)
-    if not _connected:
-        print("  Error, could not connect. Trying again in a few seconds ...")
-        time.sleep(3)
+domain_name = "Mill-19"
+app_entity_name = "Mezzanine-Lab"
+data_topic = "spBv1.0/Mill-19/DDATA/Mezzanine-Lab/"
 
 JOINTMAP = {
-    "yk_destroyer.joint.1.position": "joint_1_s",
-    "yk_destroyer.joint.2.position": "joint_2_l",
-    "yk_destroyer.joint.3.position": "joint_3_u",
-    "yk_destroyer.joint.4.position": "joint_4_r",
-    "yk_destroyer.joint.5.position": "joint_5_b",
-    "yk_destroyer.joint.6.position": "joint_6_t",
-    "yk_architect.joint.1.position": "joint_1_s",
-    "yk_architect.joint.2.position": "joint_2_l",
-    "yk_architect.joint.3.position": "joint_3_u",
-    "yk_architect.joint.4.position": "joint_4_r",
-    "yk_architect.joint.5.position": "joint_5_b",
-    "yk_architect.joint.6.position": "joint_6_t",
+    "DATA/joint_states/position/joint_1": "joint_1_s",
+    "DATA/joint_states/position/joint_2": "joint_2_l",
+    "DATA/joint_states/position/joint_3": "joint_3_u",
+    "DATA/joint_states/position/joint_4": "joint_4_r",
+    "DATA/joint_states/position/joint_5": "joint_5_b",
+    "DATA/joint_states/position/joint_6": "joint_6_t",
 }
+
 
 scene = Scene(host="arenaxr.org", namespace="public", scene="mill19-mezzlab")
-
-# motoman joints
-mmjoints = {
-    # 'base_link-base', # limit: {lower: 0, upper: 0}, fixed
-    # 'flange-tool0', # limit: {lower: 0, upper: 0}, fixed
-    # revolute
-    "joint_1_s": {"limit": {"lower": -2.9670597283903604, "upper": 2.9670597283903604}},
-    # revolute
-    "joint_2_l": {"limit": {"lower": -1.9198621771937625, "upper": 2.2689280275926285}},
-    # revolute
-    "joint_3_u": {"limit": {"lower": -1.1344640137963142, "upper": 3.490658503988659}},
-    # revolute
-    "joint_4_r": {"limit": {"lower": -3.490658503988659, "upper": 3.490658503988659}},
-    # revolute
-    "joint_5_b": {"limit": {"lower": -2.1467549799530254, "upper": 2.1467549799530254}},
-    # revolute
-    "joint_6_t": {"limit": {"lower": -7.941248096574199, "upper": 7.941248096574199}},
-    # 'joint_6_t-flange', # limit: {lower: 0, upper: 0}, fixed
-}
-
 
 # ########### table ##########
 table = Box(
@@ -76,15 +39,15 @@ table = Box(
 
 
 # motoman robots offset
-mo = (0, -.66, 0)
+mo = (0, -0.66, 0)
 # mo = (0, -10, 0)
 
 
 # ########### moto_arch ##########
 moto_arch = UrdfModel(
-    object_id="moto_arch",
+    object_id="yk_architect",
     # position=(7, 6.40, 16.25),
-    position=(0+mo[0], 0.66+mo[1], -0.45+mo[2]),
+    position=(0 + mo[0], 0.66 + mo[1], -0.45 + mo[2]),
     # rotation=(-90, 180, 0),
     rotation=(-90, -90, 0),
     scale=(0.8, 0.8, 0.8),
@@ -102,14 +65,65 @@ moto_arch_sign = ArenauiCard(
     position=(-0.25, 0, 1.5),
     look_at="#my-camera",
     persist=True,
-    widthScale=0.5,
+    widthScale=0.33,
 )
+
+# ########### creator ##########
+moto_creator = UrdfModel(
+    object_id="yk_creator",
+    # position=(7, 6.40, 16.25),
+    position=(-1 + mo[0], 0.66 + mo[1], -0.45 + mo[2]),
+    # rotation=(-90, 180, 0),
+    rotation=(-90, -90, 0),
+    scale=(0.8, 0.8, 0.8),
+    url="store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
+    urlBase="/store/users/mwfarb/xacro/motoman_gp4_support",
+    persist=True,
+    visible=True,
+    hide_on_enter_ar=True,
+)
+moto_creator_sign = ArenauiCard(
+    object_id="moto_creator_sign",
+    parent=moto_creator.object_id,
+    title="Motoman Creator",
+    body="Awaiting status update...",
+    position=(-0.25, 0, 1.5),
+    look_at="#my-camera",
+    persist=True,
+    widthScale=0.33,
+)
+
+# ########### builder ##########
+moto_builder = UrdfModel(
+    object_id="yk_builder",
+    # position=(7, 6.40, 16.25),
+    position=(-1 + mo[0], 0.66 + mo[1], 0.4 + mo[2]),
+    # rotation=(-90, 180, 0),
+    rotation=(-90, 90, 0),
+    scale=(0.8, 0.8, 0.8),
+    url="store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
+    urlBase="/store/users/mwfarb/xacro/motoman_gp4_support",
+    persist=True,
+    visible=True,
+    hide_on_enter_ar=True,
+)
+moto_builder_sign = ArenauiCard(
+    object_id="moto_builder_sign",
+    parent=moto_builder.object_id,
+    title="Motoman Builder",
+    body="Awaiting status update...",
+    position=(-0.25, 0, 1.5),
+    look_at="#my-camera",
+    persist=True,
+    widthScale=0.33,
+)
+
 
 # ########### moto_dest ##########
 moto_dest_base = Object(
     object_id="moto_dest_base",
     # position=(6.22, 6.40, 16.25},
-    position=(0+mo[0], 0.66+mo[1], 0.4+mo[2]),
+    position=(0 + mo[0], 0.66 + mo[1], 0.4 + mo[2]),
     scale=(0.8, 0.8, 0.8),
     animation=None,
     # animation={
@@ -123,9 +137,9 @@ moto_dest_base = Object(
     persist=True,
 )
 moto_dest = UrdfModel(
-    object_id="moto_dest",
+    object_id="yk_destroyer",
     parent="moto_dest_base",
-    # rotation=(-90, 0, 0),
+    position=(0, 0, 0),
     rotation=(-90, 90, 0),
     scale=(1, 1, 1),
     url="store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
@@ -142,91 +156,82 @@ moto_dest_sign = ArenauiCard(
     position=(0, 0, 1.5),
     look_at="#my-camera",
     persist=True,
+    widthScale=0.33,
 )
 
-# ########### moto_dest sensor ##########
+# ########### dest sensor ##########
 moto_dest_sensor = Sphere(
     object_id="moto_dest_sensor",
     # parent=moto_dest.object_id,
     # position=(.2, .2, 0),
-    position=(-.1, 0, .1),
-    scale=(.1, .1, .1),
-    material={"color": "#00ff00", "opacity": 0},
-    clickable=True,
-    persist=True,
-    remote_render={"enabled": False},
-)
-
-
-def sensor_on_callback(scene, evt, msg):
-    sensor_animate(scene, evt, "#00ff00", "#ff0000", 1500)
-    moto_dest_sensor.update_attributes(material={
-        "color": "#00ff00",
-        "opacity": .5,
-    })
-    scene.update_object(moto_dest_sensor)
-
-
-def sensor_off_callback(scene, evt, msg):
-    sensor_animate(scene, evt, "#ff0000", "#00ff00", 500)
-    moto_dest_sensor.update_attributes(material={
-        "color": "#00ff00",
-        "opacity": 0,
-    })
-    scene.update_object(moto_dest_sensor)
-
-
-def sensor_animate(scene, evt, start, end, dur):
-    global moto_dest_sensor
-    if evt.type == "mousedown":
-        # moto_dest_sensor.update_attributes(visible=True)
-        # scene.update_object(moto_dest_sensor)
-
-        moto_dest_sensor.update_attributes(
-            # animation={
-            #     "property": "components.material.material.color",
-            #     "type": "color",
-            #     "from": start,
-            #     "to": end,
-            #     "dur": dur,
-            #     # "easings": "easeInOutBounce",
-            #     "loop": "once",
-            #     "autoplay": True,
-            # },
-            material={
-                "color": "#00ff00",
-                "opacity": .5,
-            },
-        )
-        scene.update_object(moto_dest_sensor)
-
-        # await asyncio.sleep(2)
-        # moto_dest_sensor.update_attributes(visible=False)
-        # scene.update_object(moto_dest_sensor)
-
-
-moto_dest_on = Box(
-    object_id="moto_dest_on",
-    position=((0 - 4), 0.66, 0.4),
-    # position=((6.22 - 4), 6.40, 16.25),
-    scale=(.1, .1, .1),
+    position=(0 + mo[0], 0.66 + mo[1], 0.4 + mo[2]),
+    scale=(0.1, 0.1, 0.1),
     material={"color": "#00ff00"},
-    evt_handler=sensor_on_callback,
     clickable=True,
     persist=True,
     remote_render={"enabled": False},
 )
-moto_dest_off = Box(
-    object_id="moto_dest_off",
-    position=((0 - 4.1), 0.66, 0.4),
-    # position=((6.22 - 4.1), 6.40, 16.25),
-    scale=(.1, .1, .1),
-    material={"color": "#ff0000"},
-    evt_handler=sensor_off_callback,
+
+# ########### arch sensor ##########
+moto_architect_sensor = Sphere(
+    object_id="moto_architect_sensor",
+    # parent=moto_dest.object_id,
+    # position=(.2, .2, 0),
+    position=(0 + mo[0], 0.66 + mo[1], -0.45 + mo[2]),
+    scale=(0.1, 0.1, 0.1),
+    material={"color": "#00ff00"},
     clickable=True,
     persist=True,
     remote_render={"enabled": False},
 )
+
+# ########### creat sensor ##########
+moto_creator_sensor = Sphere(
+    object_id="moto_creator_sensor",
+    # parent=moto_dest.object_id,
+    # position=(.2, .2, 0),
+    position=(-1 + mo[0], 0.66 + mo[1], -0.45 + mo[2]),
+    scale=(0.1, 0.1, 0.1),
+    material={"color": "#00ff00"},
+    clickable=True,
+    persist=True,
+    remote_render={"enabled": False},
+)
+
+# ########### build sensor ##########
+moto_builder_sensor = Sphere(
+    object_id="moto_builder_sensor",
+    # parent=moto_dest.object_id,
+    # position=(.2, .2, 0),
+    position=(-1 + mo[0], 0.66 + mo[1], 0.4 + mo[2]),
+    scale=(0.1, 0.1, 0.1),
+    material={"color": "#00ff00"},
+    clickable=True,
+    persist=True,
+    remote_render={"enabled": False},
+)
+
+signs = {
+    "yk_destroyer": moto_dest_sign,
+    "yk_architect": moto_arch_sign,
+    "yk_creator": moto_creator_sign,
+    "yk_builder": moto_builder_sign,
+}
+
+robots = {
+    "yk_destroyer": moto_dest,
+    "yk_architect": moto_arch,
+    "yk_creator": moto_creator,
+    "yk_builder": moto_builder,
+}
+
+force_spheres = {
+    "yk_destroyer": moto_dest_sensor,
+    "yk_architect": moto_architect_sensor,
+    "yk_creator": moto_creator_sensor,
+    "yk_builder": moto_builder_sensor,
+}
+
 
 # ########### AMR MP400 ##########
 # (5.20, 4.60, 17.90),
@@ -303,35 +308,34 @@ mp400_sign = ArenauiCard(
     position=(wps[0][0], wps[0][1] + 2, wps[0][2]),
     look_at="#my-camera",
     persist=True,
+    widthScale=0.5,
 )
 
 
 # ########### INIT ##########
-@ scene.run_once
+@scene.run_once
 def main():
-    scene.add_object(moto_arch)
-    scene.add_object(moto_arch_sign)
     scene.add_object(moto_dest_base)
-    scene.add_object(moto_dest)
-    scene.add_object(moto_dest_sensor)
-    scene.add_object(moto_dest_sign)
-    scene.add_object(moto_dest_on)
-    scene.add_object(moto_dest_off)
+    for o in (
+        list(robots.values()) + list(signs.values()) + list(force_spheres.values())
+    ):
+        scene.add_object(o)
     scene.add_object(mp400_base)
     scene.add_object(mp400)
     scene.add_object(mp400_sign)
     scene.add_object(table)
     for wp in wps:
         scene.add_object(
-            Sphere(scale=(.1, .1, .1), position=wp, remote_render={"enabled": False}))
+            Sphere(scale=(0.1, 0.1, 0.1), position=wp, remote_render={"enabled": False})
+        )
 
 
-@ scene.run_forever(interval_ms=100)
+@scene.run_forever(interval_ms=100)
 def update_mp400():
     global duration_s
     t = time.time()
     # move mp400 along floor
-    sec = (t % duration_s)
+    sec = t % duration_s
     ratio, wp1, wp2 = pos_by_time(sec)
     xp = [0, 1]
 
@@ -342,72 +346,122 @@ def update_mp400():
     mp400_base.update_attributes(
         position=position,
         look_at=f"{wps[wp2][0]} {wps[wp2][1]} {wps[wp2][2]}",
-        persist=False
+        persist=False,
     )
     scene.update_object(mp400_base)
     mp400_sign.update_attributes(
-        body=json.dumps({'position': position}, indent=4), persist=False)
+        body=json.dumps({"position": position}, indent=4), persist=False
+    )
     scene.update_object(mp400_sign)
 
 
-# ########### MQTT motoman Bridge ##########
+def force_rgb(n):
+    # Calculate the red and green components
+    r = int((n / 100) * 255)
+    g = int((1 - (n / 100)) * 255)
 
-last_arch = ""
-last_dest = ""
+    # Return the RGB color as a hex string
+    return f"#{r:02X}{g:02X}00"
 
 
-def callback_app_message(topic, payload):
-    global last_arch
-    global last_dest
-    if str(topic) == data_topic:
-        metrics = payload.get("metrics", [])
-        if metrics:
-            joints_metrics = [
-                m
-                for m in metrics
-                if (
-                    "joint" in m.get("name", "")
-                    and m.get("name", "").endswith("position")
-                )
-            ]
-            if joints_metrics:
-                mmj_arch = []
-                mmj_dest = []
-                for joint_metric in joints_metrics:
-                    name = joint_metric.get("name", "")
-                    joint_name = JOINTMAP[name]
-                    if name.startswith("yk_architect"):
-                        mmj_arch.append(
-                            f"{joint_name}:{math.degrees(joint_metric.get('value', 0))}"
+def start_spb_listener(loop):
+    app = MqttSpbEntityApplication(domain_name, app_entity_name)
+    _connected = False
+    while not _connected:
+        print("Trying to connect to SPB broker...")
+        _connected = app.connect("localhost", 1883)
+        if not _connected:
+            print("  Error, could not connect. Trying again in a few seconds ...")
+            time.sleep(3)
+        else:
+            print("Connected to SPB broker.")
+
+    last_joints = {
+        "yk_destroyer": "",
+        "yk_architect": "",
+        "yk_creator": "",
+        "yk_builder": "",
+    }
+    last_forces = {
+        "yk_destroyer": 0,
+        "yk_architect": 0,
+        "yk_creator": 0,
+        "yk_builder": 0,
+    }
+
+    async def async_update_attrs(obj, **kwargs):
+        obj.update_attributes(**kwargs)
+
+    async def async_update_objs(objs):
+        scene.update_objects(objs)
+
+    # ########### MQTT motoman Bridge ##########
+    def callback_app_message(topic, payload):
+        str_topic = str(topic)
+        if str_topic.startswith(data_topic):
+            robot_name = str_topic.split("/")[-1]
+            if robot_name not in robots:
+                return
+            metrics = payload.get("metrics", [])
+            updates = []
+            if metrics:
+                joints_metrics = [
+                    m for m in metrics if "joint_states/position" in m.get("name", "")
+                ]
+                if joints_metrics:
+                    joints = []
+                    for joint_metric in joints_metrics:
+                        name = joint_metric.get("name", "")
+                        joint_name = JOINTMAP[name]
+                        joints.append(
+                            f"{joint_name}:{math.degrees(joint_metric.get('value', 0)):.3f}"
                         )
-                    elif name.startswith("yk_destroyer"):
-                        mmj_dest.append(
-                            f"{joint_name}:{math.degrees(joint_metric.get('value', 0))}"
+
+                    str_joints = ", ".join(joints)
+                    if len(joints) > 0 and str_joints != last_joints[robot_name]:
+                        last_joints[robot_name] = str_joints
+                        asyncio.run_coroutine_threadsafe(
+                            async_update_attrs(robots[robot_name], joints=str_joints),
+                            loop,
                         )
-                updates = []
-                str_mmj_arch = ", ".join(mmj_arch)
-                str_mmj_dest = ", ".join(mmj_dest)
-                if len(mmj_arch) > 0 and str_mmj_arch != last_arch:
-                    last_arch = str_mmj_arch
-                    moto_arch.update_attributes(joints=str_mmj_arch)
-                    updates.append(moto_arch)
-                    moto_arch_sign.update_attributes(
-                        body="\n".join(mmj_arch).replace(":", "\t"))
-                    updates.append(moto_arch_sign)
+                        asyncio.run_coroutine_threadsafe(
+                            async_update_attrs(
+                                signs[robot_name],
+                                body="\n".join(joints).replace(":", "\t"),
+                            ),
+                            loop,
+                        )
 
-                if len(mmj_dest) > 0 and str_mmj_dest != last_dest:
-                    last_dest = str_mmj_dest
-                    moto_dest.update_attributes(joints=str_mmj_dest)
-                    updates.append(moto_dest)
-                    moto_dest_sign.update_attributes(
-                        body="\n".join(mmj_dest).replace(":", "\t"))
-                    updates.append(moto_dest_sign)
+                        updates.append(signs[robot_name])
+                        updates.append(robots[robot_name])
+                force_metrics = [m for m in metrics if "force" in m.get("name", "")]
+                if force_metrics:
+                    forces = []
+                    for m in force_metrics:
+                        forces.append(m.get("value", 0))
+                    force_mag = round(np.linalg.norm(forces), 0)
+                    if force_mag != last_forces[robot_name]:
+                        last_forces[robot_name] = force_mag
+                        asyncio.run_coroutine_threadsafe(
+                            async_update_attrs(
+                                force_spheres[robot_name],
+                                material={"color": force_rgb(force_mag)},
+                            ),
+                            loop,
+                        )
+                        updates.append(force_spheres[robot_name])
+            if len(updates) > 0:
+                asyncio.run_coroutine_threadsafe(async_update_objs(updates), loop)
 
-                scene.update_objects(updates)
+    app.on_message = callback_app_message
 
 
-# Set callbacks
-app.on_message = callback_app_message
+@scene.run_once
+def setup_spb():
+    loop = asyncio.get_running_loop()
+    # Start MQTT listener on a separate thread
+    mqtt_thread = threading.Thread(target=start_spb_listener, args=(loop,))
+    mqtt_thread.start()
 
-# start tasks
+
 scene.run_tasks()

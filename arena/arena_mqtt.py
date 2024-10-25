@@ -312,7 +312,10 @@ class ArenaMQTT(object):
             print(f"[subscribe ack]: topic={self.subscriptions[mid]} granted qos={granted_qos}")
         for qos in granted_qos:
             if qos not in range(0, 2):
-                print(f"FAILURE!!! Subscribing to topic {self.subscriptions[mid]}")
+                if mid in self.subscriptions:
+                    print(f"FAILURE!!! Subscribing to topic {self.subscriptions[mid]}")
+                else:
+                    print(f"FAILURE!!! Subscribing to topic with message id: {mid}")
 
     def on_disconnect(self, client, userdata, rc):
         """Paho MQTT client on_disconnect callback"""
@@ -331,8 +334,7 @@ class ArenaMQTT(object):
 
     def message_callback_add(self, sub, callback):
         """Subscribes to new topic and adds callback"""
-        self.mqttc.subscribe(sub)
-        self.mqttc.message_callback_add(sub, callback)
+        self.do_subscribe(self.mqttc, sub, callback)
 
     def message_callback_remove(self, sub):
         """Unsubscribes to topic and removes callback"""

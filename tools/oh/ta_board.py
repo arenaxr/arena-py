@@ -1,7 +1,8 @@
-from arena import *
 from config import *
-
 from display_board import DisplayBoard
+
+from arena import *
+
 
 class TABoard(DisplayBoard):
     """
@@ -56,7 +57,7 @@ class TABoard(DisplayBoard):
             self.display_objects.append([
                 Text(
                         object_id=self.id+str(self.size),
-                        text=f"[{student.displayName}]: {question}",
+                        value=f"[{student.displayName}]: {question}",
                         rotation=Rotation(0,270,0),
                         scale=Scale(.25,.25,.25),
                         parent=self.board

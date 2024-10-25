@@ -11,13 +11,14 @@
 # ----------IMPORTING EVERYTHING------------ #
 # ------------------------------------------ #
 
-from ColorPrinter import *
+import math
+import random
 from enum import Enum
+
+from ColorPrinter import *
 
 from arena import *
 
-import random
-import math
 
 def end_program_callback(scene: Scene):
     printGreenB("Ending Chess Program. Goodbye :)")
@@ -44,7 +45,7 @@ ACTION_INTERVAL = 50
 #FILESTORE SETTINGS
 FILESTORE = "https://arenaxr.org/" #main server
 FILEPATH = "store/users/johnchoi/Chess/" #Path
-    
+
 class ChessPieceTeam(Enum):
     NONE = 0
     WHITE = 1
@@ -60,8 +61,8 @@ class ChessPieceType(Enum):
     KING = 6
 
 def GET_PIECE_NAME(header, team, type, x, y):
-        return header+"_Piece_"+str(team.name)+"_"+str(type.name)+"_["+chr(x+65)+"]["+str(y+1)+"]" 
-        
+        return header+"_Piece_"+str(team.name)+"_"+str(type.name)+"_["+chr(x+65)+"]["+str(y+1)+"]"
+
 def GET_PIECE_URL(team, type):
     url = ""
     if(team == ChessPieceTeam.WHITE):
@@ -97,13 +98,13 @@ def GET_PIECE_URL(team, type):
 # ------------------------------------------ #
 
 class ChessSquare:
-    def __init__(self, scene, root, x, y, clickHandler): 
+    def __init__(self, scene, root, x, y, clickHandler):
         self.tile = None
 
         self.clickHandler = clickHandler
         self.team = ChessPieceTeam.NONE
         self.type = ChessPieceType.NONE
-                
+
         self.scene = scene
         self.root = root
         self.X = x
@@ -125,7 +126,7 @@ class ChessSquare:
         y = self.Y
 
         SQUARE_COLOR = Color(50,50,50)
-        if(x % 2 != y % 2): # Alternating black/white square 
+        if(x % 2 != y % 2): # Alternating black/white square
             SQUARE_COLOR = Color(255,255,255)
         if(x == 0 and y == 0): # Mark A1(0,0) green
             SQUARE_COLOR = Color(0,255,0)
@@ -135,7 +136,7 @@ class ChessSquare:
         self.tile = Box(
             object_id=HEADER+"_Board_["+chr(x+65)+"]["+str(y+1)+"]",
             color=SQUARE_COLOR,
-            
+
             depth=.9,
             width=.9,
             height=.2,
@@ -162,7 +163,7 @@ class ChessSquare:
             [
                 Animation(
                     property="scale",
-                    start=(scaleStart,scaleStart,scaleStart), 
+                    start=(scaleStart,scaleStart,scaleStart),
                     end=Scale(1,1,1),
                     easing="easeOutCubic",
                     dur=300
@@ -177,7 +178,7 @@ class ChessSquare:
         self.piece.dispatch_animation(
             Animation(
                 property="position",
-                start=Position(fromX-self.X,0.1,self.Y-fromY), 
+                start=Position(fromX-self.X,0.1,self.Y-fromY),
                 end=Position(self.midX,1,self.midY),
                 easing="easeOutCubic",
                 dur=600
@@ -191,7 +192,7 @@ class ChessSquare:
         self.piece.dispatch_animation(
             Animation(
                 property="position",
-                start=Position(self.midX,1,self.midY), 
+                start=Position(self.midX,1,self.midY),
                 end=Position(0,0.1,0),
                 easing="easeInCubic",
                 dur=600
@@ -204,7 +205,7 @@ class ChessSquare:
         self.piece.dispatch_animation(
             Animation(
                 property="position",
-                start=Position(self.midX,0.5,self.midY), 
+                start=Position(self.midX,0.5,self.midY),
                 end=Position(0,0.1,0),
                 easing="easeOutCirc",
                 dur=500
@@ -219,7 +220,7 @@ class ChessSquare:
             self.deadPiece = None
     def CreateDeadPiece(self, team, type):
         #team = black, white
-        #type = pawn, rook, knight, bishop, queen, king 
+        #type = pawn, rook, knight, bishop, queen, king
         if(team == ChessPieceTeam.NONE or type == ChessPieceType.NONE):
             printError("Error: Cannot create piece with team NONE or type NONE!")
             return
@@ -230,7 +231,7 @@ class ChessSquare:
         self.deadPiece = GLTF(
             object_id=PIECE_NAME,
             url=PIECE_URL,
-            
+
             position=Position(0,0.1,0),
             rotation=Rotation(0,-90,0),
             scale=Scale(.2,.2,.2),
@@ -249,7 +250,7 @@ class ChessSquare:
             [
                 Animation(
                     property="rotation",
-                    start=(0,randomAngle,0), 
+                    start=(0,randomAngle,0),
                     end=(0,randomAngle,90),
                     easing="linear",
                     dur=300,
@@ -258,16 +259,16 @@ class ChessSquare:
                 ,
                 Animation(
                     property="position",
-                    start=(0,0.1,0), 
+                    start=(0,0.1,0),
                     end=(randomX,0.1,randomY),
                     easing="linear",
                     dur=300,
                     delay=1100
                 )
-                ,    
+                ,
                 Animation(
                     property="scale",
-                    start=(0.2,0.2,0.2), 
+                    start=(0.2,0.2,0.2),
                     end=(0.0,0.0,0.0), #(.05,.05,.05)
                     easing="linear",
                     dur=600,
@@ -290,7 +291,7 @@ class ChessSquare:
         self.type = ChessPieceType.NONE
     def CreatePiece(self, team, type):
         #team = black, white
-        #type = pawn, rook, knight, bishop, queen, king 
+        #type = pawn, rook, knight, bishop, queen, king
         if(team == ChessPieceTeam.NONE or type == ChessPieceType.NONE):
             printError("Error: Cannot create piece with team NONE or type NONE!")
             return
@@ -304,7 +305,7 @@ class ChessSquare:
         self.piece = GLTF(
             object_id=PIECE_NAME,
             url=PIECE_URL,
-            
+
             position=Position(0,0.1,0),
             rotation=Rotation(0,-90,0),
             scale=Scale(.2,.2,.2),
@@ -336,22 +337,22 @@ class ArenaChess:
         self.rootPosition = position
         self.rootRotation = rotation
         self.rootScale = scale
-        
+
         self.InitializeEverything()
         #self.DeleteEverything()
     def InitializeEverything(self):
         self.board = [[],[],[],[],[],[],[],[]]
-    
+
         self.CreateRoot()
         self.CreateBoard()
         self.CreateLettersAndNumbers()
         self.CreateAllPieces()
         self.CreateUI()
-        self.initialized = True         
+        self.initialized = True
     def DeleteEverything(self):
         if(self.initialized):
             self.DeleteLettersAndNumbers()
-            
+
             self.DeletePointerCylinders()
 
             self.DeleteAllPieces()
@@ -359,13 +360,13 @@ class ArenaChess:
             self.DeleteAllTiles()
 
             self.DeleteUI()
-            
+
             self.DeleteRoot()
-            
+
             self.initialized = False
         else:
             printWarning("Can only delete everything after initialization! Not initialized yet...")
-    
+
     def DeletePointerCylinders(self):
         if(self.pointer is not None):
             self.scene.delete_object(self.pointer)
@@ -391,7 +392,7 @@ class ArenaChess:
             rotation=Rotation(180,0,0),
 
             parent = tile,
-            persist=True        
+            persist=True
         )
         self.scene.add_object(self.pointer)
 
@@ -399,7 +400,7 @@ class ArenaChess:
             [
                 Animation(
                     property="position",
-                    start=(0,1.25,0), 
+                    start=(0,1.25,0),
                     end=(0,1.35,0),
                     dir="normal",
                     easing="easeInOutElastic",
@@ -423,9 +424,9 @@ class ArenaChess:
             scale=Scale(.3,1.1,.3),
             position=Position(0,.55,0),
             rotation=Rotation(0,0,0),
-            
+
             parent = tile,
-            persist=True        
+            persist=True
         )
         self.scene.add_object(self.selectionCylinder)
 
@@ -441,9 +442,9 @@ class ArenaChess:
             scale=Scale(.3,1.1,.3),
             position=Position(0,.55,0),
             rotation=Rotation(0,0,0),
-            
+
             parent = tile,
-            persist=True        
+            persist=True
         )
         self.scene.add_object(self.destinationCylinder)
 
@@ -461,7 +462,7 @@ class ArenaChess:
             printLightYellow(msg["object_id"])
 
             self.actionReady = True
-    
+
             self.actionX = self.getX(msg["object_id"])
             self.actionY = self.getY(msg["object_id"])
 
@@ -472,22 +473,22 @@ class ArenaChess:
         x = self.actionX
         y = self.actionY
 
-        print("X = " + str(x))      
-        print("Y = " + str(y))      
+        print("X = " + str(x))
+        print("Y = " + str(y))
 
         printCyanB("MoveStep = " + str(self.moveStep))
 
         self.CreatePointer(x,y)
 
         if(self.moveStep % 3 == 0):
-            if(self.board[x][y].team is not ChessPieceTeam.NONE and 
+            if(self.board[x][y].team is not ChessPieceTeam.NONE and
                self.board[x][y].type is not ChessPieceType.NONE):
-                self.CreateSelection(x,y)            
+                self.CreateSelection(x,y)
                 self.moveStep = 1
-    
+
         elif(self.moveStep % 3 == 1):
             if(self.selection.X != x or self.selection.Y != y):
-                self.CreateDestination(x,y)            
+                self.CreateDestination(x,y)
                 self.moveStep = 2
                 self.CreateActionConfirmationPrompt()
     def prompt_handler(self, scene, evt, msg):
@@ -502,7 +503,7 @@ class ArenaChess:
                 self.destination.AnimateDeadPiece()
 
                 self.destination.DeletePiece()
-                
+
                 self.destination.CreatePiece(self.selection.team, self.selection.type)
                 self.destination.AnimatePieceStart(self.selection.X,self.selection.Y)
 
@@ -513,7 +514,7 @@ class ArenaChess:
             if(evt.data.buttonName == "No"):
                 print("Pressed confirmation button: " + evt.data.buttonName)
                 scene.delete_object(self.prompt)
-                
+
                 self.moveStep = 0
 
                 self.DeletePointerCylinders()
@@ -521,20 +522,20 @@ class ArenaChess:
         self.prompt = Prompt(
             object_id=HEADER + "_ConfirmationPrompt",
             look_at="#my-camera",
-            
+
             title="Confirmation",
             description="Are you sure you want to make this move?",
-            
+
             buttons=["Yes","No"],
-            
+
             fontSize = 0.05,
-       
+
             evt_handler=self.prompt_handler,
-                
+
             position=Position(0,2,0),
             rotation=Rotation(0,90,0),
             scale=Scale(1,1,1),
-            
+
             parent=self.root,
             persist = True
         )
@@ -562,22 +563,22 @@ class ArenaChess:
         self.Card = Card(
             object_id=HEADER + "_Card",
             #look_at="#my-camera",
-            
+
             title="ARENA Chess!",
-            
+
 
             body="Play Chess in ARENA!",
             bodyAlign="center",
-            
+
             font="Roboto-Mono",
             fontSize = 0.15,
-       
+
             #widthScale=1.25,
-            
+
             position=Position(4.5,2.8,0),
             rotation=Rotation(0,-90,0),
             scale=Scale(1,1,1),
-            
+
             parent=self.root,
             persist = True
         )
@@ -585,22 +586,22 @@ class ArenaChess:
 
         self.UndoRedoPanel = ButtonPanel(
             object_id=HEADER + "_UndoRedoPanel",
-            
+
             title="Undo or Redo",
-            
+
             font="Roboto-Mono",
             fontSize = 0.5,
-       
+
             buttons=["Undo","Redo"],
-        
+
             widthScale=1,
-            
+
             #evt_handler=self.UI_handler,
-                
+
             position=Position(4.5,1.7,0),
             rotation=Rotation(0,-90,0),
             scale=Scale(1.2,1.2,1.2),
-            
+
             parent=self.root,
             persist = True
         )
@@ -609,27 +610,27 @@ class ArenaChess:
         self.ButtonPanel = ButtonPanel(
             object_id=HEADER + "_ButtonPanel",
             #look_at="#my-camera",
-            
+
             title="00:00",
-            
+
             description="Chess UI",
 
             body="Please applaud",
             bodyAlign="center",
-            
+
             font="Roboto-Mono",
             fontSize = 0.5,
-       
+
             buttons=["Reset Game","Clear Chess"],
-        
+
             widthScale=1,
-            
+
             evt_handler=self.UI_handler,
-                
+
             position=Position(4.5,1,0),
             rotation=Rotation(0,-90,0),
             scale=Scale(1.2,1.2,1.2),
-            
+
             parent=self.root,
             persist = True
         )
@@ -660,10 +661,10 @@ class ArenaChess:
     def CreateLettersAndNumbers(self):
         #Create letters
         self.letters = []
-        for x in range(8): 
+        for x in range(8):
             letter = Text(
                 object_id=HEADER+"_LabelLetter_["+chr(x+65)+"]",
-                text=chr(x+65),
+                value=chr(x+65),
                 align="center",
                 font="exo2bold",
 
@@ -671,23 +672,23 @@ class ArenaChess:
                 rotation=Rotation(-90,0,0),
                 scale=Scale(1.5,1.5,1.5),
                 color=Color(0,250,0),
-        
+
                 parent = self.root,
                 persist=True
             )
             self.scene.add_object(letter)
             self.letters.append(letter)
         #Create numbers
-        self.numbers = []        
+        self.numbers = []
         for y in range(8):
             number = Text(
                 object_id=HEADER+"_LabelNumber_["+str(y+1)+"]",
-                text=str(y+1),
+                value=str(y+1),
                 align="center",
 
                 position=Position(-4.2,.1,3.5-y),
                 rotation=Rotation(-90,0,0),
-                scale=Scale(1.5,1.5,1.5),                
+                scale=Scale(1.5,1.5,1.5),
                 color=Color(0,250,0),
 
                 parent = self.root,
@@ -703,7 +704,7 @@ class ArenaChess:
     def CreateBoard(self):
         for x in range(8):
             for y in range(8):
-                square = ChessSquare(scene, self.root, x, y, self.ClickHandler)            
+                square = ChessSquare(scene, self.root, x, y, self.ClickHandler)
                 self.board[x].append(square)
 
     def DeleteAllPieces(self):
@@ -733,7 +734,7 @@ class ArenaChess:
         self.board[7][7].CreatePiece(ChessPieceTeam.BLACK, ChessPieceType.ROOK)
         for x in range(8):
             self.board[x][6].CreatePiece(ChessPieceTeam.BLACK, ChessPieceType.PAWN)
-                
+
 # ------------------------------------------ #
 # --------MAIN LOOPS/INITIALIZATION--------- #
 # ------------------------------------------ #
@@ -744,7 +745,7 @@ arenaChess = ArenaChess(scene, app_position, app_rotation, app_scale)
 def RunActionLoop(): #checks whether or not a user is in range of NPC
 
     for x in range(8):
-        for y in range(8):        
+        for y in range(8):
             square = arenaChess.board[x][y]
 
             if(square.animationTimer < 5000):

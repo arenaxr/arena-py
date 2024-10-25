@@ -1,13 +1,17 @@
-from arena import *
-from layout import Layout
-from gcwrapper import GoogleClientWrapper
 import argparse
-import os
 import math
-import yaml
-import time
+import os
 import re
-from arena.attributes.landmark import Landmark # manually import Landmark, while arena-py does not do it
+import time
+
+import yaml
+from gcwrapper import GoogleClientWrapper
+from layout import Layout
+
+from arena import *
+from arena.attributes.landmark import (
+    Landmark,  # manually import Landmark, while arena-py does not do it
+)
 
 DFT_CONFIG_FILENAME='./config.yaml'
 
@@ -173,7 +177,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
                 parent=root_name,
                 persist=persist,
                 position=Position(wall_offset[0], wall_offset[1]+(wall_height*1.1), wall_offset[2]+(wall_depth/2)+.010),
-                text=title_cut,
+                value=title_cut,
                 color=text_color,
                 font=text_font,
                 width=wall_width*.9,
@@ -187,7 +191,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
                 persist=persist,
                 position=Position(wall_offset[0], wall_offset[1]+(wall_height*.75), wall_offset[2]-(wall_depth/2)-.05),
                 rotation=Rotation(0, 180, 0),
-                text=title_cut,
+                value=title_cut,
                 color=back_text_color,
                 font=text_font,
                 width=wall_width*.9,
@@ -204,7 +208,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
                 parent=root_name,
                 persist=persist,
                 position=Position(wall_offset[0], wall_offset[1]+wall_height, wall_offset[2]+(wall_depth/2)+.010),
-                text=f'{wall_data["authors"][0:100]}', # raise exception if key does not exist
+                value=f'{wall_data["authors"][0:100]}', # raise exception if key does not exist
                 color=text_color,
                 font=text_font,
                 #wrapCount=100,
@@ -269,7 +273,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
                 parent=btn,
                 persist=persist,
                 position=Position(0, 0, 0),
-                text=str(i+1),
+                value=str(i+1),
                 color=img_btn_text_color,
                 font=text_font,
                 width=10
@@ -303,7 +307,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
                 parent=b1_name,
                 persist=persist,
                 position=Position(0, -.35, 0),
-                text=btext[0:10],
+                value=btext[0:10],
                 color=img_btn_text_color,
                 font=text_font,
                 width=4
@@ -341,7 +345,7 @@ def make_wall(name_suffix, position, rotation, wall_data, config, args):
                 parent=b2_name,
                 persist=persist,
                 position=Position(0, -.35, 0),
-                text=btext[0:10],
+                value=btext[0:10],
                 color=img_btn_text_color,
                 font=text_font,
                 width=4

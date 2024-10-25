@@ -1,8 +1,9 @@
-from arena import *
 from config import *
-
 from display_board import DisplayBoard
 from ta_board import TABoard
+
+from arena import *
+
 
 class QBoard(DisplayBoard):
     """
@@ -38,7 +39,7 @@ class QBoard(DisplayBoard):
     def add_to_queue(self,student,question):
         self.insert(
             (student,
-            Text(object_id ="my_text"+str(self.size), text=student+str(self.size), rotation=Rotation(0,270,0), scale=Scale(.25,.25,.25), parent=self.board)
+            Text(object_id ="my_text"+str(self.size), value=student+str(self.size), rotation=Rotation(0,270,0), scale=Scale(.25,.25,.25), parent=self.board)
             ))
         for board in self.TABoards:
             board.add_to_queue(student,question)
@@ -54,7 +55,7 @@ class QBoard(DisplayBoard):
             self.display_objects.append([
                 Text(
                     object_id ="student_text"+str(self.size),
-                    text=question,
+                    value=question,
                     rotation=Rotation(0,270,0),
                     scale=Scale(.25,.25,.25),
                     parent=self.board,

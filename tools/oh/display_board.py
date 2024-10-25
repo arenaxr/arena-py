@@ -65,7 +65,7 @@ class DisplayBoard(Object):
         self.end_display -= 1
         display_list = self.get_display_list()
         for i in range(len(self.display_objects)):
-            self.scene.update_object(self.display_objects[i][0],text=display_list[i][1])
+            self.scene.update_object(self.display_objects[i][0],value=display_list[i][1])
 
     def scroll_down(self):
         if self.end_display == self.size and (self.end_display - self.start_display < self.display_amt):
@@ -75,7 +75,7 @@ class DisplayBoard(Object):
         self.end_display += 1
         display_list = self.get_display_list()
         for i in range(len(self.display_objects)):
-            self.scene.update_object(self.display_objects[i][0],text=display_list[i][1])
+            self.scene.update_object(self.display_objects[i][0],value=display_list[i][1])
 
     ###Scene Setup Functions ###
     def scroll_up_mouse_handler(self, scene, evt, msg):

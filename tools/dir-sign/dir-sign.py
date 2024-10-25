@@ -1,9 +1,8 @@
-import time
-import os
 import json
+import os
+import time
+
 from arena import *
-
-
 
 # defaults
 persist=True # False=objects will disappear after a reload (and only appear to clients already viewing the scene when they are created)
@@ -51,7 +50,7 @@ def draw_signs():
                 titleText = Text(
                     object_id=root_name+"_title",
                     position=Position(0.1, 3.3, 0),
-                    text=title_text,
+                    value=title_text,
                     material=Material(color=title_text_color),
                     font=title_text_font,
                     width=title_text_font_width,
@@ -87,7 +86,7 @@ def draw_signs():
                         linkText = Text(
                             object_id=root_name+"_text_" + str(entry),
                             position=Position(0.1, 3-(entry*0.4), 0),
-                            text=link_text,
+                            value=link_text,
                             material=Material(color=link_text_color),
                             font=link_text_font,
                             width=link_text_font_width,

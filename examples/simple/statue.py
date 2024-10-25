@@ -110,7 +110,7 @@ def main():
     start_txt = Text(
         object_id="statue-start_txt",
         position=(0, .75, 1),
-        text="Click and hover on the button to run some interactive networked Python code.",
+        value="Click and hover on the button to run some interactive networked Python code.",
         color="#555555",
         persist=True,
         parent=sceneParent.object_id,

@@ -177,7 +177,7 @@ def process_objects(scene, parent_id, pidx, prog, modules):
     start_txt = Text(
         object_id=f"start_txt_{tag}",
         parent=start_obj.object_id,
-        text=file,
+        value=file,
         align="left",
         anchor="left",
         xOffset=-0.5,
@@ -188,7 +188,7 @@ def process_objects(scene, parent_id, pidx, prog, modules):
     name_txt = Text(
         object_id=f"name_txt_{tag}",
         parent=parent_id,
-        text=name,
+        value=name,
         position=Position(0.15, y, -1),
         align="left",
         anchor="left",
@@ -217,7 +217,7 @@ def process_objects(scene, parent_id, pidx, prog, modules):
         stop_txt = Text(
             object_id=f"stop_txt_{pidx}_{val}",
             parent=stop_obj.object_id,
-            text=val[0:6],
+            value=val[0:6],
             rotation={"x": 0, "y": 0, "z": 90},
             scale={"x": 1, "y": 1, "z": 10},
         )

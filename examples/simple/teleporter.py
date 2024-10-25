@@ -3,8 +3,8 @@
 '''
 
 import random
-from arena import *
 
+from arena import *
 
 USER_HEIGHT = 1.6
 UPDATE_INTERVAL = 100
@@ -39,8 +39,8 @@ class Teleporter(Object):
                                 material=Material(transparent=True, opacity=0.5),
                                 position=self.pos_dest
                             )
-        self.src_text = Text(text="Teleporter source", position=(0,0.8,0), parent=self.teleporter_src)
-        self.dest_text = Text(text="Teleporter destination", position=(0,0.8,0), parent=self.teleporter_dest)
+        self.src_text = Text(value="Teleporter source", position=(0,0.8,0), parent=self.teleporter_src)
+        self.dest_text = Text(value="Teleporter destination", position=(0,0.8,0), parent=self.teleporter_dest)
 
         # add objects to scene
         self.scene.add_object(self.teleporter_src)

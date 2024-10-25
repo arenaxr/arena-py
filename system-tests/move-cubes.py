@@ -29,7 +29,7 @@ scene.add_object(sphere)
 
 @scene.run_once(text="arena-py 0.1.0!", parent="sphere")
 def make_text(text, parent):
-    text_obj = Text(text=text, position=Position(0,1.5,0), parent=parent)
+    text_obj = Text(value=text, position=Position(0,1.5,0), parent=parent)
     scene.add_object(text_obj)
     print(sphere.object_id, text, parent)
 

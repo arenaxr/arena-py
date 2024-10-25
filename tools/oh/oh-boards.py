@@ -31,7 +31,7 @@ scene = Scene(host="arenaxr.org", realm="realm", scene="officehours")
 #TA board label
 ta_label = Text(
     object_id ="ta_boards_label",
-    text="TA Boards",
+    value="TA Boards",
     position=Position(.25,5.5,4),
     rotation=Rotation(0,270,0),
     persist=True
@@ -67,7 +67,7 @@ qboard = QBoard(scene, qboard_box)
 #Main Queue label
 qboard_label = Text(
     object_id ="qboard_label",
-    text="Questions",
+    value="Questions",
     position=Position(.25,5.5,-3),
     rotation=Rotation(0,270,0),
     persist=True
@@ -76,7 +76,7 @@ qboard_label = Text(
 #Main queue label
 qboard_button_label = Text(
     object_id ="qboard_button_label",
-    text="Click to ask a question!",
+    value="Click to ask a question!",
     position=Position(2,0,0),
     scale=Scale(3,3,3),
     rotation=Rotation(-90,0,-90),
@@ -152,7 +152,7 @@ def user_join_callback(scene, camera, msg):
     #show a little greeting whenever a user joins OH
     greeting = Text(
         object_id=f"{camera.object_id}_greeting",
-        text=f"Hello, Welcome to {CLASS_NAME} Office Hours!\nA TA will be with you shortly.",
+        value=f"Hello, Welcome to {CLASS_NAME} Office Hours!\nA TA will be with you shortly.",
         position=Position(0,0.35,-0.7),
         scale=Scale(0.2,0.2,0.2),
         parent=camera,

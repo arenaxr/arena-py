@@ -7,6 +7,7 @@
 # avocado "Vanna White" reacts accordingly
 
 import time
+
 import arena
 
 HOST = "oz.andrew.cmu.edu"
@@ -145,7 +146,7 @@ def draw_hud(score):
         persist=False,
         objName="hudText",
         objType=arena.Shape.text,
-        text="red:"+str(reds)+" blue:"+str(blues)+" draw:"+str(draws),
+        value="red:"+str(reds)+" blue:"+str(blues)+" draw:"+str(draws),
         location=(0, 0.4, -0.5),
         parent="myCamera",
         scale=(0.2, 0.2, 0.2),

@@ -107,7 +107,7 @@ def main():
         object_id="arm_start_txt",
         position=(0, 0.75, 1.5),
         parent=sceneParent.object_id,
-        text="Red and green buttons will run some interactive networked Python code.",
+        value="Red and green buttons will run some interactive networked Python code.",
         color="#555555",
         persist=True,
     )
@@ -130,7 +130,7 @@ def main():
         object_id="arm_src_txt",
         position=(3, 1, -2),
         parent=sceneParent.object_id,
-        text="Click for source",
+        value="Click for source",
         color="#555555",
         persist=True,
     )

@@ -154,7 +154,7 @@ def draw_hud(score):
     hud = Text(
         persist=True,
         object_id="guac-hudText",
-        text="red:"+str(reds)+" blue:"+str(blues)+" draw:"+str(draws),
+        value="red:"+str(reds)+" blue:"+str(blues)+" draw:"+str(draws),
         position=(2, 4, -3),
         scale=(1, 1, 1),
         color="#555555",
@@ -301,7 +301,7 @@ def main():
     title_txt = Text(
         object_id="guac-title_txt",
         position=(2, 4.3, -3),
-        text="Tic Tac Guac",
+        value="Tic Tac Guac",
         color="#555555",
         persist=True,
         parent=sceneParent.object_id,
@@ -325,7 +325,7 @@ def main():
         object_id="guac-src_txt",
         position=(5, 1, -6),
         parent=sceneParent.object_id,
-        text="Click for source",
+        value="Click for source",
         color="#555555",
         persist=True,
     )

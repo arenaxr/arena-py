@@ -1,16 +1,15 @@
-import time
 import math
-import sys
 import os
 import random
-
-from arena import *
+import sys
+import time
 
 import serial
 import serial.tools.list_ports
-
-from pymycobot.mycobot import MyCobot
 from pymycobot.genre import Angle, Coord
+from pymycobot.mycobot import MyCobot
+
+from arena import *
 
 #------MAKE ROBOT ARM------#
 USE_ROBOT = False
@@ -249,7 +248,7 @@ jointDecrementButtons = ButtonPanel(
 jointDataText = Text(
     object_id="jointDataText",
 
-    text="000.00"+"\n"+"000.00"+"\n"+"000.00"+"\n"+"000.00"+"\n"+"000.00"+"\n"+"000.00",
+    value="000.00"+"\n"+"000.00"+"\n"+"000.00"+"\n"+"000.00"+"\n"+"000.00"+"\n"+"000.00",
     color=(100,255,255),
 
     position=(0.9, 0.9, 0.0),

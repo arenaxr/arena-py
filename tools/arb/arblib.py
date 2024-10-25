@@ -8,10 +8,31 @@
 import enum
 import math
 
-from arena import (Box, Circle, Color, Cone, Cylinder, Dodecahedron,
-                   Icosahedron, Light, Material, Object, Octahedron, Plane,
-                   Position, Ring, Rotation, Scale, Scene, Sphere, Tetrahedron,
-                   Text, Torus, TorusKnot, Triangle)
+from arena import (
+    Box,
+    Circle,
+    Color,
+    Cone,
+    Cylinder,
+    Dodecahedron,
+    Icosahedron,
+    Light,
+    Material,
+    Object,
+    Octahedron,
+    Plane,
+    Position,
+    Ring,
+    Rotation,
+    Scale,
+    Scene,
+    Sphere,
+    Tetrahedron,
+    Text,
+    Torus,
+    TorusKnot,
+    Triangle,
+)
 
 ARB_PARENT_ID = "arb-origin-parent"
 CLICKLINE_LEN_OBJ = 0.5  # meters
@@ -223,7 +244,7 @@ class User:
         text = Text(
             object_id=f"{label}_{self.camname}",
             parent=self.hud.object_id,
-            text=text,
+            value=text,
             position=Position(position.x/SCL_HUD,
                               position.y/SCL_HUD,
                               position.z/SCL_HUD),
@@ -234,13 +255,13 @@ class User:
         return text
 
     def set_textleft(self, mode):
-        self.scene.update_object(self.hudtext_left, text=str(mode))
+        self.scene.update_object(self.hudtext_left, value=str(mode))
 
     def set_textright(self, text, color=CLR_HUDTEXT):
-        self.scene.update_object(self.hudtext_right, text=text, color=color)
+        self.scene.update_object(self.hudtext_right, value=text, color=color)
 
     def set_textstatus(self, text):
-        self.scene.update_object(self.hudtext_status, text=text)
+        self.scene.update_object(self.hudtext_status, value=text)
 
     def set_lamp(self, enabled):
         if enabled:
@@ -375,7 +396,7 @@ class Button:
         self.text = Text(  # text child of button
             object_id=f"{self.button.object_id}_text",
             parent=self.button.object_id,
-            text=self.label,
+            value=self.label,
             # position inside to prevent ray events
             position=Position(0, -0.1, 0),
             rotation=Rotation(-0.7, 0, 0, 0.7),

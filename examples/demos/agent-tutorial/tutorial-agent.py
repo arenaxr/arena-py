@@ -1,5 +1,7 @@
+import math
+import random
+
 from arena import *
-import random, math
 
 scene = Scene(host="arenaxr.org", scene="example")
 
@@ -15,7 +17,7 @@ scene.add_object(avatar)
 
 speech = Text(
         object_id="my_text",
-        text="Hello!",
+        value="Hello!",
         parent=avatar,
         align="center",
         position=(0,0.3,0),
@@ -26,7 +28,7 @@ scene.add_object(speech)
 instructions = Text(
         object_id="instructions",
         color=(100,50,75),
-        text="",
+        value="",
         position=(15.4,7,0),
         scale=(3,3,3)
     )
@@ -56,7 +58,7 @@ def close_mouth():
     scene.update_object(avatar, **morph)
 
 def update_code():
-    scene.update_object(instructions, text="\n\n".join(code), align="left")
+    scene.update_object(instructions, value="\n\n".join(code), align="left")
 
 @scene.run_forever(interval_ms=50)
 def main():

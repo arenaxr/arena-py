@@ -3,7 +3,7 @@
 # Launch multiple examples and tests at 5 second intervals.
 # Check ouput at system-tests/all-test.log for errors.
 
-host="arenaxr.org"
+host="arena-dev1.conix.io"
 export MQTTH=$host
 scene="test"
 export SCENE=$scene

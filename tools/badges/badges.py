@@ -114,24 +114,14 @@ def publish_badge(scene, badge_idx, cam_id, badge_icon):
     # TODO: push config into parsable yaml
 
 
-def scene_callback(scene, _obj, msg):
+def scene_callback(scene, obj, msg):
     global ACTUSERS, config, data
-    object_id = action = msg_type = object_type = None
-    if "object_id" in msg:
-        object_id = msg["object_id"]
-    if "action" in msg:
-        action = msg["action"]
-    if "type" in msg:
-        msg_type = msg["type"]
-    if "data" in msg and "object_type" in msg["data"]:
-        object_type = msg["data"]["object_type"]
-
     # only process known object_ids for badge clicks
-    if action == "clientEvent":
+    if obj.action == "clientEvent":
         # handle click
-        if msg_type == "mousedown":
+        if obj.type == "mousedown":
             # parse clicks from known badge name object ids
-            if object_id in config["badge_icons"]:
+            if obj.object_id in config["badge_icons"]:
                 cam_id = msg["data"]["source"]
                 # strip camera_00123456789_ for username
                 username = cam_id[18:]
@@ -140,13 +130,13 @@ def scene_callback(scene, _obj, msg):
                 if "badges" not in ACTUSERS[cam_id]:
                     ACTUSERS[cam_id]["badges"] = []
                 # check if update to data model is needed, or if this is a dupe
-                if object_id not in ACTUSERS[cam_id]["badges"]:
-                    ACTUSERS[cam_id]["badges"].append(object_id)
+                if obj.data.target not in ACTUSERS[cam_id]["badges"]:
+                    ACTUSERS[cam_id]["badges"].append(obj.data.target)
                     badge_idx = len(ACTUSERS[cam_id]["badges"])-1
                     publish_badge(scene=scene,
                                   badge_idx=badge_idx,
                                   cam_id=cam_id,
-                                  badge_icon=object_id)
+                                  badge_icon=obj.data.target)
                     # get data from google spreadsheet table
                     print('Getting data...')
                     data = gst.aslist(config['input_table']['spreadsheetid'],

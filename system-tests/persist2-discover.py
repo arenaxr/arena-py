@@ -13,10 +13,10 @@ from arena import *
 # PROGRAM TWO - Receive click and attributes
 
 
-def on_msg_callback(scene, evt, _msg):
-    if isinstance(evt, Event) and evt.type == "mousedown":
-        print(f"Program 2 mousedown event: {evt.data.target}")
-        obj = scene.get_persisted_obj(evt.data.target)
+def on_msg_callback(scene, obj, _msg):
+    if isinstance(obj, Event) and obj.type == "mousedown":
+        print(f"Program 2 mousedown event: {obj.data.target}")
+        obj = scene.get_persisted_obj(obj.data.target)
         print(f"Program 2 persisted color: {obj.data.color}")
 
 

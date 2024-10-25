@@ -11,7 +11,7 @@ def box_click(scene, evt, msg):
     global grabbing
 
     if evt.type == "mousedown":
-        clicker = scene.users[evt.data.source]
+        clicker = scene.users[evt.object_id]
         hand = clicker.hands.get('handRight', None)
 
         if hand is not None and not grabbing:

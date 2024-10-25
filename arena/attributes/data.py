@@ -8,8 +8,7 @@ from .material import Material
 from .position import Position
 from .rotation import Rotation
 from .scale import Scale
-from .translate import (ATTRIBUTE_CLASS_TRANSLATION,
-                        KEYWORD_ATTRIBUTE_TRANSLATION)
+from .translate import ATTRIBUTE_CLASS_TRANSLATION, KEYWORD_ATTRIBUTE_TRANSLATION
 from .video_control import VideoControl
 
 
@@ -70,11 +69,11 @@ class Data(Attribute):
     def update_data(cls, data, new_data):
         new_data = new_data.get("data", new_data)
         dash_words = []
-        for k,v in new_data.items():
+        for k, v in new_data.items():
             # allow user to input tuples, lists, dicts, etc for specific Attributes.
             # everything gets converted to corresponding attribute
             if (k == "position" or k == "start" or k == "end") and not isinstance(v, Position):
-                if isinstance(v, (list,tuple)):
+                if isinstance(v, (list, tuple)):
                     data[k] = Position(*v[:3])
                 elif isinstance(v, dict):
                     data[k] = Position(**v)
@@ -82,7 +81,7 @@ class Data(Attribute):
                     data[k] = v
 
             elif k == "rotation" and not isinstance(v, Rotation):
-                if isinstance(v, (list,tuple)):
+                if isinstance(v, (list, tuple)):
                     if len(v) == 3:
                         data[k] = Rotation(*v[:3], None)
                     else:
@@ -93,7 +92,7 @@ class Data(Attribute):
                     data[k] = v
 
             elif k == "scale" and not isinstance(v, Scale):
-                if isinstance(v, (list,tuple)):
+                if isinstance(v, (list, tuple)):
                     data[k] = Scale(*v[:3])
                 elif isinstance(v, dict):
                     data[k] = Scale(**v)
@@ -101,7 +100,7 @@ class Data(Attribute):
                     data[k] = v
 
             elif k == "color" and not isinstance(v, Color):
-                if isinstance(v, (list,tuple)):
+                if isinstance(v, (list, tuple)):
                     color = Color(*v[:3])
                 elif isinstance(v, dict):
                     color = Color(**v)
@@ -114,7 +113,7 @@ class Data(Attribute):
             elif k == "material":
                 if "color" in v:
                     color = v["color"]
-                    if isinstance(color, (list,tuple)):
+                    if isinstance(color, (list, tuple)):
                         color = Color(*color[:3])
                     elif isinstance(color, dict):
                         color = Color(**color)
@@ -132,7 +131,7 @@ class Data(Attribute):
             # Must be done last since KEYWORD_ATTRIBUTE_TRANSLATION contains all attributes,
             # which may interfere with special casing above from, say "rotation" for example.
             elif k in KEYWORD_ATTRIBUTE_TRANSLATION:
-                if '-' in k:
+                if "-" in k:
                     dash_words += [k]
                     k = KEYWORD_ATTRIBUTE_TRANSLATION[k]
                 if isinstance(v, dict):

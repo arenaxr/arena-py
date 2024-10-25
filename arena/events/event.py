@@ -1,6 +1,7 @@
-from ..base_object import *
-from ..attributes import Data
 import uuid
+
+from ..attributes import DataEvent
+from ..base_object import *
 
 
 class Event(BaseObject):
@@ -21,7 +22,7 @@ class Event(BaseObject):
         if "type" in kwargs: del kwargs["type"]
 
         kwargs = kwargs.get("data", kwargs)
-        data = Data(**kwargs)
+        data = DataEvent(**kwargs)
         super().__init__(
                 object_id=object_id,
                 action=action,

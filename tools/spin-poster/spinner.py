@@ -1,5 +1,6 @@
-from arena import *
 import time
+
+from arena import *
 
 scene = Scene(host="arenaxr.org",scene="spin-poster")
 
@@ -35,7 +36,7 @@ def click_handler(scene,evt,msg):
     global sign # non allocated variables need to be global
     global rot_state
 
-    print("Got Click Event from:" + evt.object_id)
+    print("Got Click Event from:" + evt.data.target)
     if evt.type == "mousedown":
         last_rot=rot_state
         rot_state-=(360/3)%360

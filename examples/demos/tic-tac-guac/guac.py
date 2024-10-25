@@ -246,8 +246,8 @@ def guac_callback(scene, evt, msg):
         draw_ray(evt.data.originPosition, evt.data.targetPosition)
 
         color = redblue[counter % 2]
-        x = int(evt.object_id.split("_")[1])
-        y = int(evt.object_id.split("_")[2])
+        x = int(evt.data.target.split("_")[1])
+        y = int(evt.data.target.split("_")[2])
         if grid[(x - 1)][(y - 1)] != -1:
             return
         counter = counter + 1

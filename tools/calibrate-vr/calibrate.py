@@ -2,11 +2,13 @@
 """
 A tool to calibrate the user's camera rig.
 """
-from arena import *
 import json
 import os
 import time
+
 import numpy as np
+
+from arena import *
 
 env_axis = os.environ.get("FULL_AXIS")
 fullAxis = bool(env_axis) if env_axis is not None else False
@@ -268,8 +270,8 @@ def on_handler(_scene, evt, _msg):
         rig_rot = rig_matrix[:3, :3]
 
         # Before setting up rig, check if exists
-        prev_rig = user_rigs.get(evt.data.source)
-        user_rigs[evt.data.source] = {
+        prev_rig = user_rigs.get(evt.object_id)
+        user_rigs[evt.object_id] = {
             "matrix": rig_matrix,
             "position": rig_pos,
             "rotation": rig_rot,
@@ -279,14 +281,14 @@ def on_handler(_scene, evt, _msg):
         if prev_rig is None:
             # This is a new rig to program. Just in case a previous rig existed,
             # such as one from a persistent anchor, just reset it to identity.
-            publish_rig_offset(evt.data.source)
+            publish_rig_offset(evt.object_id)
 
         # add_light()
 
 
 def off_handler(_scene, evt, _msg):
     if evt.type == "mousedown":
-        rig = user_rigs.get(evt.data.source)
+        rig = user_rigs.get(evt.object_id)
         if rig is None:
             return
         rig["enabled"] = False
@@ -470,15 +472,15 @@ def ground_click_handler(_scene, evt, _msg):
     if evt.type != "mousedown":
         return
     global user_rigs
-    rig = user_rigs.get(evt.data.source)
+    rig = user_rigs.get(evt.object_id)
     if rig is None or not rig["enabled"]:
         return
     prev_rig_pos = rig["position"]
-    new_x = prev_rig_pos[X] - evt.data.position.x
-    new_z = prev_rig_pos[Z] - evt.data.position.z
+    new_x = prev_rig_pos[X] - evt.data.targetPosition.x
+    new_z = prev_rig_pos[Z] - evt.data.targetPosition.z
     rig["position"][X] = new_x
     rig["position"][Z] = new_z
-    publish_rig_offset(evt.data.source)
+    publish_rig_offset(evt.object_id)
 
 
 def camera_position_updater(cam_id, axis, direction):

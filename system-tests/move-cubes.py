@@ -3,15 +3,15 @@
 # Make two boxes that move away from each other (and a bunch of dodecahedrons!).
 # For testing tasks and object creation.
 
-from arena import *
 import random
 
+from arena import *
 
 scene = Scene(host="arenaxr.org", scene="test")
 
 
 music_on = False
-def evt_handler(scene, event, msg):
+def evt_handler(scene, evt, msg):
     global music_on
 
     print("clicked", music_on)

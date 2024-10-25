@@ -10,11 +10,11 @@ scene = Scene(cli_args=True)
 def click_handler(scene, evt, msg):
     global earth, button_play, button_pause, button_stop
     if evt.type == "mousedown":
-        if evt.object_id == button_play.object_id:
+        if evt.data.target == button_play.object_id:
             evt_type = "soundplay"
-        elif evt.object_id == button_pause.object_id:
+        elif evt.data.target == button_pause.object_id:
             evt_type = "soundpause"
-        elif evt.object_id == button_stop.object_id:
+        elif evt.data.target == button_stop.object_id:
             evt_type = "soundstop"
         evt = Event(
             object_id=earth.object_id,

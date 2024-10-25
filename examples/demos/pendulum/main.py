@@ -1,11 +1,12 @@
-from pendulum_physical import PendulumPhysical
-from arena import *
-from utils import *
-
-from BoschPendulum import ArenaBoschPendulum
-import numpy as np
 import random
 import time
+
+import numpy as np
+from BoschPendulum import ArenaBoschPendulum
+from pendulum_physical import PendulumPhysical
+from utils import *
+
+from arena import *
 
 scene = Scene(host="arenaxr.org", namespace = "johnchoi", scene="pendulum")
 
@@ -34,7 +35,7 @@ def box_click(scene, evt, msg):
     global child_pose_relative_to_parent
 
     if evt.type == "mousedown":
-        clicker = scene.users[evt.data.source]
+        clicker = scene.users[evt.object_id]
         handRight = clicker.hands.get("handRight", None)
         # handLeft = clicker.hands.get("handLeft", None)
 
@@ -62,25 +63,25 @@ def box_click(scene, evt, msg):
 
 chasis = Box(
     object_id="chasis",
-    
+
     position=orig_position,
     scale=orig_scale,
     rotation=(1,0,0,0),
-    
+
     width = 0.34,
     height = 0.29,
     depth = 0.26,
 
     material = Material(color=Color(50,60,200), opacity=0.2, transparent=True, visible=False),
 
-    parent=BPsimulation.root,    
+    parent=BPsimulation.root,
     clickable=True,
     evt_handler=box_click
 )
 
 arm = Box(
     object_id="arm",
-    
+
     position=(0,0,0),
     scale=(1,1,1),
     rotation=(1,0,0,0),
@@ -110,13 +111,13 @@ def move_box():
 
 
         newPoseX = BPsimulation._clamp(new_pose[0,3], -.15, .15)
-        
+
         new_position = (newPoseX, orig_position[1], orig_position[2])
         new_rotation = Utils.matrix3_to_quat(new_pose[:3,:3])
         new_rotation = (new_rotation[3], new_rotation[0], new_rotation[1], new_rotation[2])
         if(VERBOSE):
             print("New pos ",new_position[0]) # Virtual position
-        
+
         if(USE_REAL_PENDULUM):
             pendulum.set_position(new_position[0])
 
@@ -139,7 +140,7 @@ def update_pendulum():
 
     if theta_rad is not None:
         theta_deg = np.degrees(theta_rad)
-        
+
         arm.update_attributes(rotation=(0,0,theta_deg))
         scene.update_object(chasis)
 
@@ -147,12 +148,12 @@ def update_pendulum():
 
 @scene.run_once
 def make_objects():
-    
-    global pendulum 
-    
+
+    global pendulum
+
     if(USE_REAL_PENDULUM):
         pendulum.set_position(0)
-    
+
     scene.add_object(chasis)
     scene.add_object(arm)
 

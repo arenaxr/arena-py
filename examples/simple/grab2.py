@@ -1,6 +1,6 @@
-from arena import *
-
 import numpy as np
+
+from arena import *
 from arena.utils import Utils
 
 scene = Scene(host="arenaxr.org", scene="grab")
@@ -48,7 +48,7 @@ def box_click(scene, evt, msg):
     global child_pose_relative_to_parent
 
     if evt.type == "mousedown":
-        clicker = scene.users[evt.data.source]
+        clicker = scene.users[evt.object_id]
         handRight = clicker.hands.get("handRight", None)
         # handLeft = clicker.hands.get("handLeft", None)
 
@@ -104,4 +104,3 @@ def main():
     scene.add_object(my_box)
 
 scene.run_tasks()
-

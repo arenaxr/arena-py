@@ -4,6 +4,7 @@
 import argparse
 
 import yaml
+
 from arena import Image, Material, Scene
 
 DFT_CONFIG_FILENAME = "./config.yaml"
@@ -135,23 +136,14 @@ def publish_roleicon(_scene: Scene, cam_id, role_icon, active=False):
         print(f"{role_icon_id} removed")
 
 
-def question_callback(_scene: Scene, event, msg):
+def question_callback(_scene: Scene, evt, msg):
     global ACTUSERS, config, data
-    object_id = action = msg_type = object_type = None
-    if "object_id" in msg:
-        object_id = msg["object_id"]
-    if "action" in msg:
-        action = msg["action"]
-    if "type" in msg:
-        msg_type = msg["type"]
-    if "data" in msg and "object_type" in msg["data"]:
-        object_type = msg["data"]["object_type"]
 
     # TODO: handle only clicking you own buttons
-    if action == "clientEvent":
+    if evt.action == "clientEvent":
         # handle click
-        if msg_type == "mousedown":
-            cam_id = msg["data"]["source"]
+        if evt.type == "mousedown":
+            cam_id = evt.object_id
             if cam_id in ACTUSERS:
                 active = not ("roleicon" in ACTUSERS[cam_id])
                 publish_badge(_scene=_scene, cam_id=cam_id,

@@ -225,9 +225,9 @@ def process_objects(scene, parent_id, pidx, prog, modules):
         scene.add_object(stop_txt)
 
 
-def start_handler(scene, event, msg):
-    obj = event.object_id.split("_")
-    if event.type == "mousedown":
+def start_handler(scene, evt, msg):
+    obj = evt.data.target.split("_")
+    if evt.type == "mousedown":
         pidx = int(obj[1])
         mod = createModule(scene, pidx)
         if 'modules' not in programs[pidx]:
@@ -236,10 +236,10 @@ def start_handler(scene, event, msg):
         populateControls(scene)
 
 
-def stop_handler(scene, event, msg):
+def stop_handler(scene, evt, msg):
     # kill the module
-    obj = event.object_id.split("_")
-    if event.type == "mousedown":
+    obj = evt.data.target.split("_")
+    if evt.type == "mousedown":
         pidx = int(obj[1])
         uuid = obj[2]
         deleteModule(scene, programs[pidx], uuid)
@@ -276,11 +276,11 @@ def deleteModule(scene, prog, uuid):
         f"{REALM}/{config['arts']['ctl']}", artsModDeleteReq)
 
 
-def user_join_callback(scene, event, msg):
+def user_join_callback(scene, evt, msg):
     populateControls(scene)
 
 
-def end_program_callback(scene, event, msg):
+def end_program_callback(scene):
     global init3d_root
     scene.delete_object(init3d_root)  # clear root
 

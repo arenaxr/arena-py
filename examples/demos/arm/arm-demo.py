@@ -54,7 +54,7 @@ def stop_handler(scene, evt, msg):
 
 def arm_click_handler(scene, evt, msg):
     if evt.type == "mousedown":
-        draw_ray(evt.data.originPosition, evt.data.position)
+        draw_ray(evt.data.originPosition, evt.data.targetPosition)
 
 
 @arena.run_once

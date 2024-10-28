@@ -39,7 +39,7 @@ class Color(Attribute):
         if isinstance(green, float):
             self.green = int(green)
 
-        super().__init__(red=self.red, green=self.green, blue=self.blue)
+        super().__init__(red=red, green=green, blue=blue)
 
     @property
     def hex(self):

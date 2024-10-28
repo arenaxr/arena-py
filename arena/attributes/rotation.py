@@ -1,7 +1,8 @@
 import math
+from collections.abc import Iterable, Mapping
+
 from ..utils import Utils
 from .attribute import Attribute
-from collections.abc import Iterable, Mapping
 
 
 class Rotation(Attribute):
@@ -35,13 +36,11 @@ class Rotation(Attribute):
         y = y or 0
         z = z or 0
         if w is not None:  # quaternion
-            super().__init__(
-                x=Utils.agran(x), y=Utils.agran(y), z=Utils.agran(z), w=Utils.agran(w)
-            )
+            self.check_quaternion(x, y, z, w)
+            super().__init__(x=Utils.agran(x), y=Utils.agran(y), z=Utils.agran(z), w=Utils.agran(w))
         else:  # euler
-            super().__init__(
-                x=Utils.agran(x), y=Utils.agran(y), z=Utils.agran(z), w=None
-            )
+            self.check_euler(x, y, z)
+            super().__init__(x=Utils.agran(x), y=Utils.agran(y), z=Utils.agran(z), w=None)
 
     def __repr__(self):
         if self.is_quaternion:
@@ -81,10 +80,22 @@ class Rotation(Attribute):
         if not isinstance(value, Iterable) or len(value) not in [3, 4] or isinstance(value, Mapping):
             raise ValueError("Rotation array takes a 3-4 element array or list")
         if len(value) == 3:
+            self.check_euler(value, value, value)
             self.x, self.y, self.z = value
             self.w = None
         else:
+            self.check_quaternion(value, value, value, value)
             self.x, self.y, self.z, self.w = value
+
+    def check_euler(self, x, y, z):
+        values = [x, y, x]
+        if any(e < -360 for e in values) or any(e > 360 for e in values):
+            raise ValueError(f"Rotation euler values out of range: {x}, {y}, {z}")
+
+    def check_quaternion(self, x, y, z, w):
+        values = [x, y, x, w]
+        if any(e < -1 for e in values) or any(e > 1 for e in values):
+            raise ValueError(f"Rotation quaternion values out of range: {x}, {y}, {z}, {w}")
 
     @classmethod
     def q2e(cls, q):

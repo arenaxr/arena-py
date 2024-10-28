@@ -1,6 +1,7 @@
+from collections.abc import Iterable, Mapping
+
 from ..utils import Utils
 from .attribute import Attribute
-from collections.abc import Iterable, Mapping
 
 
 class Scale(Attribute):
@@ -27,6 +28,7 @@ class Scale(Attribute):
         x = x or 1
         y = y or 1
         z = z or 1
+        self.check_scale(x, y, z)
         super().__init__(x=Utils.agran(x), y=Utils.agran(y), z=Utils.agran(z))
 
     @property
@@ -37,13 +39,15 @@ class Scale(Attribute):
     def array(self, value):
         if not isinstance(value, Iterable) or len(value) != 3 or isinstance(value, Mapping):
             raise ValueError("Scale array takes a 3-element array or list")
+        self.check_scale(value, value, value)
         self.x = value[0]
         self.y = value[1]
         self.z = value[2]
 
+    def check_scale(self, x, y, z):
+        values = [x, y, x]
+        if any(e < 0 for e in values):
+            raise ValueError(f"Scale values out of range: {x}, {y}, {z}")
+
     def to_str(self):
         return Utils.tuple_to_string((self.x, self.y, self.z))
-
-    @property
-    def array(self):
-        return [self.x, self.y, self.z]

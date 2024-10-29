@@ -7,7 +7,6 @@ import json
 
 from arena import *
 
-TOPIC = "$NETWORK"
 
 def objects_callback(_scene, _obj, msg):
     print("Object message: "+str(msg))
@@ -24,18 +23,19 @@ scene = Scene(host="arenaxr.org", scene="example", on_msg_callback=objects_callb
 
 @scene.run_async
 async def test():
-    # subscribe to secondary (in this case the network graph!)
-    scene.message_callback_add(TOPIC, secondary_callback)
-    print(f"Subscribed to {TOPIC}")
+    topic = f"realm/d/{scene.namespace}/#"
+    # subscribe to secondary
+    scene.message_callback_add(topic, secondary_callback)
+    print(f"Subscribed to {topic}")
     print()
 
     # sleep for 5 seconds
     await scene.sleep(5000)
 
     # unsubscribe to secondary
-    scene.message_callback_remove(TOPIC)
+    scene.message_callback_remove(topic)
     print()
-    print(f"Unsubscribed to {TOPIC}")
+    print(f"Unsubscribed to {topic}")
     print()
 
 # our main event loop

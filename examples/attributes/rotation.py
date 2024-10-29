@@ -1,4 +1,5 @@
 import math
+
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")
@@ -28,6 +29,15 @@ def rotate_box():
     my_box1.data.rotation.x += 3
     my_box1.data.rotation.y += 3
     my_box1.data.rotation.z += 3
+
+    # guard against over rotating
+    if abs(my_box1.data.rotation.x) > 180:
+        my_box1.data.rotation.x = 0
+    if abs(my_box1.data.rotation.y) > 180:
+        my_box1.data.rotation.y = 0
+    if abs(my_box1.data.rotation.z) > 180:
+        my_box1.data.rotation.z = 0
+
     scene.update_object(my_box1)
 
 scene.run_tasks()

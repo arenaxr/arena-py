@@ -2,9 +2,9 @@
 #
 # Rotates a color changing box. Tests making and updating Euler Rotation and Color Attributes.
 
-from arena import *
 import random
 
+from arena import *
 
 # start ARENA client
 scene = Scene(host="arenaxr.org", scene="test")
@@ -25,6 +25,14 @@ def rotate_box():
         box.data.rotation.y += sign*10
     elif direction == 3:
         box.data.rotation.z += sign*10
+
+    # guard against over rotating
+    if abs(box.data.rotation.x) > 180:
+        box.data.rotation.x = 0
+    if abs(box.data.rotation.y) > 180:
+        box.data.rotation.y = 0
+    if abs(box.data.rotation.z) > 180:
+        box.data.rotation.z = 0
 
     color = random.randint(1,3)
     if color == 1:

@@ -29,7 +29,7 @@ class Color(Attribute):
                 else:
                     c = (128, 128, 128)
             else:
-                c = tuple(int(color[c: c + 2], 16) for c in (0, 2, 4))
+                c = tuple(int(color[c:c + 2], 16) for c in (0, 2, 4))
             self.red, self.green, self.blue = c
 
         if isinstance(red, float):
@@ -43,4 +43,7 @@ class Color(Attribute):
 
     @property
     def hex(self):
-        return "#{:02x}{:02x}{:02x}".format(self.red, self.green, self.blue)
+        if isinstance(self.red, str):
+            return self.red
+        else:
+            return f"#{''.join(f'{i:02x}' for i in [self.red, self.green, self.blue])}"

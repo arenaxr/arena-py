@@ -140,7 +140,7 @@ tests+=("python3 system-tests/user-callbacks.py")
 # helper scripts
 tests+=("arena-py-pub --help")
 tests+=("arena-py-sub -mh $host -n $namespace -s $scene")
-#tests+=($"arena-py-pub -mh $host -n $namespace -s $scene -m '{"object_id": "gltf-model_Earth", "action": "create", "type": "object", "data": {"object_type": "gltf-model", "position": {"x":0, "y": 0.1, "z": 0}, "url": "store/models/Earth.glb", "scale": {"x": 5, "y": 5, "z": 5}}}'")
+tests+=("arena-py-pub -mh $host -n $namespace -s $scene -m '{\"object_id\": \"gltf-model_Earth\", \"action\": \"create\", \"type\": \"object\", \"data\": {\"object_type\": \"gltf-model\", \"position\": {\"x\":0, \"y\": 0.1, \"z\": 0}, \"url\": \"store/models/Earth.glb\", \"scale\": {\"x\": 5, \"y\": 5, \"z\": 5}}}'")
 tests+=("arena-py-permissions")
 tests+=("arena-py-signout")
 

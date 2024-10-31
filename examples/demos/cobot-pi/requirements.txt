@@ -1,2 +1,2 @@
 pymycobot
-serial
+pyserial

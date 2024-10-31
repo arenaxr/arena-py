@@ -90,6 +90,11 @@ class ArenaMQTT(object):
         else:
             self.namespace = kwargs["namespace"]
 
+        if self.scene:
+            self.namespaced_target = f"{self.namespace}/{self.scene}"
+        elif self.device:
+            self.namespaced_target = f"{self.namespace}/{self.device}"
+
         # Always use the the hostname specified by the user, or defaults.
         self.mqttc_id = "pyClient-" + self.generate_client_id()
 
@@ -99,25 +104,35 @@ class ArenaMQTT(object):
         self.config_data = json.loads(self.auth.urlopen(self.config_url))
 
         self.mqtt_host = self.config_data["ARENADefaults"]["mqttHost"]
-        self.subscriptions = {}
 
-        self.topicParams = {  # Reusable topic param dict
-            'realm': self.realm,
-            'nameSpace': self.namespace,
-            'sceneName': self.scene,
-            'idTag': self.mqttc_id
-        }
+        if self.scene and (not self.username or not token):
+            # do scene auth by user
+            data = self.auth.authenticate_scene(self.web_host, self.realm, self.namespaced_target, self.username, video)
+            if "username" in data and "token" in data and "ids" in data:
+                self.username = data["username"]
+                token = data["token"]
+                self.remote_auth_token = data
+
+        # root tokens may not have a user_id from account, mqtt client_id is the
+        if self.remote_auth_token and "ids" in self.remote_auth_token and "userid" in self.remote_auth_token["ids"]:
+            self.userid = self.remote_auth_token["ids"]["userid"]
+        else:
+            self.userid = self.mqttc_id
 
         # set up topic variables
+        self.topicParams = {  # Reusable topic param dict
+            "realm": self.realm,
+            "nameSpace": self.namespace,
+            "sceneName": self.scene,
+            "idTag": self.userid,
+        }
         if self.scene:
-            self.namespaced_target = f"{self.namespace}/{self.scene}"
             self.root_topic = f"{self.realm}/{TOPIC_TYPES.SCENE}/{self.namespaced_target}"
             self.subscribe_topics = {
                 'public': SUBSCRIBE_TOPICS.SCENE_PUBLIC.substitute(self.topicParams),
                 'private': SUBSCRIBE_TOPICS.SCENE_PRIVATE.substitute(self.topicParams)
             }
         elif self.device:
-            self.namespaced_target = f"{self.namespace}/{self.device}"
             self.root_topic = f"{self.realm}/{TOPIC_TYPES.DEVICE}/{self.namespaced_target}"
             self.subscribe_topics = {
                 'public': SUBSCRIBE_TOPICS.DEVICE.substitute(self.topicParams),
@@ -125,25 +140,15 @@ class ArenaMQTT(object):
         self.latency_topic = self.config_data["ARENADefaults"]["latencyTopic"]  # network graph latency update
         self.ignore_topic = SUBSCRIBE_TOPICS.SCENE_PUBLIC_SELF.substitute(self.topicParams)
 
-        self.mqttc = mqtt.Client(
-            self.mqttc_id, clean_session=True
-        )
-
-        if self.scene and (not self.username or not token):
-            # do scene auth by user
-            data = self.auth.authenticate_scene(
-                self.web_host, self.realm, self.namespaced_target, self.username, video)
-            if "username" in data and "token" in data:
-                self.username = data["username"]
-                token = data["token"]
-                self.remote_auth_token = data
-
         # check for valid permissions to write to all objects topics
         self.can_publish_obj = self.auth.has_publish_rights(
             token,
             PUBLISH_TOPICS.SCENE_OBJECTS.substitute({**self.topicParams, **{"objectId": "anyfoobject"}})
         )
 
+        self.mqttc = mqtt.Client(
+            self.mqttc_id, clean_session=True
+        )
         self.mqttc.username_pw_set(username=self.username, password=token)
         print("=====")
 
@@ -160,6 +165,7 @@ class ArenaMQTT(object):
         self.mqtt_connect_evt.clear()
 
         # set paho mqtt callbacks
+        self.subscriptions = {}
         self.mqttc.on_connect = self.on_connect
         self.mqttc.on_disconnect = self.on_disconnect
         self.mqttc.on_publish = self.on_publish

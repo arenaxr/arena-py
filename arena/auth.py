@@ -382,6 +382,7 @@ class ArenaAuth:
             "id_token": id_token,
             "realm": realm,
             "scene": scene,
+            "userid": True,
         }
         if video:
             params["camid"] = True

@@ -114,10 +114,16 @@ tests+=("python3 examples/simple/teleporter.py")
 # demo example apps
 tests+=("python3 examples/demos/agent-tutorial/tutorial-agent.py")
 tests+=("python3 examples/demos/arm/arm-demo.py -mh $host -n $namespace -s $scene")
-tests+=("python3 examples/demos/chess/chess.py -mh $host -n $namespace -s $scene")
 tests+=("python3 examples/demos/pinata/pinata.py")
 tests+=("python3 examples/demos/soccer-physics/physics.py")
 tests+=("python3 examples/demos/tic-tac-guac/guac.py -mh $host -n $namespace -s $scene")
+tests+=("python3 examples/demos/chess/chess.py -mh $host -n $namespace -s $scene")
+tests+=("python3 examples/demos/pendulum/main.py")
+tests+=("python3 examples/demos/npc/NPC.py examples/demos/npc/ArenaRobot")
+tests+=("python3 examples/demos/cobot-pi/ui.py")
+tests+=("python3 examples/demos/bosch-car/Python/BoschCar.py")
+tests+=("python3 examples/demos/mill19/mill19-twin.py")
+tests+=("python3 examples/demos/mill19/spb.py")
 
 # system-test apps
 tests+=("python3 system-tests/auto-updates-helper.py")
@@ -137,6 +143,21 @@ tests+=("python3 system-tests/tasks.py")
 tests+=("python3 system-tests/trans-cubes.py")
 tests+=("python3 system-tests/user-callbacks.py")
 
+# tool apps
+tests+=("python3 tools/arb/arb.py")
+tests+=("python3 tools/avatar/avatar.py")
+tests+=("python3 tools/badges/badges.py")
+tests+=("python3 tools/calibrate-vr/calibrate.py")
+tests+=("python3 tools/camera-tour/camera.py")
+tests+=("python3 tools/dir-sign/dir-sign.py")
+tests+=("python3 tools/etc-showcase/etc-room.py")
+tests+=("python3 tools/import-export-scenes/import_export.py")
+tests+=("python3 tools/init3d/init3d.py")
+tests+=("python3 tools/oh/oh-boards.py")
+tests+=("python3 tools/poster-session/pplacement.py")
+tests+=("python3 tools/questions/questions.py")
+tests+=("python3 tools/spin-poster/spin-poster.py")
+
 # helper scripts
 tests+=("arena-py-pub --help")
 tests+=("arena-py-sub -mh $host -n $namespace -s $scene")
@@ -151,6 +172,15 @@ rm -f $logfile
 for i in "${tests[@]}"
 do
     start="--> Starting $i..."
+
+    pfile=$(echo $i | cut -d ' ' -f 2)
+    pdir=$(dirname $pfile)
+    rfile=$pdir/requirements.txt
+    if test -f "$rfile"; then
+        echo "Installing $rfile..."
+        pip3 install -r $rfile
+    fi
+
     echo $start
     echo $start >> $logfile 2>&1 &
     sh -c "$i" >> $logfile 2>&1 &

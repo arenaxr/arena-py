@@ -55,7 +55,7 @@ def main(host, realm, scene, namespace, action, topic, message):
 
     if action == SUBSCRIBE:
         if topic is None:
-            print(f"Subscribing to topic(s): <{','.join(scene.subscribe_topics.values)}>... ", end="")
+            print(f"Subscribing to topic(s): <{', '.join(map(str, scene.subscribe_topics.values()))}>... ", end="")
             scene.on_msg_callback = on_msg_callback
         else:
             print(f"Subscribing to topic: <{topic}>... ", end="")

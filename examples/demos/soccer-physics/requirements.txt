@@ -1,3 +1,2 @@
 arena-py
 pybullet
-pybullet_data

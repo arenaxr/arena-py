@@ -113,7 +113,7 @@ class ArenaMQTT(object):
                 token = data["token"]
                 self.remote_auth_token = data
 
-        # root tokens may not have a user_id from account, mqtt client_id is the
+        # prefer user_id from account, however root tokens use mqtt client_id as a substitute
         if self.remote_auth_token and "ids" in self.remote_auth_token and "userid" in self.remote_auth_token["ids"]:
             self.userid = self.remote_auth_token["ids"]["userid"]
         else:

@@ -10,6 +10,11 @@ from arena import *
 domain_name = "Mill-19"
 app_entity_name = "Mezzanine-Lab"
 data_topic = "spBv1.0/Mill-19/DDATA/Mezzanine-Lab/"
+display_status_fields = [
+    "DATA/robot_status/e_stopped.val",
+    "DATA/robot_status/in_motion.val",
+    "DATA/robot_status/in_error.val",
+]
 
 JOINTMAP = {
     "DATA/joint_states/position/joint_1": "joint_1_s",
@@ -65,7 +70,8 @@ moto_arch_sign = ArenauiCard(
     position=(-0.25, 0, 1.5),
     look_at="#my-camera",
     persist=True,
-    widthScale=0.33,
+    widthScale=0.2,
+    bodyAlign="center",
 )
 
 # ########### creator ##########
@@ -90,7 +96,8 @@ moto_creator_sign = ArenauiCard(
     position=(-0.25, 0, 1.5),
     look_at="#my-camera",
     persist=True,
-    widthScale=0.33,
+    widthScale=0.2,
+    bodyAlign="center",
 )
 
 # ########### builder ##########
@@ -115,7 +122,8 @@ moto_builder_sign = ArenauiCard(
     position=(-0.25, 0, 1.5),
     look_at="#my-camera",
     persist=True,
-    widthScale=0.33,
+    widthScale=0.2,
+    bodyAlign="center",
 )
 
 
@@ -156,7 +164,8 @@ moto_dest_sign = ArenauiCard(
     position=(0, 0, 1.5),
     look_at="#my-camera",
     persist=True,
-    widthScale=0.33,
+    widthScale=0.2,
+    bodyAlign="center",
 )
 
 # ########### dest sensor ##########
@@ -326,7 +335,9 @@ def main():
     scene.add_object(table)
     for wp in wps:
         scene.add_object(
-            Sphere(scale=(0.05, 0.05, 0.05), position=wp, remote_render={"enabled": False})
+            Sphere(
+                scale=(0.05, 0.05, 0.05), position=wp, remote_render={"enabled": False}
+            )
         )
 
 
@@ -390,6 +401,13 @@ def start_spb_listener(loop):
         "yk_builder": 0,
     }
 
+    last_status = {
+        "yk_destroyer": "",
+        "yk_architect": "",
+        "yk_creator": "",
+        "yk_builder": "",
+    }
+
     async def async_update_attrs(obj, **kwargs):
         obj.update_attributes(**kwargs)
 
@@ -409,6 +427,11 @@ def start_spb_listener(loop):
                 joints_metrics = [
                     m for m in metrics if "joint_states/position" in m.get("name", "")
                 ]
+                force_metrics = [m for m in metrics if "force" in m.get("name", "")]
+                status_metrics = [
+                    m for m in metrics if "robot_status" in m.get("name", "")
+                ]
+
                 if joints_metrics:
                     joints = []
                     for joint_metric in joints_metrics:
@@ -425,18 +448,8 @@ def start_spb_listener(loop):
                             async_update_attrs(robots[robot_name], joints=str_joints),
                             loop,
                         )
-                        asyncio.run_coroutine_threadsafe(
-                            async_update_attrs(
-                                signs[robot_name],
-                                body="\n".join(joints).replace(":", "\t"),
-                            ),
-                            loop,
-                        )
-
-                        updates.append(signs[robot_name])
                         updates.append(robots[robot_name])
-                force_metrics = [m for m in metrics if "force" in m.get("name", "")]
-                if force_metrics:
+                elif force_metrics:
                     forces = []
                     for m in force_metrics:
                         forces.append(m.get("value", 0))
@@ -455,6 +468,25 @@ def start_spb_listener(loop):
                             loop,
                         )
                         updates.append(force_spheres[robot_name])
+                elif status_metrics:
+                    displayed_status_metrics = [
+                        m
+                        for m in status_metrics
+                        if m.get("name", "") in display_status_fields
+                    ]
+                    sign_text = ""
+                    for m in displayed_status_metrics:
+                        name = m.get("name", "").split("/")[-1].replace(".val", "")
+                        sign_text += f"{name.upper()}: {bool(int(m.get('value', 0)))}\n"
+                    if sign_text != last_status[robot_name]:
+                        asyncio.run_coroutine_threadsafe(
+                            async_update_attrs(
+                                signs[robot_name],
+                                body=sign_text,
+                            ),
+                            loop,
+                        )
+                        updates.append(signs[robot_name])
             if len(updates) > 0:
                 asyncio.run_coroutine_threadsafe(async_update_objs(updates), loop)
 

@@ -77,10 +77,8 @@ moto_arch_sign = ArenauiCard(
 # ########### creator ##########
 moto_creator = UrdfModel(
     object_id="yk_creator",
-    # position=(7, 6.40, 16.25),
-    position=(-1 + mo[0], 0.66 + mo[1], -0.45 + mo[2]),
-    # rotation=(-90, 180, 0),
-    rotation=(-90, -90, 0),
+    position=(-1 + mo[0], 0.66 + mo[1], 0.4 + mo[2]),
+    rotation=(-90, 90, 0),
     scale=(0.8, 0.8, 0.8),
     url="store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
     urlBase="/store/users/mwfarb/xacro/motoman_gp4_support",
@@ -103,10 +101,8 @@ moto_creator_sign = ArenauiCard(
 # ########### builder ##########
 moto_builder = UrdfModel(
     object_id="yk_builder",
-    # position=(7, 6.40, 16.25),
-    position=(-1 + mo[0], 0.66 + mo[1], 0.4 + mo[2]),
-    # rotation=(-90, 180, 0),
-    rotation=(-90, 90, 0),
+    position=(-1 + mo[0], 0.66 + mo[1], -0.45 + mo[2]),
+    rotation=(-90, -90, 0),
     scale=(0.8, 0.8, 0.8),
     url="store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
     urlBase="/store/users/mwfarb/xacro/motoman_gp4_support",
@@ -197,9 +193,7 @@ moto_architect_sensor = Sphere(
 # ########### creat sensor ##########
 moto_creator_sensor = Sphere(
     object_id="moto_creator_sensor",
-    # parent=moto_dest.object_id,
-    # position=(.2, .2, 0),
-    position=(-1 + mo[0], 0.66 + mo[1], -0.15 + mo[2]),
+    position=(-1 + mo[0], 0.66 + mo[1], 0.1 + mo[2]),
     scale=(0.05, 0.05, 0.05),
     material={"color": "#00ff00", "transparent": True, "opacity": 0.33},
     clickable=True,
@@ -210,9 +204,7 @@ moto_creator_sensor = Sphere(
 # ########### build sensor ##########
 moto_builder_sensor = Sphere(
     object_id="moto_builder_sensor",
-    # parent=moto_dest.object_id,
-    # position=(.2, .2, 0),
-    position=(-1 + mo[0], 0.66 + mo[1], 0.1 + mo[2]),
+    position=(-1 + mo[0], 0.66 + mo[1], -0.15 + mo[2]),
     scale=(0.05, 0.05, 0.05),
     material={"color": "#00ff00", "transparent": True, "opacity": 0.33},
     clickable=True,

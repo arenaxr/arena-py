@@ -164,8 +164,8 @@ moto_dest_sensor = Sphere(
     object_id="moto_dest_sensor",
     # parent=moto_dest.object_id,
     # position=(.2, .2, 0),
-    position=(-0.25 + mo[0], 0.66 + mo[1], 0.4 + mo[2]),
-    scale=(0.1, 0.1, 0.1),
+    position=(0 + mo[0], 0.66 + mo[1], 0.1 + mo[2]),
+    scale=(0.05, 0.05, 0.05),
     material={"color": "#00ff00", "transparent": True, "opacity": 0.33},
     clickable=True,
     persist=True,
@@ -177,8 +177,8 @@ moto_architect_sensor = Sphere(
     object_id="moto_architect_sensor",
     # parent=moto_dest.object_id,
     # position=(.2, .2, 0),
-    position=(-0.25 + mo[0], 0.66 + mo[1], -0.45 + mo[2]),
-    scale=(0.1, 0.1, 0.1),
+    position=(0 + mo[0], 0.66 + mo[1], -0.15 + mo[2]),
+    scale=(0.05, 0.05, 0.05),
     material={"color": "#00ff00", "transparent": True, "opacity": 0.33},
     clickable=True,
     persist=True,
@@ -190,8 +190,8 @@ moto_creator_sensor = Sphere(
     object_id="moto_creator_sensor",
     # parent=moto_dest.object_id,
     # position=(.2, .2, 0),
-    position=(-0.75 + mo[0], 0.66 + mo[1], -0.45 + mo[2]),
-    scale=(0.1, 0.1, 0.1),
+    position=(-1 + mo[0], 0.66 + mo[1], -0.15 + mo[2]),
+    scale=(0.05, 0.05, 0.05),
     material={"color": "#00ff00", "transparent": True, "opacity": 0.33},
     clickable=True,
     persist=True,
@@ -203,8 +203,8 @@ moto_builder_sensor = Sphere(
     object_id="moto_builder_sensor",
     # parent=moto_dest.object_id,
     # position=(.2, .2, 0),
-    position=(-0.75 + mo[0], 0.66 + mo[1], 0.4 + mo[2]),
-    scale=(0.1, 0.1, 0.1),
+    position=(-1 + mo[0], 0.66 + mo[1], 0.1 + mo[2]),
+    scale=(0.05, 0.05, 0.05),
     material={"color": "#00ff00", "transparent": True, "opacity": 0.33},
     clickable=True,
     persist=True,
@@ -326,7 +326,7 @@ def main():
     scene.add_object(table)
     for wp in wps:
         scene.add_object(
-            Sphere(scale=(0.1, 0.1, 0.1), position=wp, remote_render={"enabled": False})
+            Sphere(scale=(0.05, 0.05, 0.05), position=wp, remote_render={"enabled": False})
         )
 
 
@@ -355,10 +355,11 @@ def update_mp400():
     scene.update_object(mp400_sign)
 
 
-def force_rgb(n):
+def force_rgb(n, limit=50):
     # Calculate the red and green components
-    r = int((n / 100) * 255)
-    g = int((1 - (n / 100)) * 255)
+    n = min(n, limit)
+    r = int((n / limit) * 255)
+    g = int((1 - (n / limit)) * 255)
 
     # Return the RGB color as a hex string
     return f"#{r:02X}{g:02X}00"

@@ -31,7 +31,7 @@ scene = Scene(host="arenaxr.org", namespace="public", scene="mill19-mezzlab")
 # ########### table ##########
 table = Box(
     object_id="table",
-    depth=1.5,
+    depth=1.26,
     height=1,
     width=3,
     position=(-0.77, -0.5, 0),
@@ -64,10 +64,9 @@ moto_arch = UrdfModel(
 )
 moto_arch_sign = ArenauiCard(
     object_id="moto_arch_sign",
-    parent=moto_arch.object_id,
     title="Motoman Architect",
     body="Awaiting status update...",
-    position=(-0.25, 0, 1.5),
+    position=(0, 1.3, -0.45),
     look_at="#my-camera",
     persist=True,
     widthScale=0.2,
@@ -77,7 +76,7 @@ moto_arch_sign = ArenauiCard(
 # ########### creator ##########
 moto_creator = UrdfModel(
     object_id="yk_creator",
-    position=(-1.5 + mo[0], 0.66 + mo[1], 0.4 + mo[2]),
+    position=(-1.66 + mo[0], 0.66 + mo[1], 0.4 + mo[2]),
     rotation=(-90, 90, 0),
     scale=(0.8, 0.8, 0.8),
     url="store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
@@ -88,10 +87,9 @@ moto_creator = UrdfModel(
 )
 moto_creator_sign = ArenauiCard(
     object_id="moto_creator_sign",
-    parent=moto_creator.object_id,
     title="Motoman Creator",
     body="Awaiting status update...",
-    position=(-0.25, 0, 1.5),
+    position=(-1.66, 1.3, 0.4),
     look_at="#my-camera",
     persist=True,
     widthScale=0.2,
@@ -101,7 +99,7 @@ moto_creator_sign = ArenauiCard(
 # ########### builder ##########
 moto_builder = UrdfModel(
     object_id="yk_builder",
-    position=(-1.5 + mo[0], 0.66 + mo[1], -0.45 + mo[2]),
+    position=(-1.66 + mo[0], 0.66 + mo[1], -0.45 + mo[2]),
     rotation=(-90, -90, 0),
     scale=(0.8, 0.8, 0.8),
     url="store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
@@ -112,10 +110,9 @@ moto_builder = UrdfModel(
 )
 moto_builder_sign = ArenauiCard(
     object_id="moto_builder_sign",
-    parent=moto_builder.object_id,
     title="Motoman Builder",
     body="Awaiting status update...",
-    position=(-0.25, 0, 1.5),
+    position=(-1.66, 1.3, -0.45),
     look_at="#my-camera",
     persist=True,
     widthScale=0.2,
@@ -154,10 +151,9 @@ moto_dest = UrdfModel(
 )
 moto_dest_sign = ArenauiCard(
     object_id="moto_dest_sign",
-    parent=moto_dest.object_id,
     title="Motoman Destroyer",
     body="Awaiting status update...",
-    position=(0, 0, 1.5),
+    position=(0, 1.3, 0.4),
     look_at="#my-camera",
     persist=True,
     widthScale=0.2,
@@ -193,7 +189,7 @@ moto_architect_sensor = Sphere(
 # ########### creat sensor ##########
 moto_creator_sensor = Sphere(
     object_id="moto_creator_sensor",
-    position=(-1.5 + mo[0], 0.66 + mo[1], 0.1 + mo[2]),
+    position=(-1.66 + mo[0], 0.66 + mo[1], 0.1 + mo[2]),
     scale=(0.05, 0.05, 0.05),
     material={"color": "#00ff00", "transparent": True, "opacity": 0.33},
     clickable=True,
@@ -204,7 +200,7 @@ moto_creator_sensor = Sphere(
 # ########### build sensor ##########
 moto_builder_sensor = Sphere(
     object_id="moto_builder_sensor",
-    position=(-1.5 + mo[0], 0.66 + mo[1], -0.15 + mo[2]),
+    position=(-1.66 + mo[0], 0.66 + mo[1], -0.15 + mo[2]),
     scale=(0.05, 0.05, 0.05),
     material={"color": "#00ff00", "transparent": True, "opacity": 0.33},
     clickable=True,

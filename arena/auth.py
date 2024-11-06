@@ -380,6 +380,7 @@ class ArenaAuth:
             "id_auth": "google-installed",
             "username": username,
             "id_token": id_token,
+            "client": "py",
             "realm": realm,
             "scene": scene,
             "userid": True,

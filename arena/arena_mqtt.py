@@ -116,14 +116,17 @@ class ArenaMQTT(object):
         # prefer user_id from account, however root tokens use mqtt client_id as a substitute
         if self.remote_auth_token and "ids" in self.remote_auth_token and "userid" in self.remote_auth_token["ids"]:
             self.userid = self.remote_auth_token["ids"]["userid"]
+            self.userclient = self.remote_auth_token["ids"]["userclient"]
         else:
             self.userid = self.mqttc_id
+            self.userclient = self.mqttc_id
 
         # set up topic variables
         self.topicParams = {  # Reusable topic param dict
             "realm": self.realm,
             "nameSpace": self.namespace,
             "sceneName": self.scene,
+            "userClient": self.userclient,
             "idTag": self.userid,
         }
         if self.scene:

@@ -125,17 +125,18 @@ class ArenaMQTT(object):
         self.topicParams = {  # Reusable topic param dict
             "realm": self.realm,
             "nameSpace": self.namespace,
-            "sceneName": self.scene,
             "userClient": self.userclient,
             "idTag": self.userid,
         }
         if self.scene:
+            self.topicParams["sceneName"] = self.scene
             self.root_topic = f"{self.realm}/{TOPIC_TYPES.SCENE}/{self.namespaced_target}"
             self.subscribe_topics = {
                 'public': SUBSCRIBE_TOPICS.SCENE_PUBLIC.substitute(self.topicParams),
                 'private': SUBSCRIBE_TOPICS.SCENE_PRIVATE.substitute(self.topicParams)
             }
         elif self.device:
+            self.topicParams["deviceName"] = self.device
             self.root_topic = f"{self.realm}/{TOPIC_TYPES.DEVICE}/{self.namespaced_target}"
             self.subscribe_topics = {
                 'public': SUBSCRIBE_TOPICS.DEVICE.substitute(self.topicParams),

@@ -4,6 +4,35 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [1.0.0](https://github.com/arenaxr/arena-py/compare/v0.11.2...v1.0.0) (2024-11-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* Refactored topic structure for more granular flow and access ([#191](https://github.com/arenaxr/arena-py/issues/191))
+
+### Features
+
+* Refactored topic structure for more granular flow and access ([#191](https://github.com/arenaxr/arena-py/issues/191)) ([1413e9f](https://github.com/arenaxr/arena-py/commit/1413e9fe422dcf6863abe92019d62c6ca43e834e))
+
+
+### Bug Fixes
+
+* **auth:** add/refactor request for user_id from account in token repsonse ([2b23174](https://github.com/arenaxr/arena-py/commit/2b231741fe612cf1f14e854c8e36e7475168a6c0))
+* **color:** ensure color=str assignment publishes correctly ([e335b4f](https://github.com/arenaxr/arena-py/commit/e335b4f8da1461936b730f47c6b68dfa9b9b2b6b))
+* **color:** fixed color.hex() reference uninitialized ([5ab2148](https://github.com/arenaxr/arena-py/commit/5ab21487c64ecae1d80b0a7e8f631e79eca54d35))
+* **mqtt:** add deprecation warnings for data attribute get/set ([b123d1b](https://github.com/arenaxr/arena-py/commit/b123d1b3bb692c506a4b018b485b0d13087e3104))
+* **mqtt:** add logging for SUBACK errors ([47c04ae](https://github.com/arenaxr/arena-py/commit/47c04aedef93e17ef38fb551059d0f1b17237dfc))
+* **mqtt:** require userClient in topic for all scene messages ([#201](https://github.com/arenaxr/arena-py/issues/201)) ([9f8765d](https://github.com/arenaxr/arena-py/commit/9f8765d72bf4beee8f2fb616c240a961dad6857e))
+* **position:** remove duplicate getter ([04db8b0](https://github.com/arenaxr/arena-py/commit/04db8b02854a0903cf6bc81db28221e5f4d9e5cb))
+* **rotation, scale:** raise out of range error when needed ([5ab005c](https://github.com/arenaxr/arena-py/commit/5ab005c248d88c4ae96bad4c86976e7cb7154b8d))
+* swapped creator and builder arms ([5a9e2d3](https://github.com/arenaxr/arena-py/commit/5a9e2d358c3156ec85acdc3c4dffe75525435c50))
+
+
+### Documentation
+
+* add deprecated docstring attributes and highlight ([1f627c8](https://github.com/arenaxr/arena-py/commit/1f627c8a4a4840896e3dc978f9261baa3bbd85c3))
+
 ## [0.11.2](https://github.com/arenaxr/arena-py/compare/v0.11.1...v0.11.2) (2024-09-25)
 
 

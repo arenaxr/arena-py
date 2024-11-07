@@ -3,9 +3,10 @@
 # Move (all) users' camera about a scene with cinematic slow movements
 # takes an argument: scene name for which to move the camera(s) in
 
-from arena import *
 import random
 import sys
+
+from arena import *
 
 HOST = "arenaxr.org"
 SCENE = "test"
@@ -65,7 +66,7 @@ Rjoe = (0,0,0)
 # SPEED: moves every so often
 S = 10*1000
 
-@scene.run_forever(interval_ms=S)
+@scene.run_forever(interval_ms=int(S))
 def main():
     global old, joe, Rold, Rjoe
 

@@ -113,32 +113,37 @@ class ArenaMQTT(object):
                 token = data["token"]
                 self.remote_auth_token = data
 
-        # root tokens may not have a user_id from account, mqtt client_id is the
+        # prefer user_id from account, however root tokens use mqtt client_id as a substitute
         if self.remote_auth_token and "ids" in self.remote_auth_token and "userid" in self.remote_auth_token["ids"]:
             self.userid = self.remote_auth_token["ids"]["userid"]
+            self.userclient = self.remote_auth_token["ids"]["userclient"]
         else:
             self.userid = self.mqttc_id
+            self.userclient = self.mqttc_id
 
         # set up topic variables
         self.topicParams = {  # Reusable topic param dict
             "realm": self.realm,
             "nameSpace": self.namespace,
-            "sceneName": self.scene,
+            # adding "sceneName" or "deviceName" depending on case below
+            "userClient": self.userclient,
             "idTag": self.userid,
         }
         if self.scene:
+            self.topicParams["sceneName"] = self.scene
             self.root_topic = f"{self.realm}/{TOPIC_TYPES.SCENE}/{self.namespaced_target}"
             self.subscribe_topics = {
                 'public': SUBSCRIBE_TOPICS.SCENE_PUBLIC.substitute(self.topicParams),
                 'private': SUBSCRIBE_TOPICS.SCENE_PRIVATE.substitute(self.topicParams)
             }
         elif self.device:
+            self.topicParams["deviceName"] = self.device
             self.root_topic = f"{self.realm}/{TOPIC_TYPES.DEVICE}/{self.namespaced_target}"
             self.subscribe_topics = {
                 'public': SUBSCRIBE_TOPICS.DEVICE.substitute(self.topicParams),
             }
         self.latency_topic = self.config_data["ARENADefaults"]["latencyTopic"]  # network graph latency update
-        self.ignore_topic = SUBSCRIBE_TOPICS.SCENE_PUBLIC_SELF.substitute(self.topicParams)
+        self.ignore_topic = SUBSCRIBE_TOPICS.SCENE_PUBLIC.substitute(self.topicParams)
 
         # check for valid permissions to write to all objects topics
         self.can_publish_obj = self.auth.has_publish_rights(

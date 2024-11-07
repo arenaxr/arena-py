@@ -125,7 +125,7 @@ class ArenaMQTT(object):
         self.topicParams = {  # Reusable topic param dict
             "realm": self.realm,
             "nameSpace": self.namespace,
-            "sceneName": self.scene,
+            # adding "sceneName" or "deviceName" depending on case below
             "userClient": self.userclient,
             "idTag": self.userid,
         }

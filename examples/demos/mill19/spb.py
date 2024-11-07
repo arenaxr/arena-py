@@ -39,12 +39,13 @@ table = Box(
     material_extras={"transparentOccluder": True},
     persist=True,
     hide_on_enter_ar=False,
-    hide_on_enter_vr=True
+    hide_on_enter_vr=True,
+    clickable = True
 )
 
 
 # motoman robots offset
-mo = (0, -0.66, 0)
+mo = (0, -0.76, 0)
 # mo = (0, -10, 0)
 
 
@@ -76,7 +77,7 @@ moto_arch_sign = ArenauiCard(
 # ########### creator ##########
 moto_creator = UrdfModel(
     object_id="yk_creator",
-    position=(-1.66 + mo[0], 0.66 + mo[1], 0.4 + mo[2]),
+    position=(-1.7 + mo[0], 0.66 + mo[1], 0.4 + mo[2]),
     rotation=(-90, 90, 0),
     scale=(0.8, 0.8, 0.8),
     url="store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
@@ -89,7 +90,7 @@ moto_creator_sign = ArenauiCard(
     object_id="moto_creator_sign",
     title="Motoman Creator",
     body="Awaiting status update...",
-    position=(-1.66, 1.3, 0.4),
+    position=(-1.7, 1.3, 0.4),
     look_at="#my-camera",
     persist=True,
     widthScale=0.2,
@@ -99,7 +100,7 @@ moto_creator_sign = ArenauiCard(
 # ########### builder ##########
 moto_builder = UrdfModel(
     object_id="yk_builder",
-    position=(-1.66 + mo[0], 0.66 + mo[1], -0.45 + mo[2]),
+    position=(-1.7 + mo[0], 0.66 + mo[1], -0.45 + mo[2]),
     rotation=(-90, -90, 0),
     scale=(0.8, 0.8, 0.8),
     url="store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
@@ -112,7 +113,7 @@ moto_builder_sign = ArenauiCard(
     object_id="moto_builder_sign",
     title="Motoman Builder",
     body="Awaiting status update...",
-    position=(-1.66, 1.3, -0.45),
+    position=(-1.7, 1.3, -0.45),
     look_at="#my-camera",
     persist=True,
     widthScale=0.2,
@@ -165,9 +166,9 @@ moto_dest_sensor = Sphere(
     object_id="moto_dest_sensor",
     # parent=moto_dest.object_id,
     # position=(.2, .2, 0),
-    position=(0 + mo[0], 0.66 + mo[1], 0.1 + mo[2]),
+    position=(0 + mo[0], 0.76 + mo[1], 0.1 + mo[2]),
     scale=(0.05, 0.05, 0.05),
-    material={"color": "#00ff00", "transparent": True, "opacity": 0.33},
+    material={"color": "#00ff00", "transparent": True, "opacity": 0.45},
     clickable=True,
     persist=True,
     remote_render={"enabled": False},
@@ -178,9 +179,9 @@ moto_architect_sensor = Sphere(
     object_id="moto_architect_sensor",
     # parent=moto_dest.object_id,
     # position=(.2, .2, 0),
-    position=(0 + mo[0], 0.66 + mo[1], -0.15 + mo[2]),
+    position=(0 + mo[0], 0.76 + mo[1], -0.15 + mo[2]),
     scale=(0.05, 0.05, 0.05),
-    material={"color": "#00ff00", "transparent": True, "opacity": 0.33},
+    material={"color": "#00ff00", "transparent": True, "opacity": 0.45},
     clickable=True,
     persist=True,
     remote_render={"enabled": False},
@@ -189,9 +190,9 @@ moto_architect_sensor = Sphere(
 # ########### creat sensor ##########
 moto_creator_sensor = Sphere(
     object_id="moto_creator_sensor",
-    position=(-1.66 + mo[0], 0.66 + mo[1], 0.1 + mo[2]),
+    position=(-1.7 + mo[0], 0.76 + mo[1], 0.1 + mo[2]),
     scale=(0.05, 0.05, 0.05),
-    material={"color": "#00ff00", "transparent": True, "opacity": 0.33},
+    material={"color": "#00ff00", "transparent": True, "opacity": 0.45},
     clickable=True,
     persist=True,
     remote_render={"enabled": False},
@@ -200,9 +201,9 @@ moto_creator_sensor = Sphere(
 # ########### build sensor ##########
 moto_builder_sensor = Sphere(
     object_id="moto_builder_sensor",
-    position=(-1.66 + mo[0], 0.66 + mo[1], -0.15 + mo[2]),
+    position=(-1.72 + mo[0], 0.76 + mo[1], -0.15 + mo[2]),
     scale=(0.05, 0.05, 0.05),
-    material={"color": "#00ff00", "transparent": True, "opacity": 0.33},
+    material={"color": "#00ff00", "transparent": True, "opacity": 0.45},
     clickable=True,
     persist=True,
     remote_render={"enabled": False},
@@ -450,7 +451,7 @@ def start_spb_listener(loop):
                                 material={
                                     "color": force_rgb(force_mag),
                                     "transparent": True,
-                                    "opacity": 0.33,
+                                    "opacity": 0.45,
                                 },
                             ),
                             loop,

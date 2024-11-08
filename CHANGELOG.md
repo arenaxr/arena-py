@@ -4,6 +4,13 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [1.0.1](https://github.com/arenaxr/arena-py/compare/v1.0.0...v1.0.1) (2024-11-08)
+
+
+### Bug Fixes
+
+* **submodel-parent:** add component submodel-parent ([7c9ad7c](https://github.com/arenaxr/arena-py/commit/7c9ad7c1b5360b3315017d1c2e2f0eee09190e1d))
+
 ## [1.0.0](https://github.com/arenaxr/arena-py/compare/v0.11.2...v1.0.0) (2024-11-07)
 
 

@@ -55,6 +55,7 @@ class Data(Attribute):
     :param dict sound: The sound component defines the entity as a source of sound or audio. The sound component can be positional and is thus affected by the component's position. More properties at <https://aframe.io/docs/1.5.0/components/sound.html> A-Frame Sound. (optional)
     :param dict spe_particles: GPU based particle systems in A-Frame. More properties at <https://github.com/harlyq/aframe-spe-particles-component> A-Frame SPE Particles component. (optional)
     :param dict static_body: A fixed-position or animated object. Other objects may collide with static bodies, but static bodies themselves are unaffected by gravity and collisions. More properties at <https://github.com/c-frame/aframe-physics-system/blob/master/CannonDriver.md> A-Frame Physics System. (optional)
+    :param str submodel_parent: When this object is parented to a hierarchical model, attaches to a named subcomponent of that model instead of the root position Defaults to '' (optional)
     :param dict textinput: Opens an HTML prompt when clicked. Sends text input as an event on MQTT. Requires click-listener. (optional)
     :param str url: Use File Store paths under 'store/users/username', see CDN and other storage options in the description above. (optional)
     :param dict video_control: Adds a video to an entity and controls its playback. (optional)

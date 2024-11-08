@@ -1,16 +1,17 @@
 # This file is auto-generated from github.com/arenaxr/arena-schema, changes here may be overwritten.
 
+from .translate import *
+from .attribute import *
+from .color import *
+from .data import *
+from .data_event import *
 from .animation import *
 from .animation_mixer import *
 from .armarker import *
-from .attribute import *
 from .attribution import *
 from .blip import *
 from .box_collision_listener import *
 from .click_listener import *
-from .color import *
-from .data import *
-from .data_event import *
 from .dynamic_body import *
 from .gltf_model_lod import *
 from .gltf_morph import *
@@ -31,7 +32,6 @@ from .sound import *
 from .spe_particles import *
 from .static_body import *
 from .textinput import *
-from .translate import *
 from .video_control import *
 
 ATTRIBUTE_TYPE_MAP = {

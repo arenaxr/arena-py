@@ -14,7 +14,7 @@ with open("README.md", "r") as readme:
 
 setuptools.setup(
     name="arena-py",
-    version="1.0.0",
+    version="1.0.1",
     author="Carnegie Mellon University",
     author_email="arenaxr@andrew.cmu.edu",
     license="BSD 3-clause \"New\" or \"Revised License\"",

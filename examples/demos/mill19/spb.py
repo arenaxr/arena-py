@@ -57,7 +57,7 @@ moto_arch = UrdfModel(
     # rotation=(-90, 180, 0),
     rotation=(-90, -90, 0),
     scale=(0.8, 0.8, 0.8),
-    url="store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
+    url="/store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
     urlBase="/store/users/mwfarb/xacro/motoman_gp4_support",
     persist=True,
     visible=True,
@@ -80,7 +80,7 @@ moto_creator = UrdfModel(
     position=(-1.7 + mo[0], 0.66 + mo[1], 0.4 + mo[2]),
     rotation=(-90, 90, 0),
     scale=(0.8, 0.8, 0.8),
-    url="store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
+    url="/store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
     urlBase="/store/users/mwfarb/xacro/motoman_gp4_support",
     persist=True,
     visible=True,
@@ -103,7 +103,7 @@ moto_builder = UrdfModel(
     position=(-1.7 + mo[0], 0.66 + mo[1], -0.45 + mo[2]),
     rotation=(-90, -90, 0),
     scale=(0.8, 0.8, 0.8),
-    url="store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
+    url="/store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
     urlBase="/store/users/mwfarb/xacro/motoman_gp4_support",
     persist=True,
     visible=True,
@@ -144,7 +144,7 @@ moto_dest = UrdfModel(
     position=(0, 0, 0),
     rotation=(-90, 90, 0),
     scale=(1, 1, 1),
-    url="store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
+    url="/store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
     urlBase="/store/users/mwfarb/xacro/motoman_gp4_support",
     persist=True,
     visible=True,
@@ -164,49 +164,49 @@ moto_dest_sign = ArenauiCard(
 # ########### dest sensor ##########
 moto_dest_sensor = Sphere(
     object_id="moto_dest_sensor",
-    # parent=moto_dest.object_id,
-    # position=(.2, .2, 0),
-    position=(0 + mo[0], 0.76 + mo[1], 0.1 + mo[2]),
+    parent=moto_dest.object_id,
     scale=(0.05, 0.05, 0.05),
     material={"color": "#00ff00", "transparent": True, "opacity": 0.45},
     clickable=True,
     persist=True,
     remote_render={"enabled": False},
+    submodel_parent="joint_6_t-flange",
 )
 
 # ########### arch sensor ##########
 moto_architect_sensor = Sphere(
     object_id="moto_architect_sensor",
-    # parent=moto_dest.object_id,
-    # position=(.2, .2, 0),
-    position=(0 + mo[0], 0.76 + mo[1], -0.15 + mo[2]),
+    parent=moto_arch.object_id,
     scale=(0.05, 0.05, 0.05),
     material={"color": "#00ff00", "transparent": True, "opacity": 0.45},
     clickable=True,
     persist=True,
     remote_render={"enabled": False},
+    submodel_parent="joint_6_t-flange",
 )
 
 # ########### creat sensor ##########
 moto_creator_sensor = Sphere(
     object_id="moto_creator_sensor",
-    position=(-1.7 + mo[0], 0.76 + mo[1], 0.1 + mo[2]),
+    parent=moto_creator.object_id,
     scale=(0.05, 0.05, 0.05),
     material={"color": "#00ff00", "transparent": True, "opacity": 0.45},
     clickable=True,
     persist=True,
     remote_render={"enabled": False},
+    submodel_parent="joint_6_t-flange",
 )
 
 # ########### build sensor ##########
 moto_builder_sensor = Sphere(
     object_id="moto_builder_sensor",
-    position=(-1.72 + mo[0], 0.76 + mo[1], -0.15 + mo[2]),
+    parent=moto_builder.object_id,
     scale=(0.05, 0.05, 0.05),
     material={"color": "#00ff00", "transparent": True, "opacity": 0.45},
     clickable=True,
     persist=True,
     remote_render={"enabled": False},
+    submodel_parent="joint_6_t-flange",
 )
 
 signs = {
@@ -294,7 +294,7 @@ mp400 = UrdfModel(
     position=(0, 0, 0),
     rotation=(-90, 270, 0),
     scale=(1, 1, 1),
-    url="store/users/mwfarb/xacro/neo_mp_400/robot_model/mp_400/mp_400.urdf.xacro",
+    url="/store/users/mwfarb/xacro/neo_mp_400/robot_model/mp_400/mp_400.urdf.xacro",
     urlBase="/store/users/mwfarb/xacro/neo_mp_400",
     persist=True,
     visible=True,

@@ -13,7 +13,6 @@ SAVE_MESHES = True  # Enable saving of incoming meshes to gltf files
 MIN_FITNESS_THRESHOLD = 0.9  # TODO: figure out cutoff for "wrong room mesh"
 USE_CUDA = False  # Enable CUDA acceleration. Requires CUDA GPU, build o3d from source
 
-LISTEN_TOPIC = "realm/env/+/+/+/meshes"
 vis = None
 target_mesh = None
 target_pcd = None
@@ -359,7 +358,14 @@ def icp(src, target, distance=0, rotations=6):
     return min(matches, key=lambda x: x.inlier_rmse)
 
 
-scene = Scene(namespace="public", scene="arena")
+scene = Scene(namespace="public", scene="arena", environment=True)
+LISTEN_TOPIC = topics.SUBSCRIBE_TOPICS.SCENE_ENV_PRIVATE.substitute(
+    realm="realm",
+    nameSpace=scene.namespace,
+    sceneName=scene.scene,
+    idTag="-",
+    userClient="+",
+)
 scene.message_callback_add(LISTEN_TOPIC, msg_callback)
 
 if DEBUG:

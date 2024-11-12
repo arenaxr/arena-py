@@ -43,6 +43,7 @@ SUBSCRIBE_TOPICS = SimpleNamespace(**{
     'PROC_CTL':               Template('${realm}/proc/control/${uuid}/#'),
     'PROC_DBG':               Template('${realm}/proc/debug/${uuid}'),
     'SCENE_PUBLIC':           Template('${realm}/s/${nameSpace}/${sceneName}/+/+/+'),
+    'SCENE_PUBLIC_SELF':      Template('${realm}/s/${nameSpace}/${sceneName}/+/${userClient}/+'),
     'SCENE_PRIVATE':          Template('${realm}/s/${nameSpace}/${sceneName}/+/+/+/${idTag}/#'),
 })
 

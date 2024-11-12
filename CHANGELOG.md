@@ -4,6 +4,13 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [1.0.2](https://github.com/arenaxr/arena-py/compare/v1.0.1...v1.0.2) (2024-11-12)
+
+
+### Bug Fixes
+
+* set correct self-ignore topic ([00c38d5](https://github.com/arenaxr/arena-py/commit/00c38d5fdecfdd448d1d96878a2f903fc7f569d5))
+
 ## [1.0.1](https://github.com/arenaxr/arena-py/compare/v1.0.0...v1.0.1) (2024-11-08)
 
 

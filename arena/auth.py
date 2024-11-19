@@ -182,7 +182,7 @@ class ArenaAuth:
                 print(f"HTTP error {status}: {url}\n{access_resp}")
                 sys.exit("Terminating...")
 
-    def authenticate_scene(self, web_host, realm, scene, username, video=False):
+    def authenticate_scene(self, web_host, realm, scene, username, video=False, env=False):
         """End authentication flow, requesting permissions may change by owner
         or admin, for now, get a fresh mqtt_token each time.
 
@@ -197,7 +197,8 @@ class ArenaAuth:
         scene_mqtt_path = f"{scene_auth_dir}/{_mqtt_token_file}"
 
         print("Using remote-authenticated MQTT token.")
-        mqtt_json = self._get_mqtt_token(web_host, realm, scene, username, self._id_token, video)
+        mqtt_json = self._get_mqtt_token(web_host, realm, scene, username, self._id_token, video, env)
+        print(mqtt_json)
         # save mqtt_token
         with open(scene_mqtt_path, "w", encoding="utf-8") as d:
             d.write(mqtt_json)
@@ -372,7 +373,7 @@ class ArenaAuth:
         params = {"id_token": id_token}
         return self.urlopen(url, data=self._encode_params(params), csrf=self._csrftoken)
 
-    def _get_mqtt_token(self, web_host, realm, scene, username, id_token, video):
+    def _get_mqtt_token(self, web_host, realm, scene, username, id_token, video, env):
         url = f"https://{web_host}/user/v2/mqtt_auth"
         if not self._csrftoken:
             self._csrftoken = self._get_csrftoken(web_host)
@@ -383,10 +384,12 @@ class ArenaAuth:
             "client": "py",
             "realm": realm,
             "scene": scene,
-            "userid": True,
+            "userid": "true",
         }
         if video:
-            params["camid"] = True
+            params["camid"] = "true"
+        if env:
+            params["environmentid"] = "true"
         return self.urlopen(url, data=self._encode_params(params), csrf=self._csrftoken)
 
     def verify(self, web_host):

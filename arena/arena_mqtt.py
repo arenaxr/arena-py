@@ -34,6 +34,7 @@ class ArenaMQTT(object):
                 video = False,
                 debug = False,
                 headless = False,
+                environment = False,
                 **kwargs
             ):
         if os.environ.get(MQTTH):
@@ -107,7 +108,9 @@ class ArenaMQTT(object):
 
         if self.scene and (not self.username or not token):
             # do scene auth by user
-            data = self.auth.authenticate_scene(self.web_host, self.realm, self.namespaced_target, self.username, video)
+            data = self.auth.authenticate_scene(
+                self.web_host, self.realm, self.namespaced_target, self.username, video, environment
+            )
             if "username" in data and "token" in data and "ids" in data:
                 self.username = data["username"]
                 token = data["token"]
@@ -136,6 +139,10 @@ class ArenaMQTT(object):
                 'public': SUBSCRIBE_TOPICS.SCENE_PUBLIC.substitute(self.topicParams),
                 'private': SUBSCRIBE_TOPICS.SCENE_PRIVATE.substitute(self.topicParams)
             }
+            if environment:
+                self.subscribe_topics["envhost"] = SUBSCRIBE_TOPICS.SCENE_ENV_PRIVATE.substitute(
+                    {**self.topicParams, **{"idTag": "-"}}
+                )
         elif self.device:
             self.topicParams["deviceName"] = self.device
             self.root_topic = f"{self.realm}/{TOPIC_TYPES.DEVICE}/{self.namespaced_target}"
@@ -286,6 +293,8 @@ class ArenaMQTT(object):
             self.do_subscribe(client, self.subscribe_topics['public'], self.on_message)
             if self.subscribe_topics.get('private'):
                 self.do_subscribe(client, self.subscribe_topics['private'], self.on_message_private)
+            if self.subscribe_topics.get('envhost'):
+                self.do_subscribe(client, self.subscribe_topics['envhost'], self.on_message_private)
 
             # reset msg rate time
             self.msg_rate_time_start = datetime.now()

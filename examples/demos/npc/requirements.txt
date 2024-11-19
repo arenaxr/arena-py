@@ -1,1 +1,3 @@
+arena-py>=1.0
+config
 colorama

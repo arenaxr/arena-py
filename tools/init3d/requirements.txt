@@ -1,2 +1,2 @@
-arena-py
+arena-py>=1.0
 requests

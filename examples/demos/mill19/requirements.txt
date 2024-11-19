@@ -1,1 +1,2 @@
+arena-py>=1.0
 mqtt_spb_wrapper

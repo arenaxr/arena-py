@@ -26,9 +26,13 @@ def main():
     objs = scene.get_persisted_objs()
     for obj_id,obj in objs.items():
         # obj.update_attributes(clickable=True)
-        if obj.clickable:
-            obj.update_attributes(evt_handler=click)
-            scene.update_object(obj)
-            print(obj)
+        try:
+            if obj.clickable:
+                obj.update_attributes(evt_handler=click)
+                scene.update_object(obj)
+                print("Clickable: ", obj_id)
+        except AttributeError:
+            print("Skipped: ", obj_id)
+            pass
 
 scene.run_tasks()

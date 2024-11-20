@@ -121,7 +121,7 @@ def end_program_callback(_scene: Scene):
 
 
 # command line options
-scene = Scene(cli_args=True, end_program_callback=end_program_callback)
+scene = Scene(cli_args=True, end_program_callback=end_program_callback, debug=True)
 
 onoffParent = None
 calibrateParent = None
@@ -438,7 +438,7 @@ def publish_rig_offset(user_id):
     rig = user_rigs.get(user_id)
     if rig is None or not rig["enabled"]:
         return
-    obj_topic = f"{scene.root_topic}/{user_id}"
+    obj_topic = f"{scene.root_topic}/o/{scene.userclient}/{user_id}"
     if rig:
         qx, qy, qz, qw = Utils.matrix3_to_quat(rig["rotation"])
         msg = {

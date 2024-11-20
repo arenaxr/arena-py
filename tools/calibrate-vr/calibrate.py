@@ -428,9 +428,9 @@ def mouse_handler(_scene, evt, _msg):
         )
     elif evt.type == "mousedown":
         if attribute == "position":
-            camera_position_updater(evt.data.target, axis, direction)
+            camera_position_updater(evt.object_id, axis, direction)
         elif attribute == "rotation":
-            camera_rotation_updater(evt.data.target, axis, direction)
+            camera_rotation_updater(evt.object_id, axis, direction)
 
 
 def publish_rig_offset(user_id):

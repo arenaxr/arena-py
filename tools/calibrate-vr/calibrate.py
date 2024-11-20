@@ -438,7 +438,7 @@ def publish_rig_offset(user_id):
     rig = user_rigs.get(user_id)
     if rig is None or not rig["enabled"]:
         return
-    obj_topic = f"{scene.root_topic}/o/{scene.userclient}/{user_id}"
+    obj_topic = PUBLISH_TOPICS.SCENE_OBJECTS.substitute({**scene.topicParams, **{"objectId": user_id}})
     if rig:
         qx, qy, qz, qw = Utils.matrix3_to_quat(rig["rotation"])
         msg = {

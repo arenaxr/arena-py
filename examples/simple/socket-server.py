@@ -41,7 +41,7 @@ def publish_unauthenticated_json(data):
     print(f"received unauthenticated {data}")
     payload = json.loads(data)
     payload["action"] = "update"
-    topic = f"{scene.root_topic}/{scene.mqttc_id}/{payload['object_id']}"
+    topic = PUBLISH_TOPICS.SCENE_OBJECTS.substitute({**scene.topicParams, **{"objectId": payload['object_id']}})
     print("publishing on secured mqtt socket...")
     scene.mqttc.publish(topic, json.dumps(payload), qos=0)
 

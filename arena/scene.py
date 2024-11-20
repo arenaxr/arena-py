@@ -582,9 +582,11 @@ class Scene(ArenaMQTT):
         if "type" in obj:
             obj_type = obj["type"]
         with self.telemetry.start_publish_span(obj["object_id"], action, obj_type) as span:
+            root_object_topic = PUBLISH_TOPICS.SCENE_OBJECTS.substitute({**self.topicParams, **{"objectId": "+"}})
+
             if not self.can_publish_obj:
                 self.telemetry.set_error(
-                    f"ERROR: Publish failed! You do not have permission to publish to topic {self.root_topic} on {self.web_host}",
+                    f"ERROR: Publish failed! You do not have permission to publish to topic {root_object_topic} on {self.web_host}",
                     span,
                 )
 

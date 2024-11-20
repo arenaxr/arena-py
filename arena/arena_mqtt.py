@@ -134,7 +134,6 @@ class ArenaMQTT(object):
         }
         if self.scene:
             self.topicParams["sceneName"] = self.scene
-            self.root_topic = f"{self.realm}/{TOPIC_TYPES.SCENE}/{self.namespaced_target}"
             self.subscribe_topics = {
                 'public': SUBSCRIBE_TOPICS.SCENE_PUBLIC.substitute(self.topicParams),
                 'private': SUBSCRIBE_TOPICS.SCENE_PRIVATE.substitute(self.topicParams)
@@ -145,7 +144,6 @@ class ArenaMQTT(object):
                 )
         elif self.device:
             self.topicParams["deviceName"] = self.device
-            self.root_topic = f"{self.realm}/{TOPIC_TYPES.DEVICE}/{self.namespaced_target}"
             self.subscribe_topics = {
                 'public': SUBSCRIBE_TOPICS.DEVICE.substitute(self.topicParams),
             }

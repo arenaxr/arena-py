@@ -291,8 +291,6 @@ class ArenaMQTT(object):
             self.do_subscribe(client, self.subscribe_topics['public'], self.on_message)
             if self.subscribe_topics.get('private'):
                 self.do_subscribe(client, self.subscribe_topics['private'], self.on_message_private)
-            if self.subscribe_topics.get('envhost'):
-                self.do_subscribe(client, self.subscribe_topics['envhost'], self.on_message_private)
 
             # reset msg rate time
             self.msg_rate_time_start = datetime.now()

@@ -62,8 +62,7 @@ def msg_callback(_client, _userdata, msg):
         print("ignoring non-msgpack data")
         return
     topic_split = msg.topic.split("/")
-    name_scene = "/".join(topic_split[2:4])
-    usercam = topic_split[4]
+    usercam = topic_split[topics.TOPIC_TOKENS.UUID]
     if target_pcd is None:  # No reference target, make this one the target
         print("No target pcd, setting as new target")
         target_mesh = load_mesh_data(payload, write=True, target=True)
@@ -107,7 +106,10 @@ def msg_callback(_client, _userdata, msg):
         pos = mat[0:3, 3]
         quat = R.from_matrix(mat[0:3, 0:3]).as_quat()
 
-        pub_topic = f"realm/s/{name_scene}/{usercam}"
+        pub_topic = topics.PUBLISH_TOPICS.SCENE_OBJECTS.substitute(
+            realm="realm", nameSpace=scene.namespace, sceneName=scene.scene,
+            userClient=scene.userclient, objectId=usercam
+        )
         pub_msg = json.dumps(
             {
                 "object_id": usercam,

@@ -413,8 +413,8 @@ def add_rotation_clicks(parent, axis, direction):
 
 
 def mouse_handler(_scene, evt, _msg):
-    obj = scene.all_objects[evt.object_id]
-    parts = evt.object_id.split("-")
+    obj = scene.all_objects[evt.data.target]
+    parts = evt.data.target.split("-")
     attribute = parts[1]
     axis = parts[2]
     direction = parts[3]
@@ -428,9 +428,9 @@ def mouse_handler(_scene, evt, _msg):
         )
     elif evt.type == "mousedown":
         if attribute == "position":
-            camera_position_updater(evt.object_id, axis, direction)
+            camera_position_updater(evt.data.target, axis, direction)
         elif attribute == "rotation":
-            camera_rotation_updater(evt.object_id, axis, direction)
+            camera_rotation_updater(evt.data.target, axis, direction)
 
 
 def publish_rig_offset(user_id):

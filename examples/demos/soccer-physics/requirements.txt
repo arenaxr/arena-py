@@ -1,2 +1,2 @@
-arena-py>=1.0
+arena-py>=1.0.2
 pybullet

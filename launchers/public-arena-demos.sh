@@ -2,8 +2,8 @@
 # Launch multiple programs per scene
 
 host="arenaxr.org"
-namespace="public"
-scene="arena"
+namespace="mwfarb"
+scene="test"
 
 export MQTTH=$host
 export NAMESPACE=$namespace

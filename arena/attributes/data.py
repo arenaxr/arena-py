@@ -71,6 +71,12 @@ class Data(Attribute):
         new_data = new_data.get("data", new_data)
         dash_words = []
         for k, v in new_data.items():
+
+            # when value is None, do not parse it
+            if v is None:
+                data[k] = v
+                continue
+
             # allow user to input tuples, lists, dicts, etc for specific Attributes.
             # everything gets converted to corresponding attribute
             if (k == "position" or k == "start" or k == "end") and not isinstance(v, Position):

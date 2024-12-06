@@ -576,7 +576,7 @@ class Scene(ArenaMQTT):
         delayed_task.object_id = obj.object_id
         return delayed_task
 
-    def _publish(self, obj: Object, action, custom_payload=False):
+    def _publish(self, obj: Object, action, custom_payload=False, topic_template=PUBLISH_TOPICS.SCENE_OBJECTS):
         """Publishes to mqtt broker with "action":action"""
         obj_type = None
         if "type" in obj:
@@ -590,7 +590,7 @@ class Scene(ArenaMQTT):
                     span,
                 )
 
-            topic = PUBLISH_TOPICS.SCENE_OBJECTS.substitute({**self.topicParams, **{"objectId": obj["object_id"]}})
+            topic = topic_template.substitute({**self.topicParams, **{"objectId": obj["object_id"]}})
             d = datetime.utcnow().isoformat()[:-3] + "Z"
 
             if custom_payload:
@@ -716,7 +716,7 @@ class Scene(ArenaMQTT):
         """Callback when program stats are updated; publish program object update"""
         # Add run info to program data object and publish program object update
         run_info.add_program_info(self.program.data)
-        self._publish(self.program, "update")
+        self._publish(self.program, "update", topic_template=PUBLISH_TOPICS.SCENE_PROGRAM)
 
 
 class Arena(Scene):

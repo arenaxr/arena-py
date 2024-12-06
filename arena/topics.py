@@ -39,9 +39,6 @@ SCENE_MSGTYPES = SimpleNamespace(**{
 SUBSCRIBE_TOPICS = SimpleNamespace(**{
     'NETWORK':                '$NETWORK',
     'DEVICE':                 Template('${realm}/d/${nameSpace}/${deviceName}/#'),  # All client placeholder
-    'PROC_REG':               Template('${realm}/proc/reg'),
-    'PROC_CTL':               Template('${realm}/proc/control/${uuid}/#'),
-    'PROC_DBG':               Template('${realm}/proc/debug/${uuid}'),
     'SCENE_PUBLIC':           Template('${realm}/s/${nameSpace}/${sceneName}/+/+/+'),
     'SCENE_PUBLIC_SELF':      Template('${realm}/s/${nameSpace}/${sceneName}/+/${userClient}/+'),
     'SCENE_PRIVATE':          Template('${realm}/s/${nameSpace}/${sceneName}/+/+/+/${idTag}/#'),
@@ -51,9 +48,6 @@ SUBSCRIBE_TOPICS = SimpleNamespace(**{
 PUBLISH_TOPICS = SimpleNamespace(**{
     'NETWORK_LATENCY':        '$NETWORK/latency',
     'DEVICE':                 Template('${realm}/d/${nameSpace}/${deviceName}/${idTag}'),
-    'PROC_REG':               Template('${realm}/proc/reg'),
-    'PROC_CTL':               Template('${realm}/proc/control'),
-    'PROC_DBG':               Template('${realm}/proc/debug/${uuid}'),
     'SCENE_PRESENCE':         Template('${realm}/s/${nameSpace}/${sceneName}/x/${userClient}/${idTag}'),
     'SCENE_PRESENCE_PRIVATE': Template('${realm}/s/${nameSpace}/${sceneName}/x/${userClient}/${idTag}/${toUid}'),
     'SCENE_CHAT':             Template('${realm}/s/${nameSpace}/${sceneName}/c/${userClient}/${idTag}'),

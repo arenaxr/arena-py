@@ -4,6 +4,21 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [1.1.0](https://github.com/arenaxr/arena-py/compare/v1.0.2...v1.1.0) (2024-12-06)
+
+
+### Features
+
+* **auth:** include optional environment host perms request ([29650de](https://github.com/arenaxr/arena-py/commit/29650dea6850f24eda95f41f326fc9156f90cd95))
+
+
+### Bug Fixes
+
+* **data:** do not parse null attributes in messages ([8c7bf62](https://github.com/arenaxr/arena-py/commit/8c7bf62e8da6492997860ead55e39e8d2a3fb5cb))
+* **mqtt:** deprecate scene.root_topic for scene.topicParams ([e106f80](https://github.com/arenaxr/arena-py/commit/e106f80f133d488e82e620c8f3406fb2b2fe2ccf))
+* publish program object to program scene topic ([2c5b411](https://github.com/arenaxr/arena-py/commit/2c5b41153e3160eb7293c9263a84f845b740f22f))
+* super() with updated values for Color ([ba1bce7](https://github.com/arenaxr/arena-py/commit/ba1bce7fe50254ea9c0560f89fabb3e0903908e9))
+
 ## [1.0.2](https://github.com/arenaxr/arena-py/compare/v1.0.1...v1.0.2) (2024-11-12)
 
 

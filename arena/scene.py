@@ -525,16 +525,18 @@ class Scene(ArenaMQTT):
             type = obj.type
         except AttributeError:
             raise ValueError("obj must be of type Program!")
-        if not obj.type == Program.object_type: ValueError("obj must be of type Program!")
+        if not type == Program.object_type: ValueError("obj must be of type Program!")
 
-        # convert to runtime request (delete program instance); TODO: Properly define a program instance/runtime request
-        mod_data = vars(obj.data)
-        mod_data["uuid"] = obj.object_id
-        mod_data["type"] = "module"
+        # create runtime request (to delete program instance); TODO: Properly define a program instance/runtime request
         payload = {
             "object_id": str(uuid.uuid4()),
             "type": "req",
-            "data": mod_data,  
+            "data": {
+                "uuid": obj.object_id,
+                "type": "module",
+                "name": obj.data.name
+                "parent": obj.data.parent
+            },  
         }
         Object.remove(obj)
         return self._publish(payload, "delete", custom_payload=True, publish_topic=PUBLISH_TOPICS.SCENE_PROGRAM)
@@ -604,6 +606,7 @@ class Scene(ArenaMQTT):
         obj_type = None
         if "type" in obj:
             obj_type = obj["type"]
+
         with self.telemetry.start_publish_span(obj["object_id"], action, obj_type) as span:
             topic = publish_topic.substitute({**self.topicParams, **{"objectId": obj["object_id"]}})
 

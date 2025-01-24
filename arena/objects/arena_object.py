@@ -31,6 +31,15 @@ class Object(BaseObject):
         ttl = kwargs.get("ttl", None)
         if "ttl" in kwargs: del kwargs["ttl"]
 
+        private = kwargs.get("private", False)
+        if "private" in kwargs: del kwargs["private"]
+
+        program_id = kwargs.get("program_id", None)
+        if "program_id" in kwargs: del kwargs["program_id"]
+
+        private_userid = kwargs.get("private_userid", None)
+        if "private_userid" in kwargs: del kwargs["private_userid"]
+
         # remove timestamp, if exists
         if "timestamp" in kwargs: del kwargs["timestamp"]
 
@@ -71,6 +80,15 @@ class Object(BaseObject):
         if ttl:
             self.ttl = ttl
 
+        if private:
+            self.private = private
+
+        if program_id:
+            self.program_id = program_id
+
+        if private_userid:
+            self._private_userid = private_userid  # None is public
+
         self.evt_handler = evt_handler
         self.update_handler = update_handler
         self.animations = []
@@ -94,6 +112,15 @@ class Object(BaseObject):
         self.persist = kwargs.get("persist", self.persist)
         if "ttl" in self:
             self.ttl = kwargs.get("ttl", self.ttl)
+
+        if "private" in self:
+            self.private = kwargs.get("private", self.private)
+
+        if "program_id" in self:
+            self.program_id = kwargs.get("program_id", self.program_id)
+
+        if "private_userid" in self:
+            self._private_userid = kwargs.get("private_userid", self._private_userid)
 
         data = self.data
         Data.update_data(data, kwargs)
@@ -122,7 +149,7 @@ class Object(BaseObject):
 
     def json_preprocess(self, **kwargs):
         # kwargs are for additional param to add to json, like "action":"create"
-        skipped_keys = ["evt_handler", "update_handler", "animations", "delayed_prop_tasks"]
+        skipped_keys = ["evt_handler", "update_handler", "animations", "delayed_prop_tasks", "_private_userid"]
         json_payload = {k: v for k, v in vars(self).items() if k not in skipped_keys}
         json_payload.update(kwargs)
         return json_payload

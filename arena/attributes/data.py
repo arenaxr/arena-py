@@ -68,8 +68,6 @@ class Data(Attribute):
 
     @classmethod
     def update_data(cls, data, new_data):
-        from ..objects.arena_object import Object
-
         new_data = new_data.get("data", new_data)
         dash_words = []
         for k, v in new_data.items():

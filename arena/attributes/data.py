@@ -68,6 +68,8 @@ class Data(Attribute):
 
     @classmethod
     def update_data(cls, data, new_data):
+        from ..objects.arena_object import Object
+
         new_data = new_data.get("data", new_data)
         dash_words = []
         for k, v in new_data.items():
@@ -76,6 +78,11 @@ class Data(Attribute):
             if v is None:
                 data[k] = v
                 continue
+
+            # If the value is another Arena Object besides parent, this is not valid.
+            # Crude check that avoids circular import of Arena Object.
+            if v.__class__.__bases__[0].__name__ == "Object" and k != 'parent':
+                raise ValueError(f"Invalid Arena Object as attribute {k}: {v.object_id}")
 
             # allow user to input tuples, lists, dicts, etc for specific Attributes.
             # everything gets converted to corresponding attribute

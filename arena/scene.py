@@ -464,6 +464,8 @@ class Scene(ArenaMQTT):
 
     def add_object(self, obj):
         """Public function to create an object"""
+        if not isinstance(obj, Object):
+            raise ValueError(f"Not a valid ARENA object to add to scene: {type(obj)}")
         res = self._publish(obj, "create")
         self.run_animations(obj)
         return res

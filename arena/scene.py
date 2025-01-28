@@ -603,6 +603,12 @@ class Scene(ArenaMQTT):
             else:
                 payload = obj.json(action=action, timestamp=d)
 
+            # add warning to user that outgoing rotation is invalid if auto/manual units are incorrect
+            if '"w": null' in payload:
+                self.telemetry.set_error(
+                    f"ERROR!! Publishing wire rotation data must be in Quaternion units, Euler conversion failed for payload: {payload}"
+                )
+
             self.mqttc.publish(topic, payload, qos=0)
             if self.debug:
                 self.telemetry.add_event(f"[publish] {topic} {payload}")

@@ -29,3 +29,27 @@ class Event(BaseObject):
                 type=_type,
                 data=data
             )
+
+    # TODO (mwfarb): We should standardize this json() transform into BaseObject from Object/Event/Program
+    def json(self, **kwargs):
+        json_payload = vars(self).copy()
+        json_payload.update(kwargs)
+
+        data = vars(json_payload["data"])
+        json_data = {}
+        for k, v in data.items():
+            if v is None:
+                json_data[k] = v
+
+            # rotation should be in quaternions
+            if "rotation" == k:
+                rot = data["rotation"]
+                # always publish quaternions on wire format to avoid persist euler->quat merges
+                json_data["rotation"] = rot.quaternion
+
+            else:
+                json_data[k] = v
+
+        json_payload["data"] = json_data
+
+        return self.json_encode(json_payload)

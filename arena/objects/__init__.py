@@ -77,6 +77,7 @@ OBJECT_TYPE_MAP = {
     Torus.object_type: Torus,
     TorusKnot.object_type: TorusKnot,
     Triangle.object_type: Triangle,
+    Program.object_type: Program,
     UrdfModel.object_type: UrdfModel,
     Videosphere.object_type: Videosphere,
 }

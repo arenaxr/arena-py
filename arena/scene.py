@@ -9,6 +9,7 @@ import traceback
 from datetime import datetime
 from inspect import signature
 from pathlib import Path
+import uuid
 
 import __main__ as main
 
@@ -518,6 +519,28 @@ class Scene(ArenaMQTT):
         Object.remove(obj)
         return self._publish(payload, "delete", custom_payload=True)
 
+    def delete_program(self, obj):
+        type=None
+        try:
+            type = obj.type
+        except AttributeError:
+            raise ValueError("obj must be of type Program!")
+        if not type == Program.object_type: ValueError("obj must be of type Program!")
+
+        # create runtime request (to delete program instance); TODO: Properly define a program instance/runtime request
+        payload = {
+            "object_id": str(uuid.uuid4()),
+            "type": "req",
+            "data": {
+                "uuid": obj.object_id,
+                "type": "module",
+                "name": obj.data.name
+                "parent": obj.data.parent
+            },  
+        }
+        Object.remove(obj)
+        return self._publish(payload, "delete", custom_payload=True, publish_topic=PUBLISH_TOPICS.SCENE_PROGRAM)
+
     def delete_attributes(self, obj: Object, attributes=None):
         """Public function to delete a list of 'attributes' as a string[], updating each to null"""
         updated_data = {}
@@ -578,28 +601,29 @@ class Scene(ArenaMQTT):
         delayed_task.object_id = obj.object_id
         return delayed_task
 
-    def _publish(self, obj: Object, action, custom_payload=False, topic_template=PUBLISH_TOPICS.SCENE_OBJECTS):
+    def _publish(self, obj: Object, action, custom_payload=False, publish_topic=PUBLISH_TOPICS.SCENE_OBJECTS):
         """Publishes to mqtt broker with "action":action"""
         obj_type = None
         if "type" in obj:
             obj_type = obj["type"]
-        with self.telemetry.start_publish_span(obj["object_id"], action, obj_type) as span:
-            root_object_topic = PUBLISH_TOPICS.SCENE_OBJECTS.substitute({**self.topicParams, **{"objectId": "+"}})
 
-            if not self.can_publish_obj:
+        with self.telemetry.start_publish_span(obj["object_id"], action, obj_type) as span:
+            topic = publish_topic.substitute({**self.topicParams, **{"objectId": obj["object_id"]}})
+
+            # self.can_publish_obj indicates if we can publish on the default publish_topic (PUBLISH_TOPICS.SCENE_OBJECTS)
+            if not self.can_publish_obj and publish_topic==PUBLISH_TOPICS.SCENE_OBJECTS:
                 self.telemetry.set_error(
-                    f"ERROR: Publish failed! You do not have permission to publish to topic {root_object_topic} on {self.web_host}",
+                    f"ERROR: Publish failed! You do not have permission to publish to topic {topic} on {self.web_host}",
                     span,
                 )
 
-            topic = topic_template.substitute({**self.topicParams, **{"objectId": obj["object_id"]}})
             d = datetime.utcnow().isoformat()[:-3] + "Z"
 
             if custom_payload:
-                payload = obj
-                payload["action"] = action
-                payload["timestamp"] = d
-                payload = json.dumps(payload)
+                tmp_obj = obj
+                tmp_obj["action"] = action
+                tmp_obj["timestamp"] = d
+                payload = json.dumps(tmp_obj)
             else:
                 payload = obj.json(action=action, timestamp=d)
 
@@ -724,7 +748,7 @@ class Scene(ArenaMQTT):
         """Callback when program stats are updated; publish program object update"""
         # Add run info to program data object and publish program object update
         run_info.add_program_info(self.program.data)
-        self._publish(self.program, "update", topic_template=PUBLISH_TOPICS.SCENE_PROGRAM)
+        self._publish(self.program, "update", publish_topic=PUBLISH_TOPICS.SCENE_PROGRAM)
 
 
 class Arena(Scene):

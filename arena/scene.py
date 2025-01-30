@@ -534,8 +534,8 @@ class Scene(ArenaMQTT):
             "data": {
                 "uuid": obj.object_id,
                 "type": "module",
-                "name": obj.data.name
-                "parent": obj.data.parent
+                "name": obj.data.name,
+                "parent": obj.data.parent,
             },  
         }
         Object.remove(obj)
@@ -704,7 +704,7 @@ class Scene(ArenaMQTT):
                     # replace program object, if matches our program id
                     if object_type == Program.object_type:
                         if os.environ.get(PROGRAM_OBJECT_ID) == object_id:
-                            print("PROGRAM_OBJECT_ID", PROGRAM_OBJECT_ID)
+                            print("PROGRAM_OBJECT_ID", object_id)
                             persisted_obj.persist = True
                             self.program = Program(object_id=object_id, **data)
                         else:

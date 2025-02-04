@@ -20,6 +20,11 @@ class Scale(Attribute):
                 x, y, z = x["x"], x["y"], x["z"]
             else:
                 raise ValueError("Scale takes x,y,z; a 3-element array or list; or a dict with {x,y,z}")
+        elif isinstance(x, str):
+            if y is None:
+                x, y, z = map(int, x.split())
+            else:
+                raise ValueError("Scale takes x,y,z; a 3-element array or list; or a dict with {x,y,z}")
         elif isinstance(x, Iterable):
             if y is None and len(x) == 3:
                 x, y, z = x

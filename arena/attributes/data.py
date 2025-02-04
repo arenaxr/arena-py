@@ -89,6 +89,8 @@ class Data(Attribute):
                     data[k] = Position(*v[:3])
                 elif isinstance(v, dict):
                     data[k] = Position(**v)
+                elif isinstance(v, str):
+                    data[k] = Position(v)
                 else:
                     data[k] = v
 
@@ -100,6 +102,8 @@ class Data(Attribute):
                         data[k] = Rotation(*v[:4])
                 elif isinstance(v, dict):
                     data[k] = Rotation(**v)
+                elif isinstance(v, str):
+                    data[k] = Rotation(v)
                 else:
                     data[k] = v
 
@@ -108,6 +112,8 @@ class Data(Attribute):
                     data[k] = Scale(*v[:3])
                 elif isinstance(v, dict):
                     data[k] = Scale(**v)
+                elif isinstance(v, str):
+                    data[k] = Scale(v)
                 else:
                     data[k] = v
 

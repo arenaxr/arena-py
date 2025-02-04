@@ -24,6 +24,12 @@ class Rotation(Attribute):
                 x, y, z = x["x"], x["y"], x["z"]
             else:
                 raise ValueError("Rotation takes x,y,z,(w); a 3-4 element array or list; or a dict with {x,y,z,(w)}")
+        elif isinstance(x, str):
+            if y is None:
+                # Assume that only euler angles are passed as space-delimited string
+                x, y, z = map(int, x.split())
+            else:
+                raise ValueError("Rotation takes x,y,z,(w); a 3-4 element array or list; or a dict with {x,y,z,(w)}")
         elif isinstance(x, Iterable):
             if y is None and 3 <= len(x) <= 4:
                 if len(x) == 3:

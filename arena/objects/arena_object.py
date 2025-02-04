@@ -13,6 +13,7 @@ class Object(BaseObject):
     type = "object"
     object_type = "entity"
     all_objects = {} # dict of all objects created so far
+    private_objects = {} # dict of all private objects created so far
 
     def __init__(self, evt_handler=None, update_handler=None, **kwargs):
         # "object_id" is required in kwargs, defaulted to random uuid4
@@ -95,6 +96,9 @@ class Object(BaseObject):
 
         # add current object to all_objects dict
         Object.add(self)
+        # If private, add to private_objects dict
+        if private_userid:
+            Object.add_private(self)
 
         self.delayed_prop_tasks = {}  # dict of delayed property tasks
 
@@ -220,6 +224,15 @@ class Object(BaseObject):
     def add(cls, obj):
         object_id = obj.object_id
         Object.all_objects[object_id] = obj
+
+    @classmethod
+    def add_private(cls, obj):
+        private_userid = getattr(obj, "_private_userid", None)
+        if private_userid is None:
+            raise ValueError("No private user id specified")
+        if private_userid not in Object.private_objects:
+            raise ValueError(f"User {private_userid} does not exist")
+        Object.private_objects[private_userid][obj.object_id] = obj
 
     @classmethod
     def remove(cls, obj):

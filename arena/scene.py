@@ -486,13 +486,19 @@ class Scene(ArenaMQTT):
         # and cancel corresponding final update tasks or, if they are in
         # kwarg property updates, cancel the task as well as the animation
         need_to_run_animations = False
+        if len(obj.animations):
+            need_to_run_animations = True
+
         if len(obj.delayed_prop_tasks) > 0:
+            # If we have new animations that override a delayed task, cancel the task
             for anim in obj.animations:
                 if anim.property in obj.delayed_prop_tasks:
                     task_to_cancel = obj.delayed_prop_tasks[anim.property]
                     task_to_cancel.cancel()
                     del task_to_cancel
 
+            # If we have a property update that overrides a delayed task, cancel task
+            # and cancel the animation
             for k in kwargs:
                 if str(k) in obj.delayed_prop_tasks:
                     need_to_run_animations = True
@@ -500,11 +506,10 @@ class Scene(ArenaMQTT):
                     task_to_cancel.cancel()
                     del task_to_cancel
                     obj.dispatch_animation(Animation(property=k, enabled=False, dur=0))
-            if need_to_run_animations:
-                self.run_animations(obj)
 
         res = self._publish(obj, "update")
-        self.run_animations(obj)
+        if need_to_run_animations:
+            self.run_animations(obj)
         return res
 
     def update_objects(self, objs, **kwargs):

@@ -392,7 +392,7 @@ class ArenaAuth:
         params = {"id_token": self._id_token}
         return self.urlopen(url, data=self._encode_params(params), csrf=self._csrftoken)
 
-    def upload_store_file(self, web_host, sceneid, src_file_path, dest_file_path):
+    def upload_store_file(self, web_host, sceneid, src_file_path, dest_file_path=None):
         """Upload a source file to the user's file store space. Google authentication is required.
         Returns: str: Url address of the uploaded file, or None if failed.
         """
@@ -404,15 +404,17 @@ class ArenaAuth:
                 raise IOError("Filestore login failed!")
 
         # send file to filestore
-        safe_file_path = re.sub(dest_file_path, r"/(\W+)/gi", "-", dest_file_path)
+        if not dest_file_path:
+            dest_file_path = Path(src_file_path).name
+        safe_file_path = dest_file_path  # re.sub(dest_file_path, r"/(\W+)/gi", "-", dest_file_path)
         if self._user_info["is_staff"]:
-            store_res_prefix = f"users/${self._user_info['username']}/"
+            store_res_prefix = f"users/{self._user_info['username']}/"
         else:
             store_res_prefix = ""
-        user_file_path = f"scenes/${sceneid}/${safe_file_path}"
-        store_res_path = f"${store_res_prefix}${user_file_path}"
-        store_ext_path = f"store/users/${self._user_info['username']}/${user_file_path}"
-        url = f"https://${web_host}/storemng/api/resources/${store_res_path}?override=true"
+        user_file_path = f"scenes/{sceneid}/{safe_file_path}"
+        store_res_path = f"{store_res_prefix}{user_file_path}"
+        store_ext_path = f"store/users/{self._user_info['username']}/{user_file_path}"
+        url = f"https://{web_host}/storemng/api/resources/{store_res_path}?override=true"
         headers = {
             "Content-Length": os.stat(src_file_path).st_size,
             "X-Auth": self._store_token,
@@ -420,9 +422,9 @@ class ArenaAuth:
         with open(src_file_path, "rb") as f:
             body = self.urlopen(url, data=f, headers=headers)
         if body:
-            return f"https://${web_host}/${store_ext_path}"
-
-        return None
+            return f"https://{web_host}/{store_ext_path}"
+        else:
+            raise IOError(f"Filestore upload failed! Dest: {dest_file_path}")
 
     def _get_mqtt_token(self, web_host, realm, scene, username, video, env):
         self._confirm_gauth()
@@ -488,8 +490,8 @@ class ArenaAuth:
                 req.add_header("Cookie", f"csrftoken={csrf}")
                 req.add_header("X-CSRFToken", csrf)
             if headers:
-                for k, v in headers:
-                    req.add_header(k, v)
+                for k in headers:
+                    req.add_header(k, headers[k])
             if self.verify(urlparts.netloc):
                 with request.urlopen(req, data=data) as f:
                     body = f.read().decode("utf-8")
@@ -501,8 +503,11 @@ class ArenaAuth:
                 with request.urlopen(req, data=data, context=context) as f:
                     body = f.read().decode("utf-8")
                     cookies = f.info().get_all("Set-Cookie")
-            if cookies and "auth" in cookies:
-                self._store_token = cookies["auth"]
+            if cookies:
+                for cookie in cookies:
+                    if "auth=" in cookie:
+                        for m in re.finditer(r"(^| )auth=([^;]+)", cookie):
+                            self._store_token = m.group(2)
             return body
         except HTTPError as err:
             print(f"{err}: {url}")

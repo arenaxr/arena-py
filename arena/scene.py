@@ -755,7 +755,7 @@ class Scene(ArenaMQTT):
         run_info.add_program_info(self.program.data)
         self._publish(self.program, "update", publish_topic=PUBLISH_TOPICS.SCENE_PROGRAM)
 
-    def upload_store_file(self, src_file_path, dest_file_path):
+    def upload_store_file(self, src_file_path, dest_file_path=None):
         """Upload a file to the filestore using the user's Google account.
 
         Returns: Url address of successful file upload location, or None if failed.

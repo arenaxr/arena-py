@@ -406,7 +406,7 @@ class ArenaAuth:
         # send file to filestore
         if not dest_file_path:
             dest_file_path = Path(src_file_path).name
-        safe_file_path = dest_file_path  # re.sub(dest_file_path, r"/(\W+)/gi", "-", dest_file_path)
+        safe_file_path = re.sub(r"/(\W+)/gi", "-", dest_file_path)
         if self._user_info["is_staff"]:
             store_res_prefix = f"users/{self._user_info['username']}/"
         else:

@@ -5,6 +5,7 @@ auth.py - Authentication methods for accessing the ARENA.
 import datetime
 import json
 import os
+import re
 import ssl
 import sys
 import time
@@ -39,6 +40,7 @@ class ArenaAuth:
         self._csrftoken = None
         self._mqtt_token = None
         self._id_token = None
+        self._store_token = None
 
     def authenticate_user(self, web_host, headless):
         """
@@ -373,6 +375,42 @@ class ArenaAuth:
         params = {"id_token": id_token}
         return self.urlopen(url, data=self._encode_params(params), csrf=self._csrftoken)
 
+    def _get_store_login(self, web_host, id_token):
+        url = f"https://{web_host}/user/v2/storelogin"
+        if not self._csrftoken:
+            self._csrftoken = self._get_csrftoken(web_host)
+        params = {"id_token": id_token}
+        return self.urlopen(url, data=self._encode_params(params), csrf=self._csrftoken)
+
+    def _upload_store_file(self, web_host, id_token, authState, username, scenename, filepath, filename):
+        # request FS login if this is the first time.
+        if not self._store_token:
+            self._get_store_login(self, web_host, id_token)
+            if not self._store_token:
+                raise IOError("Filestore login failed!")
+
+        # send stream to filestore
+        safeFilename = re.sub(filename, r"/(\W+)/gi", "-", filename)
+        if authState.is_staff:
+            storeResPrefix = f"users/${username}/"
+        else:
+            storeResPrefix = ""
+        userFilePath = f"scenes/${scenename}/${safeFilename}"
+        storeResPath = f"${storeResPrefix}${userFilePath}"
+        storeExtPath = f"store/users/${username}/${userFilePath}"
+
+        url = f"https://${hostAddress}/storemng/api/resources/${storeResPath}?override=true"
+        headers = {
+            "Content-Length": os.stat(filepath).st_size,
+            "X-Auth": self._store_token,
+        }
+        with open(filepath, "rb") as f:
+            body = self.urlopen(url, data=f, headers=headers)
+        if body:
+            return f"https://${web_host}/${storeExtPath}"
+        else:
+            return None
+
     def _get_mqtt_token(self, web_host, realm, scene, username, id_token, video, env):
         url = f"https://{web_host}/user/v2/mqtt_auth"
         if not self._csrftoken:
@@ -438,12 +476,16 @@ class ArenaAuth:
             if self.verify(urlparts.netloc):
                 with request.urlopen(req, data=data) as f:
                     body = f.read().decode("utf-8")
+                    cookies = f.info().get_all('Set-Cookie')
             else:
                 context = ssl.create_default_context()
                 context.check_hostname = False
                 context.verify_mode = ssl.CERT_NONE
                 with request.urlopen(req, data=data, context=context) as f:
                     body = f.read().decode("utf-8")
+                    cookies = f.info().get_all('Set-Cookie')
+            if cookies and "auth" in cookies:
+                self._store_token = cookies["auth"]
             return body
         except HTTPError as err:
             print(f"{err}: {url}")

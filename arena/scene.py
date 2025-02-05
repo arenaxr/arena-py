@@ -6,10 +6,10 @@ import re
 import sys
 import threading
 import traceback
+import uuid
 from datetime import datetime
 from inspect import signature
 from pathlib import Path
-import uuid
 
 import __main__ as main
 
@@ -541,7 +541,7 @@ class Scene(ArenaMQTT):
                 "type": "module",
                 "name": obj.data.name,
                 "parent": obj.data.parent,
-            },  
+            },
         }
         Object.remove(obj)
         return self._publish(payload, "delete", custom_payload=True, publish_topic=PUBLISH_TOPICS.SCENE_PROGRAM)
@@ -754,6 +754,20 @@ class Scene(ArenaMQTT):
         # Add run info to program data object and publish program object update
         run_info.add_program_info(self.program.data)
         self._publish(self.program, "update", publish_topic=PUBLISH_TOPICS.SCENE_PROGRAM)
+
+    def upload_store_file(self, src_file_path, dest_file_path=None):
+        """Upload a file to the filestore using the user's Google account.
+
+        Args:
+            src_file_path (str): Local path to the file to upload.
+            dest_file_path (str, optional): Destination file path, can include dirs. Defaults to filename from src_file_path.
+
+        Returns:
+            star: Url address of successful file upload location, or None if failed.
+        """
+        return self.auth.upload_store_file(
+            web_host=self.web_host, sceneid=self.scene, src_file_path=src_file_path, dest_file_path=dest_file_path
+        )
 
 
 class Arena(Scene):

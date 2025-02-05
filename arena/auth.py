@@ -5,6 +5,7 @@ auth.py - Authentication methods for accessing the ARENA.
 import datetime
 import json
 import os
+import re
 import ssl
 import sys
 import time
@@ -39,6 +40,8 @@ class ArenaAuth:
         self._csrftoken = None
         self._mqtt_token = None
         self._id_token = None
+        self._user_info = None
+        self._store_token = None
 
     def authenticate_user(self, web_host, headless):
         """
@@ -128,10 +131,10 @@ class ArenaAuth:
 
         username = None
         self._id_token = creds["id_token"]
-        user_info = self._get_user_state(web_host, self._id_token)
-        _user_info = json.loads(user_info)
-        if "authenticated" in _user_info and "username" in _user_info:
-            username = _user_info["username"]
+        user_info = self._get_user_state(web_host)
+        self._user_info = json.loads(user_info)
+        if "authenticated" in self._user_info and "username" in self._user_info:
+            username = self._user_info["username"]
         id_claims = gJWT.decode(creds["id_token"], verify=False)
         print(f"Authenticated Google account: {id_claims['email']}")
         return username
@@ -197,7 +200,7 @@ class ArenaAuth:
         scene_mqtt_path = f"{scene_auth_dir}/{_mqtt_token_file}"
 
         print("Using remote-authenticated MQTT token.")
-        mqtt_json = self._get_mqtt_token(web_host, realm, scene, username, self._id_token, video, env)
+        mqtt_json = self._get_mqtt_token(web_host, realm, scene, username, video, env)
         print(mqtt_json)
         # save mqtt_token
         with open(scene_mqtt_path, "w", encoding="utf-8") as d:
@@ -255,7 +258,7 @@ class ArenaAuth:
         :param str web_host: The hostname of the ARENA webserver.
         :return: list of scenes.
         """
-        my_scenes = self._get_my_scenes(web_host, self._id_token)
+        my_scenes = self._get_my_scenes(web_host)
         return json.loads(my_scenes)
 
     def _log_token(self):
@@ -359,28 +362,81 @@ class ArenaAuth:
         body, status = self.urlopen_def(url, data=self._encode_params(params))
         return body, status, url
 
-    def _get_my_scenes(self, web_host, id_token):
+    def _confirm_gauth(self):
+        if not self._id_token:
+            raise IOError(
+                "Google auth is required. Remove manual .arena_mqtt_token or env ARENA_PASSWORD. Headless auth options are available using `scene=Scene(..., headless=True).`"
+            )
+
+    def _get_my_scenes(self, web_host):
+        self._confirm_gauth()
         url = f"https://{web_host}/user/v2/my_scenes"
         if not self._csrftoken:
             self._csrftoken = self._get_csrftoken(web_host)
-        params = {"id_token": id_token}
+        params = {"id_token": self._id_token}
         return self.urlopen(url, data=self._encode_params(params), csrf=self._csrftoken)
 
-    def _get_user_state(self, web_host, id_token):
+    def _get_user_state(self, web_host):
+        self._confirm_gauth()
         url = f"https://{web_host}/user/v2/user_state"
         if not self._csrftoken:
             self._csrftoken = self._get_csrftoken(web_host)
-        params = {"id_token": id_token}
+        params = {"id_token": self._id_token}
         return self.urlopen(url, data=self._encode_params(params), csrf=self._csrftoken)
 
-    def _get_mqtt_token(self, web_host, realm, scene, username, id_token, video, env):
+    def _get_store_login(self, web_host):
+        self._confirm_gauth()
+        url = f"https://{web_host}/user/v2/storelogin"
+        if not self._csrftoken:
+            self._csrftoken = self._get_csrftoken(web_host)
+        params = {"id_token": self._id_token}
+        return self.urlopen(url, data=self._encode_params(params), csrf=self._csrftoken)
+
+    def upload_store_file(self, web_host, sceneid, src_file_path, dest_file_path=None):
+        """Upload a source file to the user's file store space. Google authentication is required.
+        Returns: str: Url address of the uploaded file, or None if failed.
+        """
+        self._confirm_gauth()
+        # request FS login if this is the first time.
+        if not self._store_token:
+            self._get_store_login(web_host)
+            if not self._store_token:
+                raise IOError("Filestore login failed!")
+
+        # send file to filestore
+        if not dest_file_path:
+            dest_file_path = Path(src_file_path).name
+        safe_file_path = re.sub(r"/(\W+)/gi", "-", dest_file_path)
+        if self._user_info["is_staff"]:
+            store_res_prefix = f"users/{self._user_info['username']}/"
+        else:
+            store_res_prefix = ""
+        user_file_path = f"scenes/{sceneid}/{safe_file_path}"
+        store_res_path = f"{store_res_prefix}{user_file_path}"
+        store_ext_path = f"store/users/{self._user_info['username']}/{user_file_path}"
+        url = f"https://{web_host}/storemng/api/resources/{store_res_path}?override=true"
+        headers = {
+            "Content-Length": os.stat(src_file_path).st_size,
+            "X-Auth": self._store_token,
+        }
+        print(f"Uploading {src_file_path}....")
+        with open(src_file_path, "rb") as f:
+            body = self.urlopen(url, data=f, headers=headers)
+        if body:
+            print("Upload DONE!")
+            return f"https://{web_host}/{store_ext_path}"
+        else:
+            raise IOError(f"Filestore upload failed! Dest: {dest_file_path}")
+
+    def _get_mqtt_token(self, web_host, realm, scene, username, video, env):
+        self._confirm_gauth()
         url = f"https://{web_host}/user/v2/mqtt_auth"
         if not self._csrftoken:
             self._csrftoken = self._get_csrftoken(web_host)
         params = {
             "id_auth": "google-installed",
             "username": username,
-            "id_token": id_token,
+            "id_token": self._id_token,
             "client": "py",
             "realm": realm,
             "scene": scene,
@@ -419,7 +475,7 @@ class ArenaAuth:
 
         return body, status
 
-    def urlopen(self, url, data=None, creds=False, csrf=None):
+    def urlopen(self, url, data=None, headers=None, creds=False, csrf=None):
         """urlopen is for ARENA URL connections.
         :param str url: the url to POST/GET.
         :param str data: None for GET, add params for POST.
@@ -435,15 +491,25 @@ class ArenaAuth:
             if csrf:
                 req.add_header("Cookie", f"csrftoken={csrf}")
                 req.add_header("X-CSRFToken", csrf)
+            if headers:
+                for k in headers:
+                    req.add_header(k, headers[k])
             if self.verify(urlparts.netloc):
                 with request.urlopen(req, data=data) as f:
                     body = f.read().decode("utf-8")
+                    cookies = f.info().get_all("Set-Cookie")
             else:
                 context = ssl.create_default_context()
                 context.check_hostname = False
                 context.verify_mode = ssl.CERT_NONE
                 with request.urlopen(req, data=data, context=context) as f:
                     body = f.read().decode("utf-8")
+                    cookies = f.info().get_all("Set-Cookie")
+            if cookies:
+                for cookie in cookies:
+                    if "auth=" in cookie:
+                        for m in re.finditer(r"(^| )auth=([^;]+)", cookie):
+                            self._store_token = m.group(2)
             return body
         except HTTPError as err:
             print(f"{err}: {url}")

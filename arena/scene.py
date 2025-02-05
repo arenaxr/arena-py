@@ -758,7 +758,12 @@ class Scene(ArenaMQTT):
     def upload_store_file(self, src_file_path, dest_file_path=None):
         """Upload a file to the filestore using the user's Google account.
 
-        Returns: Url address of successful file upload location, or None if failed.
+        Args:
+            src_file_path (str): Local path to the file to upload.
+            dest_file_path (str, optional): Destination file path, can include dirs. Defaults to filename from src_file_path.
+
+        Returns:
+            star: Url address of successful file upload location, or None if failed.
         """
         return self.auth.upload_store_file(
             web_host=self.web_host, sceneid=self.scene, src_file_path=src_file_path, dest_file_path=dest_file_path

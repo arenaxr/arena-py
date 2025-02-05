@@ -419,9 +419,11 @@ class ArenaAuth:
             "Content-Length": os.stat(src_file_path).st_size,
             "X-Auth": self._store_token,
         }
+        print(f"Uploading {src_file_path}....")
         with open(src_file_path, "rb") as f:
             body = self.urlopen(url, data=f, headers=headers)
         if body:
+            print("Upload DONE!")
             return f"https://{web_host}/{store_ext_path}"
         else:
             raise IOError(f"Filestore upload failed! Dest: {dest_file_path}")

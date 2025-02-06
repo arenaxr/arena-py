@@ -15,6 +15,7 @@ def user_join_callback(scene, cam, msg):
     print("joined:", username)
     random_y = 0.5 + random.randrange(3)
     random_z = -1 - random.randrange(5)
+    # Text that only user can see
     user_text = Text(
         object_id=f"text_{username}",
         value=f"Hello {username}!",
@@ -26,6 +27,7 @@ def user_join_callback(scene, cam, msg):
         color=(100, 255, 255),
         private_userid=username,
     )
+    # Clickable box that only user can see
     user_box = Box(
         object_id=f"box_{username}",
         position=(0, 0.75 + random_y, random_z),
@@ -35,8 +37,14 @@ def user_join_callback(scene, cam, msg):
         clickable=True,
         evt_handler=report_click,
     )
-    scene.add_object(user_text)
-    scene.add_object(user_box)
+    # Red box that everyone can see
+    user_public_box = Box(
+        object_id=f"box_{username}_public",
+        position=(0, 1.25 + random_y, random_z),
+        scale=(0.5, 0.5, 0.5),
+        color=(255, 0, 0),
+    )
+    scene.add_objects([user_text, user_box, user_public_box])
     print("Private Objects:", scene.get_private_objects())
 
 scene = Scene(host="arenaxr.org", scene="example")

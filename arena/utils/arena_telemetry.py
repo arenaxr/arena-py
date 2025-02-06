@@ -30,7 +30,7 @@ from ..env import ARENA_TELEMETRY, OTLP_ENDPOINT, _get_env
 TRACE_TOPIC_DFT = "realm/ns/scene/t/traces"
 
 class MQTTSpanExporter(SpanExporter):
-    """Implementation of :class:`SpanExporter` that sends spans to MQTT"""
+    """Implementation of :class:`SpanExporter` that sends spans to MQTT."""
 
     def __init__(
         self,
@@ -71,7 +71,7 @@ class ArenaTelemetry():
     parent_span: Span = None
 
     def __init__(self, name=sys.argv[0], id=None):
-        """ Return an `ArenaTelemetry` using given service name and id
+        """ Return an `ArenaTelemetry` using given service name and id.
             Provides utility calls that wrap open telemetry functionality to start spans, log events, and other.
 
             Creates a parent span for all the spans related to the program.
@@ -123,7 +123,7 @@ class ArenaTelemetry():
         atexit.register(self.exit)
 
     def exit(self, error_msg=None, print_msg=True):
-        """Record exit status on error """
+        """Record exit status on error. """
         if error_msg and print_msg: print(error_msg)
         if not self.enabled: return
         if error_msg:
@@ -136,22 +136,22 @@ class ArenaTelemetry():
         if self.parent_span != INVALID_SPAN: self.exit()
 
     def start_span(self, name, **kwargs):
-        """Wrapper to otel start_as_current_span; force context to be parent span"""
+        """Wrapper to otel start_as_current_span; force context to be parent span."""
         if 'context' in kwargs: del kwargs['context']
         return self.tracer.start_as_current_span(name, context=self.parent_span_ctx, **kwargs)
 
     def start_process_msg_span(self, obj_id, action, **kwargs):
-        """Wrapper to otel start_as_current_span to start a process message span; force context to be parent span"""
+        """Wrapper to otel start_as_current_span to start a process message span; force context to be parent span."""
         if 'context' in kwargs: del kwargs['context']
         return self.tracer.start_as_current_span(f"{obj_id} {action} process_message", context=self.parent_span_ctx, **kwargs)
 
     def start_publish_span(self, obj_id, action, type, **kwargs):
-        """Wrapper to otel start_as_current_span to start a process message span; force context to be parent span"""
+        """Wrapper to otel start_as_current_span to start a process message span; force context to be parent span."""
         if 'context' in kwargs: del kwargs['context']
         return self.tracer.start_as_current_span(f"{obj_id} {action} publish_message {type}", context=self.parent_span_ctx, **kwargs)
 
     def add_event(self, name, span=None, print_msg=True, **kwargs):
-        """Add event to given or current span"""
+        """Add event to given or current span."""
         if print_msg: print(name)
         if not self.enabled: return
         if not span: span = trace.get_current_span()
@@ -159,7 +159,7 @@ class ArenaTelemetry():
         span.add_event(name, kwargs)
 
     def set_error(self, error_msg, span=None, print_msg=True):
-        """Set error on given or current span"""
+        """Set error on given or current span."""
         if print_msg: print(error_msg)
         if not self.enabled: return
         if not span: span = trace.get_current_span()

@@ -20,14 +20,14 @@ class MQTTMatcher:
 
     def __setitem__(self, key, value):
         """Add a topic filter :key to the prefix tree
-        and associate it to :value"""
+        and associate it to :value."""
         node = self._root
         for sym in key.split('/'):
             node = node._children.setdefault(sym, self.Node())
         node._content = value
 
     def __getitem__(self, key):
-        """Retrieve the value associated with some topic filter :key"""
+        """Retrieve the value associated with some topic filter :key."""
         try:
             node = self._root
             for sym in key.split('/'):
@@ -39,7 +39,7 @@ class MQTTMatcher:
             raise KeyError(key) from ke
 
     def __delitem__(self, key):
-        """Delete the value associated with some topic filter :key"""
+        """Delete the value associated with some topic filter :key."""
         lst = []
         try:
             parent, node = None, self._root
@@ -58,7 +58,7 @@ class MQTTMatcher:
 
     def iter_match(self, topic):
         """Return an iterator on all values associated with filters
-        that match the :topic"""
+        that match the :topic."""
         lst = topic.split('/')
         normal = not topic.startswith('$')
         def rec(node, i=0):

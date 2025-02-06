@@ -16,10 +16,10 @@ class Device(ArenaMQTT):
     :param str realm: Reserved topic fork for future use (optional).
     :param str namespace: Username of authenticated user or other namespace (automatic).
     :param str device: The name of the device, without namespace (required).
-    :param int network_latency_interval: Interval (in ms) to run network graph latency update. Default value is 10000 (10 secs). Ignore this parameter.
-    :param func on_msg_callback: Called on all MQTT messages received. Default = None.
-    :param func end_program_callback: Called on MQTT disconnect. Default = None.
-    :param bool debug: If true, print a log of all publish messages from this client. Default = False.
+    :param int network_latency_interval: Interval (in ms) to run network graph latency update. Default value is 10000 (10 secs). Ignore this parameter (optional).
+    :param func on_msg_callback: Called on all MQTT messages received (optional).
+    :param func end_program_callback: Called on MQTT disconnect (optional).
+    :param bool debug: If true, print a log of all publish messages from this client (optional).
     """
 
     def __init__(

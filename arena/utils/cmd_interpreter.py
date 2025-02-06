@@ -1,25 +1,30 @@
 """
 The ArenaCmdInterpreter is a simple line-oriented command interpreter that
-allows to inspect library/program state. It looks at :envvar:`ENABLE_INTERPRETER` 
-to enable the interpreter. 
+allows to inspect library/program state. It looks at :envvar:`ENABLE_INTERPRETER`
+to enable the interpreter.
 
 The :class:`.ArenaCmdInterpreter` receives a :class:`.Scene` instance and provides commands
 to inspect attributes and execute functions (callables) given to the constructor.
 
 The commands available are:
-  show: displays attributes
-  info: excutes scene functions that output information
-  help: displays the commands available
-  exit: terminates the program
-  
+
+* show: displays attributes
+* info: executes scene functions that output information
+* help: displays the commands available
+* exit: terminates the program
+
 """
 
-import cmd, os, json, asyncio, threading, time
+import asyncio
+import cmd
+import json
+import os
+import threading
+import time
 from datetime import date, datetime
-from ..env import (
-    ENABLE_INTERPRETER,
-    _get_env
-)
+
+from ..env import ENABLE_INTERPRETER, _get_env
+
 
 class ArenaCmdInterpreter(cmd.Cmd):
     intro = 'Welcome to the arena-py console. Type help or ? to list available commands.\n'
@@ -40,7 +45,7 @@ class ArenaCmdInterpreter(cmd.Cmd):
         self._scene = scene
         self._show_attrs = show_attrs
         self._get_callables = get_callables
-        
+
         # start interpreter thread
         t = threading.Thread(name='interpreter_thread', target=self.__cmd_loop_thread, args=(start_cmd_event,))
         t.start()

@@ -207,16 +207,16 @@ class ArenaMQTT(object):
         self.mqttc.socket().setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
 
     def generate_client_id(self):
-        """Returns a random 6 digit id"""
+        """Returns a random 6 digit id."""
         return str(random.randrange(100000, 999999))
 
     def network_latency_update(self):
-        """Update client latency in $NETWORK/latency"""
+        """Update client latency in $NETWORK/latency."""
         # publish empty message with QoS of 2 to update latency
         self.mqttc.publish(self.latency_topic, "", qos=2)
 
     def run_once(self, func=None, **kwargs):
-        """Runs a user-defined function on startup"""
+        """Runs a user-defined function on startup."""
         if func is not None:
             w = SingleWorker(self.event_loop, func, self.mqtt_connect_evt, **kwargs)
             self.event_loop.add_task(w)
@@ -228,7 +228,7 @@ class ArenaMQTT(object):
             return _run_once
 
     def run_after_interval(self, func=None, interval_ms=1000, **kwargs):
-        """Runs a user-defined function after a interval_ms milliseconds"""
+        """Runs a user-defined function after a interval_ms milliseconds."""
         if func is not None:
             if interval_ms < 0:
                 print("Invalid interval! Defaulting to 1000ms")
@@ -243,7 +243,7 @@ class ArenaMQTT(object):
             return _run_after_interval
 
     def run_async(self, func=None, **kwargs):
-        """Runs a user defined aynscio function"""
+        """Runs a user defined aynscio function."""
         if func is not None:
             w = AsyncWorker(self.event_loop, func, self.mqtt_connect_evt, **kwargs)
             self.event_loop.add_task(w)
@@ -255,7 +255,7 @@ class ArenaMQTT(object):
             return _run_async
 
     def run_forever(self, func=None, interval_ms=1000, **kwargs):
-        """Runs a function every interval_ms milliseconds"""
+        """Runs a function every interval_ms milliseconds."""
         if func is not None:
             if interval_ms < 0:
                 print("Invalid interval! Defaulting to 1000ms")
@@ -270,20 +270,20 @@ class ArenaMQTT(object):
             return _run_forever
 
     def run_tasks(self):
-        """Run event loop"""
+        """Run event loop."""
         print("Connecting to the ARENA...")
         self.event_loop.run()
 
     def stop_tasks(self):
-        """Stop event loop"""
+        """Stop event loop."""
         self.event_loop.stop()
 
     async def sleep(self, interval_ms):
-        """Public function for sleeping in async functions"""
+        """Public function for sleeping in async functions."""
         await asyncio.sleep(interval_ms / 1000)
 
     def on_connect(self, client, userdata, flags, rc):
-        """Paho MQTT client on_connect callback"""
+        """Paho MQTT client on_connect callback."""
         if rc == 0:
             self.mqtt_connect_evt.set()
 
@@ -334,7 +334,7 @@ class ArenaMQTT(object):
                     print(f"FAILURE!!! Subscribing to topic with message id: {mid}")
 
     def on_disconnect(self, client, userdata, rc):
-        """Paho MQTT client on_disconnect callback"""
+        """Paho MQTT client on_disconnect callback."""
         if rc == 0:
             print("Disconnected from the ARENA!")
         else:
@@ -343,28 +343,28 @@ class ArenaMQTT(object):
         os._exit(rc)
 
     def disconnect(self):
-        """Disconnects Paho MQTT client"""
+        """Disconnects Paho MQTT client."""
         if self.end_program_callback:
             self.end_program_callback(self)
         self.mqttc.disconnect()
 
     def message_callback_add(self, sub, callback):
-        """Subscribes to new topic and adds callback"""
+        """Subscribes to new topic and adds callback."""
         self.do_subscribe(self.mqttc, sub, callback)
 
     def message_callback_remove(self, sub):
-        """Unsubscribes to topic and removes callback"""
+        """Unsubscribes to topic and removes callback."""
         self.mqttc.unsubscribe(sub)
         self.mqttc.message_callback_remove(sub)
 
     def rcv_queue_len(self):
-        """Return receive queue length"""
+        """Return receive queue length."""
         self.msg_queue.qsize()
 
     def pub_queue_len(self):
-        """Return publish queue length"""
+        """Return publish queue length."""
         return self.mqttc._out_packet
 
     def client_id(self):
-        """Return client id"""
+        """Return client id."""
         return self.mqttc_id

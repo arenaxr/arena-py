@@ -14,7 +14,7 @@ from ..event_loop import PersistentWorker
 
 class GetPublicAttrsMixin():
     def get_attrs(self, **kwargs):
-        """ Return object public members only """
+        """ Return object public members only. """
         obj = {k: v for k, v in vars(self).items() if k.startswith("_") == False}
         obj.update(kwargs)
         return obj
@@ -32,7 +32,7 @@ class ProgramRunInfo(BaseObject, GetPublicAttrsMixin):
     def __init__(self, evt_loop=None, queue_len_callable=None, update_callback=None, update_interval_ms=_get_env(PROGRAM_STATS_UPDATE_INTERVAL_MS), **kwargs):
         """
         Returns a `ProgramRunInfo`. If an event loop is passed, will setup a periodic task to
-        update execution stats and perform a callback to notify of this update
+        update execution stats and perform a callback to notify of this update.
 
         :param object evt_loop: an event loop to which we add a periodic task to update program stats (optional).
         :param object queue_len_callable: callable that returns a queue stats object (optional).
@@ -75,7 +75,7 @@ class ProgramRunInfo(BaseObject, GetPublicAttrsMixin):
             evt_loop.add_task(t)
 
     def _update_stats(self):
-        """Update stats (called by periodic task); Execute callback if defined """
+        """Update stats (called by periodic task); Execute callback if defined. """
         elapsed = datetime.now() - self._msg_rate_time_start
         if elapsed.seconds < 1:
             return
@@ -107,18 +107,18 @@ class ProgramRunInfo(BaseObject, GetPublicAttrsMixin):
                 self._update_callback(self)
 
     def msg_rcv(self):
-        """Update stats when a message is received """
+        """Update stats when a message is received. """
         self.last_rcv_time = datetime.utcnow().isoformat()[:-3]+"Z"
         self.rcv_msgs = self.rcv_msgs + 1
         self.last_active_time = self.last_rcv_time
 
     def msg_publish(self):
-        """Update stats when a message is published """
+        """Update stats when a message is published. """
         self.last_pub_time = datetime.utcnow().isoformat()[:-3]+"Z"
         self.pub_msgs = self.pub_msgs + 1
         self.last_active_time = self.last_pub_time
 
     def add_program_info(self, adict):
-        """ Add program info to another dictionary """
+        """ Add program info to another dictionary. """
         adict[ProgramRunInfo.object_type] = self.get_attrs()
         return adict

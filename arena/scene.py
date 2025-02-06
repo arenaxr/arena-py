@@ -37,17 +37,17 @@ class Scene(ArenaMQTT):
     :param str realm: Reserved topic fork for future use (optional).
     :param str namespace: Username of authenticated user or other namespace (automatic).
     :param str scene: The name of the scene, without namespace (required).
-    :param int network_latency_interval: Interval (in ms) to run network graph latency update. Default value is 10000 (10 secs). Ignore this parameter.
-    :param func on_msg_callback: Called on all MQTT messages received. Default = None.
-    :param func new_obj_callback: Called on object 'create' MQTT messages received. Default = None.
-    :param func user_join_callback: Called on user id 'new' MQTT messages received. Default = None.
-    :param func user_left_callback: Called on user id 'leave' MQTT messages received. Default = None.
-    :param func delete_obj_callback: Called on object 'delete' MQTT messages received. Default = None.
-    :param func end_program_callback: Called on MQTT disconnect. Default = None.
-    :param bool video: If true, request permissions for video conference. Default = False.
-    :param bool debug: If true, print a log of all publish messages from this client. Default = False.
-    :param bool cli_args: If true, require CLI standardized parameters. Default = False.
-    :param bool headless: If true, force limited input device auth flow. Default = False.
+    :param int network_latency_interval: Interval (in ms) to run network graph latency update. Default value is 10000 (10 secs). Ignore this parameter (optional).
+    :param func on_msg_callback: Called on all MQTT messages received (optional).
+    :param func new_obj_callback: Called on object 'create' MQTT messages received (optional).
+    :param func user_join_callback: Called on user id 'new' MQTT messages received (optional).
+    :param func user_left_callback: Called on user id 'leave' MQTT messages received (optional).
+    :param func delete_obj_callback: Called on object 'delete' MQTT messages received (optional).
+    :param func end_program_callback: Called on MQTT disconnect (optional).
+    :param bool video: If true, request permissions for video conference (optional).
+    :param bool debug: If true, print a log of all publish messages from this client (optional).
+    :param bool cli_args: If true, require CLI standardized parameters (optional).
+    :param bool headless: If true, force limited input device auth flow (optional).
     """
 
     def __init__(
@@ -197,7 +197,7 @@ class Scene(ArenaMQTT):
         return argdict
 
     def exit(self, arg=None):
-        """Custom exit to push errors to telemetry"""
+        """Custom exit to push errors to telemetry."""
         error_msg = None
         if arg != None and arg != 0:
             error_msg = f"Exiting with sys.exit('{arg}')"
@@ -383,7 +383,7 @@ class Scene(ArenaMQTT):
                     )
 
     def callback_wrapper(self, func, arg, msg):
-        """Checks for number of arguments for callback"""
+        """Checks for number of arguments for callback."""
         if len(signature(func).parameters) != 3:
             print("[DEPRECATED]", "Callbacks and handlers now take 3 arguments: (scene, obj/evt, msg)!")
             func(arg)
@@ -391,11 +391,11 @@ class Scene(ArenaMQTT):
             func(self, arg, msg)
 
     def generate_custom_event(self, evt, action="clientEvent"):
-        """Publishes an custom event. Could be user or library defined"""
+        """Publishes an custom event. Could be user or library defined."""
         return self._publish(evt, action)
 
     def generate_click_event(self, obj: Object, type="mousedown", **kwargs):
-        """Publishes an click event"""
+        """Publishes an click event."""
         _type = type
         evt = Event(
             object_id=self.mqttc_id, type=_type, targetPosition=obj.data.position, target=obj.object_id, **kwargs
@@ -403,7 +403,7 @@ class Scene(ArenaMQTT):
         return self.generate_custom_event(evt, action="clientEvent")
 
     def manipulate_camera(self, cam, **kwargs):
-        """Publishes a camera manipulation event"""
+        """Publishes a camera manipulation event."""
         if kwargs.get("position"):
             if isinstance(kwargs["position"], (list, tuple)):
                 kwargs["position"] = Position(*kwargs["position"])
@@ -424,7 +424,7 @@ class Scene(ArenaMQTT):
         return self.generate_custom_event(evt, action="update")
 
     def look_at(self, cam, target):
-        """Publishes a camera manipulation event"""
+        """Publishes a camera manipulation event."""
         if isinstance(target, tuple) or isinstance(target, list):
             target = Position(*target)
         elif isinstance(target, dict):
@@ -440,7 +440,7 @@ class Scene(ArenaMQTT):
         return self.generate_custom_event(evt, action="update")
 
     def teleport_to_landmark(self, cam, target):
-        """Publishes a camera manipulation event"""
+        """Publishes a camera manipulation event."""
         if isinstance(target, Object):
             target_id = target.object_id
         elif type(target) is str:
@@ -462,22 +462,22 @@ class Scene(ArenaMQTT):
 
     @property
     def all_objects(self):
-        """Returns all the objects in a scene"""
+        """Returns all the objects in a scene."""
         return Object.all_objects
 
     def get_private_objects(self, userid=None):
-        """ Returns all private user objects"""
+        """ Returns all private user objects."""
         if userid is not None:
             return Object.private_objects.get(userid, None)
         else:
             return Object.private_objects
 
     def reset_private_objects(self, userid):
-        """Resets all private user objects"""
+        """Resets all private user objects."""
         Object.private_objects[userid] = {}
 
     def add_object(self, obj):
-        """Public function to create an object"""
+        """Public function to create an object."""
         if not isinstance(obj, Object):
             raise ValueError(f"Not a valid ARENA object to add to scene: {type(obj)}")
         # We have to set program_id here, as only scene has access to its userid
@@ -488,13 +488,13 @@ class Scene(ArenaMQTT):
         return res
 
     def add_objects(self, objs):
-        """Public function to create multiple objects in a list"""
+        """Public function to create multiple objects in a list."""
         for obj in objs:
             self.add_object(obj)
         return len(objs)
 
     def update_object(self, obj: Object, **kwargs):
-        """Public function to update an object"""
+        """Public function to update an object."""
         if kwargs:
             obj.update_attributes(**kwargs)
 
@@ -527,19 +527,19 @@ class Scene(ArenaMQTT):
         return res
 
     def update_objects(self, objs, **kwargs):
-        """Public function to update multiple objects in a list"""
+        """Public function to update multiple objects in a list."""
         for obj in objs:
             self.update_object(obj, **kwargs)
         return len(objs)
 
     def delete_object(self, obj):
-        """Public function to delete an object"""
+        """Public function to delete an object."""
         payload = {"object_id": obj.object_id}
         Object.remove(obj)
         return self._publish(payload, "delete", custom_payload=True)
 
     def delete_user_objects(self, userid):
-        """Deletes any private user objects"""
+        """Deletes any private user objects."""
         if userid in Object.private_objects:
             for obj in Object.private_objects[userid].keys():
                 Object.all_objects.pop(obj, None)
@@ -568,7 +568,7 @@ class Scene(ArenaMQTT):
         return self._publish(payload, "delete", custom_payload=True, publish_topic=PUBLISH_TOPICS.SCENE_PROGRAM)
 
     def delete_attributes(self, obj: Object, attributes=None):
-        """Public function to delete a list of 'attributes' as a string[], updating each to null"""
+        """Public function to delete a list of 'attributes' as a string[], updating each to null."""
         updated_data = {}
         for attr in attributes:
             obj.data[attr] = None  # remove from large internal storage
@@ -582,7 +582,7 @@ class Scene(ArenaMQTT):
         return self._publish(payload, "update", custom_payload=True)
 
     def run_animations(self, obj: Object):
-        """Runs all dispatched animations"""
+        """Runs all dispatched animations."""
         if isinstance(obj, Object):
             payload = {"object_id": obj.object_id, "type": obj.type, "data": {"object_type": obj.data.object_type}}
             if len(obj.animations) == 0:
@@ -605,9 +605,9 @@ class Scene(ArenaMQTT):
         """
         Creates a delayed task to push the end state of an animation after the expected
         duration. Uses async sleep to avoid blocking.
-        :param obj: arena object to update
-        :param anim: Animation to run
-        :return: created async task
+        :param obj: arena object to update.
+        :param anim: Animation to run.
+        :return: created async task.
         """
 
         async def _delayed_task():
@@ -630,7 +630,7 @@ class Scene(ArenaMQTT):
         return delayed_task
 
     def _publish(self, obj: Object, action, custom_payload=False, publish_topic=PUBLISH_TOPICS.SCENE_OBJECTS):
-        """Publishes to mqtt broker with "action":action"""
+        """Publishes to mqtt broker with "action":action."""
         obj_type = None
         if "type" in obj:
             obj_type = obj["type"]
@@ -674,7 +674,7 @@ class Scene(ArenaMQTT):
     def get_persisted_obj(self, object_id):
         """Returns a dictionary for a persisted object.
 
-        If object is known by arena-py, return local object, not persisted
+        If object is known by arena-py, return local object, not persisted.
         """
         persist_obj = None
         if object_id in self.all_objects:
@@ -708,9 +708,9 @@ class Scene(ArenaMQTT):
     def get_persisted_objs(self):
         """Returns a dictionary of persisted objects.
 
-        If object is known by arena-py, return our local object, not persisted
-        Silently fails/skip objects without object_id and object_type (except programs)
-        Instantiates generic Object if object_type is given but unknown to arena-py
+        If object is known by arena-py, return our local object, not persisted.
+        Silently fails/skip objects without object_id and object_type (except programs).
+        Instantiates generic Object if object_type is given but unknown to arena-py.
         """
         objs = {}
         # pass token to persist
@@ -756,7 +756,8 @@ class Scene(ArenaMQTT):
         return objs
 
     def get_persisted_scene_option(self):
-        """Returns a dictionary for scene-options. [TODO] wrap the output as a BaseObject"""
+        """Returns a dictionary for scene-options."""
+        # [TODO] wrap the output as a BaseObject
         scene_opts_url = f"{self.persist_url}?type=scene-options"
         # pass token to persist
         data = self.auth.urlopen(url=scene_opts_url, creds=True)
@@ -765,20 +766,21 @@ class Scene(ArenaMQTT):
 
     def get_writable_scenes(self):
         """Request list of scene names for logged in user account that user has publish permission for.
-        Returns: list of scenes.
+
+        :returns list: list of scenes.
         """
         return self.auth.get_writable_scenes(web_host=self.web_host)
 
     def get_user_list(self):
-        """Returns a list of users"""
+        """Returns a list of users."""
         return self.users.values()
 
     def get_rcv_pub_queue_len(self):
-        """Return QueueStats object with receive and publish queue length"""
+        """Return QueueStats object with receive and publish queue length."""
         return QueueStats(super().rcv_queue_len(), super().pub_queue_len())
 
     def run_info_update(self, run_info):
-        """Callback when program stats are updated; publish program object update"""
+        """Callback when program stats are updated; publish program object update."""
         # Add run info to program data object and publish program object update
         run_info.add_program_info(self.program.data)
         self._publish(self.program, "update", publish_topic=PUBLISH_TOPICS.SCENE_PROGRAM)

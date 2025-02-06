@@ -1,8 +1,8 @@
 # Environment variables definitions
 # When applicable, variable defaults are defined by ENV_DEFAULTS
 #
-import sys 
 import os
+import sys
 
 REALM = "REALM"
 """
@@ -55,15 +55,15 @@ MQTTH = "MQTTH"
 .. envvar:: MQTTH
 
 The :envvar:`MQTTH` defines the MQTT host used by the library.
-This variable allows to use a broker different from the host argument passed to the 
-scene constructor
+This variable allows to use a broker different from the host argument passed to the
+scene constructor.
 """
 
 DEVICE = "DEVICE"
 """
 .. envvar:: DEVICE
 
-The :envvar:`DEVICE` defines the name of a device, to publish and listen to. 
+The :envvar:`DEVICE` defines the name of a device, to publish and listen to.
 After connecting, the library listens to device topic as follows:
 `{REALM}/d/{NAMESPACE}/{SCENE}`.
 
@@ -83,7 +83,7 @@ ENABLE_INTERPRETER = "ENABLE_INTERPRETER"
 .. envvar:: ENABLE_INTERPRETER
 
 The :envvar:`ENABLE_INTERPRETER` enables the a simple command line interpreter that
-can be used to inspect library/program state. Set this variable with a value of 
+can be used to inspect library/program state. Set this variable with a value of
 `true`, `1` or `t` (case insensitive) to enable the interpreter.
 
 Default: 'false'
@@ -93,8 +93,8 @@ ARENA_TELEMETRY = "ARENA_TELEMETRY"
 """
 .. envvar:: ARENA_TELEMETRY
 
-The :envvar:`ARENA_TELEMETRY` environment variable enables the library's telemetry to generate 
-traces, metrics, and logs. Set this variable with a value of `otlp`, `mqtt` or `console` (case insensitive) 
+The :envvar:`ARENA_TELEMETRY` environment variable enables the library's telemetry to generate
+traces, metrics, and logs. Set this variable with a value of `otlp`, `mqtt` or `console` (case insensitive)
 to enable telemetry using OpenTelemetry (OTEL) and its Protocol (OTLP), send JSON OTEL spans to MQTT, or to the console.
 """
 
@@ -102,7 +102,7 @@ OTLP_ENDPOINT = "OTLP_ENDPOINT"
 """
 .. envvar:: OTLP_ENDPOINT
 
-The :envvar:`OTLP_ENDPOINT` environment variable is used when OTLP telemetry is enabled (`ARENA_TELEMETRY=otlp`) to define 
+The :envvar:`OTLP_ENDPOINT` environment variable is used when OTLP telemetry is enabled (`ARENA_TELEMETRY=otlp`) to define
 the telemtry endpoint.
 
 Our implementation uses OpenTelemetry (OTEL) and its Protocol (OTLP) for encoding and transport.
@@ -114,9 +114,9 @@ OTEL_LOG_LEVEL = "OTEL_LOG_LEVEL"
 """
 .. envvar:: OTEL_LOG_LEVEL
 
-The :envvar:`OTEL_LOG_LEVEL` environment variable sets the log level used by the logger 
-implementation (ArenaTelemetry) using OpenTelemetry (OTEL). 
-Default: "info". 
+The :envvar:`OTEL_LOG_LEVEL` environment variable sets the log level used by the logger
+implementation (ArenaTelemetry) using OpenTelemetry (OTEL).
+Default: "info".
 """
 
 PROGRAM_STATS_UPDATE_INTERVAL_MS = "PROGRAM_STATS_UPDATE_INTERVAL_MS"
@@ -124,9 +124,9 @@ PROGRAM_STATS_UPDATE_INTERVAL_MS = "PROGRAM_STATS_UPDATE_INTERVAL_MS"
 .. envvar:: PROGRAM_STATS_UPDATE_INTERVAL_MS
 
 The :envvar:`PROGRAM_STATS_UPDATE_INTERVAL_MS` environment variable defines how often program
-stats are published
+stats are published.
 
-Default: 5000. 
+Default: 5000.
 """
 
 """ Environment variables default values """

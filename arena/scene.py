@@ -18,6 +18,7 @@ from .attributes import *
 from .env import PROGRAM_OBJECT_ID, SCENE, _get_env
 from .events import *
 from .objects import *
+from .chat import *
 from .topics import PUBLISH_TOPICS, SCENE_MSGTYPES, TOPIC_TOKENS, TOPIC_TYPES
 from .utils import (
     ArenaCmdInterpreter,
@@ -44,6 +45,7 @@ class Scene(ArenaMQTT):
     :param func user_left_callback: Called on user id 'leave' MQTT messages received (optional).
     :param func delete_obj_callback: Called on object 'delete' MQTT messages received (optional).
     :param func end_program_callback: Called on MQTT disconnect (optional).
+    :param func on_chat_callback: Called on chat messages received (optional).
     :param bool video: If true, request permissions for video conference (optional).
     :param bool debug: If true, print a log of all publish messages from this client (optional).
     :param bool cli_args: If true, require CLI standardized parameters (optional).
@@ -61,6 +63,7 @@ class Scene(ArenaMQTT):
         user_left_callback=None,
         delete_obj_callback=None,
         end_program_callback=None,
+        on_chat_callback=None,
         video=False,
         debug=False,
         cli_args=False,
@@ -140,6 +143,7 @@ class Scene(ArenaMQTT):
             self.delete_obj_callback = delete_obj_callback
             self.user_join_callback = user_join_callback
             self.user_left_callback = user_left_callback
+            self.on_chat_callback = on_chat_callback
 
             # objects that exist in the scene, but this scene instance does not have a reference to
             self.unspecified_object_ids = set()
@@ -258,6 +262,11 @@ class Scene(ArenaMQTT):
                     self.telemetry.set_error(f"Message object_id {object_id} does not match topic {topic_uuid}.")
                     continue
                 scene_msgtype = topic_split[TOPIC_TOKENS.SCENE_MSGTYPE]
+                # Handle chat messages without same payload expectations as other scene messages
+                if self.on_chat_callback and scene_msgtype == SCENE_MSGTYPES.CHAT:
+                    chatmsg = Chat(**payload)
+                    self.callback_wrapper(self.on_chat_callback, chatmsg, msg)
+                    continue
                 # Object updates only in these scene msg types
                 if scene_msgtype not in [SCENE_MSGTYPES.PRESENCE, SCENE_MSGTYPES.USER, SCENE_MSGTYPES.OBJECTS, SCENE_MSGTYPES.PROGRAM]:
                     continue

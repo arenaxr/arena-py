@@ -13,6 +13,7 @@ class Object(BaseObject):
     type = "object"
     object_type = "entity"
     all_objects = {} # dict of all objects created so far
+    private_objects = {} # dict of all private objects created so far
 
     def __init__(self, evt_handler=None, update_handler=None, **kwargs):
         # "object_id" is required in kwargs, defaulted to random uuid4
@@ -30,6 +31,12 @@ class Object(BaseObject):
         # "ttl" is optional
         ttl = kwargs.get("ttl", None)
         if "ttl" in kwargs: del kwargs["ttl"]
+
+        private = kwargs.get("private", False)
+        if "private" in kwargs: del kwargs["private"]
+
+        private_userid = kwargs.get("private_userid", None)
+        if "private_userid" in kwargs: del kwargs["private_userid"]
 
         # remove timestamp, if exists
         if "timestamp" in kwargs: del kwargs["timestamp"]
@@ -71,12 +78,24 @@ class Object(BaseObject):
         if ttl:
             self.ttl = ttl
 
+        # This is with regard to its interaction
+        if private:
+            # Note: public objects *can* have private clicks, mouseover, etc.
+            self.private = private
+
+        if private_userid:
+            self._private_userid = private_userid  # None is public
+            self.private = True # private objects are always private interaction
+
         self.evt_handler = evt_handler
         self.update_handler = update_handler
         self.animations = []
 
         # add current object to all_objects dict
         Object.add(self)
+        # If private, add to private_objects dict
+        if private_userid:
+            Object.add_private(self)
 
         self.delayed_prop_tasks = {}  # dict of delayed property tasks
 
@@ -90,10 +109,22 @@ class Object(BaseObject):
         if "data" not in self:
             return
 
-        # update "persist", and "ttl"
-        self.persist = kwargs.get("persist", self.persist)
-        if "ttl" in self:
-            self.ttl = kwargs.get("ttl", self.ttl)
+        if "persist" in kwargs:
+            del kwargs["persist"]
+            self.persist = kwargs.get("private")
+
+        if "ttl" in kwargs:
+            del kwargs["ttl"]
+            self.ttl = kwargs.get("ttl")
+
+        if "private" in kwargs:
+            del kwargs["private"]
+            self.private = kwargs.get("private")
+
+        if "private_userid" in kwargs:
+            del kwargs["private_userid"]
+            self._private_userid = kwargs.get("private_userid")
+            self.private = True
 
         data = self.data
         Data.update_data(data, kwargs)
@@ -122,7 +153,7 @@ class Object(BaseObject):
 
     def json_preprocess(self, **kwargs):
         # kwargs are for additional param to add to json, like "action":"create"
-        skipped_keys = ["evt_handler", "update_handler", "animations", "delayed_prop_tasks"]
+        skipped_keys = ["evt_handler", "update_handler", "animations", "delayed_prop_tasks", "_private_userid"]
         json_payload = {k: v for k, v in vars(self).items() if k not in skipped_keys}
         json_payload.update(kwargs)
         return json_payload
@@ -193,6 +224,15 @@ class Object(BaseObject):
     def add(cls, obj):
         object_id = obj.object_id
         Object.all_objects[object_id] = obj
+
+    @classmethod
+    def add_private(cls, obj):
+        private_userid = getattr(obj, "_private_userid", None)
+        if private_userid is None:
+            raise ValueError("No private user id specified")
+        if private_userid not in Object.private_objects:
+            raise ValueError(f"User {private_userid} does not exist")
+        Object.private_objects[private_userid][obj.object_id] = obj
 
     @classmethod
     def remove(cls, obj):

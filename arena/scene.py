@@ -291,6 +291,7 @@ class Scene(ArenaMQTT):
                         elif action == "leave":
                             # special user presence message, new way to remove user
                             if object_id in self.users:
+                                self.delete_user_objects(object_id)
                                 if self.user_left_callback:
                                     self.callback_wrapper(self.user_left_callback, self.users[object_id], payload)
                                 del self.users[object_id]
@@ -347,6 +348,7 @@ class Scene(ArenaMQTT):
                                     self.users[object_id] = obj
                                 else:
                                     self.users[object_id] = Camera(**payload)
+                                self.reset_private_objects(object_id)
 
                                 if self.user_join_callback:
                                     self.callback_wrapper(self.user_join_callback, self.users[object_id], payload)
@@ -463,10 +465,24 @@ class Scene(ArenaMQTT):
         """Returns all the objects in a scene"""
         return Object.all_objects
 
+    def get_private_objects(self, userid=None):
+        """ Returns all private user objects"""
+        if userid is not None:
+            return Object.private_objects.get(userid, None)
+        else:
+            return Object.private_objects
+
+    def reset_private_objects(self, userid):
+        """Resets all private user objects"""
+        Object.private_objects[userid] = {}
+
     def add_object(self, obj):
         """Public function to create an object"""
         if not isinstance(obj, Object):
             raise ValueError(f"Not a valid ARENA object to add to scene: {type(obj)}")
+        # We have to set program_id here, as only scene has access to its userid
+        if getattr(obj, "private", True):
+            obj.program_id = self.userid
         res = self._publish(obj, "create")
         self.run_animations(obj)
         return res
@@ -481,6 +497,10 @@ class Scene(ArenaMQTT):
         """Public function to update an object"""
         if kwargs:
             obj.update_attributes(**kwargs)
+
+        # We have to update program_id here, as only scene has access to its userid
+        if getattr(obj, "private", True):
+            obj.program_id = self.userid
 
         # Check if any keys in delayed_prop_tasks are pending new animations
         # and cancel corresponding final update tasks or, if they are in
@@ -517,6 +537,13 @@ class Scene(ArenaMQTT):
         payload = {"object_id": obj.object_id}
         Object.remove(obj)
         return self._publish(payload, "delete", custom_payload=True)
+
+    def delete_user_objects(self, userid):
+        """Deletes any private user objects"""
+        if userid in Object.private_objects:
+            for obj in Object.private_objects[userid].keys():
+                Object.all_objects.pop(obj, None)
+        del Object.private_objects[userid]
 
     def delete_program(self, obj):
         type=None
@@ -611,12 +638,17 @@ class Scene(ArenaMQTT):
         with self.telemetry.start_publish_span(obj["object_id"], action, obj_type) as span:
             topic = publish_topic.substitute({**self.topicParams, **{"objectId": obj["object_id"]}})
 
-            # self.can_publish_obj indicates if we can publish on the default publish_topic (PUBLISH_TOPICS.SCENE_OBJECTS)
-            if not self.can_publish_obj and publish_topic==PUBLISH_TOPICS.SCENE_OBJECTS:
-                self.telemetry.set_error(
-                    f"ERROR: Publish failed! You do not have permission to publish to topic {topic} on {self.web_host}",
-                    span,
-                )
+            if publish_topic == PUBLISH_TOPICS.SCENE_OBJECTS:
+                # self.can_publish_obj indicates if we can publish on the default publish_topic (PUBLISH_TOPICS.SCENE_OBJECTS)
+                if not self.can_publish_obj:
+                    self.telemetry.set_error(
+                        f"ERROR: Publish failed! You do not have permission to publish to topic {topic} on {self.web_host}",
+                        span,
+                    )
+                elif hasattr(obj, "_private_userid"):
+                    topic = PUBLISH_TOPICS.SCENE_OBJECTS_PRIVATE.substitute(
+                        {**self.topicParams, **{"objectId": obj['object_id'], "toUid": obj['_private_userid']}}
+                    )
 
             d = datetime.utcnow().isoformat()[:-3] + "Z"
 

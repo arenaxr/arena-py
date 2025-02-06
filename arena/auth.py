@@ -392,9 +392,14 @@ class ArenaAuth:
         params = {"id_token": self._id_token}
         return self.urlopen(url, data=self._encode_params(params), csrf=self._csrftoken)
 
-    def upload_store_file(self, web_host, sceneid, src_file_path, dest_file_path=None):
+    def upload_store_file(self, web_host, scenename, src_file_path, dest_file_path=None):
         """Upload a source file to the user's file store space. Google authentication is required.
-        Returns: str: Url address of the uploaded file, or None if failed.
+
+        :param str web_host: The hostname of the ARENA webserver.
+        :param str scenename: The scene name/id.
+        :param str src_file_path: Local path to the file to upload (required).
+        :param str dest_file_path: Destination file path, can include dirs. Defaults to filename from src_file_path (optional).
+        :return str: Url address of successful file upload location, or None if failed.
         """
         self._confirm_gauth()
         # request FS login if this is the first time.
@@ -411,7 +416,7 @@ class ArenaAuth:
             store_res_prefix = f"users/{self._user_info['username']}/"
         else:
             store_res_prefix = ""
-        user_file_path = f"scenes/{sceneid}/{safe_file_path}"
+        user_file_path = f"scenes/{scenename}/{safe_file_path}"
         store_res_path = f"{store_res_prefix}{user_file_path}"
         store_ext_path = f"store/users/{self._user_info['username']}/{user_file_path}"
         url = f"https://{web_host}/storemng/api/resources/{store_res_path}?override=true"

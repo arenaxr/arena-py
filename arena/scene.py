@@ -485,10 +485,6 @@ class Scene(ArenaMQTT):
         # Check if any keys in delayed_prop_tasks are pending new animations
         # and cancel corresponding final update tasks or, if they are in
         # kwarg property updates, cancel the task as well as the animation
-        need_to_run_animations = False
-        if len(obj.animations):
-            need_to_run_animations = True
-
         if len(obj.delayed_prop_tasks) > 0:
             # If we have new animations that override a delayed task, cancel the task
             for anim in obj.animations:
@@ -501,15 +497,13 @@ class Scene(ArenaMQTT):
             # and cancel the animation
             for k in kwargs:
                 if str(k) in obj.delayed_prop_tasks:
-                    need_to_run_animations = True
                     task_to_cancel = obj.delayed_prop_tasks[k]
                     task_to_cancel.cancel()
                     del task_to_cancel
                     obj.dispatch_animation(Animation(property=k, enabled=False, dur=0))
 
         res = self._publish(obj, "update")
-        if need_to_run_animations:
-            self.run_animations(obj)
+        self.run_animations(obj)
         return res
 
     def update_objects(self, objs, **kwargs):
@@ -564,6 +558,8 @@ class Scene(ArenaMQTT):
         """Runs all dispatched animations"""
         if isinstance(obj, Object):
             payload = {"object_id": obj.object_id, "type": obj.type, "data": {"object_type": obj.data.object_type}}
+            if len(obj.animations) == 0:
+                return
             for i, animation in enumerate(obj.animations):
                 if isinstance(animation, AnimationMixer):
                     payload["data"][f"animation-mixer"] = vars(animation)

@@ -35,9 +35,6 @@ class Object(BaseObject):
         private = kwargs.get("private", False)
         if "private" in kwargs: del kwargs["private"]
 
-        program_id = kwargs.get("program_id", None)
-        if "program_id" in kwargs: del kwargs["program_id"]
-
         private_userid = kwargs.get("private_userid", None)
         if "private_userid" in kwargs: del kwargs["private_userid"]
 
@@ -81,14 +78,14 @@ class Object(BaseObject):
         if ttl:
             self.ttl = ttl
 
+        # This is with regard to its interaction
         if private:
+            # Note: public objects *can* have private clicks, mouseover, etc.
             self.private = private
-
-        if program_id:
-            self.program_id = program_id
 
         if private_userid:
             self._private_userid = private_userid  # None is public
+            self.private = True # private objects are always private interaction
 
         self.evt_handler = evt_handler
         self.update_handler = update_handler
@@ -119,9 +116,6 @@ class Object(BaseObject):
 
         if "private" in self:
             self.private = kwargs.get("private", self.private)
-
-        if "program_id" in self:
-            self.program_id = kwargs.get("program_id", self.program_id)
 
         if "private_userid" in self:
             self._private_userid = kwargs.get("private_userid", self._private_userid)

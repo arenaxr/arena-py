@@ -480,6 +480,9 @@ class Scene(ArenaMQTT):
         """Public function to create an object"""
         if not isinstance(obj, Object):
             raise ValueError(f"Not a valid ARENA object to add to scene: {type(obj)}")
+        # We have to set program_id here, as only scene has access to its userid
+        if getattr(obj, "private", True):
+            obj.program_id = self.userid
         res = self._publish(obj, "create")
         self.run_animations(obj)
         return res
@@ -494,6 +497,10 @@ class Scene(ArenaMQTT):
         """Public function to update an object"""
         if kwargs:
             obj.update_attributes(**kwargs)
+
+        # We have to update program_id here, as only scene has access to its userid
+        if getattr(obj, "private", True):
+            obj.program_id = self.userid
 
         # Check if any keys in delayed_prop_tasks are pending new animations
         # and cancel corresponding final update tasks or, if they are in

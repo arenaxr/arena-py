@@ -109,16 +109,22 @@ class Object(BaseObject):
         if "data" not in self:
             return
 
-        # update "persist", and "ttl"
-        self.persist = kwargs.get("persist", self.persist)
-        if "ttl" in self:
-            self.ttl = kwargs.get("ttl", self.ttl)
+        if "persist" in kwargs:
+            del kwargs["persist"]
+            self.persist = kwargs.get("private")
 
-        if "private" in self:
-            self.private = kwargs.get("private", self.private)
+        if "ttl" in kwargs:
+            del kwargs["ttl"]
+            self.ttl = kwargs.get("ttl")
 
-        if "private_userid" in self:
-            self._private_userid = kwargs.get("private_userid", self._private_userid)
+        if "private" in kwargs:
+            del kwargs["private"]
+            self.private = kwargs.get("private")
+
+        if "private_userid" in kwargs:
+            del kwargs["private_userid"]
+            self._private_userid = kwargs.get("private_userid")
+            self.private = True
 
         data = self.data
         Data.update_data(data, kwargs)

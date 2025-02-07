@@ -4,6 +4,34 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [1.1.0](https://github.com/arenaxr/arena-py/compare/v1.0.2...v1.1.0) (2025-02-07)
+
+
+### Features
+
+* add delete_program to scene ([87d56de](https://github.com/arenaxr/arena-py/commit/87d56de73b46a8a0a7f96ded1ce9a0863eb2d39f))
+* add scene programs state manager ([5e97bee](https://github.com/arenaxr/arena-py/commit/5e97bee204e0d782deddaf325ef8f34e840048ab))
+* **auth:** include optional environment host perms request ([29650de](https://github.com/arenaxr/arena-py/commit/29650dea6850f24eda95f41f326fc9156f90cd95))
+* **filestore:** add store upload api ([#211](https://github.com/arenaxr/arena-py/issues/211)) ([5fb1b50](https://github.com/arenaxr/arena-py/commit/5fb1b50c406beb87346a9a9af47f4f2ecc0f2252))
+
+
+### Bug Fixes
+
+* add error logging when outgoing payload rotation isn't quaternion ([fe69c38](https://github.com/arenaxr/arena-py/commit/fe69c384582e62b27bce65636d164ddd36ba353d))
+* check invalid objs and attrs types ([891853b](https://github.com/arenaxr/arena-py/commit/891853b17afb26c2cbdd20e4727d175340bd0a6e))
+* **data:** do not parse null attributes in messages ([8c7bf62](https://github.com/arenaxr/arena-py/commit/8c7bf62e8da6492997860ead55e39e8d2a3fb5cb))
+* handle "x y z" strs from animation props ([7368df8](https://github.com/arenaxr/arena-py/commit/7368df853cec25111d44ace8d43a23819991f6d1))
+* handle tuple of ints for Color ([4b2e365](https://github.com/arenaxr/arena-py/commit/4b2e3651caad2b91ba844f90689cd879551a90e8))
+* handling of kwargs in update_attributes ([2e6d309](https://github.com/arenaxr/arena-py/commit/2e6d309adafb2fbc84fec6235ab10c552ebea74c))
+* minor fix to delete program ([b34e089](https://github.com/arenaxr/arena-py/commit/b34e089feb85b7dc62b73a5a58357e6b9b7e7600))
+* missing commas ([5fbb229](https://github.com/arenaxr/arena-py/commit/5fbb229efc232d48a9de6e2dbb7e02256df626f5))
+* move no-animations check into run_animations ([810b1eb](https://github.com/arenaxr/arena-py/commit/810b1eb7a6f9e56691cc0b2ee24e715f56d5a6b7))
+* **mqtt:** deprecate scene.root_topic for scene.topicParams ([e106f80](https://github.com/arenaxr/arena-py/commit/e106f80f133d488e82e620c8f3406fb2b2fe2ccf))
+* publish program object to program scene topic ([2c5b411](https://github.com/arenaxr/arena-py/commit/2c5b41153e3160eb7293c9263a84f845b740f22f))
+* remove empty animations run ([afc2f1b](https://github.com/arenaxr/arena-py/commit/afc2f1b4b408b66108d423d0cc4f905c04fa4f81))
+* remove unused dynamic import for typecheck ([18b27ec](https://github.com/arenaxr/arena-py/commit/18b27ec68ec1d6e9490bcec8cefb5df74c5e8995))
+* super() with updated values for Color ([ba1bce7](https://github.com/arenaxr/arena-py/commit/ba1bce7fe50254ea9c0560f89fabb3e0903908e9))
+
 ## [1.0.2](https://github.com/arenaxr/arena-py/compare/v1.0.1...v1.0.2) (2024-11-12)
 
 

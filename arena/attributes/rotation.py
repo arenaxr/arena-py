@@ -129,23 +129,26 @@ class Rotation(Attribute):
 
     @classmethod
     def e2q(cls, e):
-        """euler (degrees) to quaternions"""
-        roll, pitch, yaw = e
+        """euler (degrees) to quaternions per THREE.js Quaternion.setFromEuler, XYZ order"""
+        x, y, z = e
 
-        roll_rad = math.radians(roll)
-        pitch_rad = math.radians(pitch)
-        yaw_rad = math.radians(yaw)
+        x = math.radians(x)
+        y = math.radians(y)
+        z = math.radians(z)
 
-        cy = math.cos(yaw_rad * 0.5)
-        sy = math.sin(yaw_rad * 0.5)
-        cp = math.cos(pitch_rad * 0.5)
-        sp = math.sin(pitch_rad * 0.5)
-        cr = math.cos(roll_rad * 0.5)
-        sr = math.sin(roll_rad * 0.5)
+        # Compute half-angles and their sine and cosine values
+        c1 = math.cos(x / 2)
+        c2 = math.cos(y / 2)
+        c3 = math.cos(z / 2)
 
-        w = cy * cp * cr + sy * sp * sr
-        x = cy * cp * sr - sy * sp * cr
-        y = sy * cp * sr + cy * sp * cr
-        z = sy * cp * cr - cy * sp * sr
+        s1 = math.sin(x / 2)
+        s2 = math.sin(y / 2)
+        s3 = math.sin(z / 2)
 
-        return (x, y, z, w)
+        # Compute the quaternion components
+        qx = s1 * c2 * c3 + c1 * s2 * s3
+        qy = c1 * s2 * c3 - s1 * c2 * s3
+        qz = c1 * c2 * s3 + s1 * s2 * c3
+        qw = c1 * c2 * c3 - s1 * s2 * s3
+
+        return (qx, qy, qz, qw)

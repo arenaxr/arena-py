@@ -1,4 +1,5 @@
-"""
+"""Private Objects
+
 This example demonstrates how to create private objects that only one user can see
 by leveraging the private_userid attribute of an object and the underlying private
 mqtt messaging topic mechanism.
@@ -11,8 +12,9 @@ We also print the global private objects dict to show how it is cleaned up when
 a user leaves the scene.
 """
 
-from arena import *
 import random
+
+from arena import *
 
 
 def user_leave_callback(scene, cam, msg):

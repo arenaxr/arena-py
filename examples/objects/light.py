@@ -1,3 +1,29 @@
+"""Lights
+
+Create a red light in the scene.
+
+{
+  "object_id": "light_3",
+  "action": "create",
+  "type": "object",
+  "data": {
+    "object_type": "light",
+    "position": { "x": 1, "y": 1, "z": 1 },
+    "rotation": { "x": 0.25, "y": 0.25, "z": 0, "w": 1 },
+    "color": "#FF0000"
+  }
+}
+
+Default is ambient light. To change type, or other light [A-Frame Light](https://aframe.io/docs/0.9.0/components/light.html) parameters, example: change to **directional**. Options: **ambient, directional, hemisphere, point, spot**.
+
+{
+  "object_id": "light_3",
+  "action": "update",
+  "type": "object",
+  "data": { "object_type": "light", "type": "directional" }
+}
+"""
+
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")

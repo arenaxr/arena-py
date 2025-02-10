@@ -1,12 +1,14 @@
-from arena import *
+'''Shadow
 
-scene = Scene(host="arenaxr.org", scene="example")
-
-'''
 https://aframe.io/docs/1.5.0/components/shadow.html
 IMPORTANT: Adding the shadow component alone is not enough to display shadows in your scene. We must have at least one light with castShadow: true enabled.
 Additionally, the light’s shadow camera (used for depth projection) usually must be configured correctly. Refer to the light component for more information.
 '''
+
+from arena import *
+
+scene = Scene(host="arenaxr.org", scene="example")
+
 
 @scene.run_once
 def make_shadow_model():

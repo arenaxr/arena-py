@@ -1,3 +1,28 @@
+"""TorusKnot
+
+Instantiate a wacky torusKnot, then turn it blue. Other primitive types are available in the in [A-Frame docs](https://aframe.io/docs/1.5.0/components/geometry.html#built-in-geometries). Here is a brief list: **box circle cone cylinder dodecahedron icosahedron tetrahedron octahedron plane ring sphere torus torusKnot triangle**.
+
+{
+  "object_id": "torusKnot_1",
+  "action": "create",
+  "type": "object",
+  "data": {
+    "object_type": "torusKnot",
+    "material": { "color": "red" },
+    "position": { "x": 0, "y": 1, "z": -4 },
+    "rotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+    "scale": { "x": 1, "y": 1, "z": 1 }
+  }
+}
+
+{
+  "object_id": "torusKnot_1",
+  "action": "update",
+  "type": "object",
+  "data": { "material": { "color": "blue" } }
+}
+"""
+
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")

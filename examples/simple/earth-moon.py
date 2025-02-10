@@ -1,7 +1,8 @@
-# earth-moon.py
-''' Sample scene: Earth and Moon with Markers.
-    Example of setting up and activating interactive animation.
-'''
+"""Earth Moon
+
+Sample scene: Earth and Moon with Markers.
+Example of setting up and activating interactive animation.
+"""
 from arena import *
 
 

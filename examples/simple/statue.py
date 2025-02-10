@@ -1,7 +1,9 @@
-# statue.py
-""" Sample scene: Toggle button with 3d model.
-    Example of setting up and activating interactive animation.
+"""Statue
+
+Sample scene: Toggle button with 3d model.
+Example of setting up and activating interactive animation.
 """
+
 from arena import *
 
 

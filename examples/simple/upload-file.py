@@ -1,5 +1,6 @@
-# upload-file.py
-""" Upload some sample files to the ARENA filestore under the user's store folder and create objects to render them.
+"""Uploading Files
+
+Upload some sample files to the ARENA filestore under the user's store folder and create objects to render them.
 """
 
 from arena import *

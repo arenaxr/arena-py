@@ -1,3 +1,21 @@
+"""Rotate
+
+Rotate the already drawn box; these are in quaternions, not A-Frame degrees.
+
+{
+  "object_id": "box_1",
+  "action": "update",
+  "type": "object",
+  "data": { "rotation": { "x": 0.5, "y": 0, "z": 0, "w": 0.86603 } }
+}
+
+The quaternion (native) representation of rotation is a bit more tricky. The 4 parameters are X, Y, Z, W. Here are some simple examples:
+
+- `1, 0, 0, 0`: rotate 180 degrees around X axis
+- `0, 0.7, 0, 0.7`: rotate 90 degrees around Y axis
+- `0, 0, -0.7, 0.7`: rotate -90 degrees around Z axis
+"""
+
 import math
 
 from arena import *

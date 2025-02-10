@@ -1,4 +1,7 @@
-""" Example to stream video from Jitsi onto a geometry. Change the user display name to `my-name`, reload the scene page, and click the camera on button."""
+"""Video Stream
+
+Example to stream video from Jitsi onto a geometry. Change the user display name to `my-name`, reload the scene page, and click the camera on button.
+"""
 
 from arena import *
 

@@ -1,3 +1,17 @@
+"""Animating GLTF Models
+
+To animate a GLTF model (see [GLTF Files](/content/3d-content/gltf-files) for how to find animation names), and set the animation-mixer parameter.
+
+{
+  "object_id": "gltf-model_3",
+  "action": "update",
+  "type": "object",
+  "data": { "animation-mixer": { "clip": "*" } }
+}
+
+The asterisk means "play all animations", and works better in some situations, where other times the name of a specific animation in the GLTF file works (or maybe several in sequence).
+"""
+
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")

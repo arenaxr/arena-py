@@ -1,9 +1,11 @@
-# camera-tracer.py
-''' Camera tracing program. Draws a path that follows the user.
-'''
+"""Camera Tracer
+
+Camera tracing program. Draws a path that follows the user.
+"""
+
+import random
 
 from arena import *
-import random
 
 MIN_DISPLACEMENT = 0.5
 LINE_TTL = 5

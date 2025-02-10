@@ -1,6 +1,5 @@
 from arena import *
 
-
 scene = Scene(host="arena-dev1.conix.io", scene="example")
 
 
@@ -28,7 +27,7 @@ def add_temp_ball(scene, position, color):
 @scene.run_once
 def make_box_collision():
     box_collision = Box(
-        object_id="cube1",
+        object_id="box1",
         depth=1,
         height=1,
         width=3,

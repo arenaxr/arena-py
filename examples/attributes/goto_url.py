@@ -1,5 +1,24 @@
-# url.py
-#
+"""Goto URL
+
+Navigates to entirely new page into browser when clicked, or other event (requires `click-listener`).
+
+{
+  "object_id": "box_1",
+  "action": "create",
+  "type": "object",
+  "data": {
+    "object_type": "box",
+    "position": { "x": 1, "y": 1, "z": -1 },
+    "click-listener": "",
+    "goto-url": {
+      "dest": "newtab",
+      "on": "mousedown",
+      "url": "http: www.eet.com"
+    }
+  }
+}
+"""
+
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")

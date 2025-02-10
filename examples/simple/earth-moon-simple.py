@@ -1,5 +1,8 @@
-# earth-moon-simple.py
-""" Simple program to animate the earth and moon. """
+"""Earth Moon Simple
+
+Simple program to animate the earth and moon.
+"""
+
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="earth")

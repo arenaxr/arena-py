@@ -9,14 +9,19 @@ from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")
 
+shadow = Shadow(
+    cast=True,
+    receive=True,
+)
+
 
 @scene.run_once
 def make_shadow_model():
     shadow_model = GLTF(
         object_id="shadow_model",
         url="/store/models/robot-draco.glb",
-        position=Position(0, 1,  -2),
-        shadow=Shadow(cast=True, receive=True),
+        position=Position(0, 1, -2),
+        shadow=shadow,
     )
     scene.add_object(shadow_model)
 
@@ -25,7 +30,7 @@ def make_shadow_model():
         position=Position(0, 0.1, 0),
         rotation=Rotation(-90, 0, 0),
         scale=Scale(100, 100, 100),
-        shadow=Shadow(cast=True, receive=True),
+        shadow=shadow,
     )
     scene.add_object(shadow_plane)
 

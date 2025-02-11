@@ -2,6 +2,11 @@ from arena import *
 
 scene = Scene(host="arena-dev1.conix.io", scene="example")
 
+box_collision_listener = BoxCollisionListener(
+    dynamic=False,
+    enabled=True,
+)
+
 
 def box_event(scene, evt, msg):
     print(f"Event {evt.type} received on object {evt.object_id}!")
@@ -16,12 +21,14 @@ def box_event(scene, evt, msg):
 
 
 def add_temp_ball(scene, position, color):
-    scene.add_object(Sphere(
-        ttl=1,
-        position=position,
-        scale=(0.05, 0.05, 0.05),
-        material=Material(color=Color(color))
-    ))
+    scene.add_object(
+        Sphere(
+            ttl=1,
+            position=position,
+            scale=(0.05, 0.05, 0.05),
+            material=Material(color=Color(color)),
+        )
+    )
 
 
 @scene.run_once
@@ -33,13 +40,9 @@ def make_box_collision():
         width=3,
         position=(-3, 1, -2),
         material=Material(color="#b8ea2e", transparent=True, opacity=0.3),
-        box_collision_listener=BoxCollisionListener(
-            dynamic=False,
-            enabled=True,
-        ),
         clickable=True,
         evt_handler=box_event,
-
+        box_collision_listener=box_collision_listener,
     )
     scene.add_object(box_collision)
 

@@ -2,18 +2,36 @@ from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")
 
-xr_logo = GLTF(
-    object_id="xr-logo",
-    position=(0,0,-5),
-    scale=(1.0,1.0,1.0),
-    url="store/users/wiselab/models/XR-logo.glb",
-    persist=True
+close_eye_morphs = (
+    Morph(
+        morphtarget="eyeBottom",
+        value=0.8,
+    ),
+    Morph(
+        morphtarget="eyeTop",
+        value=0.8,
+    ),
+)
+open_eye_morphs = (
+    Morph(
+        morphtarget="eyeTop",
+        value=0.0,
+    ),
+    Morph(
+        morphtarget="eyeBottom",
+        value=0.0,
+    ),
 )
 
-close_eye_morphs = (Morph(morphtarget="eyeBottom",value=0.8), Morph(morphtarget="eyeTop",value=0.8))
-open_eye_morphs = (Morph(morphtarget="eyeTop",value=0.0), Morph(morphtarget="eyeBottom",value=0.0))
-
 t = 0
+xr_logo = GLTF(
+    object_id="xr-logo",
+    position=(0, 0, -5),
+    scale=(1.0, 1.0, 1.0),
+    url="store/users/wiselab/models/XR-logo.glb",
+    persist=True,
+)
+
 
 @scene.run_forever(interval_ms=1000)
 def close_xr_eyes():
@@ -30,5 +48,6 @@ def close_xr_eyes():
         print("Morph Target Open Eye")
 
     t += 1
+
 
 scene.run_tasks()

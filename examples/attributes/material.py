@@ -10,43 +10,28 @@ To draw a shape that is transparent, but occludes other virtual objects behind i
 
 `colorWrite` is an attribute of the THREE.js Shader Material that, by exposing it, we make accessible like others belonging to the Material A-Frame Component, and is an alternative way of controlling visibility. `render-order` is a custom Component that controls which objects are drawn first (not necessarily the same as which are "in front of" others). All other ARENA objects are drawn with render-order of 1.
 
-{% include alert type="note" title="Note" content="
-This does not occlude the far background A-Frame layer (like environment component stars) but, in AR, that layer is not drawn anyway.
-" %}
-
-Material-extras traverse objects, so can be applied to a GLTF, e.g:
-
-{
-  "object_id": "arobothead",
-  "persist": true,
-  "type": "object",
-  "action": "update",
-  "data": {
-    "object_type": "gltf-model",
-    "url": "/store/models/robobit.glb",
-    "material-extras": {
-      "encoding": "sRGBEncoding",
-      "transparentOccluder": true
-    }
-  }
-}
+**This does not occlude the far background A-Frame layer (like environment component stars) but, in AR, that layer is not drawn anyway.**
 """
 
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")
 
-material = Material(opacity=0.3, transparent=True)
+material = Material(
+    opacity=0.3,
+    transparent=True,
+)
+
 
 @scene.run_once
 def make_transparent_plane():
     my_plane = Plane(
         object_id="my_plane",
-        position=(0,2,-5),
-        scale=(4.0,4.0,4.0),
-        material=material
+        position=(0, 2, -5),
+        scale=(4.0, 4.0, 4.0),
+        material=material,
     )
-
     scene.add_object(my_plane)
+
 
 scene.run_tasks()

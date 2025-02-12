@@ -231,7 +231,7 @@ class Scene(ArenaMQTT):
                 msg = await self.msg_queue.get()
             except RuntimeError as e:
                 self.telemetry.add_event(f"Ignoring error: {e}")
-                return
+                continue
 
             # extract payload
             try:
@@ -239,7 +239,7 @@ class Scene(ArenaMQTT):
                 payload = json.loads(payload_str)
             except Exception as e:
                 self.telemetry.add_event(f"Malformed payload: {payload_str}. {e}.")
-                return
+                continue
 
             if self.debug:
                 # log messages received for debugging
@@ -256,11 +256,11 @@ class Scene(ArenaMQTT):
                 topic_uuid = topic_split[TOPIC_TOKENS.UUID]
                 if object_id != topic_uuid:
                     self.telemetry.set_error(f"Message object_id {object_id} does not match topic {topic_uuid}.")
-                    return
+                    continue
                 scene_msgtype = topic_split[TOPIC_TOKENS.SCENE_MSGTYPE]
                 # Object updates only in these scene msg types
                 if scene_msgtype not in [SCENE_MSGTYPES.PRESENCE, SCENE_MSGTYPES.USER, SCENE_MSGTYPES.OBJECTS, SCENE_MSGTYPES.PROGRAM]:
-                    return
+                    continue
 
             with self.telemetry.start_process_msg_span(object_id, action) as span:
                 try:

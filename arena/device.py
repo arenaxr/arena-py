@@ -57,7 +57,7 @@ class Device(ArenaMQTT):
             except Exception as e:
                 print("Malformed payload, ignoring:")
                 print(e)
-                return
+                continue
 
     def publish(self, topic, payload_obj):
         """Publishes to mqtt broker."""

@@ -1,6 +1,8 @@
-""" socket-client.py
-    Generate ARENA object json and send it to socket-server.py.
+"""Socket Client
+
+Generate ARENA object json and send it to socket-server.py.
 """
+
 import random
 import socket
 

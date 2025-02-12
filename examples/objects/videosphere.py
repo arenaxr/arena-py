@@ -1,3 +1,10 @@
+"""Videosphere
+
+Videosphere Geometry.
+
+Draw a sphere, set the texture src to be an equirectangular video, on the 'back' (inside).
+"""
+
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")
@@ -9,7 +16,7 @@ def make_videosphere():
         object_id="my_videosphere",
         position=(0, 0, 0),
         radius=150,
-        src='store/users/wiselab/images/360falls.mp4',
+        src="store/users/wiselab/images/360falls.mp4",
     )
     scene.add_object(my_videosphere)
 

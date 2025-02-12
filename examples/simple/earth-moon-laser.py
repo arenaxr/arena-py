@@ -1,5 +1,8 @@
-# earth-moon-laser.py
-""" Simple program to animate the earth and moon with a laser pointer. """
+"""Earth Moon Laser
+
+Simple program to animate the earth and moon with a laser pointer.
+"""
+
 from arena import *
 
 

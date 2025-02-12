@@ -1,7 +1,8 @@
-"""
-device-scene.py
+"""Device Scene
+
 Demonstrate starting two connections, for a scene and a device, and communicating between them.
 """
+
 import json
 import random
 from datetime import datetime

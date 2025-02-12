@@ -1,3 +1,14 @@
+"""Animate
+
+Animate and tween values.
+
+More properties at <a href='https://aframe.io/docs/1.5.0/components/animation.html'>A-Frame Animation</a> component. Easing properties are detailed at <a href='https://easings.net'>easings.net</a>.
+
+Animate rotation of three torii.
+
+Other animations are available that resemble the `"data": {"animation": { "property": ... }}` blob above: see [A-Frame Animation](https://aframe.io/docs/1.5.0/components/animation.html) documentation for more examples.
+"""
+
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")
@@ -27,12 +38,23 @@ my_torus3 = Torus(
 @scene.run_once
 def move_torus1():
     my_torus1.dispatch_animation(
-        Animation(property="position", start=Position(0, 2, 0), end=Position(-5, 2, -5),
-                  easing="linear", dur=8000)
+        Animation(
+            property="position",
+            start=Position(0, 2, 0),
+            end=Position(-5, 2, -5),
+            easing="linear",
+            dur=8000,
+        )
     )
     my_torus1.dispatch_animation(
-        Animation(property="rotation", start=Rotation(0, 0, 0), end=Rotation(0, 360, 0),
-                  easing="linear", dur=2000, loop=True)
+        Animation(
+            property="rotation",
+            start=Rotation(0, 0, 0),
+            end=Rotation(0, 360, 0),
+            easing="linear",
+            dur=2000,
+            loop=True,
+        )
     )
     scene.update_object(my_torus1)
 
@@ -40,8 +62,13 @@ def move_torus1():
 @scene.run_once
 def move_torus2():
     my_torus2.dispatch_animation(
-        Animation(property="position", start=Position(0, 4, 0), end=Position(-5, 4, -5),
-                  easing="easeInQuad", dur=4000)
+        Animation(
+            property="position",
+            start=Position(0, 4, 0),
+            end=Position(-5, 4, -5),
+            easing="easeInQuad",
+            dur=4000,
+        )
     )
     scene.update_object(my_torus2)
 
@@ -49,8 +76,13 @@ def move_torus2():
 @scene.run_once
 def move_torus3():
     my_torus3.dispatch_animation(
-        Animation(property="position", start=Position(0, 6, 0), end=Position(-5, 6, -5),
-                  easing="linear", dur=6000)
+        Animation(
+            property="position",
+            start=Position(0, 6, 0),
+            end=Position(-5, 6, -5),
+            easing="linear",
+            dur=6000,
+        )
     )
     scene.update_object(my_torus3)
 
@@ -62,16 +94,23 @@ def cancel_torus1_move():
 
 def change_torus2_color():
     print("Changing torus2 color (should not affect animation")
-    scene.update_object(my_torus2, color=Color(255, 0, 0))  # Change color to red
+    scene.update_object(my_torus2, material=Material(color=Color(255, 0, 0)))  # Change color to red
 
 
 def change_torus3_animation():
-    print("Overriding torus3 animation and cancelling original task. Note that the "
-          "position update will not be in correct position because we are not yet "
-          "also performing interp on position changes in arena-py")
+    print(
+        "Overriding torus3 animation and cancelling original task. Note that the "
+        "position update will not be in correct position because we are not yet "
+        "also performing interp on position changes in arena-py"
+    )
     my_torus3.dispatch_animation(
-        Animation(property="position", start=Position(-2.5, 6, -2.5),
-                  end=Position(0, 6, 0), easing="linear", dur=1500)
+        Animation(
+            property="position",
+            start=Position(-2.5, 6, -2.5),
+            end=Position(0, 6, 0),
+            easing="linear",
+            dur=1500,
+        )
     )
     scene.update_object(my_torus3)
 

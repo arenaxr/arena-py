@@ -1,3 +1,10 @@
+"""URDF Model
+
+Load a URDF model.
+
+See guidance to store paths under <a href='https://docs.arenaxr.org/content/interface/filestore.html'>ARENA File Store, CDN, or DropBox</a>.
+"""
+
 import math
 import time
 

@@ -1,6 +1,7 @@
-# camera-child.py
-''' Demonstrate setting an object to be a child of a camera
-'''
+"""Camera Child
+
+Demonstrate setting an object to be a child of a camera.
+"""
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")

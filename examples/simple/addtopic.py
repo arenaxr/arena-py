@@ -1,7 +1,8 @@
-# addtopic.py
-''' Demonstrate subscribing to a secondary topic on the same broker and monitor
+"""Add Topic
+
+Demonstrate subscribing to a secondary topic on the same broker and monitor
 messages from the secondary topic within the same program.
-'''
+"""
 
 import json
 

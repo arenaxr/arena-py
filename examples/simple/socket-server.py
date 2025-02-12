@@ -1,12 +1,13 @@
-""" socket-server.py
-    Accept incoming socket json and publish to ARENA.  An example of using non-blocking threads to
-    allow ARENA-enabled applications to execute infinite `while True` loops.
+"""Socket Server
+Accept incoming socket json and publish to ARENA.  An example of using non-blocking threads to
+allow ARENA-enabled applications to execute infinite `while True` loops.
 
-    !!!!!!!
-    WARNING: This example subverts ARENA MQTT security by adding a new socket server layer you must
-             secure yourself.
-    !!!!!!!
+!!!!!!!
+WARNING: This example subverts ARENA MQTT security by adding a new socket server layer you must
+secure yourself.
+!!!!!!!
 """
+
 import json
 import socket
 import threading

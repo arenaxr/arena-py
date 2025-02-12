@@ -1,3 +1,8 @@
+"""Ocean
+
+Flat-shaded ocean primitive.
+"""
+
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")

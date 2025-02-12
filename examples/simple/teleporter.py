@@ -1,6 +1,7 @@
-# teleporter.py
-''' Creates a teleporter
-'''
+"""Teleporter
+
+Creates a teleporter.
+"""
 
 import random
 

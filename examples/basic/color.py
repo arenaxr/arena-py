@@ -1,13 +1,6 @@
 """Color
 
 Change only the color of the already-drawn box.
-
-{
-  "object_id": "box_1",
-  "action": "update",
-  "type": "object",
-  "data": { "material": { "color": "#00FF00" } }
-}
 """
 
 from arena import *

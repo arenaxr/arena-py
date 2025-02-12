@@ -4,14 +4,6 @@ Rotate the already drawn box; these are in quaternions, not A-Frame degrees.
 
 3D object rotation in quaternion representation; Right-handed coordinate system. Euler degrees are deprecated in wire message format.
 
-
-{
-  "object_id": "box_1",
-  "action": "update",
-  "type": "object",
-  "data": { "rotation": { "x": 0.5, "y": 0, "z": 0, "w": 0.86603 } }
-}
-
 The quaternion (native) representation of rotation is a bit more tricky. The 4 parameters are X, Y, Z, W. Here are some simple examples:
 
 - `1, 0, 0, 0`: rotate 180 degrees around X axis

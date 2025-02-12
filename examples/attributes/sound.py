@@ -12,7 +12,7 @@ from arena import *
 scene = Scene(host="arenaxr.org", scene="example")
 
 sound = Sound(
-    src="https://arenaxr.org/audio/toypiano/Asharp1.wav",
+    src="store/audio/toypiano/Asharp1.wav",
     on="mousedown",
 )
 

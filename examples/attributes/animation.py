@@ -38,12 +38,23 @@ my_torus3 = Torus(
 @scene.run_once
 def move_torus1():
     my_torus1.dispatch_animation(
-        Animation(property="position", start=Position(0, 2, 0), end=Position(-5, 2, -5),
-                  easing="linear", dur=8000)
+        Animation(
+            property="position",
+            start=Position(0, 2, 0),
+            end=Position(-5, 2, -5),
+            easing="linear",
+            dur=8000,
+        )
     )
     my_torus1.dispatch_animation(
-        Animation(property="rotation", start=Rotation(0, 0, 0), end=Rotation(0, 360, 0),
-                  easing="linear", dur=2000, loop=True)
+        Animation(
+            property="rotation",
+            start=Rotation(0, 0, 0),
+            end=Rotation(0, 360, 0),
+            easing="linear",
+            dur=2000,
+            loop=True,
+        )
     )
     scene.update_object(my_torus1)
 
@@ -51,8 +62,13 @@ def move_torus1():
 @scene.run_once
 def move_torus2():
     my_torus2.dispatch_animation(
-        Animation(property="position", start=Position(0, 4, 0), end=Position(-5, 4, -5),
-                  easing="easeInQuad", dur=4000)
+        Animation(
+            property="position",
+            start=Position(0, 4, 0),
+            end=Position(-5, 4, -5),
+            easing="easeInQuad",
+            dur=4000,
+        )
     )
     scene.update_object(my_torus2)
 
@@ -60,8 +76,13 @@ def move_torus2():
 @scene.run_once
 def move_torus3():
     my_torus3.dispatch_animation(
-        Animation(property="position", start=Position(0, 6, 0), end=Position(-5, 6, -5),
-                  easing="linear", dur=6000)
+        Animation(
+            property="position",
+            start=Position(0, 6, 0),
+            end=Position(-5, 6, -5),
+            easing="linear",
+            dur=6000,
+        )
     )
     scene.update_object(my_torus3)
 
@@ -77,12 +98,19 @@ def change_torus2_color():
 
 
 def change_torus3_animation():
-    print("Overriding torus3 animation and cancelling original task. Note that the "
-          "position update will not be in correct position because we are not yet "
-          "also performing interp on position changes in arena-py")
+    print(
+        "Overriding torus3 animation and cancelling original task. Note that the "
+        "position update will not be in correct position because we are not yet "
+        "also performing interp on position changes in arena-py"
+    )
     my_torus3.dispatch_animation(
-        Animation(property="position", start=Position(-2.5, 6, -2.5),
-                  end=Position(0, 6, 0), easing="linear", dur=1500)
+        Animation(
+            property="position",
+            start=Position(-2.5, 6, -2.5),
+            end=Position(0, 6, 0),
+            easing="linear",
+            dur=1500,
+        )
     )
     scene.update_object(my_torus3)
 

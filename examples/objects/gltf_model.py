@@ -12,7 +12,7 @@ Instantiate a glTF v2.0 binary model (file extension .glb) from a URL.
   "type": "object",
   "data": {
     "object_type": "gltf-model",
-    "url": "https://arenaxr.org/models/Duck.glb",
+    "url": "store/models/Duck.glb",
     "position": { "x": 0, "y": 1, "z": -4 },
     "rotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
     "scale": { "x": 1, "y": 1, "z": 1 }

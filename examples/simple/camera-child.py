@@ -1,6 +1,6 @@
 """Camera Child
 
-Demonstrate setting an object to be a child of a camera
+Demonstrate setting an object to be a child of a camera.
 """
 from arena import *
 

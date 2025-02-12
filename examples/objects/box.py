@@ -3,19 +3,6 @@
 Box Geometry.
 
 Instantiate a box and set all of it's basic parameters.
-
-{
-  "object_id": "box_1",
-  "action": "create",
-  "type": "object",
-  "data": {
-    "object_type": "box",
-    "position": { "x": 1, "y": 1, "z": -1 },
-    "rotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
-    "scale": { "x": 1, "y": 1, "z": 1 },
-    "material": { "color": "#FF0000" }
-  }
-}
 """
 
 from arena import *

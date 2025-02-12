@@ -1,5 +1,9 @@
 """Lights
 
+A light.
+
+More properties at <a href='https://aframe.io/docs/1.5.0/components/light.html'>A-Frame Light</a>.
+
 Create a red light in the scene.
 
 Default is ambient light. To change type, or other light [A-Frame Light](https://aframe.io/docs/0.9.0/components/light.html) parameters, example: change to **directional**. Options: **ambient, directional, hemisphere, point, spot**.

@@ -14,7 +14,7 @@ scene = Scene(host="arenaxr.org", scene="example")
 
 @scene.run_once
 def make_thickline():
-    thickline = ThickLine(
+    thickline = Thickline(
         object_id="thickline_8",
         lineWidth=11,
         path=((0, 0, 0), (1, 0, 0), (1, 1, 0), (1, 1, 1)),

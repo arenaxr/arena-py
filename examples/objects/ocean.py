@@ -1,6 +1,6 @@
 """Ocean
 
-Flat-shaded ocean primitive.
+Draw an Ocean primitive. Ocean is flat shape with 4 edges, in which the inner triangles are animated to mimic ocean waves.
 """
 
 from arena import *

@@ -1,6 +1,6 @@
 """Plane
 
-Plane Geometry.
+Draw a Plane primitive mesh geometry. Plane is flat shape with 4 edges.
 """
 
 from arena import *

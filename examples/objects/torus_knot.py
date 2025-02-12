@@ -1,6 +1,6 @@
 """Torus Knot
 
-Torus Knot Geometry.
+Draw a Torus Knot primitive mesh geometry. Torus Knot is tube shaped into a knot shape.
 
 Instantiate a wacky torusKnot, then turn it blue. Other primitive types are available in the in [A-Frame docs](https://aframe.io/docs/1.5.0/components/geometry.html#built-in-geometries). Here is a brief list: **box circle cone cylinder dodecahedron icosahedron tetrahedron octahedron plane ring sphere torus torusKnot triangle**.
 """

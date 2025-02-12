@@ -1,6 +1,6 @@
 """Sphere
 
-Sphere Geometry.
+Draw a Sphere primitive mesh geometry. Sphere is completely round shape.
 """
 
 from arena import *

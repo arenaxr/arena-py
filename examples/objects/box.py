@@ -1,6 +1,6 @@
-"""Draw a Box
+"""Box
 
-Box Geometry.
+Draw a Box primitive mesh geometry. Box is 6-sided polyhedron shape.
 
 Instantiate a box and set all of it's basic parameters.
 """

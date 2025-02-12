@@ -1,6 +1,6 @@
 """Images
 
-Display an image on a plane.
+Display an image on a plane geometry.
 
 See guidance to store paths under <a href='https://docs.arenaxr.org/content/interface/filestore.html'>ARENA File Store, CDN, or DropBox</a>.
 

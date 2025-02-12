@@ -1,6 +1,6 @@
 """Capsule
 
-Capsule Geometry.
+Draw a Capsule primitive mesh geometry. Capsule is a tube shape with rounded ends.
 """
 
 from arena import *

@@ -1,6 +1,6 @@
 """Circle
 
-Circle Geometry.
+Draw a Circle primitive mesh geometry.
 """
 
 from arena import *

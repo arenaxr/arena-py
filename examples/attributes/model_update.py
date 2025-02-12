@@ -1,5 +1,7 @@
 """GLTF Model Update
 
+Besides applying standard rotation and position attributes to the center-point of the GLTF model, the individual child components can also be manually manipulated.
+
 The GLTF-specific `modelUpdate` attribute is an object with child component names as keys. The top-level keys are the names of the child components to be updated. The values of each are nested `position` and `rotation` attributes to set as new values, respectively. Either `position` or `rotation` can be omitted if unchanged.
 """
 

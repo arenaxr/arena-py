@@ -1,6 +1,6 @@
 """Dodecahedron
 
-Dodecahedron Geometry.
+Draw a Dodecahedron primitive mesh geometry. Dodecahedron is 12-sided polyhedron shape.
 """
 
 from arena import *

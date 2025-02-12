@@ -1,6 +1,6 @@
 """Triangle
 
-Triangle Geometry.
+Draw a Triangle primitive mesh geometry. Triangle is flat shape with 3 edges.
 """
 
 from arena import *

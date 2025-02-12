@@ -1,8 +1,6 @@
 """Videosphere
 
-Videosphere Geometry.
-
-Draw a sphere, set the texture src to be an equirectangular video, on the 'back' (inside).
+Draw a sphere geometry, set the texture src to be an equirectangular video, on the 'back' (inside).
 """
 
 from arena import *

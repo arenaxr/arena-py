@@ -1,6 +1,6 @@
 """Rounded Box
 
-Rounded Box Geometry.
+Draw a Rounded Box primitive mesh geometry. Rounded Box is 6-sided polyhedron shape with rounded edges.
 """
 
 from arena import *

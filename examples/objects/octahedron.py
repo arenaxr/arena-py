@@ -1,6 +1,6 @@
 """Octahedron
 
-Octahedron Geometry.
+Draw a Octahedron primitive mesh geometry. Octahedron is 8-sided polyhedron shape.
 """
 
 from arena import *

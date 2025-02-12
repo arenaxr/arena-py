@@ -1,6 +1,6 @@
 """Ring
 
-Ring Geometry.
+Draw a Ring primitive mesh geometry. Ring is flat rounded shape with 2 edges, inner and outer.
 """
 
 from arena import *

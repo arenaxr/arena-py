@@ -1,6 +1,6 @@
 """Tetrahedron
 
-Tetrahedron Geometry.
+Draw a Tetrahedron primitive mesh geometry. Tetrahedron is 4-sided polyhedron shape.
 """
 
 from arena import *

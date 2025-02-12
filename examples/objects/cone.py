@@ -1,6 +1,6 @@
 """Cone
 
-Cone Geometry.
+Draw a Cone primitive mesh geometry. Cone is a tube shape with one flat end and one joined (point) end.
 """
 
 from arena import *

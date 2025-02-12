@@ -1,6 +1,6 @@
 """Icosahedron
 
-Icosahedron Geometry.
+Draw a Icosahedron primitive mesh geometry. Icosahedron is 20-sided polyhedron shape.
 """
 
 from arena import *

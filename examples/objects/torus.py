@@ -1,6 +1,6 @@
 """Torus
 
-Torus Geometry.
+Draw a Torus primitive mesh geometry. Torus is a tube shaped into a circle.
 """
 
 from arena import *

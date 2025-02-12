@@ -1,6 +1,6 @@
 """Cylinder
 
-Cylinder Geometry.
+Draw a Cylinder primitive mesh geometry. Cylinder is a tube shape with flat ends.
 """
 
 from arena import *

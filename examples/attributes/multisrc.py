@@ -1,5 +1,9 @@
 """Images on Objects
 
+Multi Source
+
+Define multiple visual sources applied to an object.
+
 Use the `multisrc` A-Frame Component to specify different bitmaps for sides of a box or other primitive shape.
 """
 

@@ -1,6 +1,10 @@
 """Physics
 
 You can enable physics (gravity) for a scene object by adding the dynamic-body Component.
+
+A freely-moving object. Dynamic bodies have mass, collide with other objects, bounce or slow during collisions, and fall if gravity is enabled.
+
+More properties at <a href='https://github.com/c-frame/aframe-physics-system/blob/master/CannonDriver.md'>A-Frame Physics System</a>.
 """
 
 import random

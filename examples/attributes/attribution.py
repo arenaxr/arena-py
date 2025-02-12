@@ -1,3 +1,8 @@
+"""Attribution
+
+Attribution Component. Saves attribution data in any entity.
+"""
+
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")

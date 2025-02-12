@@ -1,8 +1,9 @@
 """Shadow
+Shadow
+The shadow component enables shadows for an entity and its children. Adding the shadow component alone is not enough to display shadows in your scene. We must have at least one light with castShadow: true enabled.
 
-https://aframe.io/docs/1.5.0/components/shadow.html
 IMPORTANT: Adding the shadow component alone is not enough to display shadows in your scene. We must have at least one light with castShadow: true enabled.
-Additionally, the light’s shadow camera (used for depth projection) usually must be configured correctly. Refer to the light component for more information.
+Additionally, the light’s shadow camera (used for depth projection) usually must be configured correctly. Refer to the light component for more information: https://aframe.io/docs/1.5.0/components/shadow.html.
 """
 
 from arena import *

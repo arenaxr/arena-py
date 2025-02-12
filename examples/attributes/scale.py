@@ -1,3 +1,8 @@
+"""Scale
+
+3D object scale.
+"""
+
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")
@@ -12,7 +17,6 @@ def make_box():
         position=(0, 2, -5),
         scale=scale,
     )
-
     scene.add_object(my_box)
 
 

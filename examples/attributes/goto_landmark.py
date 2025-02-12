@@ -1,3 +1,8 @@
+"""Goto Landmark
+
+Teleports user to the landmark with the given name. Requires click-listener.
+"""
+
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")

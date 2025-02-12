@@ -1,3 +1,10 @@
+"""PCD Model
+
+Load a PCD model.
+
+Format: <a href='https://pointclouds.org/documentation/tutorials/index.html'>Point Clouds</a>. See guidance to store paths under <a href='https://docs.arenaxr.org/content/interface/filestore.html'>ARENA File Store, CDN, or DropBox</a>.
+"""
+
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")

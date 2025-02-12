@@ -1,4 +1,6 @@
-"""Thicklines
+"""Thickline
+
+Draw a line that can have a custom width.
 
 A "thickline" (to improve openpose skeleton rendering visibility) - works like a line, but the `lineWidth` value specifies thickness, and multiple points can be specified at once, e.g. draw a pink line 11 pixels thick from 0, 0, 0 to 1, 0, 0 to 1, 1, 0 to 1, 1, 1. The shorthand syntax for coordinates is a bonus feature of lower level code; extending it for the rest of ARENA commands remains as an enhancement.
 
@@ -34,8 +36,9 @@ from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")
 
-start = (0,0,-3)
-end = (10,10,-10)
+start = (0, 0, -3)
+end = (10, 10, -10)
+
 
 @scene.run_once
 def make_thickline():
@@ -43,8 +46,9 @@ def make_thickline():
         object_id="my_thickline",
         lineWidth=20,
         path=(start, end),
-        color=(0,255,0)
+        color=(0, 255, 0),
     )
     scene.add_object(thickline)
+
 
 scene.run_tasks()

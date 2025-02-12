@@ -1,3 +1,8 @@
+"""Box Collision Listener
+
+Listen for bounding-box collisions with user camera and hands. Must be applied to an object or model with geometric mesh. Collisions are determined by course bounding-box overlaps.
+"""
+
 from arena import *
 
 scene = Scene(host="arena-dev1.conix.io", scene="example")

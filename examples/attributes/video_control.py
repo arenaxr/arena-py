@@ -1,3 +1,8 @@
+"""Video Control
+
+Adds a video to an entity and controls its playback.
+"""
+
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")
@@ -20,7 +25,6 @@ def make_video_box():
         scale=Scale(x=7, y=4.5, z=0.1),
         video_control=video_control,
     )
-
     scene.add_object(my_box)
 
 

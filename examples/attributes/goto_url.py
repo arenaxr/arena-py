@@ -27,21 +27,21 @@ goto_sametab = GotoUrl(
 
 popup = Box(
     position=(-3, 0, -5),
-    color=(255, 0, 0),
+    material=Material(color=(255, 0, 0)),
     clickable=True,
     goto_url=goto_popup,
 )
 
 newtab = Box(
     position=(0, 0, -5),
-    color=(0, 255, 0),
+    material=Material(color=(0, 255, 0)),
     clickable=True,
     goto_url=goto_newtab,
 )
 
 sametab = Box(
     position=(3, 0, -5),
-    color=(0, 0, 255),
+    material=Material(color=(0, 0, 255)),
     clickable=True,
     goto_url=goto_sametab,
 )

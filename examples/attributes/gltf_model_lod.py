@@ -1,3 +1,9 @@
+"""GLTF Model Level of Detail
+
+Simple switch between the default gltf-model and a detailed one when a user camera is within specified distance.
+
+"""
+
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")

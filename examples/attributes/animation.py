@@ -1,5 +1,9 @@
 """Animate
 
+Animate and tween values.
+
+More properties at <a href='https://aframe.io/docs/1.5.0/components/animation.html'>A-Frame Animation</a> component. Easing properties are detailed at <a href='https://easings.net'>easings.net</a>.
+
 Animate rotation of three torii.
 
 Other animations are available that resemble the `"data": {"animation": { "property": ... }}` blob above: see [A-Frame Animation](https://aframe.io/docs/1.5.0/components/animation.html) documentation for more examples.
@@ -69,7 +73,7 @@ def cancel_torus1_move():
 
 def change_torus2_color():
     print("Changing torus2 color (should not affect animation")
-    scene.update_object(my_torus2, color=Color(255, 0, 0))  # Change color to red
+    scene.update_object(my_torus2, material=Material(color=Color(255, 0, 0)))  # Change color to red
 
 
 def change_torus3_animation():

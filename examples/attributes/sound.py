@@ -1,6 +1,10 @@
 """Sound
 
 Play toy piano sound from a URL when you click a box. Sets click-listener Component, waveform URL, and sound attribute.
+
+The sound component defines the entity as a source of sound or audio. The sound component can be positional and is thus affected by the component's position.
+
+More properties at <a href='https://aframe.io/docs/1.5.0/components/sound.html'>A-Frame Sound</a>.
 """
 
 from arena import *

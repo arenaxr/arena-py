@@ -1,3 +1,11 @@
+"""ARENAUI Card Panel
+
+A card is a rectangular panel that can contain text and/or an image. It can be used to display
+information or act as a sign. Its layout will dynamic adjust according to the optional parameters
+that are provided: for instance, if no image is provided, then only text will be displayed. If only
+a title is provided, it will serve more as a label or sign. An optional close button may also added.
+"""
+
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")
@@ -32,7 +40,7 @@ def setup_scene():
         bodyAlign="center",
         position=Position(-2, 2, -2.5),
         widthScale=0.25,
-        look_at="#my-camera"
+        look_at="#my-camera",
     )
     scene.add_object(hello_card)
 
@@ -52,7 +60,7 @@ def setup_scene():
     def button_handler(_scene, evt, _msg):
         global prompt
         if evt.type == "buttonClick":
-            if evt.data.buttonName in ["Option B", "D", "E", "F"]: # Compare buttonName
+            if evt.data.buttonName in ["Option B", "D", "E", "F"]:  # Compare buttonName
                 print(f"{evt.data.buttonName} clicked!")
             elif evt.data.buttonName == "Prompt A":  # Show prompt
                 prompt = Prompt(
@@ -66,7 +74,7 @@ def setup_scene():
                 scene.add_object(prompt)
             elif evt.data.buttonName == "More":  # switch to second button set
                 scene.update_object(button_panel, buttons=second_buttonset)
-            elif evt.data.buttonIndex == 3:      # compare buttonIndex, switch 1st set
+            elif evt.data.buttonIndex == 3:  # compare buttonIndex, switch 1st set
                 scene.update_object(button_panel, buttons=first_buttonset)
 
     button_panel = ButtonPanel(

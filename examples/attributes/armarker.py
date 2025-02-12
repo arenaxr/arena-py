@@ -1,3 +1,8 @@
+"""AR Marker
+
+A location marker (such as an AprilTag, a lightAnchor, or an UWB tag), used to anchor scenes, or scene objects, in the real world.
+"""
+
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")

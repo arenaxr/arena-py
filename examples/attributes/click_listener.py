@@ -1,3 +1,8 @@
+"""Click Listener
+
+Object will listen for mouse events like clicks.
+"""
+
 import random
 
 from arena import *

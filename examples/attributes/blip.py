@@ -1,3 +1,8 @@
+"""Blip Effect
+
+When the object is created or deleted, it will animate in/out of the scene instead of appearing/disappearing instantly. Must have a geometric mesh.
+"""
+
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")

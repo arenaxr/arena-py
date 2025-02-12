@@ -1,3 +1,8 @@
+"""Text Input
+
+Opens an HTML prompt when clicked. Sends text input as an event on MQTT. Requires click-listener.
+"""
+
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")
@@ -21,12 +26,11 @@ def make_tex_input_iso():
     my_iso = Icosahedron(
         object_id="my_iso",
         position=(0, 2, -5),
-        color=(100, 200, 100),
+        material=Material(color=(100, 200, 100)),
         clickable=True,
         evt_handler=evt_handler,
         textinput=textinput,
     )
-
     scene.add_object(my_iso)
 
 

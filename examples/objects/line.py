@@ -28,14 +28,18 @@ Extend the line with a new segment, colored green.
     }
   }
 }
+A light.
+
+More properties at <a href='https://aframe.io/docs/1.5.0/components/light.html'>A-Frame Light</a>.
 """
 
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")
 
-start = (0,0,-3)
-end = (5,5,5)
+start = (0, 0, -3)
+end = (5, 5, 5)
+
 
 @scene.run_once
 def make_line():
@@ -43,8 +47,9 @@ def make_line():
         object_id="my_line",
         start=start,
         end=end,
-        color=(0,255,0)
+        color=(0, 255, 0),
     )
     scene.add_object(line)
+
 
 scene.run_tasks()

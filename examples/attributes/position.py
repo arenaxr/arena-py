@@ -1,5 +1,7 @@
 """Move
 
+3D object position.
+
 Move the position of an octahedron.
 """
 
@@ -16,7 +18,6 @@ def make_oct():
         object_id="my_oct",
         position=position,
     )
-
     scene.add_object(my_oct)
 
 

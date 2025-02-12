@@ -1,5 +1,9 @@
 """Images
 
+Display an image on a plane.
+
+See guidance to store paths under <a href='https://docs.arenaxr.org/content/interface/filestore.html'>ARENA File Store, CDN, or DropBox</a>.
+
 Create an image on the floor.
 
 {
@@ -31,16 +35,16 @@ from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")
 
-image_url = "store/users/wiselab/images/conix-face-white.jpg"
 
 @scene.run_once
 def make_im():
     im = Image(
         object_id="im",
-        position=(0,2,-3),
-        scale=(1.2,1.5,1.2),
-        url=image_url
+        position=(0, 2, -3),
+        scale=(1.2, 1.5, 1.2),
+        url="store/users/wiselab/images/conix-face-white.jpg",
     )
     scene.add_object(im)
+
 
 scene.run_tasks()

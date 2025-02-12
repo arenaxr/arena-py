@@ -2,6 +2,9 @@
 
 Rotate the already drawn box; these are in quaternions, not A-Frame degrees.
 
+3D object rotation in quaternion representation; Right-handed coordinate system. Euler degrees are deprecated in wire message format.
+
+
 {
   "object_id": "box_1",
   "action": "update",

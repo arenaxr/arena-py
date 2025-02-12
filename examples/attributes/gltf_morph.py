@@ -1,3 +1,10 @@
+"""GLTF Morph
+
+Allows you to target and control a gltf model's morphTargets created in Blender.
+
+More properties at <a href='https://github.com/elbobo/aframe-gltf-morph-component'>A-Frame GLTF Morph</a> component.
+"""
+
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")

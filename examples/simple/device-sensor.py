@@ -1,3 +1,6 @@
+"""Device Sensor
+"""
+
 import json
 from datetime import datetime
 

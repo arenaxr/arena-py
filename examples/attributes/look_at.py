@@ -1,6 +1,15 @@
 """Look At
 
 The look-at component defines the behavior for an entity to dynamically rotate or face towards another entity or position. Use `#my-camera` to face the user camera, otherwise can take either a vec3 position or a query selector to another entity.
+
+Make object `look-at` the camera:
+```python
+look_at="#my-camera"
+```
+or make object `look-at` at a position
+```python
+look_at="0 0 0"
+```
 """
 
 from arena import *

@@ -1,3 +1,6 @@
+"""Hello World
+"""
+
 from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")

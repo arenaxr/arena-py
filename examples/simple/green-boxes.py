@@ -1,7 +1,11 @@
-from arena import *
+"""Green Boxes
+"""
+
 import random
-import time
 import sys
+import time
+
+from arena import *
 
 scene = Scene(host="arenaxr.org", scene="example")
 

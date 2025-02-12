@@ -1,3 +1,6 @@
+"""Laser Pointer
+"""
+
 import random
 
 from arena import *

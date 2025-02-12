@@ -1,4 +1,5 @@
-"""
+"""Chat
+
 Extremely basic example of setting a chat message handler to echo
 chat messages typed in the scene.
 
@@ -7,6 +8,7 @@ probably be stripped.
 """
 
 import arena
+
 
 def chat_handler(_scene, chatmsg, _rawmsg):
     print(f"Chat message from {chatmsg.dn} ({chatmsg.object_id}): {chatmsg.text.strip()}")

@@ -4,6 +4,19 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [1.2.0](https://github.com/arenaxr/arena-py/compare/v1.1.0...v1.2.0) (2025-02-12)
+
+
+### Features
+
+* add chat message msg handler ([5c73aef](https://github.com/arenaxr/arena-py/commit/5c73aefef9af7a4f409449c6ddeb71692f9c731a))
+
+
+### Bug Fixes
+
+* align euler-to-quat per threejs ([254fb38](https://github.com/arenaxr/arena-py/commit/254fb387c6274c265f33f04fe8e9499887005d7c))
+* incoming msg processing halts ([05aa859](https://github.com/arenaxr/arena-py/commit/05aa85907bcc56a8a4a68bc50ddcdf5ac6b0db30))
+
 ## [1.1.0](https://github.com/arenaxr/arena-py/compare/v1.0.2...v1.1.0) (2025-02-07)
 
 

@@ -16,7 +16,7 @@ def click_pointer(scene, evt, msg):
         ball = Sphere(position=end, scale=(0.03, 0.03, 0.03), color=(255, 0, 0), ttl=1)
         scene.add_objects([line, ball])
 
-scene = Scene(host="arenaxr.org", scene="earth")
+scene = Scene(host="arenaxr.org", scene="example")
 earth = GLTF(
     object_id="gltf-model_Earth",
     scale=(5, 5, 5),

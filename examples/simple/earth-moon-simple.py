@@ -5,7 +5,7 @@ Simple program to animate the earth and moon.
 
 from arena import *
 
-scene = Scene(host="arenaxr.org", scene="earth")
+scene = Scene(host="arenaxr.org", scene="example")
 earth = GLTF(
     object_id="gltf-model_Earth",
     scale=(10, 10, 10),

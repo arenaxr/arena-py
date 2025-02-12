@@ -6,7 +6,7 @@ import numpy as np
 from arena import *
 from arena.utils import Utils
 
-scene = Scene(host="arenaxr.org", scene="grab")
+scene = Scene(host="arenaxr.org", scene="example")
 
 grabbing = False
 

@@ -7,7 +7,7 @@ There is support to attach a child to an already-existing parent scene objects. 
 
 from arena import *
 
-scene = Scene(host="arenaxr.org", scene="earth")
+scene = Scene(host="arenaxr.org", scene="example")
 
 earth = GLTF(
     object_id="gltf-model_Earth",

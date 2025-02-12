@@ -3,7 +3,7 @@
 
 from arena import *
 
-scene = Scene(host="arenaxr.org", scene="grab")
+scene = Scene(host="arenaxr.org", scene="example")
 
 grabbing = False
 

@@ -19,7 +19,7 @@ SOCK_SERVER_HOST = "localhost"
 SOCK_SERVER_PORT = 8888
 SOCK_THREAD_NAME = "unsecured publisher"
 
-scene = Scene(host="arenaxr.org", scene="test")
+scene = Scene(host="arenaxr.org", scene="example")
 print("opened secured mqtt socket.")
 
 

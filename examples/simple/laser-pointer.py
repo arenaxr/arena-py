@@ -5,7 +5,7 @@ import random
 
 from arena import *
 
-scene = Scene(host="arenaxr.org", scene="test")
+scene = Scene(host="arenaxr.org", scene="example")
 
 def click(scene, evt, msg):
     if evt.type == "mousedown":

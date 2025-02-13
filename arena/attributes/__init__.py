@@ -22,6 +22,7 @@ from .jitsi_video import *
 from .landmark import *
 from .material import *
 from .material_extras import *
+from .model_container import *
 from .multisrc import *
 from .position import *
 from .remote_render import *
@@ -55,6 +56,7 @@ ATTRIBUTE_TYPE_MAP = {
     "landmark": Landmark,
     "material": Material,
     "material_extras": MaterialExtras,
+    "model_container": ModelContainer,
     "multisrc": Multisrc,
     "position": Position,
     "remote_render": RemoteRender,

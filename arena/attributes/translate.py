@@ -17,6 +17,7 @@ from .jitsi_video import *
 from .landmark import *
 from .material import *
 from .material_extras import *
+from .model_container import *
 from .model_update import *
 from .multisrc import *
 from .position import *
@@ -55,6 +56,7 @@ ATTRIBUTE_KEYWORD_TRANSLATION = {
     "look_at": "look-at",
     "material": "material",
     "material_extras": "material-extras",
+    "model_container": "model-container",
     "modelUpdate": "modelUpdate",
     "multisrc": "multisrc",
     "parent": "parent",
@@ -100,6 +102,7 @@ KEYWORD_ATTRIBUTE_TRANSLATION = {
     "look-at": "look_at",
     "material": "material",
     "material-extras": "material_extras",
+    "model-container": "model_container",
     "modelUpdate": "modelUpdate",
     "multisrc": "multisrc",
     "parent": "parent",
@@ -140,6 +143,7 @@ ATTRIBUTE_CLASS_TRANSLATION = {
     "landmark": Landmark,
     "material": Material,
     "material_extras": MaterialExtras,
+    "model_container": ModelContainer,
     "modelUpdate": ModelUpdate,
     "multisrc": Multisrc,
     "position": Position,

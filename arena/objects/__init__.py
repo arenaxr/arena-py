@@ -42,6 +42,7 @@ from .videosphere import *
 
 OBJECT_TYPE_MAP = {
     Object.object_type: Object,
+    Program.object_type: Program,
     ArenauiButtonPanel.object_type: ArenauiButtonPanel,
     ArenauiCard.object_type: ArenauiCard,
     ArenauiPrompt.object_type: ArenauiPrompt,
@@ -77,7 +78,6 @@ OBJECT_TYPE_MAP = {
     Torus.object_type: Torus,
     TorusKnot.object_type: TorusKnot,
     Triangle.object_type: Triangle,
-    Program.object_type: Program,
     UrdfModel.object_type: UrdfModel,
     Videosphere.object_type: Videosphere,
 }

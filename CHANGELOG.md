@@ -4,6 +4,13 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [1.3.0](https://github.com/arenaxr/arena-py/compare/v1.2.0...v1.3.0) (2025-02-13)
+
+
+### Features
+
+* **model-container:** add model-container attribute ([5ac7524](https://github.com/arenaxr/arena-py/commit/5ac75249b18b591230dfd8f4de5bb71113a27764))
+
 ## [1.2.0](https://github.com/arenaxr/arena-py/compare/v1.1.0...v1.2.0) (2025-02-12)
 
 

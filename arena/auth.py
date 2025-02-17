@@ -201,7 +201,6 @@ class ArenaAuth:
 
         print("Using remote-authenticated MQTT token.")
         mqtt_json = self._get_mqtt_token(web_host, realm, scene, username, video, env)
-        print(mqtt_json)
         # save mqtt_token
         with open(scene_mqtt_path, "w", encoding="utf-8") as d:
             d.write(mqtt_json)

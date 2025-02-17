@@ -1,3 +1,9 @@
+"""Networked Physics Soccer
+
+Creates a playing field object and two soccer balls for the user avatar's to interact with.
+Physics are computed in the Python application using `pybullet`, and are not computed in the ARENA Web site (also possible).
+"""
+
 import asyncio
 import random
 import time

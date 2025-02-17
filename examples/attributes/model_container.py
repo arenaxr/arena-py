@@ -10,9 +10,9 @@ from arena import *
 scene = Scene(host="arenaxr.org", scene="example")
 
 model_container = ModelContainer(
-    x=10,
-    y=10,
-    z=10,
+    x=2,
+    y=2,
+    z=2,
 )
 
 

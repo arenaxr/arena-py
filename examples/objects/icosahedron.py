@@ -13,7 +13,7 @@ def make_iso():
     iso = Icosahedron(
         object_id="iso",
         position=(0, 2, -3),
-        scale=(1.5, 1.5, 1.5),
+        scale=(1, 1, 1),
         material=Material(color=(10, 60, 255)),
     )
     scene.add_object(iso)

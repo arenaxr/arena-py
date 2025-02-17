@@ -15,7 +15,7 @@ def make_torusknot():
     my_torusknot = TorusKnot(
         object_id="my_torusknot",
         position=(0, 5, -3),
-        scale=(1.5, 1.5, 1.5),
+        scale=(0.5, 0.5, 0.5),
         material=Material(color=(0, 100, 40)),
     )
     scene.add_object(my_torusknot)

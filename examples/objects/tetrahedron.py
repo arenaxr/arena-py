@@ -13,7 +13,7 @@ def make_tet():
     my_tet = Tetrahedron(
         object_id="my_tet",
         position=(0, 2, -3),
-        scale=(2, 2, 2),
+        scale=(1, 1, 1),
         material=Material(color=(255, 100, 255)),
     )
     scene.add_object(my_tet)

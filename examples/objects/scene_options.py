@@ -14,11 +14,10 @@ scene = Scene(host="arenaxr.org", scene="example")
 def update_environment():
     opt_obj = Object(
         object_id="scene-options",
-        type="scene-options",
         persist=True,
     )
+    opt_obj.type = "scene-options"
     opt_obj.data["env-presets"] = {"preset": "arches"}
-    del opt_obj.data.object_type
     scene.add_object(opt_obj)
 
 

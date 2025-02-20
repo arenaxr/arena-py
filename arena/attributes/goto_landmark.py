@@ -3,7 +3,7 @@ from .attribute import Attribute
 
 class GotoLandmark(Attribute):
     """
-    GotoLandmark attribute class to manage its properties in the ARENA: Teleports user to the landmark with the given name. Requires click-listener.
+    GotoLandmark attribute class to manage its properties in the ARENA: Teleports user to the landmark with the given name. Requires `click-listener` attribute.
     Usage: `goto_landmark=GotoLandmark(...)`
 
     :param str landmark: Id of landmark to teleport to. Defaults to '' (optional)

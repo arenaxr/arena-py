@@ -3,7 +3,7 @@ from .attribute import Attribute
 
 class GltfMorph(Attribute):
     """
-    GltfMorph attribute class to manage its properties in the ARENA: Allows you to target and control a gltf model's morphTargets created in Blender. More properties at <https://github.com/elbobo/aframe-gltf-morph-component> A-Frame GLTF Morph component.
+    GltfMorph attribute class to manage its properties in the ARENA: Allows you to target and control a gltf model's morphTargets created in Blender. Requires `object_type: gltf-model`. More properties at <https://github.com/elbobo/aframe-gltf-morph-component> A-Frame GLTF Morph component.
     Usage: `gltf_morph=GltfMorph(...)`
 
     :param str morphtarget: Name of morphTarget, can be found as part of the GLTF model. Defaults to '' (optional)

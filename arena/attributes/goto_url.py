@@ -2,7 +2,7 @@ from .attribute import Attribute
 
 class GotoUrl(Attribute):
     """
-    GotoUrl attribute class to manage its properties in the ARENA: Load new URL when object is clicked. Requires click-listener.
+    GotoUrl attribute class to manage its properties in the ARENA: Load new URL when object is clicked. Requires `click-listener` attribute.
     Usage: `goto_url=GotoUrl(...)`
 
     :param str dest: Where to open the URL. Allows [popup, newtab, sametab] Defaults to 'sametab' (optional)

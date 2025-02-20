@@ -3,7 +3,7 @@ from .attribute import Attribute
 
 class Textinput(Attribute):
     """
-    Textinput attribute class to manage its properties in the ARENA: Opens an HTML prompt when clicked. Sends text input as an event on MQTT. Requires click-listener.
+    Textinput attribute class to manage its properties in the ARENA: Opens an HTML prompt when clicked. Sends text input as an event on MQTT. Requires `click-listener` attribute.
     Usage: `textinput=Textinput(...)`
 
     :param str label: Text prompt label Defaults to 'Input text below (max is 140 characters).' (optional)

@@ -51,8 +51,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--state_update_sec", default=os.environ.get('SCENE_STATE_UPDATE_MS', DFT_SCENE_STATE_UPDATE_SEC),
-        help="Specify the scene state update interval in seconds (can also be specified using SCENE_STATE_UPDATE_MS environment variable)")
+        "--state_update_sec", default=os.environ.get('SCENE_STATE_UPDATE_SEC', DFT_SCENE_STATE_UPDATE_SEC),
+        help="Specify the scene state update interval in seconds (can also be specified using SCENE_STATE_UPDATE_SEC environment variable)")
     parser.add_argument(
         "--inactive_time_sec", default=os.environ.get('INACTIVE_TIME_SEC', DFT_INACTIVE_TIME_SEC),
         help="Specify the scene inactivity time until a scene is said to be inactive in seconds (can also be specified using INACTIVE_TIME_SEC environment variable)")

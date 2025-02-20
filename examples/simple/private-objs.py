@@ -2,11 +2,11 @@
 
 This example demonstrates how to create private objects that only one user can see
 by leveraging the private_userid attribute of an object and the underlying private
-mqtt messaging topic mechanism.
+MQTT messaging topic mechanism.
 
 Note that the `program_id` top level message attribute is automatically set for private
 objects such that interactions by users on those private objects are directed back
-to this program via private mqtt topics as well.
+to this program via private MQTT topics as well.
 
 We also print the global private objects dict to show how it is cleaned up when
 a user leaves the scene.

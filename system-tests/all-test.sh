@@ -36,21 +36,6 @@ add_dir_tests "examples/tutorial"
 add_dir_tests "examples/simple"
 add_dir_tests "system-tests"
 
-# demo example apps
-tests+=("${PYTHON} examples/demos/agent-tutorial/tutorial-agent.py")
-tests+=("${PYTHON} examples/demos/arm/arm-demo.py -mh $host -s $scene")
-tests+=("${PYTHON} examples/demos/pinata/pinata.py")
-tests+=("${PYTHON} examples/demos/soccer-physics/physics.py")
-tests+=("${PYTHON} examples/demos/tic-tac-guac/guac.py -mh $host -s $scene")
-tests+=("${PYTHON} examples/demos/chess/chess.py -mh $host -s $scene")
-tests+=("${PYTHON} examples/demos/pendulum/main.py -mh $host -s $scene")
-tests+=("${PYTHON} examples/demos/npc/NPC.py examples/demos/npc/ArenaRobot")
-tests+=("${PYTHON} examples/demos/cobot-pi/ui.py")
-tests+=("${PYTHON} examples/demos/bosch-car/Python/BoschCar.py -mh $host -s $scene")
-tests+=("${PYTHON} examples/demos/mill19/mill19-twin.py")
-tests+=("${PYTHON} examples/demos/mill19/spb.py")
-
-
 # tool apps
 tests+=("${PYTHON} tools/arb/arb.py -mh $host -s $scene --manifest tools/arb/arb-manifest.json")
 tests+=("${PYTHON} tools/avatar/avatar.py")
@@ -73,6 +58,19 @@ tests+=("arena-py-pub -mh $host -s $scene -m '{\"object_id\": \"gltf-model_Earth
 tests+=("arena-py-permissions")
 tests+=("arena-py-signout")
 
+# demo example apps
+tests+=("${PYTHON} examples/demos/agent-tutorial/tutorial-agent.py")
+tests+=("${PYTHON} examples/demos/arm/arm-demo.py -mh $host -s $scene")
+tests+=("${PYTHON} examples/demos/pinata/pinata.py")
+tests+=("${PYTHON} examples/demos/networked-physics-soccer/networked-physics-soccer.py")
+tests+=("${PYTHON} examples/demos/tic-tac-guac/guac.py -mh $host -s $scene")
+tests+=("${PYTHON} examples/demos/chess/chess.py -mh $host -s $scene")
+tests+=("${PYTHON} examples/demos/pendulum/main.py -mh $host -s $scene")
+tests+=("${PYTHON} examples/demos/npc/NPC.py examples/demos/npc/ArenaRobot")
+tests+=("${PYTHON} examples/demos/cobot-pi/ui.py")
+tests+=("${PYTHON} examples/demos/bosch-car/Python/BoschCar.py -mh $host -s $scene")
+tests+=("${PYTHON} examples/demos/mill19/mill19-twin.py")
+tests+=("${PYTHON} examples/demos/mill19/spb.py")
 
 logfile="system-tests/all-test.log"
 rm -f $logfile

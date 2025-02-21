@@ -9,7 +9,7 @@ scene = Scene(host="arenaxr.org", scene="example")
 
 
 @scene.run_once
-def make_box():
+def make_capsule():
     my_cap = Capsule(
         object_id="my_cap",
         position=(0, 2, -3),

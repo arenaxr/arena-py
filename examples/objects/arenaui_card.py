@@ -12,7 +12,7 @@ scene = Scene(host="arenaxr.org", scene="example")
 
 
 @scene.run_once
-def setup_scene():
+def make_ui_card():
     # Add a simple info card with text and image
     intro_card = ArenauiCard(
         object_id="intro-card",

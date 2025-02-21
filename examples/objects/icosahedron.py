@@ -9,7 +9,7 @@ scene = Scene(host="arenaxr.org", scene="example")
 
 
 @scene.run_once
-def make_iso():
+def make_icosahedron():
     iso = Icosahedron(
         object_id="iso",
         position=(0, 2, -3),

@@ -25,7 +25,7 @@ def click(scene, evt, msg):
         scene.add_object(ball)
 
 @scene.run_once
-def main():
+def make_objects_laser_clickable():
     objs = scene.get_persisted_objs()
     for obj_id,obj in objs.items():
         # obj.update_attributes(clickable=True)

@@ -11,7 +11,7 @@ prompt = None
 
 
 @scene.run_once
-def setup_scene():
+def setup_ui_scene():
     # Add a simple info card with text and image
     intro_card = ArenauiCard(
         object_id="intro-card",

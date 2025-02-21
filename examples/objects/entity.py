@@ -9,8 +9,8 @@ scene = Scene(host="arenaxr.org", scene="example")
 
 
 @scene.run_once
-def make_box():
-    my_ent = Entity(
+def make_empty():
+    my_ent = Object(
         object_id="invisible_object",
         position=(0, 2, -3),
     )

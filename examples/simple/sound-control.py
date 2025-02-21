@@ -27,7 +27,7 @@ def click_handler(scene, evt, msg):
         scene.generate_custom_event(evt, action="clientEvent")
 
 @scene.run_once
-def main():
+def make_sound_controls():
     global earth, button_play, button_pause, button_stop
     # Create models
     earth = GLTF(

@@ -11,7 +11,7 @@ scene = Scene(host="arenaxr.org", scene="example")
 
 
 @scene.run_once
-def make_vr_controller_vive():
+def make_obj_model():
     vr_controller_vive = ObjModel(
         object_id="vr_controller_vive",
         position=(0, 2, -3),

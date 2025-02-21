@@ -19,7 +19,7 @@ attribution = Attribution(
 
 
 @scene.run_once
-def make_gltf_model_blumbach():
+def make_gltf_attribution():
     gltf_model_blumbach = GLTF(
         object_id="gltf-model-blumbach",
         url="store/users/wiselab/build/blumbach.glb",

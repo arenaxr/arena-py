@@ -16,7 +16,7 @@ scene = Scene(host="arenaxr.org", scene="example")
 
 
 @scene.run_once
-def make_im():
+def make_image():
     image_floor = Image(
         object_id="image_floor",
         position=(0, 0, 0.4),

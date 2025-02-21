@@ -11,7 +11,7 @@ scene = Scene(host="arenaxr.org", scene="example")
 
 
 @scene.run_once
-def make_torusknot():
+def make_torus_knot():
     my_torusknot = TorusKnot(
         object_id="my_torusknot",
         position=(0, 5, -3),

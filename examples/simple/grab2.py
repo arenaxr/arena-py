@@ -103,7 +103,7 @@ def move_box():
         scene.update_object(my_box)
 
 @scene.run_once
-def main():
+def make_grabbable_matrix():
     scene.add_object(my_box)
 
 scene.run_tasks()

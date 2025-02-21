@@ -18,7 +18,7 @@ landmark = Landmark(
 
 
 @scene.run_once
-def make_box():
+def make_box_landmark():
     scene.add_object(
         Box(
             object_id="box_1",

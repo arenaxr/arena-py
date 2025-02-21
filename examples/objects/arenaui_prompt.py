@@ -11,7 +11,7 @@ scene = Scene(host="arenaxr.org", scene="example")
 
 
 @scene.run_once
-def setup_scene():
+def make_ui_prompt():
     # Add a popup prompt with single button
     def prompt_handler(_scene, evt, _msg):
         if evt.type == "buttonClick":

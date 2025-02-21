@@ -9,7 +9,7 @@ scene = Scene(host="arenaxr.org", scene="example")
 
 
 @scene.run_once
-def make_box():
+def make_rounded_box():
     my_box = Roundedbox(
         object_id="my_box",
         position=(0, 2, -3),

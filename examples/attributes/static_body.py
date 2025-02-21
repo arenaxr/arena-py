@@ -17,7 +17,7 @@ static_body = StaticBody(
 
 
 @scene.run_once
-def make_drop_box():
+def make_drop_plane():
     # First, enable physics in the scene.
     opt_obj = Object(
         object_id="scene-options",

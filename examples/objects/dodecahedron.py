@@ -9,7 +9,7 @@ scene = Scene(host="arenaxr.org", scene="example")
 
 
 @scene.run_once
-def make_dod():
+def make_dodecahedron():
     dod = Dodecahedron(
         object_id="dod",
         position=(0, 2, -3),

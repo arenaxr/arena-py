@@ -21,7 +21,7 @@ app_scale = scene.args["scale"]
 
 
 @scene.run_once
-def main():
+def make_earth_moon_markers():
     global sceneParent, earth, moon
     # make a parent scene object
     sceneParent = Object(

@@ -37,7 +37,7 @@ def add_temp_ball(scene, position, color):
 
 
 @scene.run_once
-def make_box_collision():
+def make_box_collider():
     box_collision = Box(
         object_id="box1",
         depth=1,

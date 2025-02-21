@@ -20,7 +20,7 @@ def click(scene, evt, msg):
 
 
 @scene.run_once
-def main():
+def make_click_listener():
     my_tet = Tetrahedron(
         object_id="my_tet",
         position=(-1, 2, -5),

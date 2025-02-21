@@ -13,7 +13,7 @@ position = (1, 2, -3)  # Position(1,2,-3) works too
 
 
 @scene.run_once
-def make_oct():
+def make_moved_octahedron():
     my_oct = Octahedron(
         object_id="my_oct",
         position=position,

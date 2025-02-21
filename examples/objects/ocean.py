@@ -9,7 +9,7 @@ scene = Scene(host="arenaxr.org", scene="example")
 
 
 @scene.run_once
-def make_box():
+def make_ocean():
     my_ocean = Ocean(
         object_id="my_ocean",
         position=(0, 0.5, -3),

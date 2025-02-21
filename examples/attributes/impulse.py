@@ -19,9 +19,9 @@ impulse = Impulse(
 
 
 @scene.run_once
-def make_bouncy_ball():
+def make_click_impulse_ball():
     obj = Sphere(
-        object_id="fallBox",
+        object_id="fallBall",
         clickable=True,
         dynamic_body=DynamicBody(type="dynamic"),
         position=(0, 4, -4),

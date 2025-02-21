@@ -9,7 +9,7 @@ scene = Scene(host="arenaxr.org", scene="example")
 
 
 @scene.run_once
-def make_oct():
+def make_octahedron():
     my_oct = Octahedron(
         object_id="my_oct",
         position=(0, 2, -3),

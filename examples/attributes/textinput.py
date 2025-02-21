@@ -22,7 +22,7 @@ def evt_handler(scene, evt, msg):
 
 
 @scene.run_once
-def make_tex_input_iso():
+def make_text_input_icosahedron():
     my_iso = Icosahedron(
         object_id="my_iso",
         position=(0, 2, -5),

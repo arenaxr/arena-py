@@ -13,7 +13,7 @@ scene = Scene(host="arenaxr.org", scene="example")
 
 
 @scene.run_once
-def make_thickline():
+def make_thick_line():
     thickline = Thickline(
         object_id="thickline_8",
         lineWidth=11,

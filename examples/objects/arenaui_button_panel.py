@@ -11,7 +11,7 @@ scene = Scene(host="arenaxr.org", scene="example")
 
 
 @scene.run_once
-def setup_scene():
+def make_ui_button_panel():
     # Add a button panel, with two sets of buttons
     first_buttonset = [Button(name="Prompt A"), Button(name="Option B"), Button("More")]
     second_buttonset = [Button("D"), Button("E"), Button("F"), Button("Back")]

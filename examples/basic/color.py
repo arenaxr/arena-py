@@ -11,7 +11,7 @@ color = (100, 200, 100)  # Color(100,200,100) works too
 
 
 @scene.run_once
-def make_colored_iso():
+def make_colored_icosahedron():
     my_iso = Icosahedron(
         object_id="my_iso",
         position=(0, 2, -5),

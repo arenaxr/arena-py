@@ -11,7 +11,7 @@ scene = Scene(host="arenaxr.org", scene="example")
 
 
 @scene.run_once
-def make_test_scene():
+def make_threejs_scene():
     test_scene = ThreejsScene(
         object_id="test-scene",
         position=(0, 1, -3),

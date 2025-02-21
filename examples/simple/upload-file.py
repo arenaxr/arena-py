@@ -9,7 +9,7 @@ scene = Scene(host="arenaxr.org", scene="example")
 
 
 @scene.run_once
-def upload():
+def upload_files():
     url_glb = scene.upload_store_file("/Users/username/Desktop/abox.glb")
     if url_glb:
         scene.add_object(GltfModel(persist=True, position=Position(0, 1, -3), url=url_glb))

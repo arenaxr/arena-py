@@ -11,7 +11,7 @@ scale = (1, 2, 1)  # Scale(1,2,1) works too
 
 
 @scene.run_once
-def make_box():
+def make_scaled_box():
     my_box = Box(
         object_id="my_box",
         position=(0, 2, -5),

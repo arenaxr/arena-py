@@ -42,7 +42,7 @@ my_box = Box(
 )
 
 @scene.run_once
-def main():
+def make_grabbable_simple():
     scene.add_object(my_box)
 
 scene.run_tasks()

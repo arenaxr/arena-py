@@ -25,7 +25,7 @@ athlete_model = UrdfModel(
 
 
 @scene.run_once
-def main():
+def make_urdf_model():
     # add the model
     scene.add_object(athlete_model)
 

@@ -34,7 +34,7 @@ my_box2 = Box(
 
 
 @scene.run_once
-def make_box():
+def make_rotatable_box():
     scene.add_object(my_box1)
     scene.add_object(my_box2)
 

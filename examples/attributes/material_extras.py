@@ -24,7 +24,7 @@ material_extras = MaterialExtras(
 
 
 @scene.run_once
-def make_robot():
+def make_occluded_robot():
     robot = GLTF(
         object_id="arobothead",
         url="/store/models/robobit.glb",

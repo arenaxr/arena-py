@@ -11,7 +11,7 @@ scene = Scene(host="arenaxr.org", scene="example")
 
 
 @scene.run_once
-def make_line():
+def make_simple_line():
     line = Line(
         object_id="line_1",
         start=(2, 2, 2),

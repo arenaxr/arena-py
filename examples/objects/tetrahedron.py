@@ -9,7 +9,7 @@ scene = Scene(host="arenaxr.org", scene="example")
 
 
 @scene.run_once
-def make_tet():
+def make_tetrahedron():
     my_tet = Tetrahedron(
         object_id="my_tet",
         position=(0, 2, -3),

@@ -11,7 +11,7 @@ scene = Scene(host="arenaxr.org", scene="example")
 
 
 @scene.run_once
-def make_model_container():
+def make_robot_arm_attachment():
 robot_arm = UrdfModel(
     object_id="robot_arm",
     position=(0, 0, -3),

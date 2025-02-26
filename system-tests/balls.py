@@ -1,9 +1,11 @@
-# balls.py
-#
-# spray a bunch of spheres into the scene, test physics and impulse
+"""Balls
+
+Spray a bunch of spheres into the scene, test physics and impulse.
+"""
+
+import random
 
 from arena import *
-import random
 
 scene = Scene(host="arenaxr.org", scene="test")
 

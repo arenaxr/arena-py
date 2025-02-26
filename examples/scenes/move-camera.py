@@ -1,9 +1,12 @@
-# move-camera.py
-#
-# Move cameras to a random location
+"""Move Camera
+
+Move cameras to a random location.
+"""
+
+import random
 
 from arena import *
-import random
+
 
 def rando():
     return float(random.randint(-100000, 100000)) / 1000

@@ -1,10 +1,10 @@
-# errors.py
-#
-# test printing tracebacks from exceptions when an error occurs
-# should continue running mqtt loop, but print traceback
+"""Errors
+
+Test printing tracebacks from exceptions when an error occurs.
+Should continue running MQTT loop, but print traceback.
+"""
 
 from arena import Scene
-
 
 scene = Scene(host="arenaxr.org", scene="example")
 

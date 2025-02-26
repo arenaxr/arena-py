@@ -1,11 +1,12 @@
-# auto-updates.py
-#
-# Tests automatic updates for objects done by Arena class
-# Please run auto-updates-helper.py in another terminal window
+"""Auto Updates
 
-from arena import *
+Tests automatic updates for objects done by Arena class.
+Please run `auto-updates-helper.py` in another terminal window.
+"""
+
 import random
 
+from arena import *
 
 scene = Scene(host="arenaxr.org", scene="test")
 

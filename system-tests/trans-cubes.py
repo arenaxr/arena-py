@@ -1,11 +1,12 @@
-# transBoxs.py
-#
-# draw a symmetric structure of transparent mostly red blue (yellow) rectangles
+"""Trans Boxes
 
-from arena import *
+Draw a symmetric structure of transparent mostly red blue (yellow) rectangles.
+"""
+
 import random
 import time
 
+from arena import *
 
 scene = Scene(host="arenaxr.org", scene="test")
 

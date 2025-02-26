@@ -1,6 +1,7 @@
-# rotate-cube.py
-#
-# Rotates a color changing box. Tests making and updating Euler Rotation and Color Attributes.
+"""Rotate Cube
+
+Rotates a color changing box. Tests making and updating Euler Rotation and Color Attributes.
+"""
 
 import random
 

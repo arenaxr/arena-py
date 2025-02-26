@@ -1,11 +1,11 @@
-# rotate-camera.py
-#
-# Rotate cameras around the origin
+"""Rotate Camera
+
+Rotate cameras around the origin.
+"""
 
 import math
 
 from arena import *
-
 
 radius = 10
 interval = 0

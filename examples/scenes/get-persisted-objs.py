@@ -1,6 +1,7 @@
-# get_persisted_objs.py
-#
-# Tests scene get_persisted_objs
+"""Get Persisted Objects
+
+Tests scene `get_persisted_objs`.
+"""
 
 from arena import *
 

@@ -1,4 +1,4 @@
-"""ARENAUI
+"""ARENA UI Panels
 
 Demonstrate a multi-path set of UI panels for a user to interact with.
 """

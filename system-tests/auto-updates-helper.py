@@ -1,11 +1,12 @@
-# auto-updates-helper.py
-#
-# Helper script for auto-updates.py. Tests programs interactions.
-# Please run auto-updates.py in another terminal window
+"""Auto Updates Helper
 
-from arena import *
+Helper script for `auto-updates.py`. Tests programs interactions.
+Please run `auto-updates.py` in another terminal window.
+"""
+
 import random
 
+from arena import *
 
 scene = Scene(host="arenaxr.org", scene="test")
 

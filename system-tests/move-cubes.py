@@ -1,7 +1,8 @@
-# move-cubes.py
-#
-# Make two boxes that move away from each other (and a bunch of dodecahedrons!).
-# For testing tasks and object creation.
+"""Move Cubes
+
+Make two boxes that move away from each other (and a bunch of dodecahedrons!).
+For testing tasks and object creation.
+"""
 
 import random
 

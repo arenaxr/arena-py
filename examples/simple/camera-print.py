@@ -1,4 +1,4 @@
-"""Camera Tracer
+"""Camera Print
 
 Camera tracing program. Draws a path that follows the user.
 """

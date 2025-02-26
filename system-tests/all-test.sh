@@ -32,6 +32,7 @@ add_dir_tests "examples/attributes"
 add_dir_tests "examples/objects"
 add_dir_tests "examples/callbacks"
 add_dir_tests "examples/basic"
+add_dir_tests "examples/scenes"
 add_dir_tests "examples/tutorial"
 add_dir_tests "examples/simple"
 add_dir_tests "system-tests"
@@ -61,16 +62,16 @@ tests+=("arena-py-signout")
 # demo example apps
 tests+=("${PYTHON} examples/demos/agent-tutorial/tutorial-agent.py")
 tests+=("${PYTHON} examples/demos/arm/arm-demo.py -mh $host -s $scene")
-tests+=("${PYTHON} examples/demos/pinata/pinata.py")
-tests+=("${PYTHON} examples/demos/networked-physics-soccer/networked-physics-soccer.py")
-tests+=("${PYTHON} examples/demos/tic-tac-guac/guac.py -mh $host -s $scene")
-tests+=("${PYTHON} examples/demos/chess/chess.py -mh $host -s $scene")
-tests+=("${PYTHON} examples/demos/pendulum/main.py -mh $host -s $scene")
-tests+=("${PYTHON} examples/demos/npc/NPC.py examples/demos/npc/ArenaRobot")
-tests+=("${PYTHON} examples/demos/cobot-pi/ui.py")
 tests+=("${PYTHON} examples/demos/bosch-car/Python/BoschCar.py -mh $host -s $scene")
+tests+=("${PYTHON} examples/demos/chess/chess.py -mh $host -s $scene")
+tests+=("${PYTHON} examples/demos/cobot-pi/ui.py")
 tests+=("${PYTHON} examples/demos/mill19/mill19-twin.py")
 tests+=("${PYTHON} examples/demos/mill19/spb.py")
+tests+=("${PYTHON} examples/demos/networked-physics-soccer/networked-physics-soccer.py")
+tests+=("${PYTHON} examples/demos/npc/NPC.py examples/demos/npc/ArenaRobot")
+tests+=("${PYTHON} examples/demos/pendulum/main.py -mh $host -s $scene")
+tests+=("${PYTHON} examples/demos/pinata/pinata.py")
+tests+=("${PYTHON} examples/demos/tic-tac-guac/guac.py -mh $host -s $scene")
 
 logfile="system-tests/all-test.log"
 rm -f $logfile

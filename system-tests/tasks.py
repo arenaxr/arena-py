@@ -1,3 +1,6 @@
+"""Tasks
+"""
+
 from arena import *
 
 # start ARENA client

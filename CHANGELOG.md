@@ -4,6 +4,13 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [1.3.1](https://github.com/arenaxr/arena-py/compare/v1.3.0...v1.3.1) (2025-03-03)
+
+
+### Bug Fixes
+
+* removed unnecessary logging of token ([fb78b58](https://github.com/arenaxr/arena-py/commit/fb78b58ce6a2d6519be981c79a5024d74e48d316))
+
 ## [1.3.0](https://github.com/arenaxr/arena-py/compare/v1.2.0...v1.3.0) (2025-02-13)
 
 

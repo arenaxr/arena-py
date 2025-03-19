@@ -453,7 +453,7 @@ class ArenaAuth:
         return self.urlopen(url, data=self._encode_params(params), csrf=self._csrftoken)
 
     def verify(self, web_host):
-        return web_host != "localhost"
+        return web_host != "localhost" and not web_host.endswith(".local")
 
     def urlopen_def(self, url, data=None):
         """urlopen default is for non-ARENA URL connections.

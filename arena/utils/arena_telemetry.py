@@ -108,7 +108,7 @@ class ArenaTelemetry():
             trace.set_tracer_provider(provider)
         else:
             if not env_telemetry.lower() in ('none', 'false', ''): print(f"Warn: Invalid telemetry processor specified: {env_telemetry}")
-            # instanciate a no-op tracer
+            # instantiate a no-op tracer
             provider = NoOpTracerProvider()
             trace.set_tracer_provider(provider)
 

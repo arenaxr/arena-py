@@ -277,6 +277,7 @@ def on_handler(_scene, evt, _msg):
             "rotation": rig_rot,
             "last_click": 0,
             "enabled": True,
+            "last_evt_pos": {},
         }
         if prev_rig is None:
             # This is a new rig to program. Just in case a previous rig existed,
@@ -411,7 +412,7 @@ def add_rotation_clicks(parent, axis, direction):
         )
     )
 
-
+# Handles mouse events for the axis cones
 def mouse_handler(_scene, evt, _msg):
     obj = scene.all_objects[evt.data.target]
     parts = evt.data.target.split("-")
@@ -427,6 +428,10 @@ def mouse_handler(_scene, evt, _msg):
             obj, material=Material(color=get_color(axis), opacity=OPC_OFF)
         )
     elif evt.type == "mousedown":
+        prev_rig = user_rigs.get(evt.object_id)
+        if prev_rig and prev_rig["last_evt_pos"] == evt.data.originPosition:
+            return
+        rig["last_evt_pos"] = evt.data.originPosition
         if attribute == "position":
             camera_position_updater(evt.object_id, axis, direction)
         elif attribute == "rotation":
@@ -475,6 +480,10 @@ def ground_click_handler(_scene, evt, _msg):
     rig = user_rigs.get(evt.object_id)
     if rig is None or not rig["enabled"]:
         return
+    # Handle double-clicks
+    if rig["last_evt_pos"] == evt.data.originPosition:
+        return
+    rig["last_evt_pos"] = evt.data.originPosition
     prev_rig_pos = rig["position"]
     new_x = prev_rig_pos[X] - evt.data.targetPosition.x
     new_z = prev_rig_pos[Z] - evt.data.targetPosition.z

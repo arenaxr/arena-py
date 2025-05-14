@@ -1,5 +1,5 @@
-from .arena_object import Object
 from ..attributes import Position, Rotation
+from .arena_object import Object
 
 
 class Camera(Object):
@@ -19,7 +19,7 @@ class Camera(Object):
         self.hasVideo = arena_user.get("hasVideo", False)
         self.hasAvatar = arena_user.get("hasAvatar", False)
         self.displayName = arena_user.get("displayName", "")
-        self.jistsiId = arena_user.get("jistsiId", None)
+        self.jitsiId = arena_user.get("jitsiId", None)
 
         self.hands = {}
         self.hand_found_callback = None

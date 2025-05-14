@@ -1,6 +1,7 @@
-from arena import *
 import time
 import uuid
+
+from arena import *
 
 # setup library
 scene = Scene(host="arenaxr.org", namespace="etc", scene="ProjectHub_2")
@@ -15,7 +16,7 @@ def edit_scene_options():
     opt_obj.data['scene-options'] = {
         #"clickableOnlyEvents": True,
         #"privateScene": True,
-        "jitsiHost": "mr.andrew.cmu.edu",
+        "jitsiHost": "mr.lan.cmu.edu",
         #"maxAVDist": 20,
         #"screenshare": "screenshare",
         #"volume": 1,

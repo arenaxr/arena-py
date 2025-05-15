@@ -4,6 +4,19 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [1.4.0](https://github.com/arenaxr/arena-py/compare/v1.3.0...v1.4.0) (2025-05-15)
+
+
+### Features
+
+* **physx:** Update physics system to PhysX ([e096289](https://github.com/arenaxr/arena-py/commit/e0962895fd05176b159ea118e668cf160462e938))
+
+
+### Bug Fixes
+
+* allow .local host addresses to ignore certificate verification ([b974079](https://github.com/arenaxr/arena-py/commit/b974079f07fa317b1212830529978042fe094965))
+* removed unnecessary logging of token ([fb78b58](https://github.com/arenaxr/arena-py/commit/fb78b58ce6a2d6519be981c79a5024d74e48d316))
+
 ## [1.3.0](https://github.com/arenaxr/arena-py/compare/v1.2.0...v1.3.0) (2025-02-13)
 
 

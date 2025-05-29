@@ -36,6 +36,10 @@ The above is the simplest example of an ARENA Python program. This library sits 
 message protocol: JSON messages described in more detail at https://github.com/arenaxr/ARENA-core which runs in a browser.
 That forms a layer, in turn, on top of [A-Frame](https://aframe.io/) and [THREE.js](http://threejs.org/) javascript libraries.
 
+## Alternate Server Usage
+
+In addition to the above, you may deploy your own ARENA webserver if you do not wish to use our test deployment server at [arenaxr.org](https://arenaxr.org). You can follow our setup guidelines in [arenaxr/arena-services-docker](https://github.com/arenaxr/arena-services-docker), to run your own server.
+
 ## Authentication
 We have added protection to the ARENA MQTT broker to limit access to change your scenes, which requires Python programs to supply authentication through a Google account.
 

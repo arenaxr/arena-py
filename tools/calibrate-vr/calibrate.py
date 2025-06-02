@@ -431,7 +431,7 @@ def mouse_handler(_scene, evt, _msg):
         prev_rig = user_rigs.get(evt.object_id)
         if prev_rig and prev_rig["last_evt_pos"] == evt.data.originPosition:
             return
-        rig["last_evt_pos"] = evt.data.originPosition
+        prev_rig["last_evt_pos"] = evt.data.originPosition
         if attribute == "position":
             camera_position_updater(evt.object_id, axis, direction)
         elif attribute == "rotation":

@@ -51,7 +51,7 @@ prompt = ArenauiPrompt(
     buttons=[
         Button("Begin Repair"),
     ],
-    position=(1, 0, 0),
+    position=(0.75, 0.5, -0.25),
     look_at="#my-camera",
     persist=True,
     width=1.25,
@@ -63,10 +63,10 @@ panel = ArenauiCard(
     title="Car Repair Guide",
     body="Let's get Started!",
     bodyAlign="center",
-    position=(1, 0, 0),
+    position=(0.75, 0.5, -0.25),
     look_at="#my-camera",
     persist=True,
-    widthScale=0.5,
+    widthScale=0.33,
 )
 
 # We need this to anchor guideline starting point from sign
@@ -74,7 +74,7 @@ sign_ref = Box(
     depth=0.01,
     height=0.5,
     width=0.5,
-    position=(1,0,0),
+    position=(0.75, 0.5, -0.25),
     material=Material(visible=False),
     object_id="guide_sign_ref",
     look_at="#my-camera",
@@ -86,23 +86,37 @@ guide_line_parent = Box(
     object_id="guide_line_parent",
     parent="guide_sign_ref",
     material=Material(visible=False),
-    look_at="#BoschCar_Hood",
+    look_at="#Boschcar_hood_ref",
     persist=True,
 )
 
 # Guide line has rotation "forward" to target object it's looking at
-guide_material = Material(color=Color("#ff1117"), opacity= 0.75, visible=False)
+guide_material = Material(color=Color("#ff1117"), opacity= 0.66, visible=False)
 guide_line = Cylinder(
     object_id="guide_line",
-    height=0.75,
-    radius=0.01,
-    position=(0,0,0.6),
+    height=0.5,
+    radius=0.005,
+    position=(0,0,0.4),
     material=guide_material,
     persist=True,
     parent="guide_line_parent",
     rotation=Rotation(90,0,0)
 )
 
+engline_block_ref = Box(
+    object_id="Boschcar_engine_block_ref",
+    material=Material(visible=False),
+    persist=True,
+    position=(0,0.3,0),
+    parent="BoschCar_Engine_Block"
+)
+hood_ref = Box(
+    object_id="Boschcar_hood_ref",
+    material=Material(visible=False),
+    persist=True,
+    position=(0,-0.1,-0.2),
+    parent="BoschCar_Hood"
+)
 
 
 def render_guide(to_state):
@@ -133,7 +147,7 @@ def render_guide(to_state):
         panel.update_attributes(
             body="Step 2: Remove the engine block",
         )
-        guide_line_parent.update_attributes(look_at="#BoschCar_Engine_Block")
+        guide_line_parent.update_attributes(look_at="#Boschcar_engine_block_ref")
         scene.update_objects([panel, guide_line_parent])
         print(1)
         # Draw arrow to the engine block
@@ -141,20 +155,20 @@ def render_guide(to_state):
         panel.update_attributes(
             body="Step 3: Replace the engine block",
         )
-        guide_line_parent.update_attributes(look_at="#BoschCar_Engine_Block")
+        guide_line_parent.update_attributes(look_at="#Boschcar_engine_block_ref")
         scene.update_objects([panel, guide_line_parent])
     elif to_state == 3:
         panel.update_attributes(
             body="Step 4: Close the hood",
         )
-        guide_line_parent.update_attributes(look_at="#BoschCar_Hood")
+        guide_line_parent.update_attributes(look_at="#Boschcar_hood_ref")
         scene.update_objects([panel, guide_line_parent])
     guide_state = to_state
 
 
 scene = Scene(host="arenaxr.org", namespace="public", scene="arena", on_msg_callback=car_events_cb)
 
-scene.add_objects([panel, prompt, sign_ref, guide_line_parent, guide_line])
+scene.add_objects([panel, prompt, sign_ref, guide_line_parent, guide_line, engline_block_ref, hood_ref])
 
 render_guide(-1)
 

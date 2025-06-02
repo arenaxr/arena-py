@@ -42,7 +42,6 @@ setuptools.setup(
         "google-auth~=2.22.0",
         "PyJWT~=2.4.0",
         "opentelemetry-exporter-otlp-proto-grpc==1.21.*",
-        "numpy>=1.22.0",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

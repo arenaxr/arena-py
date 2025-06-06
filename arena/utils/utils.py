@@ -1,5 +1,5 @@
 # simple general purpose functions
-import not_numpy as np
+from . import not_numpy as np
 
 
 class Utils(object):

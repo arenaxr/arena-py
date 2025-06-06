@@ -15,10 +15,10 @@ import __main__ as main
 
 from .arena_mqtt import ArenaMQTT
 from .attributes import *
+from .chat import *
 from .env import PROGRAM_OBJECT_ID, SCENE, _get_env
 from .events import *
 from .objects import *
-from .chat import *
 from .topics import PUBLISH_TOPICS, SCENE_MSGTYPES, TOPIC_TOKENS, TOPIC_TYPES
 from .utils import (
     ArenaCmdInterpreter,

@@ -1,4 +1,4 @@
-from deprecated import deprecated
+# from deprecated import deprecated
 
 from ..utils import *
 from .attribute import Attribute
@@ -38,31 +38,31 @@ class DataEvent(Attribute):
         return data
 
     @property
-    @deprecated("DEPRECATED: data.source is deprecated for clientEvent, use data.target instead.")
+    # @deprecated("DEPRECATED: data.source is deprecated for clientEvent, use data.target instead.")
     def source(self):
         return None
 
     @source.setter
-    @deprecated("DEPRECATED: data.source is deprecated for clientEvent, use data.target instead.")
+    # @deprecated("DEPRECATED: data.source is deprecated for clientEvent, use data.target instead.")
     def source(self, value):
         return
 
     @property
-    @deprecated("DEPRECATED: data.clickPos is deprecated for clientEvent, use data.originPosition instead.")
+    # @deprecated("DEPRECATED: data.clickPos is deprecated for clientEvent, use data.originPosition instead.")
     def clickPos(self):
         return None
 
     @clickPos.setter
-    @deprecated("DEPRECATED: data.clickPos is deprecated for clientEvent, use data.originPosition instead.")
+    # @deprecated("DEPRECATED: data.clickPos is deprecated for clientEvent, use data.originPosition instead.")
     def clickPos(self, value):
         return
 
     @property
-    @deprecated("DEPRECATED: data.position is deprecated for clientEvent, use data.targetPosition instead.")
+    # @deprecated("DEPRECATED: data.position is deprecated for clientEvent, use data.targetPosition instead.")
     def position(self):
         return None
 
     @position.setter
-    @deprecated("DEPRECATED: data.position is deprecated for clientEvent, use data.targetPosition instead.")
+    # @deprecated("DEPRECATED: data.position is deprecated for clientEvent, use data.targetPosition instead.")
     def position(self, value):
         return

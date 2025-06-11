@@ -1,4 +1,4 @@
-from deprecated import deprecated
+# from deprecated import deprecated
 
 from .arena_object import Object
 
@@ -39,11 +39,11 @@ class Text(Object):
         super().__init__(object_type=Text.object_type, **kwargs)
 
     @property
-    @deprecated("DEPRECATED:data.text is deprecated for object_type: text, use data.value instead.")
+    # @deprecated("DEPRECATED:data.text is deprecated for object_type: text, use data.value instead.")
     def text(self):
         return None
 
     @text.setter
-    @deprecated("DEPRECATED:data.text is deprecated for object_type: text, use data.value instead.")
+    # @deprecated("DEPRECATED:data.text is deprecated for object_type: text, use data.value instead.")
     def text(self, value):
         return

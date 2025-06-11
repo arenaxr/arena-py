@@ -1,4 +1,4 @@
-from deprecated import deprecated
+# from deprecated import deprecated
 
 from .arena_object import Object
 

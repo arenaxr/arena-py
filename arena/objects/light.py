@@ -1,4 +1,4 @@
-from deprecated import deprecated
+# from deprecated import deprecated
 
 from .arena_object import Object
 
@@ -38,11 +38,11 @@ class Light(Object):
         super().__init__(object_type=Light.object_type, **kwargs)
 
     @property
-    @deprecated("data.light.[property] is deprecated, use object_type: light and data.[property] instead.")
+    # @deprecated("data.light.[property] is deprecated, use object_type: light and data.[property] instead.")
     def light(self):
         return None
 
     @light.setter
-    @deprecated("data.light.[property] is deprecated, use object_type: light and data.[property] instead.")
+    # @deprecated("data.light.[property] is deprecated, use object_type: light and data.[property] instead.")
     def light(self, value):
         return

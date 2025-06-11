@@ -157,7 +157,7 @@ class ArenaMQTT(object):
         )
 
         self.mqttc = mqtt.Client(
-            self.mqttc_id, clean_session=True
+            mqtt.CallbackAPIVersion.VERSION1, self.mqttc_id, clean_session=True
         )
         self.mqttc.username_pw_set(username=self.username, password=token)
         print("=====")

@@ -1,7 +1,15 @@
+import asyncio
 import os
 import signal
 import sys
-import asyncio
+
+
+# begin rustpython compile workaround: https://github.com/chaquo/chaquopy/issues/600
+def valid_signals():
+    return {signal._int_to_enum(x, signal.Signals) for x in range(1, signal.NSIG)}
+signal.valid_signals = valid_signals
+# end rustpython compile workaround
+
 
 class EventLoop(object):
     """

@@ -3,7 +3,7 @@
 from .arena_object import Object
 
 
-@deprecated("Cube (=Box) Geometry (deprecated); Supported for Legacy reasons; Please use Box in new scenes")
+# @deprecated("Cube (=Box) Geometry (deprecated); Supported for Legacy reasons; Please use Box in new scenes")
 class Cube(Object):
     """
     Cube object class to manage its properties in the ARENA: Cube (=Box) Geometry (**deprecated**); Supported for Legacy reasons; Please use Box in new scenes

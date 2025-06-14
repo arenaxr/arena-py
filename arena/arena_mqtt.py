@@ -157,7 +157,7 @@ class ArenaMQTT(object):
         )
 
         self.mqttc = mqtt.Client(
-            mqtt.CallbackAPIVersion.VERSION1, self.mqttc_id, clean_session=True
+            mqtt.CallbackAPIVersion.VERSION2, self.mqttc_id, clean_session=True
         )
         self.mqttc.username_pw_set(username=self.username, password=token)
         print("=====")
@@ -282,7 +282,7 @@ class ArenaMQTT(object):
         """Public function for sleeping in async functions."""
         await asyncio.sleep(interval_ms / 1000)
 
-    def on_connect(self, client, userdata, flags, rc):
+    def on_connect(self, client, userdata, flags, rc, properties):
         """Paho MQTT client on_connect callback."""
         if rc == 0:
             self.mqtt_connect_evt.set()
@@ -323,17 +323,18 @@ class ArenaMQTT(object):
     async def process_message(self):
         raise NotImplementedError("Must override process_message")
 
-    def on_subscribe(self, client, userdata, mid, granted_qos, properties=None):
+    def on_subscribe(self, client, userdata, mid, rc_list, properties):
         if self.debug:
-            print(f"[subscribe ack]: topic={self.subscriptions[mid]} granted qos={granted_qos}")
-        for qos in granted_qos:
-            if qos not in range(0, 2):
+            print(f"[subscribe ack]: topic={self.subscriptions[mid]} rc_list={rc_list}")
+        for rc in rc_list:
+            if rc >= 128:
+                # Any reason code >= 128 is a failure.
                 if mid in self.subscriptions:
                     print(f"FAILURE!!! Subscribing to topic {self.subscriptions[mid]}")
                 else:
                     print(f"FAILURE!!! Subscribing to topic with message id: {mid}")
 
-    def on_disconnect(self, client, userdata, rc):
+    def on_disconnect(self, client, userdata, rc, properties):
         """Paho MQTT client on_disconnect callback."""
         if rc == 0:
             print("Disconnected from the ARENA!")

@@ -208,8 +208,8 @@ class Scene(ArenaMQTT):
         self.telemetry.exit(error_msg)
         os._exit(0 if error_msg == None else 1)
 
-    def on_connect(self, client, userdata, flags, rc):
-        super().on_connect(client, userdata, flags, rc)
+    def on_connect(self, client, userdata, flags, rc, properties):
+        super().on_connect(client, userdata, flags, rc, properties)
         if rc == 0:
             # set event
             self.connected_evt.set()
@@ -226,7 +226,7 @@ class Scene(ArenaMQTT):
         super().on_message_private(client, userdata, msg)
         self.run_info.msg_rcv()
 
-    def on_publish(self, client, userdata, mid):
+    def on_publish(self, client, userdata, mid, rc, properties):
         self.run_info.msg_publish()
 
     async def process_message(self):

@@ -2,6 +2,8 @@
 auth.py - Authentication methods for accessing the ARENA.
 """
 
+import base64
+import binascii
 import datetime
 import json
 import os
@@ -15,7 +17,6 @@ from urllib import parse, request
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 
-import jwt
 from google.auth import jwt as gJWT
 from google_auth_oauthlib.flow import InstalledAppFlow
 
@@ -238,7 +239,7 @@ class ArenaAuth:
 
     def has_publish_rights(self, token, topic):
         """Check the MQTT token for permission to publish to topic."""
-        tok = jwt.decode(token, options={"verify_signature": False})
+        tok = _jwt_decode(token)
         for pub in tok["publ"]:
             if topic_matches_sub(pub.strip(), topic):
                 return True
@@ -269,7 +270,7 @@ class ArenaAuth:
         print(f"ARENA Token Username: {username}")
 
         now = time.time()
-        tok = jwt.decode(self._mqtt_token["token"], options={"verify_signature": False})
+        tok = _jwt_decode(self._mqtt_token["token"])
         exp = float(tok["exp"])
         delta = exp - now
         dur_str = str(datetime.timedelta(milliseconds=delta * 1000))
@@ -556,7 +557,7 @@ def permissions():
     # env storage auth
     if os.environ.get("ARENA_USERNAME") and os.environ.get("ARENA_PASSWORD"):
         mqtt_token = os.environ["ARENA_PASSWORD"]
-        mqtt_claims = jwt.decode(mqtt_token["token"], options={"verify_signature": False})
+        mqtt_claims = _jwt_decode(mqtt_token["token"])
         _print_mqtt_token("environment variable 'ARENA_PASSWORD'", mqtt_claims)
     # file storage auth
     token_paths = []
@@ -573,7 +574,7 @@ def permissions():
         except json.decoder.JSONDecodeError as err:
             print(f"{err}, {mqtt_path}")
             continue
-        mqtt_claims = jwt.decode(mqtt_token["token"], options={"verify_signature": False})
+        mqtt_claims = _jwt_decode(mqtt_token["token"])
         _print_mqtt_token(mqtt_path, mqtt_claims)
     # no permissions
     if not mqtt_claims:
@@ -596,7 +597,7 @@ def _remove_credentials(cred_dir, expire=False):
             os.remove(test_mqtt_path)
             return
         try:
-            mqtt_claims = jwt.decode(mqtt_token["token"], options={"verify_signature": False})
+            mqtt_claims = _jwt_decode(mqtt_token["token"])
         except Exception as err:
             print(f"{err}, {test_mqtt_path}")
             os.remove(test_mqtt_path)
@@ -610,6 +611,30 @@ def _remove_credentials(cred_dir, expire=False):
         os.remove(test_mqtt_path)
     if os.path.exists(test_gauth_path):
         os.remove(test_gauth_path)
+
+
+# Adapted from https://github.com/u-clarkdeveloper/simple-jwt/blob/main/src/simple_jwt/jwt.py
+def _jwt_decode(token):
+    try:
+        _, claims, _ = token.split(".")
+    except ValueError as exc:
+        raise ValueError("Invalid JWT: token must have 3 parts separated by '.'") from exc
+
+    # Add padding to make the base64 string length a multiple of 4
+    def add_padding(s):
+        return s + "=" * (4 - len(s) % 4) if len(s) % 4 else s
+
+    try:
+        claims_decoded = base64.urlsafe_b64decode(add_padding(claims))
+    except Exception as exc:
+        raise binascii.Error("Invalid JWT: token must be base64url encoded") from exc
+
+    try:
+        claims_data = json.loads(claims_decoded)
+    except json.JSONDecodeError:
+        print("Invalid JWT: token must be json encoded")
+
+    return claims_data
 
 
 if __name__ == "__main__":

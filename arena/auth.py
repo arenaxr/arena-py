@@ -17,7 +17,6 @@ from urllib import parse, request
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 
-from google.auth import jwt as gJWT
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 from .utils import topic_matches_sub
@@ -83,7 +82,7 @@ class ArenaAuth:
                 creds = None  # bad/old storage format
 
             if creds and "id_token" in creds:
-                id_claims = gJWT.decode(creds["id_token"], verify=False)
+                id_claims = _jwt_decode(creds["id_token"])
                 # for reuse, client_id must still match
                 if id_claims["aud"] != gauth["installed"]["client_id"]:
                     creds = None  # switched auth systems
@@ -135,7 +134,7 @@ class ArenaAuth:
         self._user_info = json.loads(user_info)
         if "authenticated" in self._user_info and "username" in self._user_info:
             username = self._user_info["username"]
-        id_claims = gJWT.decode(creds["id_token"], verify=False)
+        id_claims = _jwt_decode(creds["id_token"])
         print(f"Authenticated Google account: {id_claims['email']}")
         return username
 

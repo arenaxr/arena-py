@@ -16,7 +16,6 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 
 import jwt
-import requests
 from google.auth import jwt as gJWT
 from google_auth_oauthlib.flow import InstalledAppFlow
 
@@ -312,14 +311,7 @@ class ArenaAuth:
     def _get_csrftoken(self, web_host):
         # get the csrftoken for django
         csrf_url = f"https://{web_host}/user/v2/login"
-        client = requests.session()
-        client.get(csrf_url, verify=self.verify(web_host))  # sets cookie
-        if "csrftoken" in client.cookies:
-            self._csrftoken = client.cookies["csrftoken"]
-        elif "csrf" in client.cookies:
-            self._csrftoken = client.cookies["csrf"]
-        else:
-            self._csrftoken = None
+        self.urlopen(csrf_url)
         return self._csrftoken
 
     def _get_gauthid_desktop(self, web_host):
@@ -471,7 +463,6 @@ class ArenaAuth:
             status = err.code
             body = err.read().decode("utf-8")
         except (
-            requests.exceptions.ConnectionError,
             ConnectionError,
             URLError,
         ) as err:
@@ -514,6 +505,12 @@ class ArenaAuth:
                     if "auth=" in cookie:
                         for m in re.finditer(r"(^| )auth=([^;]+)", cookie):
                             self._store_token = m.group(2)
+                    if "csrftoken=" in cookie:
+                        for m in re.finditer(r"(^| )csrftoken=([^;]+)", cookie):
+                            self._csrftoken = m.group(2)
+                    elif "csrf=" in cookie:
+                        for m in re.finditer(r"(^| )csrf=([^;]+)", cookie):
+                            self._csrftoken = m.group(2)
             return body
         except HTTPError as err:
             print(f"{err}: {url}")
@@ -528,7 +525,6 @@ class ArenaAuth:
                 print(f"Create an account in a web browser at: {base_url}/user")
             sys.exit("Terminating...")
         except (
-            requests.exceptions.ConnectionError,
             ConnectionError,
             URLError,
         ) as err:

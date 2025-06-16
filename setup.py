@@ -35,7 +35,6 @@ setuptools.setup(
     },
     install_requires=[
         "paho-mqtt~=2.0.0",
-        "requests~=2.32.0",
         "webcolors~=1.3",
         "google_auth_oauthlib~=1.0.0",
         "google-auth~=2.22.0",

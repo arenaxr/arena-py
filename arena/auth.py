@@ -8,16 +8,16 @@ import datetime
 import json
 import os
 import re
+import secrets
 import ssl
 import sys
 import time
 import webbrowser
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from urllib import parse, request
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
-
-from google_auth_oauthlib.flow import InstalledAppFlow
 
 from .utils import topic_matches_sub
 
@@ -26,6 +26,20 @@ _mqtt_token_file = ".arena_mqtt_auth"
 _arena_user_dir = f"{str(Path.home())}/.arena"
 _local_mqtt_path = f"{_mqtt_token_file}"
 
+hostName = "localhost"
+
+class OAuthCallbackServer(BaseHTTPRequestHandler):
+    def log_message(self, format, *args):
+        pass
+
+    def do_GET(self):
+        # parsed_path = urlparse.urlparse(self.path)
+
+        self.send_response(200)
+        self.send_header("Content-type", "text/html")
+        self.end_headers()
+        self.wfile.write(bytes("<body>", "utf-8"))
+        self.wfile.write(bytes("</body></html>", "utf-8"))
 
 class ArenaAuth:
 
@@ -103,7 +117,6 @@ class ArenaAuth:
                     client_secret=gauth["installed"]["client_secret"],
                     refresh_token=refresh_token,
                 )
-                creds = json.loads(creds_jstr)
             else:
                 # if no credentials available, let the user log in.
                 if headless:
@@ -113,16 +126,15 @@ class ArenaAuth:
                         client_id=gauth["installed"]["client_id"],
                         client_secret=gauth["installed"]["client_secret"],
                     )
-                    creds = json.loads(creds_jstr)
                 else:
                     # automated browser flow for local client
                     print("Requesting new browser Google authentication.")
-                    flow = InstalledAppFlow.from_client_config(json.loads(gauth_json), self._scopes)
-                    credentials = flow.run_local_server(port=0)
-                    creds_jstr = credentials.to_json()
-                    creds = json.loads(creds_jstr)
-                    creds["id_token"] = credentials.id_token
+                    creds_jstr = self._run_gauth_installed_flow(
+                        client_id=gauth["installed"]["client_id"],
+                        client_secret=gauth["installed"]["client_secret"],
+                    )
 
+            creds = json.loads(creds_jstr)
             with open(scene_gauth_path, "w", encoding="utf-8") as token:
                 # save the credentials for the next run
                 json.dump(creds, token)
@@ -149,6 +161,29 @@ class ArenaAuth:
         else:  # error
             print(f"HTTP error {status}: {url}\n{refresh_resp}")
             sys.exit("Terminating...")
+
+    def _run_gauth_installed_flow(self, client_id, client_secret):
+
+        # start server listener
+        server = HTTPServer((hostName, 0), OAuthCallbackServer)
+        port = server.server_address[1]
+        state = secrets.token_urlsafe(16)
+
+        # launch web oauth flow
+        webbrowser.open(f"http://{hostName}:{port}/hello", new=2, autoraise=True)
+
+        print(f"Server started http://{hostName}:{port}, state={state}")
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            pass
+
+        server.server_close()
+
+        # flow = InstalledAppFlow.from_client_config(json.loads(gauth_json), self._scopes)
+        # credentials = flow.run_local_server(port=0)
+        # return credentials.to_json()
+        return "{}"
 
     def _run_gauth_device_flow(self, client_id, client_secret):
         device_resp, status, url = self._get_gauth_device_code(client_id=client_id)

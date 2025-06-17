@@ -36,8 +36,6 @@ setuptools.setup(
     # Goal: keep dependencies minimal to increase portability to platforms like RustPython
     install_requires=[
         "paho-mqtt~=2.0.0",
-        "google_auth_oauthlib~=1.0.0",
-        "google-auth~=2.22.0",
         "opentelemetry-exporter-otlp-proto-grpc==1.21.*",
     ],
     classifiers=[

@@ -155,8 +155,9 @@ class ArenaAuth:
         # start server listener
         local_server = HTTPServer((_auth_callback_hostname, 0), OAuthCallbackHandler)
         port = local_server.server_port
+        redirect_uri = f"http://{_auth_callback_hostname}:{port}/"
         _auth_state_code = secrets.token_urlsafe(16)
-        browser_auth_url = f"https://accounts.google.com/o/oauth2/auth?response_type=code&client_id={client_id}&redirect_uri=http://{_auth_callback_hostname}:{port}/&scope={'+'.join(_scopes)}&state={_auth_state_code}&access_type=offline"
+        browser_auth_url = f"https://accounts.google.com/o/oauth2/auth?response_type=code&client_id={client_id}&redirect_uri={redirect_uri}&scope={'+'.join(_scopes)}&state={_auth_state_code}&access_type=offline"
         print(f"Please visit this URL to authorize ARENA-py: {browser_auth_url}")
 
         # launch web oauth flow
@@ -173,13 +174,8 @@ class ArenaAuth:
             client_id=client_id,
             client_secret=client_secret,
             auth_code=_auth_response_code,
-            redirect_uri="",
-            # redirect_uri="urn:ietf:wg:oauth:2.0:oob",
+            redirect_uri=redirect_uri,
         )
-        # "redirect_uris": [
-        #   "urn:ietf:wg:oauth:2.0:oob",
-        #   "http://localhost"
-        # ]
         if 200 <= status <= 299:  # success
             return access_resp
         else:  # error

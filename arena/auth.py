@@ -17,7 +17,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from urllib import parse, request
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlsplit
+from urllib.parse import urlparse, urlsplit
 
 from .utils import topic_matches_sub
 
@@ -25,29 +25,18 @@ _gauth_file = ".arena_google_auth"
 _mqtt_token_file = ".arena_mqtt_auth"
 _arena_user_dir = f"{str(Path.home())}/.arena"
 _local_mqtt_path = f"{_mqtt_token_file}"
+_auth_callback_hostname = "localhost"
+_auth_callback_server = None
+_auth_state_code = None
+_auth_response_code = None
+_scopes = [
+    "openid",
+    "https://www.googleapis.com/auth/userinfo.profile",
+    "https://www.googleapis.com/auth/userinfo.email",
+]
 
-hostName = "localhost"
-
-class OAuthCallbackServer(BaseHTTPRequestHandler):
-    def log_message(self, format, *args):
-        pass
-
-    def do_GET(self):
-        # parsed_path = urlparse.urlparse(self.path)
-
-        self.send_response(200)
-        self.send_header("Content-type", "text/html")
-        self.end_headers()
-        self.wfile.write(bytes("<body>", "utf-8"))
-        self.wfile.write(bytes("</body></html>", "utf-8"))
 
 class ArenaAuth:
-
-    _scopes = [
-        "openid",
-        "https://www.googleapis.com/auth/userinfo.profile",
-        "https://www.googleapis.com/auth/userinfo.email",
-    ]
 
     def __init__(self):
         self._csrftoken = None
@@ -163,27 +152,33 @@ class ArenaAuth:
             sys.exit("Terminating...")
 
     def _run_gauth_installed_flow(self, client_id, client_secret):
-
+        global _auth_callback_server, _auth_response_code, _auth_state_code
         # start server listener
-        server = HTTPServer((hostName, 0), OAuthCallbackServer)
-        port = server.server_address[1]
-        state = secrets.token_urlsafe(16)
+        _auth_callback_server = HTTPServer((_auth_callback_hostname, 0), OAuthCallbackServer)
+        port = _auth_callback_server.server_address[1]
+        _auth_state_code = secrets.token_urlsafe(16)
+        browser_auth_url = f"https://accounts.google.com/o/oauth2/auth?response_type=code&client_id={client_id}&redirect_uri=http://{_auth_callback_hostname}:{port}/&scope={'+'.join(_scopes)}&state={_auth_state_code}&access_type=offline"
+        print(f"Please visit this URL to authorize ARENA-py: {browser_auth_url}")
 
         # launch web oauth flow
-        webbrowser.open(f"http://{hostName}:{port}/hello", new=2, autoraise=True)
-
-        print(f"Server started http://{hostName}:{port}, state={state}")
+        webbrowser.open(browser_auth_url, new=2, autoraise=True)
         try:
-            server.serve_forever()
+            _auth_callback_server.serve_forever()
         except KeyboardInterrupt:
             pass
 
-        server.server_close()
-
-        # flow = InstalledAppFlow.from_client_config(json.loads(gauth_json), self._scopes)
-        # credentials = flow.run_local_server(port=0)
-        # return credentials.to_json()
-        return "{}"
+        # synchronous wait for auth
+        access_resp, status, url = self._get_gauth_installed_token(
+            client_id=client_id,
+            client_secret=client_secret,
+            auth_code=_auth_response_code,
+            # redirect_uri=_auth_response_code,
+        )
+        if 200 <= status <= 299:  # success
+            return access_resp
+        else:  # error
+            print(f"HTTP error {status}: {url}\n{access_resp}")
+            sys.exit("Terminating...")
 
     def _run_gauth_device_flow(self, client_id, client_secret):
         device_resp, status, url = self._get_gauth_device_code(client_id=client_id)
@@ -373,6 +368,18 @@ class ArenaAuth:
             "client_secret": client_secret,
             "device_code": device_code,
             "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
+        }
+        body, status = self.urlopen_def(url, data=self._encode_params(params))
+        return body, status, url
+
+    def _get_gauth_installed_token(self, client_id, client_secret, auth_code, redirect_uri=None):
+        url = "https://oauth2.googleapis.com/token"
+        params = {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "code": auth_code,
+            "grant_type": "authorization_code",
+            # "redirect_uri": redirect_uri,
         }
         body, status = self.urlopen_def(url, data=self._encode_params(params))
         return body, status, url
@@ -669,6 +676,36 @@ def _jwt_decode(token):
         print("Invalid JWT: token must be json encoded")
 
     return claims_data
+
+
+class OAuthCallbackServer(BaseHTTPRequestHandler):
+
+    def log_message(self, format, *args):
+        pass
+
+    def do_GET(self):
+        global _auth_callback_server, _auth_response_code, _auth_state_code
+        parsed_path = urlparse(self.path)
+        params = parse.parse_qs(parsed_path.query)
+        if "code" in params:
+            if params["state"] != _auth_state_code:
+                msg = "ARENA-py authorization flow error: Invalid state response."
+            if params["scope"] != '+'.join(_scopes):
+                msg = "ARENA-py authorization flow error: Invalid scopes response."
+            _auth_response_code = params["code"]
+            msg = "ARENA-py authorization flow is complete. You may close this window."
+        elif "error" in params:
+            msg = f"ARENA-py authorization flow error: {params['error']}"
+        else:
+            msg = "ARENA-py authorization flow error: Expected parameters not received."
+
+        self.send_response(200)
+        self.send_header("Content-type", "text/html")
+        self.end_headers()
+        self.wfile.write(bytes("<body>", "utf-8"))
+        self.wfile.write(bytes(msg, "utf-8"))
+        self.wfile.write(bytes("</body></html>", "utf-8"))
+        _auth_callback_server.server_close()
 
 
 if __name__ == "__main__":

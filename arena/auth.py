@@ -26,7 +26,6 @@ _mqtt_token_file = ".arena_mqtt_auth"
 _arena_user_dir = f"{str(Path.home())}/.arena"
 _local_mqtt_path = f"{_mqtt_token_file}"
 _auth_callback_hostname = "localhost"
-_auth_callback_server = None
 _auth_state_code = None
 _auth_response_code = None
 _scopes = [
@@ -152,28 +151,35 @@ class ArenaAuth:
             sys.exit("Terminating...")
 
     def _run_gauth_installed_flow(self, client_id, client_secret):
-        global _auth_callback_server, _auth_response_code, _auth_state_code
+        global _auth_response_code, _auth_state_code
         # start server listener
-        _auth_callback_server = HTTPServer((_auth_callback_hostname, 0), OAuthCallbackServer)
-        port = _auth_callback_server.server_address[1]
+        local_server = HTTPServer((_auth_callback_hostname, 0), OAuthCallbackHandler)
+        port = local_server.server_port
         _auth_state_code = secrets.token_urlsafe(16)
         browser_auth_url = f"https://accounts.google.com/o/oauth2/auth?response_type=code&client_id={client_id}&redirect_uri=http://{_auth_callback_hostname}:{port}/&scope={'+'.join(_scopes)}&state={_auth_state_code}&access_type=offline"
         print(f"Please visit this URL to authorize ARENA-py: {browser_auth_url}")
 
         # launch web oauth flow
-        webbrowser.open(browser_auth_url, new=2, autoraise=True)
         try:
-            _auth_callback_server.serve_forever()
-        except KeyboardInterrupt:
+            webbrowser.open(browser_auth_url, new=1, autoraise=True)
+        except webbrowser.Error:
             pass
+
+        local_server.handle_request()
+        local_server.server_close()
 
         # synchronous wait for auth
         access_resp, status, url = self._get_gauth_installed_token(
             client_id=client_id,
             client_secret=client_secret,
             auth_code=_auth_response_code,
-            # redirect_uri=_auth_response_code,
+            redirect_uri="",
+            # redirect_uri="urn:ietf:wg:oauth:2.0:oob",
         )
+        # "redirect_uris": [
+        #   "urn:ietf:wg:oauth:2.0:oob",
+        #   "http://localhost"
+        # ]
         if 200 <= status <= 299:  # success
             return access_resp
         else:  # error
@@ -372,14 +378,14 @@ class ArenaAuth:
         body, status = self.urlopen_def(url, data=self._encode_params(params))
         return body, status, url
 
-    def _get_gauth_installed_token(self, client_id, client_secret, auth_code, redirect_uri=None):
+    def _get_gauth_installed_token(self, client_id, client_secret, auth_code, redirect_uri):
         url = "https://oauth2.googleapis.com/token"
         params = {
             "client_id": client_id,
             "client_secret": client_secret,
             "code": auth_code,
             "grant_type": "authorization_code",
-            # "redirect_uri": redirect_uri,
+            "redirect_uri": redirect_uri,
         }
         body, status = self.urlopen_def(url, data=self._encode_params(params))
         return body, status, url
@@ -678,22 +684,20 @@ def _jwt_decode(token):
     return claims_data
 
 
-class OAuthCallbackServer(BaseHTTPRequestHandler):
-
+class OAuthCallbackHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         pass
 
     def do_GET(self):
-        global _auth_callback_server, _auth_response_code, _auth_state_code
+        global _auth_response_code, _auth_state_code
         parsed_path = urlparse(self.path)
         params = parse.parse_qs(parsed_path.query)
         if "code" in params:
-            if params["state"] != _auth_state_code:
+            if params["state"][0] != _auth_state_code:
                 msg = "ARENA-py authorization flow error: Invalid state response."
-            if params["scope"] != '+'.join(_scopes):
-                msg = "ARENA-py authorization flow error: Invalid scopes response."
-            _auth_response_code = params["code"]
-            msg = "ARENA-py authorization flow is complete. You may close this window."
+            else:
+                _auth_response_code = params["code"][0]
+                msg = "ARENA-py authorization flow is complete. You may close this window."
         elif "error" in params:
             msg = f"ARENA-py authorization flow error: {params['error']}"
         else:
@@ -705,7 +709,6 @@ class OAuthCallbackServer(BaseHTTPRequestHandler):
         self.wfile.write(bytes("<body>", "utf-8"))
         self.wfile.write(bytes(msg, "utf-8"))
         self.wfile.write(bytes("</body></html>", "utf-8"))
-        _auth_callback_server.server_close()
 
 
 if __name__ == "__main__":

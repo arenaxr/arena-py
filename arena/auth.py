@@ -2,23 +2,22 @@
 auth.py - Authentication methods for accessing the ARENA.
 """
 
+import base64
+import binascii
 import datetime
 import json
 import os
 import re
+import secrets
 import ssl
 import sys
 import time
 import webbrowser
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from urllib import parse, request
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlsplit
-
-import jwt
-import requests
-from google.auth import jwt as gJWT
-from google_auth_oauthlib.flow import InstalledAppFlow
+from urllib.parse import urlparse, urlsplit
 
 from .utils import topic_matches_sub
 
@@ -26,15 +25,17 @@ _gauth_file = ".arena_google_auth"
 _mqtt_token_file = ".arena_mqtt_auth"
 _arena_user_dir = f"{str(Path.home())}/.arena"
 _local_mqtt_path = f"{_mqtt_token_file}"
+_auth_callback_hostname = "localhost"
+_auth_state_code = None
+_auth_response_code = None
+_scopes = [
+    "openid",
+    "https://www.googleapis.com/auth/userinfo.profile",
+    "https://www.googleapis.com/auth/userinfo.email",
+]
 
 
 class ArenaAuth:
-
-    _scopes = [
-        "openid",
-        "https://www.googleapis.com/auth/userinfo.profile",
-        "https://www.googleapis.com/auth/userinfo.email",
-    ]
 
     def __init__(self):
         self._csrftoken = None
@@ -83,7 +84,7 @@ class ArenaAuth:
                 creds = None  # bad/old storage format
 
             if creds and "id_token" in creds:
-                id_claims = gJWT.decode(creds["id_token"], verify=False)
+                id_claims = _jwt_decode(creds["id_token"])
                 # for reuse, client_id must still match
                 if id_claims["aud"] != gauth["installed"]["client_id"]:
                     creds = None  # switched auth systems
@@ -104,7 +105,6 @@ class ArenaAuth:
                     client_secret=gauth["installed"]["client_secret"],
                     refresh_token=refresh_token,
                 )
-                creds = json.loads(creds_jstr)
             else:
                 # if no credentials available, let the user log in.
                 if headless:
@@ -114,16 +114,15 @@ class ArenaAuth:
                         client_id=gauth["installed"]["client_id"],
                         client_secret=gauth["installed"]["client_secret"],
                     )
-                    creds = json.loads(creds_jstr)
                 else:
                     # automated browser flow for local client
                     print("Requesting new browser Google authentication.")
-                    flow = InstalledAppFlow.from_client_config(json.loads(gauth_json), self._scopes)
-                    credentials = flow.run_local_server(port=0)
-                    creds_jstr = credentials.to_json()
-                    creds = json.loads(creds_jstr)
-                    creds["id_token"] = credentials.id_token
+                    creds_jstr = self._run_gauth_installed_flow(
+                        client_id=gauth["installed"]["client_id"],
+                        client_secret=gauth["installed"]["client_secret"],
+                    )
 
+            creds = json.loads(creds_jstr)
             with open(scene_gauth_path, "w", encoding="utf-8") as token:
                 # save the credentials for the next run
                 json.dump(creds, token)
@@ -135,7 +134,7 @@ class ArenaAuth:
         self._user_info = json.loads(user_info)
         if "authenticated" in self._user_info and "username" in self._user_info:
             username = self._user_info["username"]
-        id_claims = gJWT.decode(creds["id_token"], verify=False)
+        id_claims = _jwt_decode(creds["id_token"])
         print(f"Authenticated Google account: {id_claims['email']}")
         return username
 
@@ -149,6 +148,38 @@ class ArenaAuth:
             return refresh_resp
         else:  # error
             print(f"HTTP error {status}: {url}\n{refresh_resp}")
+            sys.exit("Terminating...")
+
+    def _run_gauth_installed_flow(self, client_id, client_secret):
+        global _auth_response_code, _auth_state_code
+        # start server listener
+        local_server = HTTPServer((_auth_callback_hostname, 0), OAuthCallbackHandler)
+        port = local_server.server_port
+        redirect_uri = f"http://{_auth_callback_hostname}:{port}/"
+        _auth_state_code = secrets.token_urlsafe(16)
+        browser_auth_url = f"https://accounts.google.com/o/oauth2/auth?response_type=code&client_id={client_id}&redirect_uri={redirect_uri}&scope={'+'.join(_scopes)}&state={_auth_state_code}&access_type=offline"
+        print(f"Please visit this URL to authorize ARENA-py: {browser_auth_url}")
+
+        # launch web oauth flow
+        try:
+            webbrowser.open(browser_auth_url, new=1, autoraise=True)
+        except webbrowser.Error:
+            pass
+
+        local_server.handle_request()
+        local_server.server_close()
+
+        # synchronous wait for auth
+        access_resp, status, url = self._get_gauth_installed_token(
+            client_id=client_id,
+            client_secret=client_secret,
+            auth_code=_auth_response_code,
+            redirect_uri=redirect_uri,
+        )
+        if 200 <= status <= 299:  # success
+            return access_resp
+        else:  # error
+            print(f"HTTP error {status}: {url}\n{access_resp}")
             sys.exit("Terminating...")
 
     def _run_gauth_device_flow(self, client_id, client_secret):
@@ -239,7 +270,7 @@ class ArenaAuth:
 
     def has_publish_rights(self, token, topic):
         """Check the MQTT token for permission to publish to topic."""
-        tok = jwt.decode(token, options={"verify_signature": False})
+        tok = _jwt_decode(token)
         for pub in tok["publ"]:
             if topic_matches_sub(pub.strip(), topic):
                 return True
@@ -270,7 +301,7 @@ class ArenaAuth:
         print(f"ARENA Token Username: {username}")
 
         now = time.time()
-        tok = jwt.decode(self._mqtt_token["token"], options={"verify_signature": False})
+        tok = _jwt_decode(self._mqtt_token["token"])
         exp = float(tok["exp"])
         delta = exp - now
         dur_str = str(datetime.timedelta(milliseconds=delta * 1000))
@@ -312,14 +343,7 @@ class ArenaAuth:
     def _get_csrftoken(self, web_host):
         # get the csrftoken for django
         csrf_url = f"https://{web_host}/user/v2/login"
-        client = requests.session()
-        client.get(csrf_url, verify=self.verify(web_host))  # sets cookie
-        if "csrftoken" in client.cookies:
-            self._csrftoken = client.cookies["csrftoken"]
-        elif "csrf" in client.cookies:
-            self._csrftoken = client.cookies["csrf"]
-        else:
-            self._csrftoken = None
+        self.urlopen(csrf_url)
         return self._csrftoken
 
     def _get_gauthid_desktop(self, web_host):
@@ -346,6 +370,18 @@ class ArenaAuth:
             "client_secret": client_secret,
             "device_code": device_code,
             "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
+        }
+        body, status = self.urlopen_def(url, data=self._encode_params(params))
+        return body, status, url
+
+    def _get_gauth_installed_token(self, client_id, client_secret, auth_code, redirect_uri):
+        url = "https://oauth2.googleapis.com/token"
+        params = {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "code": auth_code,
+            "grant_type": "authorization_code",
+            "redirect_uri": redirect_uri,
         }
         body, status = self.urlopen_def(url, data=self._encode_params(params))
         return body, status, url
@@ -471,7 +507,6 @@ class ArenaAuth:
             status = err.code
             body = err.read().decode("utf-8")
         except (
-            requests.exceptions.ConnectionError,
             ConnectionError,
             URLError,
         ) as err:
@@ -514,6 +549,12 @@ class ArenaAuth:
                     if "auth=" in cookie:
                         for m in re.finditer(r"(^| )auth=([^;]+)", cookie):
                             self._store_token = m.group(2)
+                    if "csrftoken=" in cookie:
+                        for m in re.finditer(r"(^| )csrftoken=([^;]+)", cookie):
+                            self._csrftoken = m.group(2)
+                    elif "csrf=" in cookie:
+                        for m in re.finditer(r"(^| )csrf=([^;]+)", cookie):
+                            self._csrftoken = m.group(2)
             return body
         except HTTPError as err:
             print(f"{err}: {url}")
@@ -528,7 +569,6 @@ class ArenaAuth:
                 print(f"Create an account in a web browser at: {base_url}/user")
             sys.exit("Terminating...")
         except (
-            requests.exceptions.ConnectionError,
             ConnectionError,
             URLError,
         ) as err:
@@ -560,7 +600,7 @@ def permissions():
     # env storage auth
     if os.environ.get("ARENA_USERNAME") and os.environ.get("ARENA_PASSWORD"):
         mqtt_token = os.environ["ARENA_PASSWORD"]
-        mqtt_claims = jwt.decode(mqtt_token["token"], options={"verify_signature": False})
+        mqtt_claims = _jwt_decode(mqtt_token["token"])
         _print_mqtt_token("environment variable 'ARENA_PASSWORD'", mqtt_claims)
     # file storage auth
     token_paths = []
@@ -577,7 +617,7 @@ def permissions():
         except json.decoder.JSONDecodeError as err:
             print(f"{err}, {mqtt_path}")
             continue
-        mqtt_claims = jwt.decode(mqtt_token["token"], options={"verify_signature": False})
+        mqtt_claims = _jwt_decode(mqtt_token["token"])
         _print_mqtt_token(mqtt_path, mqtt_claims)
     # no permissions
     if not mqtt_claims:
@@ -600,7 +640,7 @@ def _remove_credentials(cred_dir, expire=False):
             os.remove(test_mqtt_path)
             return
         try:
-            mqtt_claims = jwt.decode(mqtt_token["token"], options={"verify_signature": False})
+            mqtt_claims = _jwt_decode(mqtt_token["token"])
         except Exception as err:
             print(f"{err}, {test_mqtt_path}")
             os.remove(test_mqtt_path)
@@ -614,6 +654,57 @@ def _remove_credentials(cred_dir, expire=False):
         os.remove(test_mqtt_path)
     if os.path.exists(test_gauth_path):
         os.remove(test_gauth_path)
+
+
+# Adapted from https://github.com/u-clarkdeveloper/simple-jwt/blob/main/src/simple_jwt/jwt.py
+def _jwt_decode(token):
+    try:
+        _, claims, _ = token.split(".")
+    except ValueError as exc:
+        raise ValueError("Invalid JWT: token must have 3 parts separated by '.'") from exc
+
+    # Add padding to make the base64 string length a multiple of 4
+    def add_padding(s):
+        return s + "=" * (4 - len(s) % 4) if len(s) % 4 else s
+
+    try:
+        claims_decoded = base64.urlsafe_b64decode(add_padding(claims))
+    except Exception as exc:
+        raise binascii.Error("Invalid JWT: token must be base64url encoded") from exc
+
+    try:
+        claims_data = json.loads(claims_decoded)
+    except json.JSONDecodeError:
+        print("Invalid JWT: token must be json encoded")
+
+    return claims_data
+
+
+class OAuthCallbackHandler(BaseHTTPRequestHandler):
+    def log_message(self, format, *args):
+        pass
+
+    def do_GET(self):
+        global _auth_response_code, _auth_state_code
+        parsed_path = urlparse(self.path)
+        params = parse.parse_qs(parsed_path.query)
+        if "code" in params:
+            if params["state"][0] != _auth_state_code:
+                msg = "ARENA-py authorization flow error: Invalid state response."
+            else:
+                _auth_response_code = params["code"][0]
+                msg = "ARENA-py authorization flow is complete. You may close this window."
+        elif "error" in params:
+            msg = f"ARENA-py authorization flow error: {params['error']}"
+        else:
+            msg = "ARENA-py authorization flow error: Expected parameters not received."
+
+        self.send_response(200)
+        self.send_header("Content-type", "text/html")
+        self.end_headers()
+        self.wfile.write(bytes("<body>", "utf-8"))
+        self.wfile.write(bytes(msg, "utf-8"))
+        self.wfile.write(bytes("</body></html>", "utf-8"))
 
 
 if __name__ == "__main__":

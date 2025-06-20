@@ -33,13 +33,9 @@ setuptools.setup(
             'arena-py-token=arena.scripts.arena_py_token:main'
         ],
     },
+    # Goal: keep dependencies minimal to increase portability to platforms like RustPython
     install_requires=[
         "paho-mqtt~=2.0.0",
-        "requests~=2.32.0",
-        "webcolors~=1.3",
-        "google_auth_oauthlib~=1.0.0",
-        "google-auth~=2.22.0",
-        "PyJWT~=2.4.0",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

@@ -55,7 +55,10 @@ class ArenaAuth:
         print("Signing in to the ARENA...")
         try:
             # test for valid browser before starting browser-required auth-flow
-            webbrowser.get()
+            wb = webbrowser.get()
+            if isinstance(wb, webbrowser.GenericBrowser):
+                headless = True
+                print(f"Console-only web browser detected. {wb.__class__}: {wb.__dict__}")
         except webbrowser.Error as err:
             headless = True
             print(f"Console-only environment detected. {err} ")

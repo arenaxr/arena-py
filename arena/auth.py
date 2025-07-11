@@ -9,7 +9,6 @@ import json
 import os
 import re
 import secrets
-import ssl
 import sys
 import time
 import webbrowser
@@ -20,6 +19,11 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse, urlsplit
 
 from .utils import topic_matches_sub
+
+try:
+    import ssl
+except ImportError:
+    ssl = None
 
 _gauth_file = ".arena_google_auth"
 _mqtt_token_file = ".arena_mqtt_auth"

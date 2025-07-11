@@ -3,17 +3,19 @@ import json
 import os
 import random
 import socket
-import ssl
 import sys
 from datetime import datetime
-
-import paho.mqtt.client as mqtt
 
 from .auth import ArenaAuth
 from .env import ARENA_PASSWORD, ARENA_USERNAME, MQTTH, NAMESPACE, REALM, _get_env
 from .event_loop import *
+from .paho.mqtt import client as mqtt
 from .topics import PUBLISH_TOPICS, SUBSCRIBE_TOPICS, TOPIC_TYPES
 
+try:
+    import ssl
+except ImportError:
+    ssl = None
 
 class ArenaMQTT(object):
     """

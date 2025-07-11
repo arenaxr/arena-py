@@ -1,6 +1,7 @@
-import socket
 import asyncio
-import paho.mqtt.client as mqtt
+import socket
+
+from ..paho.mqtt import client as mqtt
 from .async_worker import AsyncWorker
 
 

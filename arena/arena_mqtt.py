@@ -197,11 +197,12 @@ class ArenaMQTT(object):
             port = kwargs["port"]
         else:
             port = 8883  # ARENA broker TLS 1.2 connection port
-        if self.auth.verify(self.web_host):
-            self.mqttc.tls_set(tls_version=ssl.PROTOCOL_TLS)
-        else:
-            self.mqttc.tls_set_context(ssl._create_unverified_context())
-            self.mqttc.tls_insecure_set(True)
+        if ssl:
+            if self.auth.verify(self.web_host):
+                self.mqttc.tls_set(tls_version=ssl.PROTOCOL_TLS)
+            else:
+                self.mqttc.tls_set_context(ssl._create_unverified_context())
+                self.mqttc.tls_insecure_set(True)
         try:
             self.mqttc.connect(self.mqtt_host, port=port, keepalive=60)
         except Exception as err:

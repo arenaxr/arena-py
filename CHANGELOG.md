@@ -4,6 +4,31 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [1.4.0](https://github.com/arenaxr/arena-py/compare/v1.3.0...v1.4.0) (2025-08-20)
+
+
+### Features
+
+* **physx:** Update physics system to PhysX ([e096289](https://github.com/arenaxr/arena-py/commit/e0962895fd05176b159ea118e668cf160462e938))
+
+
+### Bug Fixes
+
+* allow .local host addresses to ignore certificate verification ([b974079](https://github.com/arenaxr/arena-py/commit/b974079f07fa317b1212830529978042fe094965))
+* **auth:** add parse check of google auth flow callback + token exchange ([94de03a](https://github.com/arenaxr/arena-py/commit/94de03a1df1026afb08b57f8164ff4667809fcb5))
+* **auth:** deprecate google_auth library dependancy ([db1a61f](https://github.com/arenaxr/arena-py/commit/db1a61f536db85738cf02ae43b0d5b83a94d5e63))
+* **auth:** deprecate requests package depandancy ([ce43fc8](https://github.com/arenaxr/arena-py/commit/ce43fc80c1d5d3969ae8cca8bbca4db858db546c))
+* **auth:** improve headless environment auto-detection ([9e6720c](https://github.com/arenaxr/arena-py/commit/9e6720cb428577810b0ebc0f3af7ae5eb3fdaf7b))
+* **auth:** remove dependancy on google auth jwt package ([6551626](https://github.com/arenaxr/arena-py/commit/6551626b52f063ddfa5549d5080abcace6a89612))
+* **auth:** remove dependancy on PyJWT package ([b800e42](https://github.com/arenaxr/arena-py/commit/b800e42be3e73b6eaff0d0811355a9674fd7b41a))
+* calibrate typo ([23c41af](https://github.com/arenaxr/arena-py/commit/23c41afd2336651660858f02b685135c531b1768))
+* color inputs, remove dep on webcolors ([def2037](https://github.com/arenaxr/arena-py/commit/def203718ff2d4b6da5af169d4518086133fc6eb))
+* **color:** remove dependency on webcolors package ([c6498ae](https://github.com/arenaxr/arena-py/commit/c6498ae49d19b5f8d5ed22c0a3883a28df8e326b))
+* **mqtt:** upgrade to paho-mqtt callback version 2 ([1bb8925](https://github.com/arenaxr/arena-py/commit/1bb89253e761672d8b63d959812d8a78e1650d18))
+* remove depcreated license classifer from package ([c47fc9e](https://github.com/arenaxr/arena-py/commit/c47fc9e61da54446ea8c893ffd6f999ab6b68795))
+* removed unnecessary logging of token ([fb78b58](https://github.com/arenaxr/arena-py/commit/fb78b58ce6a2d6519be981c79a5024d74e48d316))
+* upgrade paho-mqtt, deprecate unused aiohttp ([83d149d](https://github.com/arenaxr/arena-py/commit/83d149d7fab094037534605a9b3ad1c17fdbc28a))
+
 ## [1.3.0](https://github.com/arenaxr/arena-py/compare/v1.2.0...v1.3.0) (2025-02-13)
 
 

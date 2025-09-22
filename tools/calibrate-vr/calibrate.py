@@ -264,7 +264,7 @@ def remove_obj_onoff():
 
 def on_handler(_scene, evt, _msg):
     global user_rigs
-    if evt.type == "mousedown":
+    if evt.type == "mouseup":
         rig_matrix = np.identity(4)
         rig_pos = rig_matrix[:3, 3]
         rig_rot = rig_matrix[:3, :3]
@@ -288,7 +288,7 @@ def on_handler(_scene, evt, _msg):
 
 
 def off_handler(_scene, evt, _msg):
-    if evt.type == "mousedown":
+    if evt.type == "mouseup":
         rig = user_rigs.get(evt.object_id)
         if rig is None:
             return
@@ -427,7 +427,7 @@ def mouse_handler(_scene, evt, _msg):
         scene.update_object(
             obj, material=Material(color=get_color(axis), opacity=OPC_OFF)
         )
-    elif evt.type == "mousedown":
+    elif evt.type == "mouseup":
         prev_rig = user_rigs.get(evt.object_id)
         if prev_rig and prev_rig["last_evt_pos"] == evt.data.originPosition:
             return
@@ -474,7 +474,7 @@ def ground_click_handler(_scene, evt, _msg):
     apply an initial inverse translation of x and z to the camera offset rig matrix,
     (since y is assumed always to be 0).
     """
-    if evt.type != "mousedown":
+    if evt.type != "mouseup":
         return
     global user_rigs
     rig = user_rigs.get(evt.object_id)

@@ -36,7 +36,7 @@ setuptools.setup(
     # Goal: keep dependencies minimal to increase portability to platforms like RustPython
     install_requires=[
         "paho-mqtt~=2.1.0",
-        "opentelemetry-exporter-otlp-proto-grpc==1.21.*",
+        "opentelemetry-exporter-otlp-proto-grpc>=1.21,<1.38",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

@@ -27,12 +27,12 @@ class Color(Attribute):
                     c = (128, 128, 128)  # fallback gray
             self.red, self.green, self.blue = c
 
-        if isinstance(red, (float, int)):
+        elif isinstance(red, (float, int)):
             self.red = int(red)
-        if isinstance(blue, (float, int)):
-            self.blue = int(blue)
-        if isinstance(green, (float, int)):
-            self.green = int(green)
+            if isinstance(blue, (float, int)):
+                self.blue = int(blue)
+            if isinstance(green, (float, int)):
+                self.green = int(green)
 
         super().__init__(red=self.red, green=self.green, blue=self.blue)
 

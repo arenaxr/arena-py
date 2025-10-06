@@ -4,6 +4,14 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [1.4.1](https://github.com/arenaxr/arena-py/compare/v1.4.0...v1.4.1) (2025-10-06)
+
+
+### Bug Fixes
+
+* don't clobber b and g values for color ([854d851](https://github.com/arenaxr/arena-py/commit/854d851f24935ff747ad12c4969283e8e46f561d))
+* **telemetry:** remove opentelemetry and create ArenaTelemetry stub ([1983d7e](https://github.com/arenaxr/arena-py/commit/1983d7ec9df7a3b525247b654c5fd953fe8c59f3))
+
 ## [1.4.0](https://github.com/arenaxr/arena-py/compare/v1.3.0...v1.4.0) (2025-08-20)
 
 

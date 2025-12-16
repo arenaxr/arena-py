@@ -675,7 +675,7 @@ class Scene(ArenaMQTT):
                     f"ERROR!! Publishing wire rotation data must be in Quaternion units, Euler conversion failed for payload: {payload}"
                 )
 
-            self.mqttc.publish(topic, payload, qos=0)
+            self.transport.publish(topic, payload, qos=0)
             if self.debug:
                 self.telemetry.add_event(f"[publish] {topic} {payload}")
             return payload

@@ -1,0 +1,53 @@
+[
+    {
+        "type": "output",
+        "timestamp": 1734394000.0,
+        "topic": "realm/s/public/random/o/Ivan_3408843026_py/random_sphere",
+        "payload": {
+            "object_id": "random_sphere",
+            "action": "create",
+            "type": "object",
+            "data": {
+                "object_type": "sphere"
+            }
+        }
+    },
+    {
+        "type": "input",
+        "timestamp": 1734394010.0,
+        "topic": "realm/s/public/random/u/Ivan_2934834634_web/Ivan_2934834634",
+        "payload": {
+            "object_id": "Ivan_2934834634",
+            "action": "clientEvent",
+            "type": "mousedown",
+            "data": {
+                "originPosition": {
+                    "x": 0,
+                    "y": 1.6,
+                    "z": 0
+                },
+                "targetPosition": {
+                    "x": -0.133,
+                    "y": 1.723,
+                    "z": 1.276
+                },
+                "target": "random_sphere"
+            },
+            "timestamp": "2025-12-16T22:11:11.001Z"
+        }
+    },
+    {
+        "type": "output",
+        "timestamp": 1734394011.0,
+        "topic": "realm/s/public/random/o/Ivan_3408843026_py/random_sphere",
+        "payload": {
+            "object_id": "random_sphere",
+            "action": "update",
+            "type": "object",
+            "data": {
+                "object_type": "sphere",
+                "material": {}
+            }
+        }
+    }
+]

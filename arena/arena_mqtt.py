@@ -13,6 +13,7 @@ from .auth import ArenaAuth
 from .env import ARENA_PASSWORD, ARENA_USERNAME, MQTTH, NAMESPACE, REALM, _get_env
 from .event_loop import *
 from .topics import PUBLISH_TOPICS, SUBSCRIBE_TOPICS, TOPIC_TYPES
+from .transport import PahoMQTTTransport, RecorderTransport
 
 
 class ArenaMQTT(object):
@@ -35,6 +36,7 @@ class ArenaMQTT(object):
                 debug = False,
                 headless = False,
                 environment = False,
+                transport = None,
                 **kwargs
             ):
         if os.environ.get(MQTTH):
@@ -99,10 +101,13 @@ class ArenaMQTT(object):
         # Always use the the hostname specified by the user, or defaults.
         self.mqttc_id = "pyClient-" + self.generate_client_id()
 
-        # fetch host config
-        print("Fetching ARENA configuration...")
-        self.config_url = f"https://{self.web_host}/conf/defaults.json"
-        self.config_data = json.loads(self.auth.urlopen(self.config_url))
+        if "config_data" in kwargs:
+             self.config_data = kwargs["config_data"]
+        else:
+             # fetch host config
+             print("Fetching ARENA configuration...")
+             self.config_url = f"https://{self.web_host}/conf/defaults.json"
+             self.config_data = json.loads(self.auth.urlopen(self.config_url))
 
         self.mqtt_host = self.config_data["ARENADefaults"]["mqttHost"]
 
@@ -156,10 +161,16 @@ class ArenaMQTT(object):
             PUBLISH_TOPICS.SCENE_OBJECTS.substitute({**self.topicParams, **{"objectId": "anyfoobject"}})
         )
 
-        self.mqttc = mqtt.Client(
-            mqtt.CallbackAPIVersion.VERSION2, self.mqttc_id, clean_session=True
-        )
-        self.mqttc.username_pw_set(username=self.username, password=token)
+        if transport:
+            self.transport = transport
+        else:
+            self.transport = PahoMQTTTransport(self.mqttc_id, clean_session=True)
+            if os.environ.get("ARENA_RECORD_TRACE"):
+                 print(f"Tracing enabled! Recording to mqtt_trace.json")
+                 self.transport = RecorderTransport(self.transport)
+
+
+        self.transport.username_pw_set(username=self.username, password=token)
         print("=====")
 
         # set up callbacks
@@ -168,7 +179,7 @@ class ArenaMQTT(object):
 
         self.event_loop = EventLoop(self.disconnect)
 
-        aioh = AsyncioMQTTHelper(self.event_loop, self.mqttc)
+        self.transport.loop_start(self.event_loop)
 
         # have all tasks wait until mqtt client is connected before starting
         self.mqtt_connect_evt = asyncio.Event()
@@ -176,10 +187,10 @@ class ArenaMQTT(object):
 
         # set paho mqtt callbacks
         self.subscriptions = {}
-        self.mqttc.on_connect = self.on_connect
-        self.mqttc.on_disconnect = self.on_disconnect
-        self.mqttc.on_publish = self.on_publish
-        self.mqttc.on_subscribe = self.on_subscribe
+        self.transport.on_connect = self.on_connect
+        self.transport.on_disconnect = self.on_disconnect
+        self.transport.on_publish = self.on_publish
+        self.transport.on_subscribe = self.on_subscribe
 
         # add main message processing + callbacks loop to tasks
         self.run_async(self.process_message)
@@ -196,15 +207,15 @@ class ArenaMQTT(object):
         else:
             port = 8883  # ARENA broker TLS 1.2 connection port
         if self.auth.verify(self.web_host):
-            self.mqttc.tls_set(tls_version=ssl.PROTOCOL_TLS)
+            self.transport.tls_set(tls_version=ssl.PROTOCOL_TLS)
         else:
-            self.mqttc.tls_set_context(ssl._create_unverified_context())
-            self.mqttc.tls_insecure_set(True)
+            self.transport.tls_set_context(ssl._create_unverified_context())
+            self.transport.tls_insecure_set(True)
         try:
-            self.mqttc.connect(self.mqtt_host, port=port, keepalive=60)
+            self.transport.connect(self.mqtt_host, port=port, keepalive=60)
         except Exception as err:
             print(f'MQTT connect error to {self.mqtt_host}, port={port}: Result Code={err}')
-        self.mqttc.socket().setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
+        self.transport.socket().setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
 
     def generate_client_id(self):
         """Returns a random 6 digit id."""
@@ -213,7 +224,7 @@ class ArenaMQTT(object):
     def network_latency_update(self):
         """Update client latency in $NETWORK/latency."""
         # publish empty message with QoS of 2 to update latency
-        self.mqttc.publish(self.latency_topic, "", qos=2)
+        self.transport.publish(self.latency_topic, "", qos=2)
 
     def run_once(self, func=None, **kwargs):
         """Runs a user-defined function on startup."""
@@ -347,16 +358,16 @@ class ArenaMQTT(object):
         """Disconnects Paho MQTT client."""
         if self.end_program_callback:
             self.end_program_callback(self)
-        self.mqttc.disconnect()
+        self.transport.disconnect()
 
     def message_callback_add(self, sub, callback):
         """Subscribes to new topic and adds callback."""
-        self.do_subscribe(self.mqttc, sub, callback)
+        self.do_subscribe(self.transport, sub, callback)
 
     def message_callback_remove(self, sub):
         """Unsubscribes to topic and removes callback."""
-        self.mqttc.unsubscribe(sub)
-        self.mqttc.message_callback_remove(sub)
+        self.transport.unsubscribe(sub)
+        self.transport.message_callback_remove(sub)
 
     def rcv_queue_len(self):
         """Return receive queue length."""
@@ -364,7 +375,7 @@ class ArenaMQTT(object):
 
     def pub_queue_len(self):
         """Return publish queue length."""
-        return self.mqttc._out_packet
+        return self.transport._out_packet
 
     def client_id(self):
         """Return client id."""

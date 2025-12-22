@@ -2,8 +2,6 @@ import unittest
 from unittest.mock import patch, MagicMock
 import os
 import sys
-import json
-import asyncio
 
 # Add examples to path so we can import random_sphere
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'examples')))

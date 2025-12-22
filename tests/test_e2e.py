@@ -1,8 +1,6 @@
 import json
 import unittest
-import sys
 import os
-import asyncio
 from arena.test_system import ArenaE2ETest
 from arena.objects import Object
 
@@ -38,7 +36,7 @@ class TestArenaE2E(unittest.IsolatedAsyncioTestCase):
             if isinstance(payload, bytes): payload = payload.decode('utf-8')
             if isinstance(payload, str):
                 try: payload = json.loads(payload)
-                except: pass
+                except json.JSONDecodeError: pass
                 
             if isinstance(payload, dict):
                 if payload.get('object_id') == "box1" and payload.get('action') == "create":

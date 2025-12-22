@@ -5,6 +5,56 @@ from unittest.mock import MagicMock
 from .scene import Scene
 from .transport import MockMQTTTransport
 
+# Fields to ignore when comparing payloads (dynamic/timing-related)
+IGNORE_FIELDS = {'timestamp', 'time', 'ts', 'lastUpdated', 'createdAt', 'updatedAt'}
+
+
+def payloads_match(expected, actual, path=""):
+    """
+    Recursively compare two payloads, ignoring timestamp fields.
+    Returns (match: bool, diff_description: str or None)
+    """
+    # Normalize: if either is bytes, decode
+    if isinstance(expected, bytes):
+        expected = json.loads(expected.decode('utf-8'))
+    if isinstance(actual, bytes):
+        actual = json.loads(actual.decode('utf-8'))
+    if isinstance(expected, str):
+        try: expected = json.loads(expected)
+        except json.JSONDecodeError: pass
+    if isinstance(actual, str):
+        try: actual = json.loads(actual)
+        except json.JSONDecodeError: pass
+    
+    # If both are dicts, compare keys
+    if isinstance(expected, dict) and isinstance(actual, dict):
+        for key in expected:
+            if key in IGNORE_FIELDS:
+                continue
+            if key not in actual:
+                return False, f"{path}.{key}: missing in actual"
+            match, diff = payloads_match(expected[key], actual[key], f"{path}.{key}")
+            if not match:
+                return False, diff
+        return True, None
+    
+    # If both are lists, compare element-wise
+    if isinstance(expected, list) and isinstance(actual, list):
+        if len(expected) != len(actual):
+            return False, f"{path}: list length mismatch ({len(expected)} vs {len(actual)})"
+        for i, (e, a) in enumerate(zip(expected, actual)):
+            match, diff = payloads_match(e, a, f"{path}[{i}]")
+            if not match:
+                return False, diff
+        return True, None
+    
+    # Direct comparison for primitives
+    if expected != actual:
+        return False, f"{path}: {expected!r} != {actual!r}"
+    
+    return True, None
+
+
 class ArenaE2ETest:
     def __init__(self, scene_name="test_scene", namespace="user", realm="realm"):
         # Mock auth to avoid network calls
@@ -80,101 +130,109 @@ class ArenaE2ETest:
         """Returns list of published messages."""
         return self.transport.published_messages
 
-    async def verify_trace(self, trace_path : str):
+    async def verify_trace(self, trace_path: str):
         """
         Verifies execution against a recorded trace.
-        - 'output' events in trace are expected to be published by the scene.
-        - 'input' events in trace are injected into the scene.
+        
+        Sequencing:
+        - 'output' events are batched until the next 'input' or end of trace
+        - All expected outputs in a batch are verified before injecting the next input
+        - This maintains proper causality for interactive programs
         """
-        import json
         with open(trace_path, 'r') as f:
             events = json.load(f)
             
         print(f"[Verify] Loaded {len(events)} events from {trace_path}")
         
-        # Cursor for our captured messages
-        captured_idx = 0
+        # Group events into batches: each batch is (optional input, [outputs])
+        # This allows us to verify all outputs triggered by an input before moving on
+        batches = []
+        current_outputs = []
         
-        for i, event in enumerate(events):
+        for event in events:
             if event['type'] == 'input':
-                print(f"[Verify] Step {i}: Injecting input {event['topic']}")
+                # If we have pending outputs, they belong to the previous batch (or initial state)
+                if current_outputs:
+                    batches.append((None, current_outputs))
+                    current_outputs = []
+                # Start a new batch with this input
+                batches.append((event, []))
+            elif event['type'] == 'output':
+                # Add to current batch's outputs
+                if batches and batches[-1][0] is not None:
+                    # Append to the last input's outputs
+                    batches[-1][1].append(event)
+                else:
+                    # Output before any input (initial outputs)
+                    current_outputs.append(event)
+        
+        # Don't forget trailing outputs
+        if current_outputs:
+            batches.append((None, current_outputs))
+        
+        # Track which captured messages we've already matched
+        matched_indices = set()
+        
+        for batch_idx, (input_event, expected_outputs) in enumerate(batches):
+            # 1. First verify any expected outputs from previous input (or initial state)
+            if expected_outputs:
+                print(f"[Verify] Batch {batch_idx}: Expecting {len(expected_outputs)} output(s)")
                 
-                # Ensure subscriptions are active before injecting first message
-                if i == 0 or not self.transport.subscriptions:
-                    pass # Wait for subscriptions check (simplified logic)
-                    for _ in range(5): 
+                # Wait and verify all expected outputs
+                await self._verify_outputs(expected_outputs, matched_indices)
+            
+            # 2. Then inject the input (if any)
+            if input_event:
+                print(f"[Verify] Batch {batch_idx}: Injecting input {input_event['topic']}")
+                
+                # Ensure subscriptions are active before first injection
+                if batch_idx == 0 or not self.transport.subscriptions:
+                    for _ in range(5):
                         if self.transport.subscriptions: break
                         await self.run_step(0.1)
-
-                self.inject_message(event['topic'], event['payload'])
-                # Give time for processing
+                
+                self.inject_message(input_event['topic'], input_event['payload'])
                 await self.run_step(0.1)
-                
-            elif event['type'] == 'output':
-                print(f"[Verify] Step {i}: Expecting output {event['topic']}")
-                
-                # We need to find this message in our captured list.
-                # We search from captured_idx onwards.
-                # We might need to wait if it hasn't arrived yet.
-                found = False
-                attempts = 0
-                max_attempts = 20 # 2 seconds
-                
-                while not found and attempts < max_attempts:
-                    current_msgs = self.transport.published_messages
-                    
-                    # Search new messages
-                    for idx in range(captured_idx, len(current_msgs)):
-                        msg = current_msgs[idx]
-                        
-                        # Match logic: Topic must match. Payload must match subset.
-                        # Trace payload might be partial or full.
-                        # For simple verification, let's match action and object_id if present.
-                        
-                        trace_payload = event['payload']
-                        actual_payload = msg['payload']
-                        if isinstance(actual_payload, bytes): actual_payload = actual_payload.decode('utf-8')
-                        if isinstance(actual_payload, str):
-                            try: actual_payload = json.loads(actual_payload)
-                            except: pass
+        
+        print("[Verify] Trace verification complete - all outputs matched.")
 
-                        # Relaxed Topic Match:
-                        # Topics often contain session-specific IDs (e.g. .../o/Ivan_34823_py/object).
-                        # We match if:
-                        # 1. Exact topic match.
-                        # 2. Suffix match on '/{object_id}' (if object_id is known).
-                        topic_match = (msg['topic'] == event['topic'])
-                        if not topic_match and 'object_id' in trace_payload:
-                             obj_id = trace_payload['object_id']
-                             if msg['topic'].endswith(f"/{obj_id}") and event['topic'].endswith(f"/{obj_id}"):
-                                 topic_match = True
-                        
-                        if not topic_match: continue
-
-                        # Payload Verification: Check critical keys (action, object_id, type)
-                        match = True
-                        if isinstance(trace_payload, dict) and isinstance(actual_payload, dict):
-                            for key in ['action', 'object_id', 'type']:
-                                if key in trace_payload:
-                                    if trace_payload[key] != actual_payload.get(key):
-                                        match = False
-                                        break
-                            # Also check 'data' subset if present?
-                            if match and 'data' in trace_payload and 'data' in actual_payload:
-                                # Start simplified: if trace has object_type, match it
-                                if 'object_type' in trace_payload['data']:
-                                    if trace_payload['data']['object_type'] != actual_payload['data'].get('object_type'):
-                                        match = False
-                        
-                        if match:
-                            found = True
-                            captured_idx = idx + 1 # Advance cursor
-                            print(f"[Verify]   Matched message index {idx}")
-                            break
+    async def _verify_outputs(self, expected_outputs: list, matched_indices: set):
+        """Verify a batch of expected outputs, waiting for them to appear."""
+        for i, event in enumerate(expected_outputs):
+            expected_payload = event['payload']
+            found = False
+            attempts = 0
+            max_attempts = 20  # 2 seconds total
+            best_diff = None
+            
+            while not found and attempts < max_attempts:
+                current_msgs = self.transport.published_messages
+                
+                for idx in range(len(current_msgs)):
+                    if idx in matched_indices:
+                        continue
                     
-                    if not found:
-                        await self.run_step(0.1)
-                        attempts += 1
-                        
+                    msg = current_msgs[idx]
+                    match, diff = payloads_match(expected_payload, msg['payload'])
+                    
+                    if match:
+                        found = True
+                        matched_indices.add(idx)
+                        print(f"[Verify]   ✓ Output {i}: Matched message [{idx}]")
+                        break
+                    else:
+                        if best_diff is None:
+                            best_diff = diff
+                
                 if not found:
-                    raise AssertionError(f"Step {i} Failed: Expected output {event['topic']} with payload {event['payload']} not found within timeout.")
+                    await self.run_step(0.1)
+                    attempts += 1
+            
+            if not found:
+                raise AssertionError(
+                    f"Output verification failed for: {event['topic']}\n"
+                    f"Expected payload: {json.dumps(expected_payload, indent=2)}\n"
+                    f"Captured {len(self.transport.published_messages)} message(s), none matched.\n"
+                    f"Closest diff: {best_diff}"
+                )
+

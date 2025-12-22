@@ -317,8 +317,8 @@ class RecorderTransport(Transport):
             payload = msg.payload.decode('utf-8')
             # Try parsing JSON to store structured data
             try: payload = json.loads(payload)
-            except: pass
-        except:
+            except json.JSONDecodeError: pass
+        except (UnicodeDecodeError, AttributeError):
             payload = str(msg.payload)
 
         self.events.append({
@@ -344,8 +344,8 @@ class RecorderTransport(Transport):
              p = payload
              if isinstance(p, bytes): p = p.decode('utf-8')
              try: p = json.loads(p)
-             except: pass
-        except:
+             except json.JSONDecodeError: pass
+        except (UnicodeDecodeError, AttributeError):
              p = str(payload)
 
         self.events.append({

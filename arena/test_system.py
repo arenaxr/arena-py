@@ -1,9 +1,8 @@
 import asyncio
-import importlib.util
 import json
 import os
 import sys
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from .scene import Scene
 from .transport import MockMQTTTransport
 from .objects import Object
@@ -392,8 +391,18 @@ class ArenaE2ETest:
 
             # Build a namespace with all arena exports, plus our mock Scene
             import arena
+            import arena.scene
             import arena.objects
             import arena.attributes
+
+            # Save original Scene class for restoration
+            original_scene_class = arena.scene.Scene
+            original_arena_scene = getattr(arena, "Scene", None)
+
+            # Patch Scene at both module levels so 'from arena import *' gets our mock
+            arena.scene.Scene = mock_scene_factory
+            if original_arena_scene is not None:
+                arena.Scene = mock_scene_factory
 
             script_globals = {}
 
@@ -403,7 +412,7 @@ class ArenaE2ETest:
                     if not name.startswith("_"):
                         script_globals[name] = getattr(mod, name)
 
-            # Override Scene with our mock
+            # Override Scene with our mock (this is what we pre-populate)
             script_globals["Scene"] = mock_scene_factory
 
             # Add builtins
@@ -435,6 +444,10 @@ class ArenaE2ETest:
         finally:
             # Restore run_tasks
             harness.scene.run_tasks = original_run_tasks
+            # Restore original Scene class
+            arena.scene.Scene = original_scene_class
+            if original_arena_scene is not None:
+                arena.Scene = original_arena_scene
             # Clean up sys.path
             if script_dir in sys.path:
                 sys.path.remove(script_dir)

@@ -17,5 +17,5 @@ class TestArenaReplay(unittest.IsolatedAsyncioTestCase):
         await harness.verify_trace(trace_file)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

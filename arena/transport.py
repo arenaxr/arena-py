@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 import asyncio
-import socket
 import paho.mqtt.client as mqtt
 from paho.mqtt.client import topic_matches_sub
 from .event_loop.asyncio_mqtt import AsyncioMQTTHelper
@@ -199,7 +198,7 @@ class MockMQTTTransport(Transport):
         return None 
 
     def subscribe(self, topic):
-        # mid=random
+        # mid=1 (fixed for mock)
         mid = 1
         self.subscriptions[topic] = None # No specific callback added yet via add, just general sub
         return (0, mid) # (result, mid)

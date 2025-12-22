@@ -61,7 +61,7 @@ The recommended way to test scripts is using **Trace Verification**.
 
 ```python
     async def test_trace(self):
-         harness = ArenaE2ETest("scene", "namespace")
+         harness = ArenaE2ETest(scene_name="scene", namespace="namespace")
          # Intercept scene, run script...
          await harness.verify_trace("trace.json")
 ```

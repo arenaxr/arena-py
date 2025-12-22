@@ -132,9 +132,14 @@ class ArenaE2ETest:
         """Returns list of published messages."""
         return self.transport.published_messages
 
-    async def verify_trace(self, trace_path: str):
+    async def verify_trace(self, trace_path: str, on_output_match=None, on_any_output=None):
         """
         Verifies execution against a recorded trace.
+        
+        Args:
+            trace_path: Path to the trace JSON file
+            on_output_match: Callback(event_idx, expected, actual) called when an output matches
+            on_any_output: Callback(actual) called for every captured output
         
         Sequencing:
         - 'output' events are batched until the next 'input' or end of trace
@@ -183,7 +188,7 @@ class ArenaE2ETest:
                 # Initial outputs - verify them first (no input to trigger)
                 if expected_outputs:
                     print(f"[Verify] Batch {batch_idx}: Expecting {len(expected_outputs)} initial output(s)")
-                    await self._verify_outputs(expected_outputs, matched_indices)
+                    await self._verify_outputs(expected_outputs, matched_indices, on_output_match, on_any_output)
             else:
                 # Input batch: inject input FIRST, then verify outputs it triggers
                 print(f"[Verify] Batch {batch_idx}: Injecting input {input_event['topic']}")
@@ -200,12 +205,20 @@ class ArenaE2ETest:
                 # Now verify the outputs triggered by this input
                 if expected_outputs:
                     print(f"[Verify] Batch {batch_idx}: Expecting {len(expected_outputs)} output(s)")
-                    await self._verify_outputs(expected_outputs, matched_indices)
+                    await self._verify_outputs(expected_outputs, matched_indices, on_output_match, on_any_output)
         
         print("[Verify] Trace verification complete - all outputs matched.")
 
-    async def _verify_outputs(self, expected_outputs: list, matched_indices: set):
-        """Verify a batch of expected outputs, waiting for them to appear."""
+    async def _verify_outputs(self, expected_outputs: list, matched_indices: set, 
+                              on_output_match=None, on_any_output=None):
+        """Verify a batch of expected outputs, waiting for them to appear.
+        
+        Args:
+            expected_outputs: List of expected output events from trace
+            matched_indices: Set of already-matched message indices
+            on_output_match: Callback(event_idx, expected, actual) on match
+            on_any_output: Callback(actual) for each captured output
+        """
         for i, event in enumerate(expected_outputs):
             expected_payload = event['payload']
             found = False
@@ -221,12 +234,35 @@ class ArenaE2ETest:
                         continue
                     
                     msg = current_msgs[idx]
-                    match, diff = payloads_match(expected_payload, msg['payload'])
+                    actual_payload = msg['payload']
+                    
+                    # Ensure actual_payload is parsed (may be JSON string)
+                    if isinstance(actual_payload, str):
+                        try:
+                            actual_payload = json.loads(actual_payload)
+                        except json.JSONDecodeError:
+                            pass  # Keep as string if not valid JSON
+                    
+                    # Call on_any_output for every output we see (first time)
+                    if on_any_output and idx not in matched_indices:
+                        try:
+                            on_any_output(actual_payload)
+                        except Exception as e:
+                            raise AssertionError(f"on_any_output callback failed for message {idx}: {e}")
+                    
+                    match, diff = payloads_match(expected_payload, actual_payload)
                     
                     if match:
                         found = True
                         matched_indices.add(idx)
                         print(f"[Verify]   ✓ Output {i}: Matched message [{idx}]")
+                        
+                        # Call on_output_match callback
+                        if on_output_match:
+                            try:
+                                on_output_match(i, expected_payload, actual_payload)
+                            except Exception as e:
+                                raise AssertionError(f"on_output_match callback failed for output {i}: {e}")
                         break
                     else:
                         if best_diff is None:
@@ -245,13 +281,16 @@ class ArenaE2ETest:
                 )
 
     @classmethod
-    def run_script(cls, script_path: str, trace_path: str, **scene_kwargs) -> bool:
+    def run_script(cls, script_path: str, trace_path: str, 
+                   on_output_match=None, on_any_output=None, **scene_kwargs) -> bool:
         """
         Load and test an existing script against a recorded trace.
         
         Args:
             script_path: Path to the Python script (e.g., 'examples/random_sphere.py')
             trace_path: Path to the recorded trace JSON file
+            on_output_match: Callback(event_idx, expected, actual) called when output matches
+            on_any_output: Callback(actual) called for every captured output
             **scene_kwargs: Override scene parameters (scene_name, namespace, realm)
         
         Returns:
@@ -327,7 +366,7 @@ class ArenaE2ETest:
             
             # Now verify against trace
             async def _verify():
-                await harness.verify_trace(trace_path)
+                await harness.verify_trace(trace_path, on_output_match, on_any_output)
             
             asyncio.run(_verify())
             print(f"[Test] ✓ {script_path} passed verification")

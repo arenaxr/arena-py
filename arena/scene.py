@@ -7,7 +7,7 @@ import sys
 import threading
 import traceback
 import uuid
-from datetime import datetime
+from datetime import datetime, UTC
 from inspect import signature
 from pathlib import Path
 
@@ -659,7 +659,7 @@ class Scene(ArenaMQTT):
                         {**self.topicParams, **{"objectId": obj['object_id'], "toUid": obj['_private_userid']}}
                     )
 
-            d = datetime.utcnow().isoformat()[:-3] + "Z"
+            d = datetime.now(UTC).isoformat()[:-3] + "Z"
 
             if custom_payload:
                 tmp_obj = obj

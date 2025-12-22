@@ -1,9 +1,12 @@
 import asyncio
+import importlib.util
 import json
 import os
-from unittest.mock import MagicMock
+import sys
+from unittest.mock import MagicMock, patch
 from .scene import Scene
 from .transport import MockMQTTTransport
+from .objects import Object
 
 # Fields to ignore when comparing payloads (dynamic/timing-related)
 IGNORE_FIELDS = {'timestamp', 'time', 'ts', 'lastUpdated', 'createdAt', 'updatedAt'}
@@ -99,22 +102,21 @@ class ArenaE2ETest:
         # Data provided by user example
         persist_data = [
             {"object_id": "lobby-model", "attributes": {"object_type": "gltf-model", "position": {"x": 0, "y": -2, "z": 0}}, "type": "object"},
-            {"object_id": "start", "attributes": {"object_type": "cube", "position": {"x": 18, "y": -2, "z": 11.5}}, "type": "object"}
+            {"object_id": "start", "attributes": {"object_type": "box", "position": {"x": 18, "y": -2, "z": 11.5}}, "type": "object"}
         ]
         self.scene.auth.urlopen = MagicMock(return_value=json.dumps(persist_data))
         
-        # Start tasks manually since we won't call run_forever
-        self._start_tasks()
+        # Tasks will be started when entering async context
+        self._tasks_started = False
         
     def _start_tasks(self):
-        """Manually start the background tasks of the scene."""
-        current_loop = asyncio.get_event_loop()
-        # Verify if scene loop is same as current loop
-        if self.scene.event_loop.loop is not current_loop:
-            pass
-            
+        """Start background tasks of the scene. Must be called from async context."""
+        if self._tasks_started:
+            return
+        self._tasks_started = True
+        
         for task in self.scene.event_loop.tasks:
-             asyncio.create_task(task)
+            asyncio.create_task(task)
 
     def inject_message(self, topic, payload):
         """Injects a message as if received from MQTT."""
@@ -139,6 +141,9 @@ class ArenaE2ETest:
         - All expected outputs in a batch are verified before injecting the next input
         - This maintains proper causality for interactive programs
         """
+        # Start background tasks now that we're in async context
+        self._start_tasks()
+        
         with open(trace_path, 'r') as f:
             events = json.load(f)
             
@@ -174,25 +179,28 @@ class ArenaE2ETest:
         matched_indices = set()
         
         for batch_idx, (input_event, expected_outputs) in enumerate(batches):
-            # 1. First verify any expected outputs from previous input (or initial state)
-            if expected_outputs:
-                print(f"[Verify] Batch {batch_idx}: Expecting {len(expected_outputs)} output(s)")
-                
-                # Wait and verify all expected outputs
-                await self._verify_outputs(expected_outputs, matched_indices)
-            
-            # 2. Then inject the input (if any)
-            if input_event:
+            if input_event is None:
+                # Initial outputs - verify them first (no input to trigger)
+                if expected_outputs:
+                    print(f"[Verify] Batch {batch_idx}: Expecting {len(expected_outputs)} initial output(s)")
+                    await self._verify_outputs(expected_outputs, matched_indices)
+            else:
+                # Input batch: inject input FIRST, then verify outputs it triggers
                 print(f"[Verify] Batch {batch_idx}: Injecting input {input_event['topic']}")
                 
                 # Ensure subscriptions are active before first injection
-                if batch_idx == 0 or not self.transport.subscriptions:
+                if not self.transport.subscriptions:
                     for _ in range(5):
                         if self.transport.subscriptions: break
                         await self.run_step(0.1)
                 
                 self.inject_message(input_event['topic'], input_event['payload'])
                 await self.run_step(0.1)
+                
+                # Now verify the outputs triggered by this input
+                if expected_outputs:
+                    print(f"[Verify] Batch {batch_idx}: Expecting {len(expected_outputs)} output(s)")
+                    await self._verify_outputs(expected_outputs, matched_indices)
         
         print("[Verify] Trace verification complete - all outputs matched.")
 
@@ -236,3 +244,140 @@ class ArenaE2ETest:
                     f"Closest diff: {best_diff}"
                 )
 
+    @classmethod
+    def run_script(cls, script_path: str, trace_path: str, **scene_kwargs) -> bool:
+        """
+        Load and test an existing script against a recorded trace.
+        
+        Args:
+            script_path: Path to the Python script (e.g., 'examples/random_sphere.py')
+            trace_path: Path to the recorded trace JSON file
+            **scene_kwargs: Override scene parameters (scene_name, namespace, realm)
+        
+        Returns:
+            True if verification passed, raises AssertionError otherwise
+        
+        Usage:
+            ArenaE2ETest.run_script('examples/random_sphere.py', 'traces/random_sphere.json')
+        """
+        # Extract scene params from trace or use defaults
+        scene_name = scene_kwargs.get('scene_name', 'test_scene')
+        namespace = scene_kwargs.get('namespace', 'public')
+        realm = scene_kwargs.get('realm', 'realm')
+        
+        # Ensure a fresh event loop exists (asyncio.run closes the loop after each call)
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            # No running loop - create a new one
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        
+        # Clear global object registry for clean state
+        Object.all_objects = {}
+        Object.private_objects = {}
+        
+        # Create harness with mock transport
+        harness = cls(scene_name=scene_name, namespace=namespace, realm=realm)
+        
+        # Make run_tasks() a no-op so script doesn't block
+        original_run_tasks = harness.scene.run_tasks
+        harness.scene.run_tasks = lambda: None
+        
+        # Add script's directory to path so relative imports work
+        script_dir = os.path.dirname(os.path.abspath(script_path))
+        if script_dir not in sys.path:
+            sys.path.insert(0, script_dir)
+        
+        try:
+            # Create a Scene factory that returns our harness scene
+            def mock_scene_factory(*args, **kwargs):
+                return harness.scene
+            
+            # Build a namespace with all arena exports, plus our mock Scene
+            import arena
+            import arena.objects
+            import arena.attributes
+            script_globals = {}
+            
+            # Copy all arena exports (including submodule exports)
+            for mod in [arena, arena.objects, arena.attributes]:
+                for name in dir(mod):
+                    if not name.startswith('_'):
+                        script_globals[name] = getattr(mod, name)
+            
+            # Override Scene with our mock
+            script_globals['Scene'] = mock_scene_factory
+            
+            # Add builtins
+            script_globals['__builtins__'] = __builtins__
+            script_globals['__name__'] = '__main__'
+            script_globals['__file__'] = script_path
+            
+            try:
+                # Load and execute the script with our prepared namespace
+                print(f"[Test] Loading script: {script_path}")
+                with open(script_path, 'r') as f:
+                    script_code = f.read()
+                
+                exec(compile(script_code, script_path, 'exec'), script_globals)
+                print(f"[Test] Script loaded. Objects created: {len(Object.all_objects)}")
+            except SystemExit:
+                pass  # Script may call sys.exit() or similar
+            
+            # Now verify against trace
+            async def _verify():
+                await harness.verify_trace(trace_path)
+            
+            asyncio.run(_verify())
+            print(f"[Test] ✓ {script_path} passed verification")
+            return True
+            
+        finally:
+            # Restore run_tasks
+            harness.scene.run_tasks = original_run_tasks
+            # Clean up sys.path
+            if script_dir in sys.path:
+                sys.path.remove(script_dir)
+
+    @classmethod
+    def run_test_suite(cls, test_cases: list) -> dict:
+        """
+        Run multiple script tests and report results.
+        
+        Args:
+            test_cases: List of dicts with 'script', 'trace', and optional scene kwargs
+                Example: [
+                    {'script': 'examples/random_sphere.py', 'trace': 'traces/random_sphere.json'},
+                    {'script': 'examples/box_click.py', 'trace': 'traces/box_click.json', 'scene_name': 'click'},
+                ]
+        
+        Returns:
+            Dict with 'passed', 'failed', and 'results' keys
+        """
+        results = {'passed': 0, 'failed': 0, 'results': []}
+        
+        for i, test_case in enumerate(test_cases):
+            script = test_case['script']
+            trace = test_case['trace']
+            kwargs = {k: v for k, v in test_case.items() if k not in ('script', 'trace')}
+            
+            print(f"\n{'='*60}")
+            print(f"[Suite] Test {i+1}/{len(test_cases)}: {script}")
+            print('='*60)
+            
+            try:
+                cls.run_script(script, trace, **kwargs)
+                results['passed'] += 1
+                results['results'].append({'script': script, 'status': 'PASSED'})
+            except Exception as e:
+                results['failed'] += 1
+                results['results'].append({'script': script, 'status': 'FAILED', 'error': str(e)})
+                print(f"[Suite] ✗ {script} FAILED: {e}")
+        
+        # Summary
+        print(f"\n{'='*60}")
+        print(f"[Suite] Results: {results['passed']} passed, {results['failed']} failed")
+        print('='*60)
+        
+        return results

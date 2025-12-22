@@ -63,8 +63,8 @@ class ArenaE2ETest:
         # Mock auth to avoid network calls
         os.environ["ARENA_USERNAME"] = "test_user"
         # minimal valid jwt structure: header.payload.signature
-        # {"exp": 1735689600, "publ": ["#"], "subl": ["#"]} base64 encoded
-        os.environ["ARENA_PASSWORD"] = "eyJhIjogMX0=.eyJleHAiOiAxNzM1Njg5NjAwLCAicHVibCI6IFsiIyJdLCAic3VibCI6IFsiIyJdfQ==.signature"
+        # {"exp": 1798675200, "publ": ["#"], "subl": ["#"]} base64 encoded (expires Dec 31, 2026)
+        os.environ["ARENA_PASSWORD"] = "eyJhIjogMX0=.eyJleHAiOiAxNzk4Njc1MjAwLCAicHVibCI6IFsiIyJdLCAic3VibCI6IFsiIyJdfQ==.signature"
 
         # Create mock transport
         self.transport = MockMQTTTransport("test_client")

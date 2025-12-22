@@ -5,7 +5,7 @@ activity times and number of messages sent/received.
 
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, UTC
 
 from ..base_object import BaseObject
 from ..env import PROGRAM_STATS_UPDATE_INTERVAL_MS, _get_arena_env, _get_env
@@ -50,8 +50,8 @@ class ProgramRunInfo(BaseObject, GetPublicAttrsMixin):
         self.env=_get_arena_env()
 
         # run stats
-        self.create_time =  datetime.utcnow().isoformat()[:-3]+"Z"
-        self.last_active_time =  datetime.utcnow().isoformat()[:-3]+"Z"
+        self.create_time =  datetime.now(UTC).isoformat()[:-3]+"Z"
+        self.last_active_time =  datetime.now(UTC).isoformat()[:-3]+"Z"
         self.rcv_msgs = 0
         self.pub_msgs = 0
         # init when a message is sent/received (so we can see if messages were never sent/received)
@@ -108,13 +108,13 @@ class ProgramRunInfo(BaseObject, GetPublicAttrsMixin):
 
     def msg_rcv(self):
         """Update stats when a message is received. """
-        self.last_rcv_time = datetime.utcnow().isoformat()[:-3]+"Z"
+        self.last_rcv_time = datetime.now(UTC).isoformat()[:-3]+"Z"
         self.rcv_msgs = self.rcv_msgs + 1
         self.last_active_time = self.last_rcv_time
 
     def msg_publish(self):
         """Update stats when a message is published. """
-        self.last_pub_time = datetime.utcnow().isoformat()[:-3]+"Z"
+        self.last_pub_time = datetime.now(UTC).isoformat()[:-3]+"Z"
         self.pub_msgs = self.pub_msgs + 1
         self.last_active_time = self.last_pub_time
 

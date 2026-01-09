@@ -4,6 +4,15 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [1.4.2](https://github.com/arenaxr/arena-py/compare/v1.4.1...v1.4.2) (2026-01-09)
+
+
+### Bug Fixes
+
+* patch at module level before exec ([6b0ad06](https://github.com/arenaxr/arena-py/commit/6b0ad0657aca71c7947526f28cee536101f6c61c))
+* require python 3.11 for UTC usage ([5847d5b](https://github.com/arenaxr/arena-py/commit/5847d5b2f2af714f436415c0b8e9243f86d6ea29))
+* utcnow deprecation ([48a9322](https://github.com/arenaxr/arena-py/commit/48a932229d58bbe7c9658896e06212b573cace54))
+
 ## [1.4.1](https://github.com/arenaxr/arena-py/compare/v1.4.0...v1.4.1) (2025-10-06)
 
 

@@ -36,7 +36,7 @@ setuptools.setup(
     # Goal: keep dependencies minimal to increase portability to platforms like RustPython
     install_requires=[
         "paho-mqtt~=2.1.0",
-        "Deprecated~=1.2.18",
+        "Deprecated~=1.3.1",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

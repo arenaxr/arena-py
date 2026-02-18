@@ -83,14 +83,28 @@ do
     pfile=$(echo $i | cut -d ' ' -f 2)
     pdir=$(dirname $pfile)
     rfile=$pdir/requirements.txt
+
+    cmd="$i"
+
     if test -f "$rfile"; then
-        echo "Installing $rfile..."
-        pip3 install -r $rfile
+        echo "Found requirements: $rfile"
+        if [ ! -d "$pdir/.venv" ]; then
+            echo "Creating venv in $pdir/.venv..."
+            python3 -m venv "$pdir/.venv"
+        fi
+
+        echo "Installing requirements in $pdir/.venv..."
+        "$pdir/.venv/bin/pip" install -r "$rfile" --quiet --upgrade
+
+        # If the command uses the default python, switch to venv python
+        if [[ "$i" == "$PYTHON "* ]]; then
+             cmd="$pdir/.venv/bin/python ${i#$PYTHON }"
+        fi
     fi
 
     echo $start
     echo $start >> $logfile 2>&1 &
-    sh -c "$i" >> $logfile 2>&1 &
+    sh -c "$cmd" >> $logfile 2>&1 &
     pid=$(echo $!)
     sleep 5
     kill -INT $pid # ctrl-c

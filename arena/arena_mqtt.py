@@ -153,13 +153,22 @@ class ArenaMQTT(object):
                 'public': SUBSCRIBE_TOPICS.DEVICE.substitute(self.topicParams),
             }
         self.latency_topic = self.config_data["ARENADefaults"]["latencyTopic"]  # network graph latency update
-        self.ignore_topic = SUBSCRIBE_TOPICS.SCENE_PUBLIC_SELF.substitute(self.topicParams)
+        if self.scene:
+            self.ignore_topic = SUBSCRIBE_TOPICS.SCENE_PUBLIC_SELF.substitute(self.topicParams)
+        elif self.device:
+            self.ignore_topic = PUBLISH_TOPICS.DEVICE.substitute(self.topicParams)
 
         # check for valid permissions to write to all objects topics
-        self.can_publish_obj = self.auth.has_publish_rights(
-            token,
-            PUBLISH_TOPICS.SCENE_OBJECTS.substitute({**self.topicParams, **{"objectId": "anyfoobject"}})
-        )
+        if self.scene:
+            self.can_publish_obj = self.auth.has_publish_rights(
+                token,
+                PUBLISH_TOPICS.SCENE_OBJECTS.substitute({**self.topicParams, **{"objectId": "anyfoobject"}})
+            )
+        elif self.device:
+            self.can_publish_obj = self.auth.has_publish_rights(
+                token,
+                PUBLISH_TOPICS.DEVICE.substitute(self.topicParams)
+            )
 
         if transport:
             self.transport = transport

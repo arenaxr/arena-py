@@ -20,11 +20,9 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse, urlsplit
 
 from .utils import topic_matches_sub
+from .utils.settings import Settings
 
-_gauth_file = ".arena_google_auth"
-_mqtt_token_file = ".arena_mqtt_auth"
-_arena_user_dir = f"{str(Path.home())}/.arena"
-_local_mqtt_path = f"{_mqtt_token_file}"
+_local_mqtt_path = f"{Settings._mqtt_token_file}"
 _auth_callback_hostname = "localhost"
 _auth_state_code = None
 _auth_response_code = None
@@ -72,27 +70,26 @@ class ArenaAuth:
             return None
         creds = None
         refresh_token = None
-        scene_auth_dir = self._get_scene_auth_path(web_host)
-        scene_gauth_path = f"{scene_auth_dir}/{_gauth_file}"
+        scene_auth_dir = Settings.get_scene_auth_path(web_host)
+        scene_gauth_path = f"{scene_auth_dir}/{Settings._gauth_file}"
 
         if not os.path.exists(scene_auth_dir):
             os.makedirs(scene_auth_dir)
 
         # store the user's access and refresh tokens
-        if os.path.exists(scene_gauth_path):
-            try:
-                with open(scene_gauth_path, "r", encoding="utf-8") as token:
-                    creds = json.load(token)
-            except (json.JSONDecodeError, UnicodeDecodeError):
-                creds = None  # bad/old storage format
-
-            if creds and "id_token" in creds:
+        creds = Settings.load_json_file(scene_gauth_path)
+        if creds:
+            if "id_token" in creds:
                 id_claims = _jwt_decode(creds["id_token"])
                 # for reuse, client_id must still match
                 if id_claims["aud"] != gauth["installed"]["client_id"]:
                     creds = None  # switched auth systems
+            else:
+                creds = None
+
             if creds and "refresh_token" in creds:
                 refresh_token = creds["refresh_token"]
+
             if creds and id_claims:
                 exp = float(id_claims["exp"])
                 if exp <= time.time():
@@ -126,10 +123,7 @@ class ArenaAuth:
                     )
 
             creds = json.loads(creds_jstr)
-            with open(scene_gauth_path, "w", encoding="utf-8") as token:
-                # save the credentials for the next run
-                json.dump(creds, token)
-            os.chmod(scene_gauth_path, 0o600)  # set user-only perms.
+            Settings.save_json_file(scene_gauth_path, creds, mode=0o600)  # set user-only perms.
 
         username = None
         self._id_token = creds["id_token"]
@@ -230,15 +224,13 @@ class ArenaAuth:
         :param bool video: If Jitsi video conference is requested.
         :return: username and mqtt_token from arena-account.
         """
-        scene_auth_dir = self._get_scene_auth_path(web_host)
-        scene_mqtt_path = f"{scene_auth_dir}/{_mqtt_token_file}"
+        scene_auth_dir = Settings.get_scene_auth_path(web_host)
+        scene_mqtt_path = f"{scene_auth_dir}/{Settings._mqtt_token_file}"
 
         print("Using remote-authenticated MQTT token.")
         mqtt_json = self._get_mqtt_token(web_host, realm, scene, username, video, env)
         # save mqtt_token
-        with open(scene_mqtt_path, "w", encoding="utf-8") as d:
-            d.write(mqtt_json)
-        os.chmod(scene_mqtt_path, 0o600)  # set user-only perms.
+        Settings.save_json_file(scene_mqtt_path, json.loads(mqtt_json), mode=0o600)  # set user-only perms.
 
         self._mqtt_token = json.loads(mqtt_json)
         self._log_token()
@@ -248,24 +240,21 @@ class ArenaAuth:
         """
         Check for device mqtt_token, ask for a missing one, and save to local memory.
         """
-        device_auth_dir = self._get_device_auth_path(web_host)
-        device_mqtt_path = f"{device_auth_dir}/{_mqtt_token_file}"
+        device_auth_dir = Settings.get_device_auth_path(web_host)
+        device_mqtt_path = f"{device_auth_dir}/{Settings._mqtt_token_file}"
         # check token expiration
         _remove_credentials(device_auth_dir, expire=True)
         # load device token if valid
         if os.path.exists(device_mqtt_path):
             print("Using user long-term device MQTT token.")
-            with open(device_mqtt_path, "r", encoding="utf8") as f:
-                mqtt_json = f.read()
+            mqtt_json = json.dumps(Settings.load_json_file(device_mqtt_path))
         else:
             if not os.path.exists(device_auth_dir):
                 os.makedirs(device_auth_dir)
             print(f"Generate a token for this device at https://{web_host}/user/v2/profile")
             mqtt_json = input("Paste auth MQTT full JSON here for this device: ")
             # save mqtt_token
-            with open(device_mqtt_path, "w", encoding="utf-8") as d:
-                d.write(mqtt_json)
-            os.chmod(device_mqtt_path, 0o600)  # set user-only perms.
+            Settings.save_json_file(device_mqtt_path, json.loads(mqtt_json), mode=0o600)  # set user-only perms.
 
         self._mqtt_token = json.loads(mqtt_json)
         self._log_token()
@@ -631,8 +620,8 @@ def _remove_credentials(cred_dir, expire=False):
     """
     Helper to remove credentials in path with expiration option.
     """
-    test_gauth_path = f"{cred_dir}/{_gauth_file}"
-    test_mqtt_path = f"{cred_dir}/{_mqtt_token_file}"
+    test_gauth_path = f"{cred_dir}/{Settings._gauth_file}"
+    test_mqtt_path = f"{cred_dir}/{Settings._mqtt_token_file}"
     if os.path.exists(test_mqtt_path):
         with open(test_mqtt_path, "r", encoding="utf8") as f:
             mqtt_json = f.read()

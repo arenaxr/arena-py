@@ -9,11 +9,13 @@ from datetime import datetime
 
 import paho.mqtt.client as mqtt
 
+from . import __version__
 from .auth import ArenaAuth
 from .env import ARENA_PASSWORD, ARENA_USERNAME, MQTTH, NAMESPACE, REALM, _get_env
 from .event_loop import *
 from .topics import PUBLISH_TOPICS, SUBSCRIBE_TOPICS, TOPIC_TYPES
 from .transport import PahoMQTTTransport, RecorderTransport
+from .utils.version import version_check
 
 
 class ArenaMQTT(object):
@@ -39,6 +41,9 @@ class ArenaMQTT(object):
                 transport = None,
                 **kwargs
             ):
+        print(f"arena-py version {__version__}")
+        version_check()  # check for updates on PyPI
+
         if os.environ.get(MQTTH):
             self.web_host = _get_env(MQTTH)
             print(f"Using Host from 'MQTTH' env variable: {self.web_host}")

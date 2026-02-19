@@ -4,6 +4,23 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [1.5.0](https://github.com/arenaxr/arena-py/compare/v1.4.1...v1.5.0) (2026-02-19)
+
+
+### Features
+
+* **version, settings:** add pypi version check, centralize user settings ([92f19c4](https://github.com/arenaxr/arena-py/commit/92f19c421d2c442afbff545fcdef9b3a56df0c24))
+
+
+### Bug Fixes
+
+* **auth:** ensure manual mqtt token uses local .gitignore, closes [#127](https://github.com/arenaxr/arena-py/issues/127) ([274f1d0](https://github.com/arenaxr/arena-py/commit/274f1d03393a01a8568e324e67ec3dfdf036ab25))
+* **device:** fixed topic setting failure for Device() ([5c670c9](https://github.com/arenaxr/arena-py/commit/5c670c9b8d9b82bbd7f3f75ddac1bc35cb987bbe))
+* patch at module level before exec ([6b0ad06](https://github.com/arenaxr/arena-py/commit/6b0ad0657aca71c7947526f28cee536101f6c61c))
+* require python 3.11 for UTC usage ([5847d5b](https://github.com/arenaxr/arena-py/commit/5847d5b2f2af714f436415c0b8e9243f86d6ea29))
+* utcnow deprecation ([48a9322](https://github.com/arenaxr/arena-py/commit/48a932229d58bbe7c9658896e06212b573cace54))
+* **version:** keep persistant warning when alternate version is known ([1faa11c](https://github.com/arenaxr/arena-py/commit/1faa11cdda391812e3b2353a034c498e4bc1929a))
+
 ## [1.4.1](https://github.com/arenaxr/arena-py/compare/v1.4.0...v1.4.1) (2025-10-06)
 
 

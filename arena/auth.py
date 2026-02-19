@@ -320,6 +320,7 @@ class ArenaAuth:
         # load local token if valid
         if os.path.exists(_local_mqtt_path):
             print("Using local MQTT token.")
+            self._ensure_gitignore(str(Path.cwd()))
             with open(_local_mqtt_path, "r", encoding="utf8") as f:
                 mqtt_json = f.read()
             self._mqtt_token = json.loads(mqtt_json)
@@ -392,7 +393,7 @@ class ArenaAuth:
     def _confirm_gauth(self):
         if not self._id_token:
             raise IOError(
-                "Google auth is required. Remove manual .arena_mqtt_token or env ARENA_PASSWORD. Headless auth options are available using `scene=Scene(..., headless=True).`"
+                "Google auth is required. Remove manual .arena_mqtt_auth or env ARENA_PASSWORD. Headless auth options are available using `scene=Scene(..., headless=True).`"
             )
 
     def _get_my_scenes(self, web_host):
@@ -566,6 +567,29 @@ class ArenaAuth:
         ) as err:
             print(f"{err}: {url}")
             sys.exit("Terminating...")
+
+
+    def _ensure_gitignore(self, directory):
+        """
+        Ensure that the token file is ignored by git in the given directory.
+        """
+        gitignore_path = os.path.join(directory, ".gitignore")
+        token_file = Settings._mqtt_token_file
+
+        if not os.path.exists(gitignore_path):
+            with open(gitignore_path, "w", encoding="utf-8") as f:
+                f.write(f"{token_file}\n")
+            print(f"Created .gitignore with {token_file}")
+        else:
+            with open(gitignore_path, "r", encoding="utf8") as f:
+                content = f.read()
+
+            if token_file not in content:
+                # check if there is a newline at the end
+                prefix = "" if content.endswith("\n") or len(content) == 0 else "\n"
+                with open(gitignore_path, "a", encoding="utf8") as f:
+                    f.write(f"{prefix}{token_file}\n")
+                print(f"Added {token_file} to .gitignore")
 
 
 def signout():

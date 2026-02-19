@@ -1,4 +1,6 @@
 .arena*
+.arena_mqtt_auth
+.arena_google_auth
 token.json
 credentials.json
 *.log

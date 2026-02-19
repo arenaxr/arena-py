@@ -1,5 +1,49 @@
 # simple general purpose functions
+import functools
+import sys
+import warnings
+
 from . import not_numpy as np
+
+_YELLOW = "\033[93m"
+_RESET = "\033[0m"
+
+# Install a custom showwarning that colours DeprecationWarning in yellow.
+_orig_showwarning = warnings.showwarning
+
+
+def _showwarning_yellow(message, category, filename, lineno, file=None, line=None):
+    if issubclass(category, DeprecationWarning):
+        out = file if file is not None else sys.stderr
+        out.write(f"{_YELLOW}{warnings.formatwarning(message, category, filename, lineno, line)}{_RESET}")
+    else:
+        _orig_showwarning(message, category, filename, lineno, file, line)
+
+
+warnings.showwarning = _showwarning_yellow
+
+
+def deprecated(msg):
+    """Decorator to mark a function, property, or class as deprecated.
+    Emits a DeprecationWarning with the given message when called."""
+    def decorator(func_or_class):
+        if isinstance(func_or_class, type):
+            # Class decorator: wrap __init__
+            orig_init = func_or_class.__init__
+            @functools.wraps(orig_init)
+            def new_init(self, *args, **kwargs):
+                warnings.warn(msg, DeprecationWarning, stacklevel=2)
+                orig_init(self, *args, **kwargs)
+            func_or_class.__init__ = new_init
+            return func_or_class
+        else:
+            # Function / property accessor decorator
+            @functools.wraps(func_or_class)
+            def wrapper(*args, **kwargs):
+                warnings.warn(msg, DeprecationWarning, stacklevel=2)
+                return func_or_class(*args, **kwargs)
+            return wrapper
+    return decorator
 
 
 class Utils(object):

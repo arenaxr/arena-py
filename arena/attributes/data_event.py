@@ -1,5 +1,3 @@
-from deprecated import deprecated
-
 from ..utils import *
 from .attribute import Attribute
 from .position import Position

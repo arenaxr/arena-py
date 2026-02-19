@@ -23,6 +23,9 @@ from .utils import topic_matches_sub
 from .utils.settings import Settings
 
 _local_mqtt_path = f"{Settings._mqtt_token_file}"
+_arena_user_dir = Settings._arena_user_dir
+_mqtt_token_file = Settings._mqtt_token_file
+_gauth_file = Settings._gauth_file
 _auth_callback_hostname = "localhost"
 _auth_state_code = None
 _auth_response_code = None

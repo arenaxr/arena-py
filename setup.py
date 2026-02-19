@@ -1,16 +1,7 @@
-import os
-
 import setuptools
 
 with open("README.md", "r") as readme:
     long_description = readme.read()
-
-# package_root = os.path.abspath(os.path.dirname(__file__))
-
-# version = {}
-# with open(os.path.join(package_root, "arena/version.py")) as fp:
-#     exec(fp.read(), version)
-# version = version["__version__"]
 
 setuptools.setup(
     name="arena-py",

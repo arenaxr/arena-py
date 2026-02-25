@@ -62,7 +62,7 @@ class Device(ArenaMQTT):
     def publish(self, topic, payload_obj):
         """Publishes to mqtt broker."""
         payload = json.dumps(payload_obj)
-        self.mqttc.publish(topic, payload, qos=0)
+        self.transport.publish(topic, payload, qos=0)
         if self.debug:
             print(f"[publish] {topic} {payload}")
         return payload

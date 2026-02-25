@@ -25,8 +25,8 @@ def randcolor():
 def make_balls():
     obj = Sphere(
         clickable=True,
-        physics=Physics(type="dynamic"),
-        impulse=Impulse(position=(1,1,1), force=(1,50,1)),
+        physx_body=PhysxBody(mass=1),
+        physx_force_pushable=PhysxForcePushable(force=50),
         position=(rando(), rando(), rando()),
         color=randcolor(),
         ttl=60)

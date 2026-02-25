@@ -12,22 +12,22 @@ scene = Scene(host="arenaxr.org", scene="example")
 
 @scene.run_once
 def make_robot_arm_attachment():
-robot_arm = UrdfModel(
-    object_id="robot_arm",
-    position=(0, 0, -3),
-    rotation=(-90, 0, 0),
-    scale=(1, 1, 1),
-    url="/store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
-    urlBase="/store/users/mwfarb/xacro/motoman_gp4_support",
-)
-scene.add_object(robot_arm)
-green_ball = Sphere(
-    object_id="green_ball",
-    parent=robot_arm.object_id,
-    scale=(0.05, 0.05, 0.05),
-    material={"color": "#00ff00", "transparent": True, "opacity": 0.45},
-    submodel_parent="joint_6_t-flange",
-)
-scene.add_object(green_ball)
+    robot_arm = UrdfModel(
+        object_id="robot_arm",
+        position=(0, 0, -3),
+        rotation=(-90, 0, 0),
+        scale=(1, 1, 1),
+        url="/store/users/wiselab/xacro/motoman_gp4_support/urdf/gp4.xacro",
+        urlBase="/store/users/wiselab/xacro/motoman_gp4_support",
+    )
+    scene.add_object(robot_arm)
+    green_ball = Sphere(
+        object_id="green_ball",
+        parent=robot_arm.object_id,
+        scale=(0.05, 0.05, 0.05),
+        material={"color": "#00ff00", "transparent": True, "opacity": 0.45},
+        submodel_parent="joint_6_t-flange",
+    )
+    scene.add_object(green_ball)
 
 scene.run_tasks()

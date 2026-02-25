@@ -3,19 +3,20 @@
 # Move (all) users' camera about a scene with cinematic slow movements
 # takes an argument: scene name for which to move the camera(s) in
 
+import os
 import random
 import sys
 
 from arena import *
 
-HOST = "arenaxr.org"
-SCENE = "test"
+HOST = os.environ.get("MQTTH", "arenaxr.org")
+SCENE = os.environ.get("SCENE", "test")
 
 if len(sys.argv) > 1:
     SCENE=sys.argv[1]
 
 
-arena = Scene(HOST, "realm", SCENE)
+scene = Scene(host=HOST, scene=SCENE)
 
 limit=12.5
 

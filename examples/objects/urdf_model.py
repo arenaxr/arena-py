@@ -20,7 +20,7 @@ athlete_model = UrdfModel(
     object_id="athlete_model",
     position=(0, 2.35, -7),
     rotation=(90, 0, 0),
-    url="store/users/npereira/urdf/T12/urdf/T12_flipped.URDF",
+    url="store/users/wiselab/urdf/T12/urdf/T12_flipped.URDF",
 )
 
 

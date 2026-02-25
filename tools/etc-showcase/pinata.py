@@ -56,7 +56,7 @@ def explode():
     scene.update_object(pinata)
     for i in range(50):
         rand_offset = (random.random()-0.5)/5
-        colorBox = Box(position=(pinata_loc[0]+rand_offset, pinata_loc[1]+rand_offset, pinata_loc[2]+rand_offset),scale=Scale(.5,.5,.5),ttl=15,physics=Physics(type="dynamic"))
+        colorBox = Box(position=(pinata_loc[0]+rand_offset, pinata_loc[1]+rand_offset, pinata_loc[2]+rand_offset),scale=Scale(.5,.5,.5),ttl=15,physx_body=PhysxBody(type="dynamic"))
         scene.add_object(colorBox)
     explode_sound = Sound(src=EXPLODE_SOUND_PATH,positional=True,autoplay=True,poolSize=1 )
     explode_sound_obj = Box(sound=explode_sound,position=pinata_loc,scale=Scale(.01,.01,.01),ttl=10)

@@ -18,7 +18,7 @@ from arena import *
 scene = Scene(host="arenaxr.org", scene="example")
 
 material_extras = MaterialExtras(
-    encoding="sRGBEncoding",
+    colorSpace="SRGBColorSpace",
     transparentOccluder=True,
 )
 

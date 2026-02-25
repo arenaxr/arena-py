@@ -71,8 +71,8 @@ moto_dest = UrdfModel(
     # rotation=(-90, 0, 0),
     rotation=(-90, 90, 0),
     scale=(1, 1, 1),
-    url="store/users/mwfarb/xacro/motoman_gp4_support/urdf/gp4.xacro",
-    urlBase="/store/users/mwfarb/xacro/motoman_gp4_support",
+    url="store/users/wiselab/xacro/motoman_gp4_support/urdf/gp4.xacro",
+    urlBase="/store/users/wiselab/xacro/motoman_gp4_support",
     persist=True,
 )
 moto_dest_sign = ArenauiCard(
@@ -145,8 +145,8 @@ mp400 = UrdfModel(
     position=wps[0],
     rotation=(-90, -90, 0),
     scale=(1, 1, 1),
-    url="store/users/mwfarb/xacro/neo_mp_400/robot_model/mp_400/mp_400.urdf.xacro",
-    urlBase="/store/users/mwfarb/xacro/neo_mp_400",
+    url="store/users/wiselab/xacro/neo_mp_400/robot_model/mp_400/mp_400.urdf.xacro",
+    urlBase="/store/users/wiselab/xacro/neo_mp_400",
     persist=True,
 )
 mp400_sign = ArenauiCard(

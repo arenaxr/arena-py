@@ -27,7 +27,7 @@ class Rotation(Attribute):
         elif isinstance(x, str):
             if y is None:
                 # Assume that only euler angles are passed as space-delimited string
-                x, y, z = map(int, x.split())
+                x, y, z = map(float, x.split())
             else:
                 raise ValueError("Rotation takes x,y,z,(w); a 3-4 element array or list; or a dict with {x,y,z,(w)}")
         elif isinstance(x, Iterable):

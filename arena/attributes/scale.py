@@ -22,7 +22,7 @@ class Scale(Attribute):
                 raise ValueError("Scale takes x,y,z; a 3-element array or list; or a dict with {x,y,z}")
         elif isinstance(x, str):
             if y is None:
-                x, y, z = map(int, x.split())
+                x, y, z = map(float, x.split())
             else:
                 raise ValueError("Scale takes x,y,z; a 3-element array or list; or a dict with {x,y,z}")
         elif isinstance(x, Iterable):

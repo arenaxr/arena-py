@@ -2,12 +2,13 @@
 # all-test.sh
 # Launch multiple examples and tests at 5 second intervals.
 # Check output at system-tests/all-test.log for errors.
+# Usage: bash system-tests/all-test.sh [scene_id]
 
 PYTHON=python
 
-host="arena-dev1.conix.io"
+host="localhost"
 export MQTTH=$host
-scene="test"
+scene="${1:-all-test}"
 export SCENE=$scene
 device="robot1"
 export DEVICE=$device
@@ -88,13 +89,18 @@ do
 
     if test -f "$rfile"; then
         echo "Found requirements: $rfile"
-        if [ ! -d "$pdir/.venv" ]; then
-            echo "Creating venv in $pdir/.venv..."
-            python3 -m venv "$pdir/.venv"
+        if [ -d "$pdir/.venv" ]; then
+            echo "Removing stale venv in $pdir/.venv..."
+            rm -rf "$pdir/.venv"
         fi
+        echo "Creating venv in $pdir/.venv..."
+        python3 -m venv "$pdir/.venv"
 
         echo "Installing requirements in $pdir/.venv..."
+        "$pdir/.venv/bin/pip" install --upgrade pip --quiet
         "$pdir/.venv/bin/pip" install -r "$rfile" --quiet --upgrade
+        # Install local arena-py to override any stale PyPI version
+        "$pdir/.venv/bin/pip" install -e . --quiet
 
         # If the command uses the default python, switch to venv python
         if [[ "$i" == "$PYTHON "* ]]; then

@@ -1,22 +1,11 @@
-from ..utils import Utils
+from ..utils import deprecated
 from .attribute import Attribute
-from .position import Position
 
+
+@deprecated("DEPRECATED: data.impulse is deprecated, use data.physx-force-pushable instead.")
 class Impulse(Attribute):
     """
     Impulse attribute class to manage its properties in the ARENA: ***DEPRECATED**: data.impulse is **deprecated**, use data.physx-force-pushable instead.*
-    Usage: `impulse=Impulse(...)`
-
     """
-    def __init__(self, on="mousedown", force=Position(0,0,0), position=Position(0,0,0), **kwargs):
-        if isinstance(force, Position):
-            force = force.to_str()
-        elif isinstance(force, tuple) or isinstance(force, list):
-            force = Utils.tuple_to_string(force)
-
-        if isinstance(position, Position):
-            position = position.to_str()
-        elif isinstance(position, tuple) or isinstance(position, list):
-            position = Utils.tuple_to_string(position)
-
-        super().__init__(on=on, force=force, position=position, **kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)

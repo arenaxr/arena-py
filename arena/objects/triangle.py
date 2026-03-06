@@ -1,14 +1,18 @@
-from .arena_object import Object
+from dataclasses import dataclass, field
+from typing import Optional, List, Dict, Any
 
-class Triangle(Object):
+@dataclass
+class Triangle:
     """
-    Triangle object class to manage its properties in the ARENA: Triangle Geometry.
+    Triangle
+    Triangle Geometry.
 
-    :param dict vertexA: vertex A Defaults to '{'x': 0, 'y': 0.5, 'z': 0}' (optional)
-    :param dict vertexB: vertex B Defaults to '{'x': -0.5, 'y': -0.5, 'z': 0}' (optional)
-    :param dict vertexC: vertex C Defaults to '{'x': 0.5, 'y': -0.5, 'z': 0}' (optional)
+    :param str object_type: 3D object type.. Must be 'triangle'.
+    :param dict vertexA: Vector3. Defaults to {'x': 0, 'y': 0.5, 'z': 0}
+    :param dict vertexB: Vector3. Defaults to {'x': -0.5, 'y': -0.5, 'z': 0}
+    :param dict vertexC: Vector3. Defaults to {'x': 0.5, 'y': -0.5, 'z': 0}
     """
-    object_type = "triangle"
-
-    def __init__(self, **kwargs):
-        super().__init__(object_type=Triangle.object_type, **kwargs)
+    object_type: str
+    vertexA: dict = field(default_factory=lambda: {'x': 0, 'y': 0.5, 'z': 0})
+    vertexB: dict = field(default_factory=lambda: {'x': -0.5, 'y': -0.5, 'z': 0})
+    vertexC: dict = field(default_factory=lambda: {'x': 0.5, 'y': -0.5, 'z': 0})

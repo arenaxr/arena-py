@@ -1,15 +1,20 @@
-from .arena_object import Object
+from dataclasses import dataclass, field
+from typing import Optional, List, Dict, Any
 
-class Plane(Object):
+@dataclass
+class Plane:
     """
-    Plane object class to manage its properties in the ARENA: Plane Geometry.
+    Plane
+    Plane Geometry.
 
-    :param float height: height Defaults to '1' (optional)
-    :param int segmentsHeight: segments height Defaults to '1' (optional)
-    :param int segmentsWidth: segments width Defaults to '1' (optional)
-    :param float width: width Defaults to '1' (optional)
+    :param str object_type: 3D object type.. Must be 'plane'.
+    :param float height: height. Defaults to 1
+    :param int segmentsHeight: segments height, optional. Defaults to 1
+    :param int segmentsWidth: segments width, optional. Defaults to 1
+    :param float width: width. Defaults to 1
     """
-    object_type = "plane"
-
-    def __init__(self, **kwargs):
-        super().__init__(object_type=Plane.object_type, **kwargs)
+    object_type: str
+    height: float = 1
+    segmentsHeight: Optional[int] = 1
+    segmentsWidth: Optional[int] = 1
+    width: float = 1

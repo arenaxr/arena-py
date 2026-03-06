@@ -1,16 +1,22 @@
-from .arena_object import Object
+from dataclasses import dataclass, field
+from typing import Optional, List, Dict, Any
 
-class Torus(Object):
+@dataclass
+class Torus:
     """
-    Torus object class to manage its properties in the ARENA: Torus Geometry.
+    Torus
+    Torus Geometry.
 
-    :param float arc: Arc Defaults to '360' (optional)
-    :param float radius: radius Defaults to '1' (optional)
-    :param float radiusTubular: radius tubular Defaults to '0.2' (optional)
-    :param int segmentsRadial: segments radial Defaults to '36' (optional)
-    :param int segmentsTubular: segments tubular Defaults to '32' (optional)
+    :param str object_type: 3D object type.. Must be 'torus'.
+    :param float arc: Arc, optional. Defaults to 360
+    :param float radius: radius. Defaults to 1
+    :param float radiusTubular: radius tubular. Defaults to 0.2
+    :param int segmentsRadial: segments radial, optional. Defaults to 36
+    :param int segmentsTubular: segments tubular, optional. Defaults to 32
     """
-    object_type = "torus"
-
-    def __init__(self, **kwargs):
-        super().__init__(object_type=Torus.object_type, **kwargs)
+    object_type: str
+    arc: Optional[float] = 360
+    radius: float = 1
+    radiusTubular: float = 0.2
+    segmentsRadial: Optional[int] = 36
+    segmentsTubular: Optional[int] = 32

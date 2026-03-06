@@ -1,24 +1,26 @@
-from .arena_object import Object
+from dataclasses import dataclass, field
+from typing import Optional, List, Dict, Any
 
-class ArenauiPrompt(Object):
+@dataclass
+class ArenauiPrompt:
     """
-    ArenauiPrompt object class to manage its properties in the ARENA: ARENAUI element which displays prompt with button actions.
+    ARENAUI Prompt
+    ARENAUI element which displays prompt with button actions.
 
-    :param list[str] buttons: Buttons Defaults to '['Confirm', 'Cancel']' (optional)
-    :param str description: Description Defaults to 'This is a prompt. Please confirm or cancel.' (optional)
-    :param str font: Font to use for button text. Allows [Roboto, Roboto-Mono] Defaults to 'Roboto' (optional)
-    :param str materialSides: Which sides display the rendered UI material Allows [both, front] Defaults to 'both' (optional)
-    :param str theme: Color Theme Allows [light, dark] Defaults to 'light' (optional)
-    :param str title: Title Defaults to 'Prompt' (optional)
-    :param float width: Override width Defaults to '1.5' (optional)
+    :param str object_type: 3D object type.. Must be 'arenaui-prompt'.
+    :param str title: Title. Defaults to 'Prompt'
+    :param str description: Description, optional. Defaults to 'This is a prompt. Please confirm or cancel.'
+    :param list buttons: Buttons. Defaults to ['Confirm', 'Cancel']
+    :param float width: Override width. Defaults to 1.5
+    :param str font: Font to use for button text., optional. Allows ['Roboto', 'Roboto-Mono']. Defaults to 'Roboto'
+    :param str theme: Color Theme, optional. Allows ['light', 'dark']. Defaults to 'light'
+    :param str materialSides: Which sides display the rendered UI material, optional. Allows ['both', 'front']. Defaults to 'both'
     """
-    object_type = "arenaui-prompt"
-
-    def __init__(self, **kwargs):
-        super().__init__(object_type=ArenauiPrompt.object_type, **kwargs)
-
-
-class Prompt(ArenauiPrompt):
-    """
-    Alternate name for ArenauiPrompt.
-    """
+    object_type: str
+    title: str = 'Prompt'
+    description: Optional[str] = 'This is a prompt. Please confirm or cancel.'
+    buttons: list = field(default_factory=lambda: ['Confirm', 'Cancel'])
+    width: float = 1.5
+    font: Optional[str] = 'Roboto'
+    theme: Optional[str] = 'light'
+    materialSides: Optional[str] = 'both'

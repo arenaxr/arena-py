@@ -1,17 +1,24 @@
-from .arena_object import Object
+from dataclasses import dataclass, field
+from typing import Optional, List, Dict, Any
 
-class TorusKnot(Object):
+@dataclass
+class TorusKnot:
     """
-    TorusKnot object class to manage its properties in the ARENA: Torus Knot Geometry.
+    Torus Knot
+    Torus Knot Geometry.
 
-    :param float p: P Defaults to '2' (optional)
-    :param float q: Q Defaults to '3' (optional)
-    :param float radius: radius Defaults to '1' (optional)
-    :param float radiusTubular: radius tubular Defaults to '0.2' (optional)
-    :param int segmentsRadial: segments radial Defaults to '8' (optional)
-    :param int segmentsTubular: segments tubular Defaults to '100' (optional)
+    :param str object_type: 3D object type.. Must be 'torusKnot'.
+    :param float p: P, optional. Defaults to 2
+    :param float q: Q, optional. Defaults to 3
+    :param float radius: radius. Defaults to 1
+    :param float radiusTubular: radius tubular. Defaults to 0.2
+    :param int segmentsRadial: segments radial, optional. Defaults to 8
+    :param int segmentsTubular: segments tubular, optional. Defaults to 100
     """
-    object_type = "torusKnot"
-
-    def __init__(self, **kwargs):
-        super().__init__(object_type=TorusKnot.object_type, **kwargs)
+    object_type: str
+    p: Optional[float] = 2
+    q: Optional[float] = 3
+    radius: float = 1
+    radiusTubular: float = 0.2
+    segmentsRadial: Optional[int] = 8
+    segmentsTubular: Optional[int] = 100

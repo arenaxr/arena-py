@@ -1,13 +1,16 @@
-from .arena_object import Object
+from dataclasses import dataclass, field
+from typing import Optional, List, Dict, Any
 
-class Entity(Object):
+@dataclass
+class Entity:
     """
-    Entity object class to manage its properties in the ARENA: Entities are the base of all objects in the scene. Entities are containers into which components can be attached.
+    Entity (generic object)
+    Entities are the base of all objects in the scene. Entities are containers into which components can be attached.
 
-    :param dict geometry: geometry (optional)
-    :param dict panel: panel (optional)
+    :param str object_type: 3D object type.. Must be 'entity'.
+    :param dict geometry: The primitive mesh geometry., optional.
+    :param dict panel: The rounded UI panel primitive., optional.
     """
-    object_type = "entity"
-
-    def __init__(self, **kwargs):
-        super().__init__(object_type=Entity.object_type, **kwargs)
+    object_type: str
+    geometry: Optional[dict] = None
+    panel: Optional[dict] = None

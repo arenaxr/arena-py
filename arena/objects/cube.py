@@ -1,13 +1,24 @@
-from ..utils import deprecated
-from .arena_object import Object
+from dataclasses import dataclass, field
+from typing import Optional, List, Dict, Any
 
-
-@deprecated("Cube (=Box) Geometry (deprecated); Supported for Legacy reasons; Please use Box in new scenes")
-class Cube(Object):
+@dataclass
+class Cube:
     """
-    Cube object class to manage its properties in the ARENA: Cube (=Box) Geometry (**deprecated**); Supported for Legacy reasons; Please use Box in new scenes
-    """
-    object_type = "cube"
+    Cube (deprecated; don't use)
+    Cube (=Box) Geometry (deprecated); Supported for Legacy reasons; Please use Box in new scenes
 
-    def __init__(self, **kwargs):
-        super().__init__(object_type=Cube.object_type, **kwargs)
+    :param str object_type: 3D object type.. Must be 'cube'.
+    :param float depth: depth. Defaults to 1
+    :param float height: height. Defaults to 1
+    :param int segmentsDepth: segments depth, optional. Defaults to 1
+    :param int segmentsHeight: segments height, optional. Defaults to 1
+    :param int segmentsWidth: segments width, optional. Defaults to 1
+    :param float width: width. Defaults to 1
+    """
+    object_type: str
+    depth: float = 1
+    height: float = 1
+    segmentsDepth: Optional[int] = 1
+    segmentsHeight: Optional[int] = 1
+    segmentsWidth: Optional[int] = 1
+    width: float = 1

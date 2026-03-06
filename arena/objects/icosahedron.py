@@ -1,13 +1,16 @@
-from .arena_object import Object
+from dataclasses import dataclass, field
+from typing import Optional, List, Dict, Any
 
-class Icosahedron(Object):
+@dataclass
+class Icosahedron:
     """
-    Icosahedron object class to manage its properties in the ARENA: Icosahedron Geometry.
+    Icosahedron
+    Icosahedron Geometry.
 
-    :param int detail: detail Defaults to '0' (optional)
-    :param float radius: radius Defaults to '1' (optional)
+    :param str object_type: 3D object type.. Must be 'icosahedron'.
+    :param int detail: detail, optional. Defaults to 0
+    :param float radius: radius. Defaults to 1
     """
-    object_type = "icosahedron"
-
-    def __init__(self, **kwargs):
-        super().__init__(object_type=Icosahedron.object_type, **kwargs)
+    object_type: str
+    detail: Optional[int] = 0
+    radius: float = 1

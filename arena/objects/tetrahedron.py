@@ -1,13 +1,16 @@
-from .arena_object import Object
+from dataclasses import dataclass, field
+from typing import Optional, List, Dict, Any
 
-class Tetrahedron(Object):
+@dataclass
+class Tetrahedron:
     """
-    Tetrahedron object class to manage its properties in the ARENA: Tetrahedron Geometry.
+    Tetrahedron
+    Tetrahedron Geometry.
 
-    :param int detail: detail Defaults to '0' (optional)
-    :param float radius: radius Defaults to '1' (optional)
+    :param str object_type: 3D object type.. Must be 'tetrahedron'.
+    :param int detail: detail, optional. Defaults to 0
+    :param float radius: radius. Defaults to 1
     """
-    object_type = "tetrahedron"
-
-    def __init__(self, **kwargs):
-        super().__init__(object_type=Tetrahedron.object_type, **kwargs)
+    object_type: str
+    detail: Optional[int] = 0
+    radius: float = 1

@@ -1,18 +1,24 @@
-from .arena_object import Object
+from dataclasses import dataclass, field
+from typing import Optional, List, Dict, Any
 
-
-class Box(Object):
+@dataclass
+class Box:
     """
-    Box object class to manage its properties in the ARENA: Box Geometry.
+    Box
+    Box Geometry.
 
-    :param float depth: depth Defaults to '1' (optional)
-    :param float height: height Defaults to '1' (optional)
-    :param int segmentsDepth: segments depth Defaults to '1' (optional)
-    :param int segmentsHeight: segments height Defaults to '1' (optional)
-    :param int segmentsWidth: segments width Defaults to '1' (optional)
-    :param float width: width Defaults to '1' (optional)
+    :param str object_type: 3D object type.. Must be 'box'.
+    :param float depth: depth. Defaults to 1
+    :param float height: height. Defaults to 1
+    :param int segmentsDepth: segments depth, optional. Defaults to 1
+    :param int segmentsHeight: segments height, optional. Defaults to 1
+    :param int segmentsWidth: segments width, optional. Defaults to 1
+    :param float width: width. Defaults to 1
     """
-    object_type = "box"
-
-    def __init__(self, **kwargs):
-        super().__init__(object_type=Box.object_type, **kwargs)
+    object_type: str
+    depth: float = 1
+    height: float = 1
+    segmentsDepth: Optional[int] = 1
+    segmentsHeight: Optional[int] = 1
+    segmentsWidth: Optional[int] = 1
+    width: float = 1

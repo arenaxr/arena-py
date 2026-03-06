@@ -1,17 +1,22 @@
-from .arena_object import Object
-from ..attributes import Position
+from dataclasses import dataclass, field
+from typing import Optional, List, Dict, Any
 
-class Line(Object):
+@dataclass
+class Line:
     """
-    Line object class to manage its properties in the ARENA: Draw a line.
+    Line
+    Draw a line.
 
-    :param str color: Line color. Defaults to '#74BEC1' (optional)
-    :param dict end: End coordinate. Defaults to '{'x': -0.5, 'y': -0.5, 'z': 0}' (optional)
-    :param float opacity: Line opacity. Defaults to '1' (optional)
-    :param dict start: Start point coordinate. Defaults to '{'x': 0, 'y': 0.5, 'z': 0}' (optional)
-    :param bool visible: Whether the material is visible. Defaults to 'True' (optional)
+    :param str object_type: 3D object type.. Must be 'line'.
+    :param str color: Line color.. Defaults to '#74BEC1'
+    :param dict end: End coordinate.. Defaults to {'x': -0.5, 'y': -0.5, 'z': 0}
+    :param float opacity: Line opacity., optional. Defaults to 1
+    :param dict start: Start point coordinate.. Defaults to {'x': 0, 'y': 0.5, 'z': 0}
+    :param bool visible: Whether object is visible. Property is inherited., optional. Defaults to True
     """
-    object_type = "line"
-
-    def __init__(self, start=(0,0,0), end=(10,10,10), **kwargs):
-        super().__init__(object_type=Line.object_type, start=start, end=end, **kwargs)
+    object_type: str
+    color: str = '#74BEC1'
+    end: dict = field(default_factory=lambda: {'x': -0.5, 'y': -0.5, 'z': 0})
+    opacity: Optional[float] = 1
+    start: dict = field(default_factory=lambda: {'x': 0, 'y': 0.5, 'z': 0})
+    visible: Optional[bool] = True

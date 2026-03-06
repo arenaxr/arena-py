@@ -1,18 +1,26 @@
-from .arena_object import Object
+from dataclasses import dataclass, field
+from typing import Optional, List, Dict, Any
 
-class Videosphere(Object):
+@dataclass
+class Videosphere:
     """
-    Videosphere object class to manage its properties in the ARENA: Videosphere Geometry.
+    Videosphere
+    Videosphere Geometry.
 
-    :param bool autoplay: Autoplay Defaults to 'True' (optional)
-    :param str crossOrigin: Cross Origin Defaults to 'anonymous' (optional)
-    :param bool loop: Loop Defaults to 'True' (optional)
-    :param float radius: Radius Defaults to '500' (optional)
-    :param int segmentsHeight: Segments Height Defaults to '32' (optional)
-    :param int segmentsWidth: Segments Width Defaults to '64' (optional)
-    :param str src: URI, relative or full path of an image/video file. e.g. 'store/users/wiselab/images/360falls.mp4'. (optional)
+    :param str object_type: 3D object type.. Must be 'videosphere'.
+    :param bool autoplay: Autoplay, optional. Defaults to True
+    :param str crossOrigin: Cross Origin, optional. Defaults to 'anonymous'
+    :param bool loop: Loop, optional. Defaults to True
+    :param float radius: Radius. Defaults to 500
+    :param int segmentsHeight: Segments Height, optional. Defaults to 32
+    :param int segmentsWidth: Segments Width, optional. Defaults to 64
+    :param str src: URI, relative or full path of an image/video file. e.g. 'store/users/wiselab/images/360falls.mp4'., optional.
     """
-    object_type = "videosphere"
-
-    def __init__(self, **kwargs):
-        super().__init__(object_type=Videosphere.object_type, **kwargs)
+    object_type: str
+    autoplay: Optional[bool] = True
+    crossOrigin: Optional[str] = 'anonymous'
+    loop: Optional[bool] = True
+    radius: float = 500
+    segmentsHeight: Optional[int] = 32
+    segmentsWidth: Optional[int] = 64
+    src: Optional[str] = None

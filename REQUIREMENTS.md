@@ -7,29 +7,29 @@
 ```mermaid
 graph TD
     subgraph arenapy["arena-py Library"]
-        scene["Scene\n(High-level API)"]
-        mqtt["ArenaMqtt\n(MQTT Transport)"]
-        auth["Auth\n(Google OAuth + JWT)"]
-        transport["Transport\n(Paho MQTT Client)"]
-        topics["Topics\n(Topic Builder)"]
-        env["Env\n(Config / CLI Args)"]
+        scene["Scene<br/>(High-level API)"]
+        mqtt["ArenaMqtt<br/>(MQTT Transport)"]
+        auth["Auth<br/>(Google OAuth + JWT)"]
+        transport["Transport<br/>(Paho MQTT Client)"]
+        topics["Topics<br/>(Topic Builder)"]
+        env["Env<br/>(Config / CLI Args)"]
 
         subgraph objectModel["Object Model"]
             baseObj["BaseObject"]
-            objects["Objects (40+)\nBox, Sphere, GltfModel,\nLight, Text, Camera, ..."]
-            attrs["Attributes (42+)\nPosition, Rotation, Material,\nAnimation, Physics, ..."]
+            objects["Objects (40+)<br/>Box, Sphere, GltfModel,<br/>Light, Text, Camera, ..."]
+            attrs["Attributes (42+)<br/>Position, Rotation, Material,<br/>Animation, Physics, ..."]
         end
 
         subgraph extras["Extras"]
-            events["Events\n(Click, Mouseenter, ...)"]
-            chat["Chat\n(Text Messaging)"]
-            scripts["CLI Scripts\n(pub, sub, signout, perms)"]
+            events["Events<br/>(Click, Mouseenter, ...)"]
+            chat["Chat<br/>(Text Messaging)"]
+            scripts["CLI Scripts<br/>(pub, sub, signout, perms)"]
         end
     end
 
     subgraph external["External Services"]
-        broker["MQTT Broker\n(Mosquitto)"]
-        accountSvc["arena-account\n(REST API)"]
+        broker["MQTT Broker<br/>(Mosquitto)"]
+        accountSvc["arena-account<br/>(REST API)"]
         google["Google OAuth"]
     end
 

@@ -78,8 +78,10 @@ arena-py-pub --help
 arena-py-sub --help
 ```
 
-## Changelog
-Changelog can be found [here](https://github.com/arenaxr/arena-py/tree/master/CHANGELOG.md).
+## Documentation
+- [Requirements & Architecture](REQUIREMENTS.md)
+- [Contributing](CONTRIBUTING.md)
+- [Changelog](CHANGELOG.md)
 
 ## arena-py Repository Files
 - [arena/](https://github.com/arenaxr/arena-py/tree/master/arena/): The ARENA Python library.

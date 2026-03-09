@@ -149,18 +149,20 @@ def Speech_Handler(): #iteratively adds characters to speech bubble
                     npc.blinked = False
                     npc.bubbles.PlayMorph(MAP.MORPH_BLINK_OFF)
                     
+        words = npc.bubbles.speech.split()
+
         #if walking, let walk, hide buttons
         if(npc.bubbles.transformTimer > 0):
             npc.bubbles.transformTimer = npc.bubbles.transformTimer - CFG.SPEECH_INTERVAL
             npc.moving = True
 
-        #Iterate through speech bubble text
+        #Iterate through speech bubble text (per-word)
         else:
             #Update Position Manually to prevent slingshotting
             if(npc.moving == True):
                 npc.moving = False
 
-            if(0 <= npc.bubbles.speechIndex and npc.bubbles.speechIndex * CFG.SPEECH_SPEED < len(npc.bubbles.speech)):
+            if(0 <= npc.bubbles.speechIndex and npc.bubbles.speechIndex < len(words)):
                 npc.bubbles.speechIndex += 1
             
                 #start talking animation if not started already
@@ -178,7 +180,7 @@ def Speech_Handler(): #iteratively adds characters to speech bubble
                 npc.talking = True
 
             else:
-                npc.bubbles.speechIndex = len(npc.bubbles.speech)
+                npc.bubbles.speechIndex = len(words)
 
                 #play idle if not started already.
                 if(CFG.USE_DEFAULT_ANIMATIONS and npc.talking and not npc.bubbles.animationUsedThisLine):
@@ -192,10 +194,14 @@ def Speech_Handler(): #iteratively adds characters to speech bubble
 
             npc.isTalking = npc.talking
 
-        #Iterate through speech bubble text
-        npc.bubbles.speechBubble.data.body = npc.bubbles.speech[:npc.bubbles.speechIndex * CFG.SPEECH_SPEED]
-        #if(npc.bubbles.speechBubble.data.text != npc.bubbles.speech):
-        scene.update_object(npc.bubbles.speechBubble)
+        #Update speech bubble text only when it changes
+        if(npc.bubbles.speechIndex >= len(words)):
+            newBody = npc.bubbles.speech
+        else:
+            newBody = " ".join(words[:npc.bubbles.speechIndex])
+        if(npc.bubbles.speechBubble.data.body != newBody):
+            npc.bubbles.speechBubble.data.body = newBody
+            scene.update_object(npc.bubbles.speechBubble)
         
 scene.run_tasks()
 

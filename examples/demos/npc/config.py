@@ -67,8 +67,7 @@ class Config:
         self.TRANSFORM_INTERVAL = configJson["TIMERS"]["TRANSFORM"]["INTERVAL"] #500
         self.TRANSFORM_TIMER = configJson["TIMERS"]["TRANSFORM"]["TIMER"]       #3000
         #SPEECH TIMER
-        self.SPEECH_INTERVAL = configJson["TIMERS"]["SPEECH"]["INTERVAL"] #100
-        self.SPEECH_SPEED = configJson["TIMERS"]["SPEECH"]["SPEED"]       #3
+        self.SPEECH_INTERVAL = configJson["TIMERS"]["SPEECH"]["INTERVAL"] #250
 
         #UI
         self.USE_NAME_AS_TITLE = configJson["UI"]["USE_NAME_AS_TITLE"]       #False

@@ -4,6 +4,13 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [1.5.1](https://github.com/arenaxr/arena-py/compare/v1.5.0...v1.5.1) (2026-03-09)
+
+
+### Documentation
+
+* added requirements.md for maintainers ([e95bb24](https://github.com/arenaxr/arena-py/commit/e95bb24070b6473b741a3f800ea22a50e7e3d9de))
+
 ## [1.5.0](https://github.com/arenaxr/arena-py/compare/v1.4.1...v1.5.0) (2026-02-25)
 
 

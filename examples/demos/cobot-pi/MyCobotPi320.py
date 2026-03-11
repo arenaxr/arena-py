@@ -35,7 +35,7 @@ MyCobotPi_Base = Box(
 )
 MyCobotPi_J0 = GLTF(
     object_id="MyCobotPi_J0",
-    url="/store/users/johnchoi/MyCobotPi/MyCobotPi_J0/MyCobotPi_J0.gltf",
+    url="/store/users/wiselab/MyCobotPi/MyCobotPi_J0/MyCobotPi_J0.gltf",
     position=(0,0,0),
     rotation=(0,90,0),
     scale=(1,1,1),
@@ -44,7 +44,7 @@ MyCobotPi_J0 = GLTF(
 )
 MyCobotPi_J1 = GLTF(
     object_id="MyCobotPi_J1",
-    url="/store/users/johnchoi/MyCobotPi/MyCobotPi_J1/MyCobotPi_J1.gltf",
+    url="/store/users/wiselab/MyCobotPi/MyCobotPi_J1/MyCobotPi_J1.gltf",
     position=(0,0,0),
     rotation=(0,0,0),
     scale=(1,1,1),
@@ -53,7 +53,7 @@ MyCobotPi_J1 = GLTF(
 )
 MyCobotPi_J2 = GLTF(
     object_id="MyCobotPi_J2",
-    url="/store/users/johnchoi/MyCobotPi/MyCobotPi_J2/MyCobotPi_J2.gltf",
+    url="/store/users/wiselab/MyCobotPi/MyCobotPi_J2/MyCobotPi_J2.gltf",
     position=(0,0.1433,0),
     rotation=(0,0,0),
     scale=(1,1,1),
@@ -62,7 +62,7 @@ MyCobotPi_J2 = GLTF(
 )
 MyCobotPi_J3 = GLTF(
     object_id="MyCobotPi_J3",
-    url="/store/users/johnchoi/MyCobotPi/MyCobotPi_J3/MyCobotPi_J3.gltf",
+    url="/store/users/wiselab/MyCobotPi/MyCobotPi_J3/MyCobotPi_J3.gltf",
     position=(0,0.1075,0),
     rotation=(0,0,0),
     scale=(1,1,1),
@@ -71,7 +71,7 @@ MyCobotPi_J3 = GLTF(
 )
 MyCobotPi_J4 = GLTF(
     object_id="MyCobotPi_J4",
-    url="/store/users/johnchoi/MyCobotPi/MyCobotPi_J4/MyCobotPi_J4.gltf",
+    url="/store/users/wiselab/MyCobotPi/MyCobotPi_J4/MyCobotPi_J4.gltf",
     position=(0,0.09710006,0),
     rotation=(0,0,0),
     scale=(1,1,1),
@@ -80,7 +80,7 @@ MyCobotPi_J4 = GLTF(
 )
 MyCobotPi_J5 = GLTF(
     object_id="MyCobotPi_J5",
-    url="/store/users/johnchoi/MyCobotPi/MyCobotPi_J5/MyCobotPi_J5.gltf",
+    url="/store/users/wiselab/MyCobotPi/MyCobotPi_J5/MyCobotPi_J5.gltf",
     position=(0.06340005,0,0),
     rotation=(0,0,0),
     scale=(1,1,1),
@@ -89,7 +89,7 @@ MyCobotPi_J5 = GLTF(
 )
 MyCobotPi_J6 = GLTF(
     object_id="MyCobotPi_J6",
-    url="/store/users/johnchoi/MyCobotPi/MyCobotPi_J6/MyCobotPi_J6.gltf",
+    url="/store/users/wiselab/MyCobotPi/MyCobotPi_J6/MyCobotPi_J6.gltf",
     position=(0,0.07610026,0),
     rotation=(0,0,0),
     scale=(1,1,1),

@@ -31,8 +31,8 @@ _auth_state_code = None
 _auth_response_code = None
 _scopes = [
     "openid",
-    "https://www.googleapis.com/auth/userinfo.profile",
-    "https://www.googleapis.com/auth/userinfo.email",
+    "email",
+    "profile",
 ]
 
 
@@ -184,7 +184,7 @@ class ArenaAuth:
 
     def _run_gauth_device_flow(self, client_id, client_secret):
         device_resp, status, url = self._get_gauth_device_code(client_id=client_id)
-        if 200 > status > 299:  # error
+        if not (200 <= status <= 299):  # error
             print(f"HTTP error {status}: {url}\n{device_resp}")
             sys.exit("Terminating...")
         # render user code/link and poll for OOB response
@@ -521,11 +521,14 @@ class ArenaAuth:
         body = None
         try:
             req = request.Request(url)
+            cookies = []
             if creds:
-                req.add_header("Cookie", f"mqtt_token={self._mqtt_token['token']}")
+                cookies.append(f"mqtt_token={self._mqtt_token['token']}")
             if csrf:
-                req.add_header("Cookie", f"csrftoken={csrf}")
+                cookies.append(f"csrftoken={csrf}")
                 req.add_header("X-CSRFToken", csrf)
+            if cookies:
+                req.add_header("Cookie", "; ".join(cookies))
             if headers:
                 for k in headers:
                     req.add_header(k, headers[k])

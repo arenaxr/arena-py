@@ -126,7 +126,7 @@ def msg_callback(_client, _userdata, msg):
                 },
             }
         )
-        scene.mqttc.publish(pub_topic, pub_msg)
+        scene.transport.mqttc.publish(pub_topic, pub_msg)
         # visualize results
         if vis is not None:
             vis.add_geometry(src_pcd)

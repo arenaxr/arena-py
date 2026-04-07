@@ -79,9 +79,9 @@ arena-py-sub --help
 ```
 
 ## Documentation
-- [Requirements & Architecture](REQUIREMENTS.md)
-- [Contributing](CONTRIBUTING.md)
-- [Changelog](CHANGELOG.md)
+- [Requirements & Architecture](https://github.com/arenaxr/arena-py/blob/master/REQUIREMENTS.md)
+- [Contributing](https://github.com/arenaxr/arena-py/blob/master/CONTRIBUTING.md)
+- [Changelog](https://github.com/arenaxr/arena-py/blob/master/CHANGELOG.md)
 
 ## arena-py Repository Files
 - [arena/](https://github.com/arenaxr/arena-py/tree/master/arena/): The ARENA Python library.

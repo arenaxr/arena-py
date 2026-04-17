@@ -4,6 +4,7 @@ import re
 import sys
 
 from .arena_mqtt import ArenaMQTT
+from .delta import deep_diff
 from .env import DEVICE, _get_env
 
 
@@ -30,6 +31,7 @@ class Device(ArenaMQTT):
         on_msg_callback=None,
         end_program_callback=None,
         debug=False,
+        delta_compression=True,
         **kwargs,
     ):
 
@@ -47,6 +49,10 @@ class Device(ArenaMQTT):
         super().__init__(host, realm, network_latency_interval, on_msg_callback, end_program_callback, debug, **kwargs)
         print(f"Device topic ready: {self.realm}/d/{self.namespace}/{self.device}, mqtt_host={self.mqtt_host}")
 
+        # Delta compression: shadow map of last-published data dicts
+        self.delta_compression = delta_compression
+        self._last_published_state = {}  # object_id -> data dict
+
     async def process_message(self):
         while True:
             msg = await self.msg_queue.get()
@@ -61,6 +67,25 @@ class Device(ArenaMQTT):
 
     def publish(self, topic, payload_obj):
         """Publishes to mqtt broker."""
+        # Apply delta compression if enabled
+        if self.delta_compression:
+            object_id = payload_obj.get("object_id")
+            action = payload_obj.get("action")
+            data = payload_obj.get("data")
+
+            if object_id and data is not None:
+                if action == "delete":
+                    self._last_published_state.pop(object_id, None)
+                elif action == "create" or object_id not in self._last_published_state:
+                    import copy
+                    self._last_published_state[object_id] = copy.deepcopy(data)
+                elif action == "update":
+                    import copy
+                    prev_data = self._last_published_state[object_id]
+                    delta = deep_diff(prev_data, data)
+                    self._last_published_state[object_id] = copy.deepcopy(data)
+                    payload_obj = {**payload_obj, "data": delta}
+
         payload = json.dumps(payload_obj)
         self.transport.publish(topic, payload, qos=0)
         if self.debug:

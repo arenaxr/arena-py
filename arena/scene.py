@@ -11,6 +11,8 @@ from datetime import datetime, UTC
 from inspect import signature
 from pathlib import Path
 
+from .delta import deep_diff
+
 import __main__ as main
 
 from .arena_mqtt import ArenaMQTT
@@ -68,6 +70,7 @@ class Scene(ArenaMQTT):
         debug=False,
         cli_args=False,
         headless=False,
+        delta_compression=True,
         **kwargs,
     ):
 
@@ -148,6 +151,10 @@ class Scene(ArenaMQTT):
             # objects that exist in the scene, but this scene instance does not have a reference to
             self.unspecified_object_ids = set()
             self.users = {}  # dict of all users
+
+            # Delta compression: shadow map of last-published data dicts (JSON primitives)
+            self.delta_compression = delta_compression
+            self._last_published_state = {}  # object_id -> data dict
 
             # setup program run info to collect stats
             self.run_info = ProgramRunInfo(
@@ -675,10 +682,61 @@ class Scene(ArenaMQTT):
                     f"ERROR!! Publishing wire rotation data must be in Quaternion units, Euler conversion failed for payload: {payload}"
                 )
 
+            # Delta compression: diff data against last-published state
+            if self.delta_compression:
+                payload = self._apply_delta(payload, action)
+
             self.transport.publish(topic, payload, qos=0)
             if self.debug:
                 self.telemetry.add_event(f"[publish] {topic} {payload}")
             return payload
+
+    def _apply_delta(self, payload_str, action):
+        """Apply delta compression to a JSON payload string.
+
+        Diffs the 'data' sub-object against the last-published state for this
+        object_id. Only changed fields are kept in the outgoing message.
+        The full current data state is stored for future diffs.
+
+        Uses json.loads for parsing, which also provides a free deep copy
+        of the data dict (all primitives, no shared references).
+
+        Args:
+            payload_str: JSON string of the full message.
+            action: Message action (create, update, delete).
+
+        Returns:
+            JSON string with delta-compressed data (or original if not applicable).
+        """
+        msg = json.loads(payload_str)
+        object_id = msg.get("object_id")
+
+        if object_id is None:
+            return payload_str
+
+        if action == "delete":
+            self._last_published_state.pop(object_id, None)
+            return payload_str
+
+        data = msg.get("data")
+        if data is None:
+            return payload_str
+
+        if action == "create" or object_id not in self._last_published_state:
+            # First publish: send full, store state (json.loads gave us a deep copy)
+            self._last_published_state[object_id] = data
+            return payload_str
+
+        # Compute delta against last-published state
+        prev_data = self._last_published_state[object_id]
+        delta = deep_diff(prev_data, data)
+
+        # Store the full current state (already a deep copy from json.loads)
+        self._last_published_state[object_id] = data
+
+        # Re-serialize with only the delta in data
+        msg["data"] = delta
+        return json.dumps(msg)
 
     def get_persisted_obj(self, object_id):
         """Returns a dictionary for a persisted object.

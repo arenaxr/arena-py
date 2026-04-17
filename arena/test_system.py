@@ -79,6 +79,7 @@ class ArenaE2ETest:
         self.scene_name = scene_name
 
         # Instantiate scene with mock transport; process headless to avoid user auth interactions
+        # Note: delta_compression=False because recorded traces contain full payloads
         self.scene = Scene(
             host="example.com",
             realm=realm,
@@ -86,6 +87,7 @@ class ArenaE2ETest:
             scene=scene_name,
             transport=self.transport,
             headless=True,
+            delta_compression=False,
             config_data={
                 "ARENADefaults": {
                     "mqttHost": "mqtt.example.com",

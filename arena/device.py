@@ -22,6 +22,7 @@ class Device(ArenaMQTT):
     :param func on_msg_callback: Called on all MQTT messages received (optional).
     :param func end_program_callback: Called on MQTT disconnect (optional).
     :param bool debug: If true, print a log of all publish messages from this client (optional).
+    :param bool delta_compression: If true, publish update messages using delta compression by tracking the last published state for each object and sending only changed fields in the ``data`` payload. Defaults to True, which changes publish behavior from sending full update payloads to sending diffs for ``update`` actions (optional).
     """
 
     def __init__(

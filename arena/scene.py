@@ -52,6 +52,7 @@ class Scene(ArenaMQTT):
     :param bool debug: If true, print a log of all publish messages from this client (optional).
     :param bool cli_args: If true, require CLI standardized parameters (optional).
     :param bool headless: If true, force limited input device auth flow (optional).
+    :param bool delta_compression: If true (default), publish object updates using delta-compressed payloads instead of always sending full object payloads. This is only safe when consumers can reconstruct state from full ``Object.json`` payloads; disable it if downstream consumers require complete object JSON on every update.
     """
 
     def __init__(

@@ -682,8 +682,11 @@ class Scene(ArenaMQTT):
                     f"ERROR!! Publishing wire rotation data must be in Quaternion units, Euler conversion failed for payload: {payload}"
                 )
 
-            # Delta compression: diff data against last-published state
-            if self.delta_compression:
+            # Delta compression only applies to full object-state publishes.
+            # custom_payload messages may contain partial patches/commands, and
+            # diffing them against the last full state can incorrectly emit
+            # deletions for omitted keys.
+            if self.delta_compression and not custom_payload:
                 payload = self._apply_delta(payload, action)
 
             self.transport.publish(topic, payload, qos=0)

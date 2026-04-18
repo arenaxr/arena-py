@@ -1,3 +1,4 @@
+import copy
 import json
 import os
 import re
@@ -79,10 +80,8 @@ class Device(ArenaMQTT):
                 if action == "delete":
                     self._last_published_state.pop(object_id, None)
                 elif action == "create" or object_id not in self._last_published_state:
-                    import copy
                     self._last_published_state[object_id] = copy.deepcopy(data)
                 elif action == "update":
-                    import copy
                     prev_data = self._last_published_state[object_id]
                     delta = deep_diff(prev_data, data)
                     self._last_published_state[object_id] = copy.deepcopy(data)

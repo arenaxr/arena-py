@@ -4,6 +4,26 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [1.6.0](https://github.com/arenaxr/arena-py/compare/v1.5.0...v1.6.0) (2026-04-20)
+
+
+### Features
+
+* diff update msgs for deltas only ([23bd8ca](https://github.com/arenaxr/arena-py/commit/23bd8ca4b98daf5c9c09157846e5ede57a85c285))
+
+
+### Bug Fixes
+
+* **auth:** fix cookie overwrite, inverted error check, and scope consistency ([5b31999](https://github.com/arenaxr/arena-py/commit/5b31999fdeb45f75da832e1e2171deff18cb596a))
+
+
+### Documentation
+
+* added requirements.md for maintainers ([e95bb24](https://github.com/arenaxr/arena-py/commit/e95bb24070b6473b741a3f800ea22a50e7e3d9de))
+* include code style/messaging guides ([39ace2d](https://github.com/arenaxr/arena-py/commit/39ace2dc9e93ede2f014db50acfff8d13f7ca6a5))
+* keep full path links for pypi ([c87b39d](https://github.com/arenaxr/arena-py/commit/c87b39d4cb4f48d168c7e16458ec15f62a6f4667))
+* modernize contributing for agents ([b15223a](https://github.com/arenaxr/arena-py/commit/b15223aa0b6deae3ed9cecbe1b51029a91f9b66a))
+
 ## [1.5.0](https://github.com/arenaxr/arena-py/compare/v1.4.1...v1.5.0) (2026-02-25)
 
 

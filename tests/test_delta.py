@@ -1,29 +1,30 @@
-"""Tests for delta compression (arena.delta.deep_diff)."""
+"""Tests for delta compression (arena.delta.shallow_diff)."""
 
 import json
 import unittest
 
-from arena.delta import deep_diff
+from arena.delta import shallow_diff
 
 
-class TestDeepDiff(unittest.TestCase):
-    """Unit tests for deep_diff function."""
+class TestShallowDiff(unittest.TestCase):
+    """Unit tests for shallow_diff function (top-level keys only)."""
 
     def test_identical_objects(self):
         """Identical dicts should produce empty diff."""
         d = {"position": {"x": 1, "y": 2, "z": 3}, "color": "#ff0000"}
-        self.assertEqual(deep_diff(d, d.copy()), {})
+        self.assertEqual(shallow_diff(d, d.copy()), {})
 
     def test_position_change(self):
-        """Only changed position fields should appear in diff."""
+        """Changed position dict (even partial) should be included completely."""
         prev = {"position": {"x": 2.965, "y": 1.6, "z": 8.877}, "rotation": {"w": 1, "x": 0, "y": 0, "z": 0}}
         next_val = {"position": {"x": 2.852, "y": 1.6, "z": 8.88}, "rotation": {"w": 1, "x": 0, "y": 0, "z": 0}}
-        diff = deep_diff(prev, next_val)
-        self.assertEqual(diff, {"position": {"x": 2.852, "z": 8.88}})
+        diff = shallow_diff(prev, next_val)
+        # Position changed, so full position is included (no recursion)
+        self.assertEqual(diff, {"position": {"x": 2.852, "y": 1.6, "z": 8.88}})
         self.assertNotIn("rotation", diff)
 
     def test_camera_sequence(self):
-        """Full camera message delta from spec — only position.x and position.z changed."""
+        """Camera message with position change — sends full position (no recursion)."""
         prev_data = {
             "arena-user": {
                 "color": "#eca7ef",
@@ -52,10 +53,11 @@ class TestDeepDiff(unittest.TestCase):
             "position": {"x": 2.852, "y": 1.6, "z": 8.88},
             "rotation": {"w": 1, "x": -0.019, "y": 0.013, "z": 0},
         }
-        diff = deep_diff(prev_data, next_data)
-        self.assertEqual(diff, {"position": {"x": 2.852, "z": 8.88}})
+        diff = shallow_diff(prev_data, next_data)
+        # Position and arena-user dicts changed, so both are sent completely
+        self.assertEqual(diff, {"position": {"x": 2.852, "y": 1.6, "z": 8.88}})
 
-        # Verify the delta is much smaller than the full payload
+        # Verify the delta is still much smaller than the full payload
         full_size = len(json.dumps(next_data))
         delta_size = len(json.dumps(diff))
         self.assertLess(delta_size, full_size / 2)
@@ -64,103 +66,105 @@ class TestDeepDiff(unittest.TestCase):
         """None value (semantic delete) must flow through the diff."""
         prev = {"object_type": "box", "material": {"color": "#ff0000"}}
         next_val = {"object_type": "box", "material": None}
-        diff = deep_diff(prev, next_val)
+        diff = shallow_diff(prev, next_val)
         self.assertEqual(diff, {"material": None})
 
     def test_null_to_null_noop(self):
         """Both prev and next have None for same key → omitted from diff."""
         prev = {"object_type": "box", "material": None}
         next_val = {"object_type": "box", "material": None}
-        diff = deep_diff(prev, next_val)
+        diff = shallow_diff(prev, next_val)
         self.assertEqual(diff, {})
 
     def test_new_field_added(self):
         """Field in next but not prev should be included."""
         prev = {"object_type": "box"}
         next_val = {"object_type": "box", "material": {"color": "#00ff00"}}
-        diff = deep_diff(prev, next_val)
+        diff = shallow_diff(prev, next_val)
         self.assertEqual(diff, {"material": {"color": "#00ff00"}})
 
     def test_field_removed(self):
         """Field in prev but not next → emitted as None (semantic delete)."""
         prev = {"object_type": "box", "material": {"color": "#ff0000"}}
         next_val = {"object_type": "box"}
-        diff = deep_diff(prev, next_val)
+        diff = shallow_diff(prev, next_val)
         self.assertEqual(diff, {"material": None})
 
     def test_nested_partial_change(self):
-        """Only changed fields in nested dicts should appear."""
+        """Changed nested dict is sent completely (no recursion)."""
         prev = {"material": {"color": "#ff0000", "opacity": 0.5, "transparent": True}}
         next_val = {"material": {"color": "#00ff00", "opacity": 0.5, "transparent": True}}
-        diff = deep_diff(prev, next_val)
-        self.assertEqual(diff, {"material": {"color": "#00ff00"}})
+        diff = shallow_diff(prev, next_val)
+        # Material changed, so full material dict is sent
+        self.assertEqual(diff, {"material": {"color": "#00ff00", "opacity": 0.5, "transparent": True}})
 
     def test_array_unchanged(self):
         """Identical arrays should be omitted from diff."""
         prev = {"path": [[0, 0, 0], [1, 1, 1]], "object_type": "line"}
         next_val = {"path": [[0, 0, 0], [1, 1, 1]], "object_type": "line"}
-        diff = deep_diff(prev, next_val)
+        diff = shallow_diff(prev, next_val)
         self.assertEqual(diff, {})
 
     def test_array_changed(self):
         """Changed arrays should be included in diff."""
         prev = {"path": [[0, 0, 0], [1, 1, 1]]}
         next_val = {"path": [[0, 0, 0], [2, 2, 2]]}
-        diff = deep_diff(prev, next_val)
+        diff = shallow_diff(prev, next_val)
         self.assertEqual(diff, {"path": [[0, 0, 0], [2, 2, 2]]})
 
     def test_deep_nested_diff(self):
-        """3+ levels of nesting should be handled correctly."""
+        """Deeply nested dicts are sent completely if any change (no recursion)."""
         prev = {"a": {"b": {"c": {"d": 1, "e": 2}}, "f": 3}}
         next_val = {"a": {"b": {"c": {"d": 1, "e": 99}}, "f": 3}}
-        diff = deep_diff(prev, next_val)
-        self.assertEqual(diff, {"a": {"b": {"c": {"e": 99}}}})
+        diff = shallow_diff(prev, next_val)
+        # "a" dict changed, so full "a" dict is sent
+        self.assertEqual(diff, {"a": {"b": {"c": {"d": 1, "e": 99}}, "f": 3}})
 
     def test_empty_dicts(self):
         """Two empty dicts should produce empty diff."""
-        self.assertEqual(deep_diff({}, {}), {})
+        self.assertEqual(shallow_diff({}, {}), {})
 
     def test_prev_empty(self):
         """Empty prev means everything in next is new."""
         next_val = {"position": {"x": 1, "y": 2, "z": 3}}
-        diff = deep_diff({}, next_val)
+        diff = shallow_diff({}, next_val)
         self.assertEqual(diff, next_val)
 
     def test_next_empty(self):
         """Empty next means everything in prev is deleted."""
         prev = {"position": {"x": 1}, "color": "red"}
-        diff = deep_diff(prev, {})
+        diff = shallow_diff(prev, {})
         self.assertEqual(diff, {"position": None, "color": None})
 
     def test_type_change_dict_to_primitive(self):
         """Dict replaced by primitive should include the new value."""
         prev = {"material": {"color": "#ff0000"}}
         next_val = {"material": "basic"}
-        diff = deep_diff(prev, next_val)
+        diff = shallow_diff(prev, next_val)
         self.assertEqual(diff, {"material": "basic"})
 
     def test_type_change_primitive_to_dict(self):
         """Primitive replaced by dict should include the new dict."""
         prev = {"material": "basic"}
         next_val = {"material": {"color": "#ff0000"}}
-        diff = deep_diff(prev, next_val)
+        diff = shallow_diff(prev, next_val)
         self.assertEqual(diff, {"material": {"color": "#ff0000"}})
 
     def test_bool_change(self):
         """Boolean changes should be detected."""
         prev = {"hasAudio": False, "hasVideo": False}
         next_val = {"hasAudio": True, "hasVideo": False}
-        diff = deep_diff(prev, next_val)
+        diff = shallow_diff(prev, next_val)
         self.assertEqual(diff, {"hasAudio": True})
 
     def test_float_precision(self):
         """Float values should be compared with ==."""
         prev = {"x": 1.0}
         next_val = {"x": 1.0}
-        self.assertEqual(deep_diff(prev, next_val), {})
+        self.assertEqual(shallow_diff(prev, next_val), {})
 
         next_val2 = {"x": 1.0000001}
-        diff = deep_diff(prev, next_val2)
+        diff = shallow_diff(prev, next_val2)
         self.assertEqual(diff, {"x": 1.0000001})
 
 
@@ -246,8 +250,8 @@ class TestDeltaIntegration(unittest.TestCase):
         result = scene._apply_delta(json.dumps(update_msg), "update")
         result_msg = json.loads(result)
 
-        # data should only have position delta
-        self.assertEqual(result_msg["data"], {"position": {"x": 2.852, "z": 8.88}})
+        # data should have full position (shallow diff sends complete changed dicts)
+        self.assertEqual(result_msg["data"], {"position": {"x": 2.852, "y": 1.6, "z": 8.88}})
         # top-level fields preserved
         self.assertEqual(result_msg["object_id"], "cam1")
         self.assertEqual(result_msg["action"], "update")

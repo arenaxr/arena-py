@@ -11,7 +11,7 @@ from datetime import datetime, UTC
 from inspect import signature
 from pathlib import Path
 
-from .delta import deep_diff
+from .delta import shallow_diff
 
 import __main__ as main
 
@@ -733,7 +733,7 @@ class Scene(ArenaMQTT):
 
         # Compute delta against last-published state
         prev_data = self._last_published_state[object_id]
-        delta = deep_diff(prev_data, data)
+        delta = shallow_diff(prev_data, data)
 
         # Store the full current state (already a deep copy from json.loads)
         self._last_published_state[object_id] = data

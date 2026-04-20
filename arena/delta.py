@@ -2,25 +2,17 @@
 Delta compression for ARENA MQTT messages.
 
 Computes the minimal diff between two JSON-serialized data dicts,
-returning only changed fields. Used on the outbound publish path
+returning only changed top-level fields. Used on the outbound publish path
 to reduce MQTT payload sizes.
 """
 
 
-def deep_diff(prev, next_val):
-    """Compute the minimal delta between two data dicts.
+def shallow_diff(prev, next_val):
+    """Compute the delta between two data dicts (top-level keys only).
 
-    Both inputs must be JSON-primitive dicts (str, int, float, bool,
-    None, dict, list — no custom objects). This is guaranteed when
-    called after Object.json() serialization.
-
-    Rules:
-        - Recurse into nested dicts; identical sub-dicts are omitted.
-        - None is a semantic delete and always flows through.
-          None → None is a no-op (omitted).
-        - Arrays compared by value (Python == does deep equality).
-        - Keys in next_val but not prev are new → included.
-        - Keys in prev but not next_val are removed → emitted as None.
+    Compares top-level keys by value without recursing into nested objects.
+    This ensures that complex nested structures (position, rotation, material, etc.)
+    are always sent completely when they change, avoiding partial update issues.
 
     Args:
         prev: Previously published data dict.
@@ -44,14 +36,7 @@ def deep_diff(prev, next_val):
         if pv is None and nv is None:
             continue
 
-        # Recurse into nested dicts
-        if isinstance(pv, dict) and isinstance(nv, dict):
-            sub = deep_diff(pv, nv)
-            if sub:  # Only include if something changed
-                diff[key] = sub
-            continue
-
-        # Primitives / lists: Python == handles deep equality
+        # Compare by value (no recursion into nested dicts/lists)
         if pv != nv:
             diff[key] = nv
 

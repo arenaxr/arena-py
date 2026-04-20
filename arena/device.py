@@ -5,7 +5,7 @@ import re
 import sys
 
 from .arena_mqtt import ArenaMQTT
-from .delta import deep_diff
+from .delta import shallow_diff
 from .env import DEVICE, _get_env
 
 
@@ -85,7 +85,7 @@ class Device(ArenaMQTT):
                     self._last_published_state[object_id] = copy.deepcopy(data)
                 elif action == "update" and isinstance(data, dict):
                     prev_data = self._last_published_state[object_id]
-                    delta = deep_diff(prev_data, data)
+                    delta = shallow_diff(prev_data, data)
                     self._last_published_state[object_id] = copy.deepcopy(data)
                     payload_obj = {**payload_obj, "data": delta}
 

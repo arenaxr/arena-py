@@ -1,9 +1,11 @@
+import copy
 import json
 import os
 import re
 import sys
 
 from .arena_mqtt import ArenaMQTT
+from .delta import deep_diff
 from .env import DEVICE, _get_env
 
 
@@ -20,6 +22,7 @@ class Device(ArenaMQTT):
     :param func on_msg_callback: Called on all MQTT messages received (optional).
     :param func end_program_callback: Called on MQTT disconnect (optional).
     :param bool debug: If true, print a log of all publish messages from this client (optional).
+    :param bool delta_compression: If true, publish update messages using delta compression by tracking the last published state for each object and sending only changed fields in the ``data`` payload. Defaults to True, which changes publish behavior from sending full update payloads to sending diffs for ``update`` actions (optional).
     """
 
     def __init__(
@@ -30,6 +33,7 @@ class Device(ArenaMQTT):
         on_msg_callback=None,
         end_program_callback=None,
         debug=False,
+        delta_compression=True,
         **kwargs,
     ):
 
@@ -47,6 +51,10 @@ class Device(ArenaMQTT):
         super().__init__(host, realm, network_latency_interval, on_msg_callback, end_program_callback, debug, **kwargs)
         print(f"Device topic ready: {self.realm}/d/{self.namespace}/{self.device}, mqtt_host={self.mqtt_host}")
 
+        # Delta compression: shadow map of last-published data dicts
+        self.delta_compression = delta_compression
+        self._last_published_state = {}  # object_id -> data dict
+
     async def process_message(self):
         while True:
             msg = await self.msg_queue.get()
@@ -61,7 +69,27 @@ class Device(ArenaMQTT):
 
     def publish(self, topic, payload_obj):
         """Publishes to mqtt broker."""
-        payload = json.dumps(payload_obj)
+        # Apply delta compression only for structured dict payloads with valid ARENA messages.
+        # Pre-serialized payloads (for example JSON strings published on
+        # custom topics) should be passed through unchanged.
+        # Skip delta compression if action is missing (indicates custom/partial payloads).
+        if self.delta_compression and isinstance(payload_obj, dict):
+            object_id = payload_obj.get("object_id")
+            action = payload_obj.get("action")
+            data = payload_obj.get("data")
+
+            if object_id and action and data is not None:
+                if action == "delete":
+                    self._last_published_state.pop(object_id, None)
+                elif action == "create" or object_id not in self._last_published_state:
+                    self._last_published_state[object_id] = copy.deepcopy(data)
+                elif action == "update" and isinstance(data, dict):
+                    prev_data = self._last_published_state[object_id]
+                    delta = deep_diff(prev_data, data)
+                    self._last_published_state[object_id] = copy.deepcopy(data)
+                    payload_obj = {**payload_obj, "data": delta}
+
+        payload = json.dumps(payload_obj) if isinstance(payload_obj, dict) else payload_obj
         self.transport.publish(topic, payload, qos=0)
         if self.debug:
             print(f"[publish] {topic} {payload}")

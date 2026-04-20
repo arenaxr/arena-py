@@ -69,20 +69,21 @@ class Device(ArenaMQTT):
 
     def publish(self, topic, payload_obj):
         """Publishes to mqtt broker."""
-        # Apply delta compression only for structured dict payloads.
+        # Apply delta compression only for structured dict payloads with valid ARENA messages.
         # Pre-serialized payloads (for example JSON strings published on
         # custom topics) should be passed through unchanged.
+        # Skip delta compression if action is missing (indicates custom/partial payloads).
         if self.delta_compression and isinstance(payload_obj, dict):
             object_id = payload_obj.get("object_id")
             action = payload_obj.get("action")
             data = payload_obj.get("data")
 
-            if object_id and data is not None:
+            if object_id and action and data is not None:
                 if action == "delete":
                     self._last_published_state.pop(object_id, None)
                 elif action == "create" or object_id not in self._last_published_state:
                     self._last_published_state[object_id] = copy.deepcopy(data)
-                elif action == "update":
+                elif action == "update" and isinstance(data, dict):
                     prev_data = self._last_published_state[object_id]
                     delta = deep_diff(prev_data, data)
                     self._last_published_state[object_id] = copy.deepcopy(data)

@@ -12,7 +12,7 @@ This document covers **development rules and conventions** specific to this repo
 
 ### 2. Dependencies — Pin All Versions
 
-**All dependencies must use exact, pegged versions** (no `^`, `~`, or `*` ranges). This prevents version drift across environments and ensures reproducible builds for security.
+**All `setup.py` package dependencies must use exact, pegged versions** (no `^`, `~`, or `*` ranges). This prevents version drift across environments and ensures reproducible builds for security. Dependencies in `tools/` and `examples/` may use minimum-version constraints (e.g., `>=`) since they are not distributed as part of the package.
 
 ### 3. PyPI Compatibility — Avoid Relative Links in README
 

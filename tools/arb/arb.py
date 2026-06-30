@@ -20,18 +20,19 @@ from arblib import EVT_MOUSEDOWN, EVT_MOUSEENTER, EVT_MOUSELEAVE, ButtonType, Mo
 from arena import *
 
 MANIFEST = arblib.DEF_MANIFEST
+MODELS = [m['name'] for m in MANIFEST]
 USERS = {}  # dictionary of user instances
 CONTROLS = {}  # dictionary of active controls
-SCL_CLICK = 0.1  # meters
 
 
 def init_args(_scene: Scene):
-    global MANIFEST
-    if _scene.args["manifest"]:
-        mfile = open(_scene.args["manifest"])
-        data = json.load(mfile)
-        mfile.close()
+    global MANIFEST, MODELS
+    manifest_path = _scene.args.get("manifest")
+    if manifest_path:
+        with open(manifest_path) as mfile:
+            data = json.load(mfile)
         MANIFEST = data['models']
+    MODELS = [m['name'] for m in MANIFEST]
     print(f"ARB Model Manifest: {MANIFEST}")
 
 def handle_panel_event(evt, dropdown=False):
@@ -449,7 +450,7 @@ def show_redpill_scene(enabled):
                     scale=scale,
                     url=url,
                     material=Material(
-                        color=color, transparent=True, opacity=0.5),
+                        color=color, transparent=True, opacity=arblib.OPC_TRANSLUCENT),
                 ))
                 print("Wrapping occlusion " + name)
             else:
@@ -681,7 +682,7 @@ def make_followspot(object_id, position, delim, color, parent, move=False):
             material=Material(
                 color=color,
                 transparent=True,
-                opacity=0.4,
+                opacity=arblib.OPC_OVERLAY,
                 shader="flat"),
         )
         scene.add_object(CONTROLS[object_id][name])
@@ -691,10 +692,10 @@ def make_followspot(object_id, position, delim, color, parent, move=False):
 
 def regline(object_id, axis, direction, delim, suffix, start,
             end, line_width, move, color, parent):
-    line_width = line_width/SCL_CLICK
-    end = Position(x=(end.x - start.x)/SCL_CLICK,
-                   y=(end.y - start.y)/SCL_CLICK,
-                   z=(end.z - start.z)/SCL_CLICK)
+    line_width = line_width/arblib.SCL_CLICK
+    end = Position(x=(end.x - start.x)/arblib.SCL_CLICK,
+                   y=(end.y - start.y)/arblib.SCL_CLICK,
+                   z=(end.z - start.z)/arblib.SCL_CLICK)
     name = f"{object_id}{delim}{axis}{direction}_{suffix}"
     if name not in CONTROLS[object_id]:
         CONTROLS[object_id][name] = Line(
@@ -711,10 +712,10 @@ def regline(object_id, axis, direction, delim, suffix, start,
 
 def boxline(object_id, axis, direction, delim, suffix, start,
             end, line_width, move, color, parent):
-    line_width = line_width/SCL_CLICK
-    end = Position(x=(end.x - start.x)/SCL_CLICK,
-                   y=(end.y - start.y)/SCL_CLICK,
-                   z=(end.z - start.z)/SCL_CLICK)
+    line_width = line_width/arblib.SCL_CLICK
+    end = Position(x=(end.x - start.x)/arblib.SCL_CLICK,
+                   y=(end.y - start.y)/arblib.SCL_CLICK,
+                   z=(end.z - start.z)/arblib.SCL_CLICK)
     if start.y == end.y and start.z == end.z:
         scale = Scale(x=abs(start.x - end.x), y=line_width, z=line_width)
     elif start.x == end.x and start.z == end.z:
@@ -735,7 +736,7 @@ def boxline(object_id, axis, direction, delim, suffix, start,
             material=Material(
                 color=color,
                 transparent=True,
-                opacity=0.4,
+                opacity=arblib.OPC_OVERLAY,
                 shader="flat"),
         )
         scene.add_object(CONTROLS[object_id][name])
@@ -746,15 +747,15 @@ def boxline(object_id, axis, direction, delim, suffix, start,
 
 def dir_clickers(object_id, axis, direction, delim, position,
                  color, cones, callback, move, parent):
-    position = Position(x=position.x/SCL_CLICK,
-                        y=position.y/SCL_CLICK,
-                        z=position.z/SCL_CLICK)
-    loc = Position(x=position.x/SCL_CLICK,
-                   y=position.y/SCL_CLICK,
-                   z=position.z/SCL_CLICK)
-    npos = 0.1/SCL_CLICK
+    position = Position(x=position.x/arblib.SCL_CLICK,
+                        y=position.y/arblib.SCL_CLICK,
+                        z=position.z/arblib.SCL_CLICK)
+    loc = Position(x=position.x/arblib.SCL_CLICK,
+                   y=position.y/arblib.SCL_CLICK,
+                   z=position.z/arblib.SCL_CLICK)
+    npos = arblib.CONE_OFFSET/arblib.SCL_CLICK
     if direction == "p":
-        npos = -0.1/SCL_CLICK
+        npos = -arblib.CONE_OFFSET/arblib.SCL_CLICK
     if axis == "x":
         loc = Position(x=position.x + npos, y=position.y, z=position.z)
     elif axis == "y":
@@ -769,7 +770,7 @@ def dir_clickers(object_id, axis, direction, delim, position,
             clickable=True,
             position=position,
             rotation=cones[axis + direction][0],
-            scale=Scale(0.05/SCL_CLICK, 0.09/SCL_CLICK, 0.05/SCL_CLICK),
+            scale=Scale(arblib.SCL_CONE_RADIUS/arblib.SCL_CLICK, arblib.SCL_CONE_HEIGHT/arblib.SCL_CLICK, arblib.SCL_CONE_RADIUS/arblib.SCL_CLICK),
             material=Material(color=color, transparent=True,
                               opacity=arblib.OPC_CLINE),
             # TODO: restore ttl=arblib.TTL_TEMP,
@@ -784,7 +785,7 @@ def dir_clickers(object_id, axis, direction, delim, position,
             clickable=True,
             position=loc,
             rotation=cones[axis + direction][1],
-            scale=Scale(0.05/SCL_CLICK, 0.09/SCL_CLICK, 0.05/SCL_CLICK),
+            scale=Scale(arblib.SCL_CONE_RADIUS/arblib.SCL_CLICK, arblib.SCL_CONE_HEIGHT/arblib.SCL_CLICK, arblib.SCL_CONE_RADIUS/arblib.SCL_CLICK),
             material=Material(color=color, transparent=True,
                               opacity=arblib.OPC_CLINE),
             # TODO: restore ttl=arblib.TTL_TEMP,
@@ -813,12 +814,12 @@ def make_clickline(axis, linelen, objid, start, delim,
     end = Position(x=start.x + endx, y=start.y + endy, z=start.z + endz)
     boxline(  # reference line
         object_id=objid, axis=axis, direction=direction, delim=delim,
-        suffix="line", color=color, start=start, end=end, line_width=0.005, move=move,
+        suffix="line", color=color, start=start, end=end, line_width=arblib.CLICKLINE_WIDTH, move=move,
         parent=parent)
     if ghost:
         boxline(  # ghostline aligns to parent rotation
             object_id=objid, axis=axis, direction=direction, delim=delim,
-            suffix="ghost", color=(255, 255, 255), start=start, end=end, line_width=0.005,
+            suffix="ghost", color=(255, 255, 255), start=start, end=end, line_width=arblib.CLICKLINE_WIDTH,
             move=move, parent=ghost)
     if ghost:
         cones = arblib.ROTATE_CONES
@@ -841,7 +842,7 @@ def make_clickroot(objid, position, delim, rotation=None, move=False):
         CONTROLS[objid][name] = Object(
             object_id=name,
             position=position,
-            scale=Scale(SCL_CLICK, SCL_CLICK, SCL_CLICK),
+            scale=Scale(arblib.SCL_CLICK, arblib.SCL_CLICK, arblib.SCL_CLICK),
             rotation=rotation,
         )
         scene.add_object(CONTROLS[objid][name])
@@ -1072,7 +1073,7 @@ def do_wall_start(camname):
     USERS[camname].wloc_start = USERS[camname].position
     USERS[camname].wrot_start = USERS[camname].rotation
     scene.add_object(arblib.temp_loc_marker(
-        USERS[camname].wloc_start, Color(255, 0, 0)))
+        USERS[camname].wloc_start, arblib.CLR_WALL_START))
     scene.add_object(arblib.temp_rot_marker(USERS[camname].wloc_start,
                                             USERS[camname].wrot_start))
 
@@ -1082,7 +1083,7 @@ def do_wall_end(camname):
     USERS[camname].wloc_end = USERS[camname].position
     USERS[camname].wrot_end = USERS[camname].rotation
     scene.add_object(arblib.temp_loc_marker(
-        USERS[camname].wloc_end, Color(0, 255, 0)))
+        USERS[camname].wloc_end, arblib.CLR_WALL_END))
     scene.add_object(arblib.temp_rot_marker(
         USERS[camname].wloc_end, USERS[camname].wrot_end))
 
@@ -1103,7 +1104,7 @@ def make_wall(camname):
     locy = statistics.median([sloc.y, eloc.y])
     locz = statistics.median([sloc.z, eloc.z])
     pos = Position(locx, locy, locz)
-    scene.add_object(arblib.temp_loc_marker(pos, Color(0, 0, 255)))
+    scene.add_object(arblib.temp_loc_marker(pos, arblib.CLR_WALL_CENTER))
     print(f"wall position {str(pos)}")
     # rotation
     print(f"S ROT {str(srot)}")
@@ -1146,8 +1147,8 @@ def make_wall(camname):
         position=pos,
         rotation=rot,
         scale=sca,
-        material=Material(color=Color(200, 200, 200),
-                          transparent=True, opacity=0.5),
+        material=Material(color=arblib.CLR_WALL,
+                          transparent=True, opacity=arblib.OPC_TRANSLUCENT),
         clickable=True,  # TODO: remove when AR target mousedown/up ignores parents
     )
     scene.add_object(new_wall)
@@ -1218,15 +1219,6 @@ def scene_callback(_scene, obj, msg):
             pz = -(arblib.PANEL_RADIUS * math.sin(azi) * math.sin(inc))
             pos = Position(px, py, pz)
             scene.update_object(USERS[camname].follow, position=pos)
-
-            # TODO: remove this debug
-            if msg["data"]["arena-user"]["displayName"] == "user1":
-                print([math.floor(math.degrees(rx)), math.floor(
-                    math.degrees(ry)), math.floor(math.degrees(rz))])
-                print([math.floor(math.degrees(USERS[camname].lock_ry)),
-                       math.floor(math.degrees(USERS[camname].lock_rx))])
-                print([math.floor(math.degrees(azi)),
-                       math.floor(math.degrees(inc))])
         else:
             # save rotation of azimuth/inclination for next lock release
             USERS[camname].lock_ry = ry
@@ -1345,8 +1337,7 @@ def end_program_callback(_scene: Scene):
 # parse args and wait for events
 random.seed()
 scene = Scene(
-    #cli_args={"p": "JSON file path of optional GLTF models to import and place at will."},
-    cli_args=True,
+    cli_args={"manifest": "JSON file path of optional GLTF models to import and place at will."},
 
     on_msg_callback=scene_callback,
     end_program_callback=end_program_callback,

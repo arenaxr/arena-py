@@ -45,6 +45,8 @@ class ArbApp:
         self.scene = Scene(
             cli_args={"manifest": "JSON file path of optional GLTF models to import and place at will."},
             on_msg_callback=self.scene_callback,
+            user_join_callback=self.user_join_callback,
+            user_left_callback=self.user_left_callback,
             end_program_callback=self.end_program_callback,
         )
         self._init_args()
@@ -60,6 +62,36 @@ class ArbApp:
 
     def run(self):
         self.scene.run_tasks()
+
+    # ------------------------------------------------------------------ #
+    #  User lifecycle                                                      #
+    # ------------------------------------------------------------------ #
+
+    def user_join_callback(self, _scene, cam, msg):
+        """Called when a user joins the scene. Creates the per-user ARB panel."""
+        camname = cam.object_id
+        print(f"ARB user joined: {camname}")
+        self.users[camname] = arblib.User(
+            self.scene, camname, self.panel_callback, userid=camname)
+
+    def user_left_callback(self, _scene, cam, msg):
+        """Called when a user leaves. Cleans up all per-user objects."""
+        camname = cam.object_id
+        if camname not in self.users:
+            return
+        print(f"ARB user left: {camname}")
+        # clean up per-user redpill objects
+        for obj_id in self.users[camname].redpill_objects:
+            arblib.delete_obj(self.scene, obj_id)
+        # clean up per-user controls
+        for objid in list(self.controls.keys()):
+            for ctrl_name in list(self.controls[objid].keys()):
+                if camname in ctrl_name:
+                    self.scene.delete_object(self.controls[objid][ctrl_name])
+                    del self.controls[objid][ctrl_name]
+        # clean up user HUD, panel, clipboard, lamp
+        self.users[camname].delete()
+        del self.users[camname]
 
     # ------------------------------------------------------------------ #
     #  Event handling helpers                                              #
@@ -268,7 +300,7 @@ class ArbApp:
             # TODO: after lock ensure original ray keeps lock button in reticle
         elif mode == Mode.REDPILL:
             self.users[camname].redpill = active
-            self.show_redpill_scene(active)
+            self.show_redpill_scene(camname, active)
         elif mode == Mode.LAMP:
             self.users[camname].set_lamp(active)
         elif mode == Mode.SLIDER:
@@ -417,10 +449,11 @@ class ArbApp:
     #  Redpill mode                                                        #
     # ------------------------------------------------------------------ #
 
-    def show_redpill_scene(self, enabled):
-        # any scene changes must not persist
+    def show_redpill_scene(self, camname, enabled):
+        # any scene changes must not persist; redpill is per-user (private)
+        userid = self.users[camname].userid
         # show gridlines
-        name = "grid_redpill"
+        name = f"grid_redpill_{camname}"
         path = []
         glen = arblib.GRIDLEN
         y = arblib.FLOOR_Y
@@ -443,16 +476,20 @@ class ArbApp:
             self.scene.add_object(ThickLine(
                 object_id=name,
                 path=path,
-                color=arblib.CLR_GRID))
+                color=arblib.CLR_GRID,
+                private_userid=userid))
+            self.users[camname].redpill_objects.append(name)
         else:
             arblib.delete_obj(self.scene, name)
+            if name in self.users[camname].redpill_objects:
+                self.users[camname].redpill_objects.remove(name)
 
         objs = self.scene.get_persisted_objs()
         for object_id in objs:
             obj = objs[object_id]
             # show occluded objects
             if "material-extras" in obj.data and "transparentOccluder" in obj.data["material-extras"]:
-                name = "redpill_" + obj.object_id
+                name = f"redpill_{camname}_{obj.object_id}"
                 if enabled:
                     object_type = get_data_attr(obj, "object_type", "box")
                     position = get_data_attr(obj, "position")
@@ -471,10 +508,14 @@ class ArbApp:
                         url=url,
                         material=Material(
                             color=color, transparent=True, opacity=arblib.OPC_TRANSLUCENT),
+                        private_userid=userid,
                     ))
+                    self.users[camname].redpill_objects.append(name)
                     print("Wrapping occlusion " + name)
                 else:
                     arblib.delete_obj(self.scene, name)
+                    if name in self.users[camname].redpill_objects:
+                        self.users[camname].redpill_objects.remove(name)
 
     # ------------------------------------------------------------------ #
     #  Object operations                                                   #
@@ -1155,7 +1196,7 @@ class ArbApp:
             # camera updates define users present
             camname = obj.object_id
             if camname not in self.users:
-                self.users[camname] = arblib.User(self.scene, camname, self.panel_callback)
+                return  # wait for user_join_callback
 
             # save camera's attitude in the world
             self.users[camname].position_last = self.users[camname].position
@@ -1228,7 +1269,7 @@ class ArbApp:
             # camera updates define users present
             camname = msg["data"]["source"]
             if camname not in self.users:
-                self.users[camname] = arblib.User(self.scene, camname, self.panel_callback)
+                return  # wait for user_join_callback
 
             # only persisted objects should handle clicks
             if object_id in _scene.all_objects:
@@ -1315,10 +1356,13 @@ class ArbApp:
     # ------------------------------------------------------------------ #
 
     def end_program_callback(self, _scene):
-        for camname in self.users:
+        for camname in list(self.users.keys()):
+            # clean up per-user redpill objects
+            for obj_id in self.users[camname].redpill_objects:
+                arblib.delete_obj(self.scene, obj_id)
             self.users[camname].delete()
-        self.show_redpill_scene(False)
-        _scene.delete_object(_scene.all_objects[arblib.ARB_PARENT_ID])
+        if arblib.ARB_PARENT_ID in _scene.all_objects:
+            _scene.delete_object(_scene.all_objects[arblib.ARB_PARENT_ID])
         for objid in self.controls:
             for ctrl in self.controls[objid]:
                 _scene.delete_object(self.controls[objid][ctrl])

@@ -203,9 +203,10 @@ class ButtonType(enum.Enum):
 
 
 class User:
-    def __init__(self, scene: Scene, camname, panel_callback):
+    def __init__(self, scene: Scene, camname, panel_callback, userid=None):
         self.scene = scene
         self.camname = camname
+        self.userid = userid  # MQTT identity for private channel routing
         self.mode = Mode.NONE
         self.clipboard = self.cliptarget = None
         self.target_id = self.target_control_id = None
@@ -218,15 +219,17 @@ class User:
         self.wloc_start = self.wloc_end = None
         self.wrot_start = self.wrot_end = None
         self.lamp = None
+        self.redpill_objects = []  # track per-user redpill objects for cleanup
         init_origin(self.scene)
 
-        # set HUD to each user
+        # set HUD to each user (private to this user)
         self.hud = Object(
             object_id=f"hud_{camname}",
             parent=camname,
             position=Position(0, 0, 0),
             scale=Scale(SCL_HUD, SCL_HUD, SCL_HUD),
             rotation=Rotation(0, 0, 0, 1),
+            private_userid=userid,
         )
         self.scene.add_object(self.hud)
         self.hudtext_left = self.make_hudtext(
@@ -236,7 +239,7 @@ class User:
         self.hudtext_status = self.make_hudtext(
             "hudTextStatus", POS_HUDTEXT_STATUS, "")
 
-        # AR Control Panel
+        # AR Control Panel (private to this user)
         self.follow_lock = False
         self.follow = Object(
             object_id=f"follow_{camname}",
@@ -244,6 +247,7 @@ class User:
             position=Position(0, 0, -PANEL_RADIUS * SCL_HUD),
             scale=SCL_FOLLOW,
             rotation=ROT_FACE_UP,
+            private_userid=userid,
         )
         self.scene.add_object(self.follow)
         self.redpill = False
@@ -276,7 +280,8 @@ class User:
         for but in buttons:
             pbutton = Button(
                 scene, camname, but[0], but[1], but[2], enable=but[3], btype=but[4],
-                parent=self.follow.object_id, callback=panel_callback)
+                parent=self.follow.object_id, callback=panel_callback,
+                private_userid=userid)
             self.panel[pbutton.button.object_id] = pbutton
 
         # set panel state from scene-options
@@ -298,6 +303,7 @@ class User:
                               position.z/SCL_HUD),
             color=CLR_HUDTEXT,
             scale=Scale(SCL_HUDTEXT/SCL_HUD, SCL_HUDTEXT/SCL_HUD, SCL_HUDTEXT/SCL_HUD),
+            private_userid=self.userid,
         )
         self.scene.add_object(text)
         return text
@@ -318,7 +324,8 @@ class User:
                 parent=self.hud.object_id,
                 material=Material(color=CLR_LAMP),
                 type="point",
-                intensity=LAMP_INTENSITY)
+                intensity=LAMP_INTENSITY,
+                private_userid=self.userid)
             self.scene.add_object(self.lamp)
         elif self.lamp:
             self.scene.delete_object(self.lamp)
@@ -340,7 +347,8 @@ class User:
                 material=Material(color=color, transparent=True, opacity=OPC_OVERLAY),
                 url=url,
                 clickable=True,
-                evt_handler=callback)
+                evt_handler=callback,
+                private_userid=self.userid)
             self.scene.add_object(self.clipboard)
         self.cliptarget = Circle(  # add helper target object to find true origin
             object_id=f"{self.camname}_cliptarget",
@@ -350,7 +358,8 @@ class User:
             material=Material(color=CLR_WHITE,
                               transparent=True, opacity=OPC_OVERLAY),
             clickable=True,
-            evt_handler=callback)
+            evt_handler=callback,
+            private_userid=self.userid)
         self.scene.add_object(self.cliptarget)
 
     def get_clipboard(self):
@@ -392,8 +401,9 @@ class User:
 class Button:
     def __init__(self, scene: Scene, camname, mode, x=0, y=0, label="", parent=None,
                  drop=None, color=CLR_BUTTON, enable=True, callback=None,
-                 btype=ButtonType.ACTION):
+                 btype=ButtonType.ACTION, private_userid=None):
         self.scene = scene
+        self.private_userid = private_userid
         if label == "":
             label = mode.value
         if parent is None:
@@ -436,6 +446,7 @@ class Button:
             scale=scale,
             clickable=True,
             evt_handler=callback,
+            private_userid=private_userid,
         )
         scene.add_object(self.button)
         scale = Scale(1, 1, 1)
@@ -450,6 +461,7 @@ class Button:
             rotation=ROT_FACE_DOWN,
             scale=scale,
             color=self.colortxt,
+            private_userid=private_userid,
         )
         scene.add_object(self.text)
 

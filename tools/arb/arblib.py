@@ -275,7 +275,7 @@ class User:
             [Mode.RENAME, 0, -1, True, ButtonType.ACTION],
             [Mode.COLOR, 1, -1, True, ButtonType.ACTION],
             [Mode.LAMP, 2, -1, True, ButtonType.TOGGLE],
-            [Mode.SLIDER, 3, -1, False, ButtonType.TOGGLE],  # TODO: adjust scale
+            [Mode.SLIDER, 3, -1, False, ButtonType.TOGGLE],  # ENHANCEMENT: adjust scale
         ]
         for but in buttons:
             pbutton = Button(

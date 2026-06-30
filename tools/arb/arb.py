@@ -297,7 +297,7 @@ class ArbApp:
         # toggle buttons
         if mode == Mode.LOCK:
             self.users[camname].follow_lock = active
-            # TODO: after lock ensure original ray keeps lock button in reticle
+            # ENHANCEMENT: after lock ensure original ray keeps lock button in reticle
         elif mode == Mode.REDPILL:
             self.users[camname].redpill = active
             self.show_redpill_scene(camname, active)
@@ -589,7 +589,7 @@ class ArbApp:
                        callback, move=True, parent=root)
         self.make_clickline("z", zl, objid, position, delim, color,
                        callback, move=True, parent=root)
-        # TODO: restore make_followspot(objid, position, delim, color, move=True)
+        # ENHANCEMENT: restore make_followspot(objid, position, delim, color, move=True)
         pos = Position(round(position.x, 3), round(
             position.y, 3), round(position.z, 3))
         self.users[camname].set_textright(
@@ -608,7 +608,7 @@ class ArbApp:
         root = self.make_clickroot(objid, position, delim, move=True)
         self.make_clickline("x", xl, objid, position, delim, color,
                        callback, move=True, parent=root)
-        # TODO: restore make_followspot(objid, position, delim, color)
+        # ENHANCEMENT: restore make_followspot(objid, position, delim, color)
         sca = Scale(round(scale.x, 3), round(scale.y, 3), round(scale.z, 3))
         self.users[camname].set_textright(
             f"{self.users[camname].target_style} s({sca.x},{sca.y},{sca.z})")
@@ -623,10 +623,10 @@ class ArbApp:
             object_type = get_data_attr(obj, "object_type", "box")
             rotation = get_data_attr(obj, "rotation")
             scale = get_data_attr(obj, "scale")
-            # TODO: scale too unpredictable, modify
+            # FIXME: GLTF scale too unpredictable to stretch; needs mesh bounding box
             if object_type == GLTF.object_type:
                 return
-            # TODO: scale too unpredictable, modify
+            # FIXME: non-identity rotation makes stretch axis ambiguous
             if rotation.quaternion.__dict__ != Rotation(x=0, y=0, z=0, w=1).quaternion.__dict__:
                 return
         xl, yl, zl = self.get_clicklines_len(obj)
@@ -644,7 +644,7 @@ class ArbApp:
                        callback, move=True, parent=root)
         self.make_clickline("z", -zl, objid, position, delim,
                        color, callback, move=True, parent=root)
-        # TODO: restore make_followspot(objid, position, delim, color)
+        # ENHANCEMENT: restore make_followspot(objid, position, delim, color)
         sca = Scale(round(scale.x, 3), round(scale.y, 3), round(scale.z, 3))
         self.users[camname].set_textright(
             f"{self.users[camname].target_style} s({sca.x},{sca.y},{sca.z})")
@@ -669,7 +669,7 @@ class ArbApp:
                        callback, ghost=ghost, parent=root)
         self.make_clickline("z", zl, objid, position, delim, color,
                        callback, ghost=ghost, parent=root)
-        # TODO: restore make_followspot(objid, position, delim, color)
+        # ENHANCEMENT: restore make_followspot(objid, position, delim, color)
         try:
             rote = arblib.rotation_quat2euler(
                 (rotation.x, rotation.y, rotation.z, rotation.w))
@@ -684,7 +684,7 @@ class ArbApp:
         object_type = get_data_attr(obj, "object_type", "box")
         scale = get_data_attr(obj, "scale")
         if object_type == "gltf-model":
-            # TODO: if we can get the gltf size (not scale), we can make accurate clicklines
+            # FIXME: if we can get the GLTF bounding box (not scale), we can make accurate clicklines
             scale = Scale(0.1, 0.1, 0.1)
             line_extension = arblib.CLICKLINE_LEN_MOD
         else:
@@ -700,7 +700,7 @@ class ArbApp:
             self.controls[object_id][name] = Circle(  # follow spot on ground
                 object_id=name,
                 scale=Scale(0.1, 0.1, 0.1),
-                # TODO: restore ttl=arblib.TTL_TEMP,
+                # ENHANCEMENT: restore ttl=arblib.TTL_TEMP,
                 position=Position(position.x, arblib.FLOOR_Y, position.z),
                 rotation=arblib.ROT_FACE_DOWN,
                 parent=parent,
@@ -725,7 +725,7 @@ class ArbApp:
             self.controls[object_id][name] = Line(
                 object_id=name,
                 color=color,
-                # TODO: restore ttl=arblib.TTL_TEMP,
+                # ENHANCEMENT: restore ttl=arblib.TTL_TEMP,
                 parent=parent,
                 start=start,
                 end=end)
@@ -752,7 +752,7 @@ class ArbApp:
         if name not in self.controls[object_id]:
             self.controls[object_id][name] = Box(
                 object_id=name,
-                # TODO: restore ttl=arblib.TTL_TEMP,
+                # ENHANCEMENT: restore ttl=arblib.TTL_TEMP,
                 parent=parent,
                 scale=scale,
                 position=position,
@@ -795,7 +795,7 @@ class ArbApp:
                 scale=Scale(arblib.SCL_CONE_RADIUS/arblib.SCL_CLICK, arblib.SCL_CONE_HEIGHT/arblib.SCL_CLICK, arblib.SCL_CONE_RADIUS/arblib.SCL_CLICK),
                 material=Material(color=color, transparent=True,
                                   opacity=arblib.OPC_CLINE),
-                # TODO: restore ttl=arblib.TTL_TEMP,
+                # ENHANCEMENT: restore ttl=arblib.TTL_TEMP,
                 parent=parent,
                 evt_handler=callback)
             self.scene.add_object(self.controls[object_id][name_pos])
@@ -810,7 +810,7 @@ class ArbApp:
                 scale=Scale(arblib.SCL_CONE_RADIUS/arblib.SCL_CLICK, arblib.SCL_CONE_HEIGHT/arblib.SCL_CLICK, arblib.SCL_CONE_RADIUS/arblib.SCL_CLICK),
                 material=Material(color=color, transparent=True,
                                   opacity=arblib.OPC_CLINE),
-                # TODO: restore ttl=arblib.TTL_TEMP,
+                # ENHANCEMENT: restore ttl=arblib.TTL_TEMP,
                 parent=parent,
                 evt_handler=callback)
             self.scene.add_object(self.controls[object_id][name_neg])
@@ -1058,7 +1058,7 @@ class ArbApp:
             material=Material(color=clipboard.data.material.color,
                               transparent=False),
             url=clipboard.data.url,
-            clickable=True,  # TODO: remove when AR target mousedown/up ignores parents
+            clickable=True,  # FIXME: remove when AR target mousedown/up ignores parents
         )
         self.scene.add_object(new_obj)
         self.users[camname].target_id = new_obj.object_id
@@ -1143,7 +1143,7 @@ class ArbApp:
         self.scene.add_object(arblib.temp_rot_marker(pos, rot))
         print(f"wall rotation {str(rot)}")
         # which axis to use for wall? use camera gaze
-        # TODO: rotation still off
+        # FIXME: wall rotation inference is still unreliable for non-axis-aligned gazes
         if gaze in arblib.GAZES[0]:
             height = abs(sloc.y - eloc.y)
             width = abs(sloc.x - eloc.x)
@@ -1154,7 +1154,7 @@ class ArbApp:
             height = abs(sloc.z - eloc.z)
             width = abs(sloc.x - eloc.x)
         else:
-            # TODO: (placeholder) add direction and hypotenuse
+            # ENHANCEMENT: add direction and hypotenuse for non-axis-parallel walls
             height = abs(sloc.y - eloc.y)
             width = abs(sloc.x - eloc.x)
             print(f"Non-axis parallel rotation: {str(rot)}")
@@ -1174,13 +1174,13 @@ class ArbApp:
             scale=sca,
             material=Material(color=arblib.CLR_WALL,
                               transparent=True, opacity=arblib.OPC_TRANSLUCENT),
-            clickable=True,  # TODO: remove when AR target mousedown/up ignores parents
+            clickable=True,  # FIXME: remove when AR target mousedown/up ignores parents
         )
         self.scene.add_object(new_wall)
         self.users[camname].target_id = new_wall.object_id
         print(f"Created {new_wall.object_id} r{str(rot)} s{str(sca)}")
-        # TODO: remove wall opacity in final wall feature
-        # TODO: push wall front side flush with markers (position-(wall/2))
+        # ENHANCEMENT: remove wall opacity in final wall feature
+        # ENHANCEMENT: push wall front side flush with markers (position-(wall/2))
 
     # ------------------------------------------------------------------ #
     #  Main scene callback (MQTT message handler)                          #
@@ -1209,7 +1209,7 @@ class ArbApp:
                                                msg["data"]["rotation"]["z"],
                                                msg["data"]["rotation"]["w"])
 
-            # TODO: ignore camera updates when position/rotation does not change
+            # PERF: ignore camera updates when position/rotation does not change
             # and therefore not republish panel position
 
             try:
@@ -1231,7 +1231,7 @@ class ArbApp:
                 # radius: r >= 0
                 # inclination (theta): inc >= 0 and inc <= pi
                 # azimuth (epsilon): azi >= 0 and azi <= 2pi
-                # TODO: handle VR lock position offset
+                # ENHANCEMENT: handle VR lock position offset
                 if abs(rx) >= (math.pi/2) and abs(rz) >= (math.pi/2):
                     azi = (math.pi*1.5) + ry + self.users[camname].lock_ry
                 else:

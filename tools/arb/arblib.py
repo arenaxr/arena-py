@@ -373,8 +373,26 @@ class User:
             self.scene.delete_object(self.clipboard)
 
     def delete(self):
-        self.scene.delete_object(self.hud)
-        self.scene.delete_object(self.follow)
+        # clean up clipboard
+        self.del_clipboard()
+        # clean up panel buttons
+        for btn in self.panel.values():
+            btn.delete()
+        # clean up dropdown buttons
+        for btn in self.dbuttons.values():
+            btn.delete()
+        # clean up HUD text objects
+        for obj in [self.hudtext_left, self.hudtext_right, self.hudtext_status]:
+            if obj.object_id in self.scene.all_objects:
+                self.scene.delete_object(obj)
+        # clean up lamp
+        if self.lamp and self.lamp.object_id in self.scene.all_objects:
+            self.scene.delete_object(self.lamp)
+        # clean up follow and HUD parent
+        if self.follow.object_id in self.scene.all_objects:
+            self.scene.delete_object(self.follow)
+        if self.hud.object_id in self.scene.all_objects:
+            self.scene.delete_object(self.hud)
 
     def set_clickableOnlyEvents(self, edit_on):
         if self.scene_options:
@@ -483,8 +501,10 @@ class Button:
 
     def delete(self):
         """Delete method so that child text object also gets deleted."""
-        self.scene.delete_object(self.text)
-        self.scene.delete_object(self.button)
+        if self.text.object_id in self.scene.all_objects:
+            self.scene.delete_object(self.text)
+        if self.button.object_id in self.scene.all_objects:
+            self.scene.delete_object(self.button)
 
 
 def opaque_obj(scene: Scene, object_id, opacity):

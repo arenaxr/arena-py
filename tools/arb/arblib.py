@@ -34,7 +34,6 @@ from arena import (
     Triangle,
 )
 
-ARB_PARENT_ID = "arb-origin-parent"
 CLICKLINE_LEN_OBJ = 0.5  # meters
 CLICKLINE_LEN_MOD = 0.5  # meters
 CLICKLINE_SCL = Scale(1, 1, 1)  # meters
@@ -61,8 +60,6 @@ CLR_WALL_START = Color(255, 0, 0)  # red
 CLR_WALL_END = Color(0, 255, 0)  # green
 CLR_WALL_CENTER = Color(0, 0, 255)  # blue
 CLR_WALL = Color(200, 200, 200)  # white-ish
-CLR_ORIGIN = Color(255, 114, 33)  # safety-cone orange
-CLR_ORIGIN_BASE = Color(0, 0, 0)  # black
 CLR_LAMP = Color(144, 144, 173)  # pale blue-gray
 CLR_WHITE = Color(255, 255, 255)  # white
 
@@ -96,8 +93,6 @@ TTL_MARKER = 120  # seconds
 SCL_LOC_MARKER = 0.02  # meters — wall location marker sphere
 SCL_ROT_MARKER = Scale(0.02, 0.01, 0.15)  # wall rotation marker box
 
-# Origin cone dimensions (construction cone visual indicator)
-ORIGIN_SIZE = [0.2, 0.4, 0.2]  # [width, height, depth] in meters
 LAMP_INTENSITY = 0.75
 
 # Quaternion values for axis-aligned rotations
@@ -220,7 +215,6 @@ class User:
         self.wrot_start = self.wrot_end = None
         self.lamp = None
         self.redpill_objects = []  # track per-user redpill objects for cleanup
-        init_origin(self.scene)
 
         # set HUD to each user (private to this user)
         self.hud = Object(
@@ -491,43 +485,6 @@ class Button:
         """Delete method so that child text object also gets deleted."""
         self.scene.delete_object(self.text)
         self.scene.delete_object(self.button)
-
-
-def init_origin(scene: Scene):
-    """Origin object, construction cone, so user knows ARB is running."""
-    size = ORIGIN_SIZE
-    scene.add_object(Object(
-        object_id=ARB_PARENT_ID,
-        position=scene.args["position"],
-        rotation=scene.args["rotation"],
-        scale=scene.args["scale"],
-    ))
-    scene.add_object(Cone(  # 370mm x 370mm # 750mm
-        object_id="arb-origin",
-        parent=ARB_PARENT_ID,
-        material=Material(
-            color=CLR_ORIGIN,
-            transparent=True,
-            opacity=OPC_TRANSLUCENT,
-            shader="flat"),
-        position=Position(0, size[1] / 2, 0),
-        scale=Scale(size[0] / 2, size[1], size[2] / 2)))
-    scene.add_object(Cone(
-        object_id="arb-origin-hole",
-        parent=ARB_PARENT_ID,
-        **{"material-extras": {"transparentOccluder": True}},
-        position=Position(0, size[1] - (size[1] / 2 / 15), 0),
-        scale=Scale(size[0] / 15, size[1] / 10, size[2] / 15)))
-    scene.add_object(Box(
-        object_id="arb-origin-base",
-        parent=ARB_PARENT_ID,
-        material=Material(
-            color=CLR_ORIGIN_BASE,
-            transparent=True,
-            opacity=OPC_TRANSLUCENT,
-            shader="flat"),
-        position=Position(0, size[1] / 20, 0),
-        scale=Scale(size[0], size[1] / 10, size[2])))
 
 
 def opaque_obj(scene: Scene, object_id, opacity):

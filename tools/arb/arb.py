@@ -1375,8 +1375,6 @@ class ArbApp:
             for obj_id in self.users[camname].redpill_objects:
                 arblib.delete_obj(self.scene, obj_id)
             self.users[camname].delete()
-        if arblib.ARB_PARENT_ID in _scene.all_objects:
-            _scene.delete_object(_scene.all_objects[arblib.ARB_PARENT_ID])
         for objid in self.controls:
             for ctrl in self.controls[objid]:
                 _scene.delete_object(self.controls[objid][ctrl])

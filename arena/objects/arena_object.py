@@ -110,20 +110,16 @@ class Object(BaseObject):
             return
 
         if "persist" in kwargs:
-            del kwargs["persist"]
-            self.persist = kwargs.get("private")
+            self.persist = kwargs.pop("persist")
 
         if "ttl" in kwargs:
-            del kwargs["ttl"]
-            self.ttl = kwargs.get("ttl")
+            self.ttl = kwargs.pop("ttl")
 
         if "private" in kwargs:
-            del kwargs["private"]
-            self.private = kwargs.get("private")
+            self.private = kwargs.pop("private")
 
         if "private_userid" in kwargs:
-            del kwargs["private_userid"]
-            self._private_userid = kwargs.get("private_userid")
+            self._private_userid = kwargs.pop("private_userid")
             self.private = True
 
         data = self.data

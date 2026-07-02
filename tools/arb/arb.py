@@ -98,41 +98,35 @@ class ArbApp:
     # ------------------------------------------------------------------ #
 
     def handle_panel_event(self, evt, dropdown=False):
-        # naming order: camera_number_button_bname[_dname]
-        # e.g. mwfarb_2902730029_button_move
+        # Private channels ensure only the owner receives events for their buttons
         drop = None
-        obj = evt.data.target.split("_")
         camname = evt.object_id
-        # camera ID is first 2 underscore-separated tokens (e.g. mwfarb_2902730029)
-        owner = f"{obj[0]}_{obj[1]}"
-        if owner != camname:
-            return None, None, None  # only owner may activate
         objid = evt.data.target
+        if camname not in self.users:
+            return None, None, None
         if evt.type == EVT_MOUSEENTER or evt.type == EVT_MOUSELEAVE:
             if evt.type == EVT_MOUSEENTER:
                 hover = True
             elif evt.type == EVT_MOUSELEAVE:
                 hover = False
             if dropdown:
-                button = self.users[camname].dbuttons[objid].set_hover(hover)
+                if objid in self.users[camname].dbuttons:
+                    self.users[camname].dbuttons[objid].set_hover(hover)
             else:
-                button = self.users[camname].panel[objid].set_hover(hover)
+                if objid in self.users[camname].panel:
+                    self.users[camname].panel[objid].set_hover(hover)
 
         if evt.type != EVT_MOUSEDOWN:
             return None, None, None
-        if dropdown:
-            drop = obj[4]
+        if dropdown and objid in self.users[camname].dbuttons:
+            drop = self.users[camname].dbuttons[objid].dropdown
         return (camname, objid, drop)
 
     def handle_clip_event(self, evt):
-        # naming order: camera_number_object
-        # e.g. mwfarb_2902730029_clipboard
-        obj = evt.data.target.split("_")
+        # Private channels ensure only the owner receives events for their clipboard
         camname = evt.object_id
-        # camera ID is first 2 underscore-separated tokens
-        owner = f"{obj[0]}_{obj[1]}"
-        if owner != camname:
-            return None  # only owner may activate
+        if camname not in self.users:
+            return None
         if evt.type != EVT_MOUSEDOWN:
             return None
         return camname

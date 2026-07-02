@@ -1,12 +1,16 @@
 """
-"MQTTSpanExporter/ArenaTelemetry stub classes for `arena-py` branch `rustpython`.
+ArenaTelemetry stub class for `arena-py`.
+
+The full OpenTelemetry implementation lives on the `telemetry` branch.
+This stub preserves the API surface so callers work unchanged, while
+routing errors and events to stderr/stdout so they remain visible.
 """
 
 import sys
 
 
 class ArenaTelemetry:
-    """ArenaTelemetry stub class for `arena-py` branch `rustpython`."""
+    """ArenaTelemetry stub that prints errors/events instead of tracing."""
 
     def __init__(self, name=sys.argv[0], id=None):
         pass
@@ -18,7 +22,8 @@ class ArenaTelemetry:
         pass
 
     def exit(self, error_msg=None, print_msg=True):
-        pass
+        if error_msg and print_msg:
+            print(error_msg, file=sys.stderr)
 
     def __del__(self):
         pass
@@ -33,7 +38,9 @@ class ArenaTelemetry:
         return self
 
     def add_event(self, name, span=None, print_msg=True, **kwargs):
-        pass
+        if print_msg:
+            print(name)
 
     def set_error(self, error_msg, span=None, print_msg=True):
-        pass
+        print(error_msg, file=sys.stderr)
+

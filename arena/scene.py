@@ -738,6 +738,13 @@ class Scene(ArenaMQTT):
         # Store the full current state (already a deep copy from json.loads)
         self._last_published_state[object_id] = data
 
+        # Always preserve object_type in delta: the browser's setObjectAttributes
+        # dispatches on data.object_type for type-specific attribute handling
+        # (e.g. 'text' value → text component, geometry attrs → geometry component).
+        # Without it, component-level attributes are misapplied as entity attributes.
+        if "object_type" in data and "object_type" not in delta:
+            delta["object_type"] = data["object_type"]
+
         # Re-serialize with only the delta in data
         msg["data"] = delta
         return json.dumps(msg)

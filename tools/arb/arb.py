@@ -98,11 +98,13 @@ class ArbApp:
     # ------------------------------------------------------------------ #
 
     def handle_panel_event(self, evt, dropdown=False):
-        # naming order: camera_number_name_button_bname_dname
+        # naming order: camera_number_button_bname[_dname]
+        # e.g. mwfarb_2902730029_button_move
         drop = None
         obj = evt.data.target.split("_")
         camname = evt.object_id
-        owner = f"{obj[0]}_{obj[1]}_{obj[2]}"  # callback owner in object_id
+        # camera ID is first 2 underscore-separated tokens (e.g. mwfarb_2902730029)
+        owner = f"{obj[0]}_{obj[1]}"
         if owner != camname:
             return None, None, None  # only owner may activate
         objid = evt.data.target
@@ -119,14 +121,16 @@ class ArbApp:
         if evt.type != EVT_MOUSEDOWN:
             return None, None, None
         if dropdown:
-            drop = obj[5]
+            drop = obj[4]
         return (camname, objid, drop)
 
     def handle_clip_event(self, evt):
-        # naming order: camera_number_name_object
+        # naming order: camera_number_object
+        # e.g. mwfarb_2902730029_clipboard
         obj = evt.data.target.split("_")
         camname = evt.object_id
-        owner = f"{obj[0]}_{obj[1]}_{obj[2]}"  # callback owner in object_id
+        # camera ID is first 2 underscore-separated tokens
+        owner = f"{obj[0]}_{obj[1]}"
         if owner != camname:
             return None  # only owner may activate
         if evt.type != EVT_MOUSEDOWN:
@@ -140,10 +144,10 @@ class ArbApp:
         if self.users[camname].target_control_id and (evt.type.startswith("twofinger") or self.users[camname].gesturing):
             ctrl_object_id = self.users[camname].target_control_id
         else:
-            ctrl_object_id = evt.object_id
+            ctrl_object_id = evt.data.target  # v2: target is the clicked object
         click_id = ctrl_object_id.split(f"_{mode.value}_")
         object_id = click_id[0]
-        if not self.users[camname].target_control_id and not self.users[camname].gesturing and evt.object_id == "my-camera":
+        if not self.users[camname].target_control_id and not self.users[camname].gesturing and evt.data.target == camname:
             return None, None, None, val
         direction = (click_id[1])[0:2]
         move = (click_id[1])[1:4]
@@ -367,7 +371,8 @@ class ArbApp:
                     bcolor = arblib.CLR_SELECT
                 dbutton = arblib.Button(
                     self.scene, camname, mode, (i % maxwidth) + drop_button_offset, row,
-                    label=option, parent=followname, color=bcolor, drop=option, callback=callback)
+                    label=option, parent=followname, color=bcolor, drop=option,
+                    callback=callback, private_userid=camname)
                 self.users[camname].dbuttons[dbutton.button.object_id] = dbutton
                 if (i + 1) % maxwidth == 0:  # next row
                     if row < 0:
@@ -582,13 +587,14 @@ class ArbApp:
             position = get_data_attr(obj, "position")
         xl, yl, zl = self.get_clicklines_len(obj)
         # nudge object + or - on 3 axis
-        root = self.make_clickroot(objid, position, delim, move=True)
+        root = self.make_clickroot(objid, position, delim, move=True,
+                                   private_userid=camname)
         self.make_clickline("x", xl, objid, position, delim, color,
-                       callback, move=True, parent=root)
+                       callback, move=True, parent=root, private_userid=camname)
         self.make_clickline("y", yl, objid, position, delim, color,
-                       callback, move=True, parent=root)
+                       callback, move=True, parent=root, private_userid=camname)
         self.make_clickline("z", zl, objid, position, delim, color,
-                       callback, move=True, parent=root)
+                       callback, move=True, parent=root, private_userid=camname)
         # ENHANCEMENT: restore make_followspot(objid, position, delim, color, move=True)
         pos = Position(round(position.x, 3), round(
             position.y, 3), round(position.z, 3))
@@ -605,9 +611,10 @@ class ArbApp:
             scale = get_data_attr(obj, "scale")
         xl, yl, zl = self.get_clicklines_len(obj)
         # scale entire object + or - on all axis
-        root = self.make_clickroot(objid, position, delim, move=True)
+        root = self.make_clickroot(objid, position, delim, move=True,
+                                   private_userid=camname)
         self.make_clickline("x", xl, objid, position, delim, color,
-                       callback, move=True, parent=root)
+                       callback, move=True, parent=root, private_userid=camname)
         # ENHANCEMENT: restore make_followspot(objid, position, delim, color)
         sca = Scale(round(scale.x, 3), round(scale.y, 3), round(scale.z, 3))
         self.users[camname].set_textright(
@@ -631,19 +638,20 @@ class ArbApp:
                 return
         xl, yl, zl = self.get_clicklines_len(obj)
         # scale and reposition on one of 6 sides
-        root = self.make_clickroot(objid, position, delim, move=True)
+        root = self.make_clickroot(objid, position, delim, move=True,
+                                   private_userid=camname)
         self.make_clickline("x", xl, objid, position, delim, color,
-                       callback, move=True, parent=root)
+                       callback, move=True, parent=root, private_userid=camname)
         self.make_clickline("x", -xl, objid, position, delim,
-                       color, callback, move=True, parent=root)
+                       color, callback, move=True, parent=root, private_userid=camname)
         self.make_clickline("y", yl, objid, position, delim, color,
-                       callback, move=True, parent=root)
+                       callback, move=True, parent=root, private_userid=camname)
         self.make_clickline("y", -yl, objid, position, delim,
-                       color, callback, move=True, parent=root)
+                       color, callback, move=True, parent=root, private_userid=camname)
         self.make_clickline("z", zl, objid, position, delim, color,
-                       callback, move=True, parent=root)
+                       callback, move=True, parent=root, private_userid=camname)
         self.make_clickline("z", -zl, objid, position, delim,
-                       color, callback, move=True, parent=root)
+                       color, callback, move=True, parent=root, private_userid=camname)
         # ENHANCEMENT: restore make_followspot(objid, position, delim, color)
         sca = Scale(round(scale.x, 3), round(scale.y, 3), round(scale.z, 3))
         self.users[camname].set_textright(
@@ -660,15 +668,16 @@ class ArbApp:
         xl, yl, zl = self.get_clicklines_len(obj)
         # rotate object + or - on 3 axis, plus show original axis as after
         # effect
-        root = self.make_clickroot(objid, position, delim)
+        root = self.make_clickroot(objid, position, delim,
+                                   private_userid=camname)
         ghost = self.make_clickroot(objid, position, delim,
-                               rotation=rotation, move=True)
+                               rotation=rotation, move=True, private_userid=camname)
         self.make_clickline("x", xl, objid, position, delim, color,
-                       callback, ghost=ghost, parent=root)
+                       callback, ghost=ghost, parent=root, private_userid=camname)
         self.make_clickline("y", yl, objid, position, delim, color,
-                       callback, ghost=ghost, parent=root)
+                       callback, ghost=ghost, parent=root, private_userid=camname)
         self.make_clickline("z", zl, objid, position, delim, color,
-                       callback, ghost=ghost, parent=root)
+                       callback, ghost=ghost, parent=root, private_userid=camname)
         # ENHANCEMENT: restore make_followspot(objid, position, delim, color)
         try:
             rote = arblib.rotation_quat2euler(
@@ -694,7 +703,8 @@ class ArbApp:
         zl = scale.z + line_extension
         return xl, yl, zl
 
-    def make_followspot(self, object_id, position, delim, color, parent, move=False):
+    def make_followspot(self, object_id, position, delim, color, parent,
+                        move=False, private_userid=None):
         name = f"{object_id}{delim}spot"
         if name not in self.controls[object_id]:
             self.controls[object_id][name] = Circle(  # follow spot on ground
@@ -709,13 +719,14 @@ class ArbApp:
                     transparent=True,
                     opacity=arblib.OPC_OVERLAY,
                     shader="flat"),
+                private_userid=private_userid,
             )
             self.scene.add_object(self.controls[object_id][name])
         elif move:
             self.scene.update_object(self.controls[object_id][name], position=position)
 
     def regline(self, object_id, axis, direction, delim, suffix, start,
-                end, line_width, move, color, parent):
+                end, line_width, move, color, parent, private_userid=None):
         line_width = line_width/arblib.SCL_CLICK
         end = Position(x=(end.x - start.x)/arblib.SCL_CLICK,
                        y=(end.y - start.y)/arblib.SCL_CLICK,
@@ -728,13 +739,14 @@ class ArbApp:
                 # ENHANCEMENT: restore ttl=arblib.TTL_TEMP,
                 parent=parent,
                 start=start,
-                end=end)
+                end=end,
+                private_userid=private_userid)
             self.scene.add_object(self.controls[object_id][name])
         elif move:
             self.scene.update_object(self.controls[object_id][name], start=start, end=end)
 
     def boxline(self, object_id, axis, direction, delim, suffix, start,
-                end, line_width, move, color, parent):
+                end, line_width, move, color, parent, private_userid=None):
         line_width = line_width/arblib.SCL_CLICK
         end = Position(x=(end.x - start.x)/arblib.SCL_CLICK,
                        y=(end.y - start.y)/arblib.SCL_CLICK,
@@ -761,6 +773,7 @@ class ArbApp:
                     transparent=True,
                     opacity=arblib.OPC_OVERLAY,
                     shader="flat"),
+                private_userid=private_userid,
             )
             self.scene.add_object(self.controls[object_id][name])
         elif move:
@@ -768,7 +781,7 @@ class ArbApp:
                                 position=position, scale=scale)
 
     def dir_clickers(self, object_id, axis, direction, delim, position,
-                     color, cones, callback, move, parent):
+                     color, cones, callback, move, parent, private_userid=None):
         position = Position(x=position.x/arblib.SCL_CLICK,
                             y=position.y/arblib.SCL_CLICK,
                             z=position.z/arblib.SCL_CLICK)
@@ -797,7 +810,8 @@ class ArbApp:
                                   opacity=arblib.OPC_CLINE),
                 # ENHANCEMENT: restore ttl=arblib.TTL_TEMP,
                 parent=parent,
-                evt_handler=callback)
+                evt_handler=callback,
+                private_userid=private_userid)
             self.scene.add_object(self.controls[object_id][name_pos])
         elif move:
             self.scene.update_object(self.controls[object_id][name_pos], position=position)
@@ -812,13 +826,15 @@ class ArbApp:
                                   opacity=arblib.OPC_CLINE),
                 # ENHANCEMENT: restore ttl=arblib.TTL_TEMP,
                 parent=parent,
-                evt_handler=callback)
+                evt_handler=callback,
+                private_userid=private_userid)
             self.scene.add_object(self.controls[object_id][name_neg])
         elif move:
             self.scene.update_object(self.controls[object_id][name_neg], position=loc)
 
     def make_clickline(self, axis, linelen, objid, start, delim,
-                       color, callback, ghost=None, parent=None, move=False):
+                       color, callback, ghost=None, parent=None, move=False,
+                       private_userid=None):
         if objid not in self.controls.keys():
             self.controls[objid] = {}
         endx = endy = endz = 0
@@ -836,21 +852,23 @@ class ArbApp:
         self.boxline(  # reference line
             object_id=objid, axis=axis, direction=direction, delim=delim,
             suffix="line", color=color, start=start, end=end, line_width=arblib.CLICKLINE_WIDTH, move=move,
-            parent=parent)
+            parent=parent, private_userid=private_userid)
         if ghost:
             self.boxline(  # ghostline aligns to parent rotation
                 object_id=objid, axis=axis, direction=direction, delim=delim,
                 suffix="ghost", color=(255, 255, 255), start=start, end=end, line_width=arblib.CLICKLINE_WIDTH,
-                move=move, parent=ghost)
+                move=move, parent=ghost, private_userid=private_userid)
         if ghost:
             cones = arblib.ROTATE_CONES
         else:
             cones = arblib.DIRECT_CONES
         self.dir_clickers(  # click objects
             object_id=objid, axis=axis, direction=direction, delim=delim, position=end,
-            color=color, cones=cones, callback=callback, move=move, parent=parent)
+            color=color, cones=cones, callback=callback, move=move, parent=parent,
+            private_userid=private_userid)
 
-    def make_clickroot(self, objid, position, delim, rotation=None, move=False):
+    def make_clickroot(self, objid, position, delim, rotation=None, move=False,
+                       private_userid=None):
         if objid not in self.controls.keys():
             self.controls[objid] = {}
         name = f"{objid}{delim}clickroot"
@@ -864,6 +882,7 @@ class ArbApp:
                 position=position,
                 scale=Scale(arblib.SCL_CLICK, arblib.SCL_CLICK, arblib.SCL_CLICK),
                 rotation=rotation,
+                private_userid=private_userid,
             )
             self.scene.add_object(self.controls[objid][name])
         elif move:
@@ -1265,29 +1284,30 @@ class ArbApp:
 
         # mouse event
         elif obj.action == "clientEvent":
-            object_id = msg["object_id"]
-            # camera updates define users present
-            camname = msg["data"]["source"]
+            # v2 migration: object_id is now the user, target is the clicked object
+            camname = msg["object_id"]
+            object_id = msg.get("data", {}).get("target", camname)
+            evt_type = msg.get("type", "")  # save event type before obj may be overwritten
             if camname not in self.users:
                 return  # wait for user_join_callback
 
             # only persisted objects should handle clicks
             if object_id in _scene.all_objects:
-                obj = _scene.all_objects[object_id]
-                if not obj.persist:
+                scene_obj = _scene.all_objects[object_id]
+                if not scene_obj.persist:
                     return
 
             # show objects with events
-            if obj.type == EVT_MOUSEENTER:
+            if evt_type == EVT_MOUSEENTER:
                 if self.users[camname].redpill:
                     self.show_redpill_obj(camname, object_id)
                 else:
                     self.users[camname].set_textstatus(object_id)
-            elif obj.type == EVT_MOUSELEAVE:
+            elif evt_type == EVT_MOUSELEAVE:
                 self.users[camname].set_textstatus("")
 
             # handle click
-            elif obj.type == EVT_MOUSEDOWN:
+            elif evt_type == EVT_MOUSEDOWN:
                 # clicked on persisted object to modify
                 self.update_controls(self.users[camname].target_id)
                 self.users[camname].target_id = object_id  # always update
@@ -1322,7 +1342,7 @@ class ArbApp:
                     self.users[camname].set_textright(self.users[camname].typetext)
 
             # handle two-finger touch as clickline sliders
-            elif obj.type == "twofingerstart" or obj.type == "twofingermove" or obj.type == "twofingerend":
+            elif evt_type == "twofingerstart" or evt_type == "twofingermove" or evt_type == "twofingerend":
                 if self.users[camname].mode == Mode.NUDGE:
                     self.nudgeline_callback(_scene, obj, msg)
                 elif self.users[camname].mode == Mode.ROTATE:
@@ -1333,7 +1353,7 @@ class ArbApp:
                     self.stretchline_callback(_scene, obj, msg)
 
             # handle three-finger touch as toggle for clickline modes
-            elif obj.type == "threefingerstart":
+            elif evt_type == "threefingerstart":
                 if self.users[camname].mode == Mode.NONE:
                     buttonname = Mode.ROTATE
                 elif self.users[camname].mode == Mode.ROTATE:

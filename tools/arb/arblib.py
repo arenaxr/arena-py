@@ -42,7 +42,7 @@ FLOOR_Y = 0.1  # meters
 GRIDLEN = 20  # meters
 SCL_HUD = 0.1  # meters
 SCL_CLICK = 0.1  # meters — root scale for click control objects
-PANEL_RADIUS = 1  # meters
+PANEL_RADIUS = 1  # meters (effective distance = PANEL_RADIUS * SCL_HUD)
 CLIP_RADIUS = PANEL_RADIUS + 0.25  # meters
 BUTTON_SPACING = 1.1  # multiplier for button grid spacing
 
@@ -289,9 +289,11 @@ class User:
         options = scene.get_persisted_scene_option()
         if options:
             self.scene_options = options[0]
-            if "attributes" in self.scene_options:
+            attrs = self.scene_options.get("attributes", {})
+            scene_opts = attrs.get("scene-options", {})
+            if "clickableOnlyEvents" in scene_opts:
                 self.panel[f"{camname}_button_{Mode.EDIT.value}"].set_active(
-                    not self.scene_options["attributes"]["scene-options"]["clickableOnlyEvents"])
+                    not scene_opts["clickableOnlyEvents"])
 
     def make_hudtext(self, label, position, text):
         text = Text(

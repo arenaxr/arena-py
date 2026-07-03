@@ -38,8 +38,7 @@ class ArenaTelemetry:
         return self
 
     def add_event(self, name, span=None, print_msg=True, **kwargs):
-        if print_msg:
-            print(name)
+        pass  # Tracing-only; span.add_event() is too noisy for console
 
     def set_error(self, error_msg, span=None, print_msg=True):
         print(error_msg, file=sys.stderr)

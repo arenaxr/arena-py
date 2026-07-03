@@ -242,6 +242,7 @@ class Scene(ArenaMQTT):
             try:
                 msg = await self.msg_queue.get()
             except RuntimeError as e:
+                print(f"[WARNING] Ignoring error: {e}")
                 self.telemetry.add_event(f"Ignoring error: {e}")
                 continue
 
@@ -250,6 +251,7 @@ class Scene(ArenaMQTT):
                 payload_str = msg.payload.decode("utf-8", "ignore")
                 payload = json.loads(payload_str)
             except Exception as e:
+                print(f"[WARNING] Malformed payload: {payload_str}. {e}.")
                 self.telemetry.add_event(f"Malformed payload: {payload_str}. {e}.")
                 continue
 

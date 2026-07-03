@@ -1277,7 +1277,7 @@ class ArbApp:
                     self.stretchline_callback(_scene, obj, msg)
 
         # mouse event
-        elif obj.action == "clientEvent":
+        elif getattr(obj, "action", None) == "clientEvent":
             # v2 migration: object_id is now the user, target is the clicked object
             camname = msg["object_id"]
             object_id = msg.get("data", {}).get("target", camname)

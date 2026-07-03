@@ -1222,48 +1222,60 @@ class ArbApp:
                                                msg["data"]["rotation"]["z"],
                                                msg["data"]["rotation"]["w"])
 
-            # PERF: ignore camera updates when position/rotation does not change
-            # and therefore not republish panel position
 
-            try:
-                rotrad = arblib.rotation_quat2radian((
-                    msg["data"]["rotation"]["x"],
-                    msg["data"]["rotation"]["y"],
-                    msg["data"]["rotation"]["z"],
-                    msg["data"]["rotation"]["w"]))
-            except ValueError as error:
-                print(f"Rotation error: {error}")
-                return
+            # floating controller — position panel on a sphere around the camera
+            # Compute camera yaw/pitch directly from the quaternion's forward
+            # vector to avoid gimbal lock in Euler XYZ decomposition (rx flips
+            # by ±π when yaw approaches ±90°, corrupting lock offsets)
+            qx = msg["data"]["rotation"]["x"]
+            qy = msg["data"]["rotation"]["y"]
+            qz = msg["data"]["rotation"]["z"]
+            qw = msg["data"]["rotation"]["w"]
 
-            # floating controller
-            rx = rotrad[0]
-            ry = rotrad[1]
-            rz = rotrad[2]
+            # Camera yaw: horizontal look direction from forward vector
+            # projected onto XZ plane. Stable full [-π, π] range.
+            camera_yaw = math.atan2(
+                2 * (qx * qz + qw * qy),
+                1 - 2 * (qx * qx + qy * qy))
+
+            # Camera pitch: vertical look angle from forward vector Y component.
+            # Clamped to [-π/2, π/2] — stable, no gimbal coupling.
+            sinp = 2 * (qw * qx - qy * qz)
+            camera_pitch = math.copysign(math.pi / 2, sinp) if abs(sinp) >= 1 else math.asin(sinp)
+
             if not self.users[camname].follow_lock:
-                # where:
-                # radius: r >= 0
-                # inclination (theta): inc >= 0 and inc <= pi
-                # azimuth (epsilon): azi >= 0 and azi <= 2pi
-                # ENHANCEMENT: handle VR lock position offset
-                if abs(rx) >= (math.pi/2) and abs(rz) >= (math.pi/2):
-                    azi = (math.pi*1.5) + ry + self.users[camname].lock_ry
-                else:
-                    azi = (math.pi/2) - ry + self.users[camname].lock_ry
-                if abs(rx) >= (math.pi/2) and abs(rz) >= (math.pi/2):
-                    inc = (math.pi*1.5) - rx - self.users[camname].lock_rx
-                else:
-                    inc = (math.pi/2) + rx - self.users[camname].lock_rx
+                # First frame after unlock: compute cumulative offset so
+                # the panel appears not to move from its locked position
+                if self.users[camname].lock_on_ry is not None:
+                    delta_yaw = camera_yaw - self.users[camname].lock_on_ry
+                    delta_pitch = camera_pitch - self.users[camname].lock_on_rx
+                    # Normalize yaw delta to [-π, π] for wrap-around
+                    delta_yaw = math.atan2(math.sin(delta_yaw), math.cos(delta_yaw))
+                    self.users[camname].lock_ry += delta_yaw
+                    self.users[camname].lock_rx += delta_pitch
+                    self.users[camname].lock_on_ry = None
+                    self.users[camname].lock_on_rx = None
 
-                # derive cartesian coordinates x,y,z from spherical coordinates r,epsilon,theta
-                px = (arblib.PANEL_RADIUS * math.cos(azi) * math.sin(inc))
-                py = (arblib.PANEL_RADIUS * math.cos(inc))
+                # Spherical coordinates with offset:
+                #   azimuth (horizontal) derived from camera yaw
+                #   inclination (vertical) derived from camera pitch
+                #   lock_ry/lock_rx store cumulative angular offsets from lock toggles
+                azi = (math.pi / 2) - camera_yaw + self.users[camname].lock_ry
+                inc = (math.pi / 2) + camera_pitch - self.users[camname].lock_rx
+
+                # Spherical to Cartesian (r, azi, inc) → (x, y, z)
+                px = arblib.PANEL_RADIUS * math.cos(azi) * math.sin(inc)
+                py = arblib.PANEL_RADIUS * math.cos(inc)
                 pz = -(arblib.PANEL_RADIUS * math.sin(azi) * math.sin(inc))
-                pos = Position(px, py, pz)
-                self.scene.update_object(self.users[camname].follow, position=pos)
+                self.scene.update_object(
+                    self.users[camname].follow, position=Position(px, py, pz))
             else:
-                # save rotation of azimuth/inclination for next lock release
-                self.users[camname].lock_ry = ry
-                self.users[camname].lock_rx = rx
+                # Lock is ON: save camera yaw/pitch once (first locked frame)
+                # to compute the delta when lock is released
+                if self.users[camname].lock_on_ry is None:
+                    self.users[camname].lock_on_ry = camera_yaw
+                    self.users[camname].lock_on_rx = camera_pitch
+
 
             # handle gesturing two-finger touch as clickline camera match-moves
             if self.users[camname].gesturing and not self.users[camname].slider:

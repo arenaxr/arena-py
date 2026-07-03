@@ -211,6 +211,8 @@ class User:
         self.target_style = self.typetext = ""
         self.lock_rx = 0
         self.lock_ry = 0
+        self.lock_on_rx = None  # camera rotation when lock turned ON
+        self.lock_on_ry = None
         self.wloc_start = self.wloc_end = None
         self.wrot_start = self.wrot_end = None
         self.lamp = None
@@ -401,7 +403,6 @@ class User:
             object_id = 'scene-options'
         opt_obj = Object(object_id=object_id, persist=True)
         opt_obj.type = 'scene-options'
-        del opt_obj.data.object_type
         opt_obj.data['scene-options'] = {
             "clickableOnlyEvents": not edit_on
         }

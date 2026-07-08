@@ -34,15 +34,18 @@ from arena import (
     Triangle,
 )
 
-ARB_PARENT_ID = "arb-origin-parent"
 CLICKLINE_LEN_OBJ = 0.5  # meters
 CLICKLINE_LEN_MOD = 0.5  # meters
 CLICKLINE_SCL = Scale(1, 1, 1)  # meters
 FLOOR_Y = 0.1  # meters
 GRIDLEN = 20  # meters
 SCL_HUD = 0.1  # meters
-PANEL_RADIUS = 1  # meters
+SCL_CLICK = 0.1  # meters — root scale for click control objects
+PANEL_RADIUS = 1  # meters (effective distance = PANEL_RADIUS * SCL_HUD)
 CLIP_RADIUS = PANEL_RADIUS + 0.25  # meters
+BUTTON_SPACING = 1.1  # multiplier for button grid spacing
+
+# Colors
 CLR_HUDTEXT = Color(128, 128, 128)  # gray
 CLR_NUDGE = Color(255, 255, 0)  # yellow
 CLR_SCALE = Color(0, 0, 255)  # blue
@@ -53,13 +56,53 @@ CLR_GRID = Color(0, 255, 0)  # green
 CLR_BUTTON = Color(200, 200, 200)  # white-ish
 CLR_BUTTON_DISABLED = Color(128, 128, 128)  # gray
 CLR_BUTTON_TEXT = Color(0, 0, 0)  # black
-OPC_BUTTON = 0.1  # % opacity
-OPC_BUTTON_HOVER = 0.25  # % opacity
-OPC_CLINE = 0.1  # % opacity
-OPC_CLINE_HOVER = 0.9  # % opacity
+CLR_WALL_START = Color(255, 0, 0)  # red
+CLR_WALL_END = Color(0, 255, 0)  # green
+CLR_WALL_CENTER = Color(0, 0, 255)  # blue
+CLR_WALL = Color(200, 200, 200)  # white-ish
+CLR_LAMP = Color(144, 144, 173)  # pale blue-gray
+CLR_WHITE = Color(255, 255, 255)  # white
+
+# Opacity values
+OPC_BUTTON = 0.1
+OPC_BUTTON_HOVER = 0.25
+OPC_CLINE = 0.1
+OPC_CLINE_HOVER = 0.9
+OPC_OVERLAY = 0.4  # clickline boxes, clipboard, followspot, cliptarget
+OPC_TRANSLUCENT = 0.5  # redpill wrappers, walls, origin cone, markers
+
+# Scale/position constants for HUD elements
+SCL_CLIPBOARD = Scale(0.05, 0.05, 0.05)  # meters
+SCL_CLIPTARGET = 0.005  # meters — tiny helper target circle
+SCL_HUDTEXT = 0.1  # meters — HUD text element scale
+POS_HUDTEXT_LEFT = Position(-0.15, 0.15, -0.5)
+POS_HUDTEXT_RIGHT = Position(0.1, 0.15, -0.5)
+POS_HUDTEXT_STATUS = Position(0.02, -0.15, -0.5)  # workaround: x=0 renders incorrectly
+SCL_FOLLOW = Scale(0.1, 0.01, 0.1)
+SCL_BUTTON = Scale(0.1, 0.1, 0.01)
+
+# Clickline cone dimensions
+SCL_CONE_RADIUS = 0.05  # meters — clickline direction cone radius
+SCL_CONE_HEIGHT = 0.09  # meters — clickline direction cone height
+CONE_OFFSET = 0.1  # meters — offset for negative direction cone
+CLICKLINE_WIDTH = 0.005  # meters
+
+# Wall marker/temp object constants
 TTL_TEMP = 30  # seconds
+TTL_MARKER = 120  # seconds
+SCL_LOC_MARKER = 0.02  # meters — wall location marker sphere
+SCL_ROT_MARKER = Scale(0.02, 0.01, 0.15)  # wall rotation marker box
+
+LAMP_INTENSITY = 0.75
+
+# Quaternion values for axis-aligned rotations
+# 0.7 ≈ sin(π/4) ≈ cos(π/4), representing 90° rotations
 QUAT_VEC_RGTS = [-1, -0.7, -0.5, 0, 0.5, 0.7, 1]
 QUAT_DEV_RGT = 0.075
+# Rotation to face downward (x-axis 90°)
+ROT_FACE_DOWN = Rotation(-0.7, 0, 0, 0.7)
+# Rotation to face upward (x-axis 90°, for follow panel)
+ROT_FACE_UP = Rotation(0.7, 0, 0, 0.7)
 WALL_WIDTH = 0.1  # meters
 GAZES = [
     [(0, 0, 0, 1), (0, 0, -0.7, 0.7), (0, 0, 1, 0), (0, 0, 0.7, 0.7),  # F
@@ -155,9 +198,10 @@ class ButtonType(enum.Enum):
 
 
 class User:
-    def __init__(self, scene: Scene, camname, panel_callback):
+    def __init__(self, scene: Scene, camname, panel_callback, userid=None):
         self.scene = scene
         self.camname = camname
+        self.userid = userid  # MQTT identity for private channel routing
         self.mode = Mode.NONE
         self.clipboard = self.cliptarget = None
         self.target_id = self.target_control_id = None
@@ -167,35 +211,39 @@ class User:
         self.target_style = self.typetext = ""
         self.lock_rx = 0
         self.lock_ry = 0
+        self.lock_on_rx = None  # camera rotation when lock turned ON
+        self.lock_on_ry = None
         self.wloc_start = self.wloc_end = None
         self.wrot_start = self.wrot_end = None
         self.lamp = None
-        init_origin(self.scene)
+        self.redpill_objects = []  # track per-user redpill objects for cleanup
 
-        # set HUD to each user
+        # set HUD to each user (private to this user)
         self.hud = Object(
             object_id=f"hud_{camname}",
             parent=camname,
             position=Position(0, 0, 0),
             scale=Scale(SCL_HUD, SCL_HUD, SCL_HUD),
             rotation=Rotation(0, 0, 0, 1),
+            private_userid=userid,
         )
         self.scene.add_object(self.hud)
         self.hudtext_left = self.make_hudtext(
-            "hudTextLeft", Position(-0.15, 0.15, -0.5), str(self.mode))
+            "hudTextLeft", POS_HUDTEXT_LEFT, str(self.mode))
         self.hudtext_right = self.make_hudtext(
-            "hudTextRight", Position(0.1, 0.15, -0.5), "")
+            "hudTextRight", POS_HUDTEXT_RIGHT, "")
         self.hudtext_status = self.make_hudtext(
-            "hudTextStatus", Position(0.02, -0.15, -0.5), "")  # workaround x=0 bad?
+            "hudTextStatus", POS_HUDTEXT_STATUS, "")
 
-        # AR Control Panel
+        # AR Control Panel (private to this user)
         self.follow_lock = False
         self.follow = Object(
             object_id=f"follow_{camname}",
             parent=camname,
-            position=Position(0, 0, -PANEL_RADIUS * 0.1),
-            scale=Scale(0.1, 0.01, 0.1),
-            rotation=Rotation(0.7, 0, 0, 0.7),
+            position=Position(0, 0, -PANEL_RADIUS * SCL_HUD),
+            scale=SCL_FOLLOW,
+            rotation=ROT_FACE_UP,
+            private_userid=userid,
         )
         self.scene.add_object(self.follow)
         self.redpill = False
@@ -223,12 +271,13 @@ class User:
             [Mode.RENAME, 0, -1, True, ButtonType.ACTION],
             [Mode.COLOR, 1, -1, True, ButtonType.ACTION],
             [Mode.LAMP, 2, -1, True, ButtonType.TOGGLE],
-            [Mode.SLIDER, 3, -1, False, ButtonType.TOGGLE],  # TODO: adjust scale
+            [Mode.SLIDER, 3, -1, False, ButtonType.TOGGLE],  # ENHANCEMENT: adjust scale
         ]
         for but in buttons:
             pbutton = Button(
                 scene, camname, but[0], but[1], but[2], enable=but[3], btype=but[4],
-                parent=self.follow.object_id, callback=panel_callback)
+                parent=self.follow.object_id, callback=panel_callback,
+                private_userid=userid)
             self.panel[pbutton.button.object_id] = pbutton
 
         # set panel state from scene-options
@@ -236,9 +285,11 @@ class User:
         options = scene.get_persisted_scene_option()
         if options:
             self.scene_options = options[0]
-            if "attributes" in self.scene_options:
+            attrs = self.scene_options.get("attributes", {})
+            scene_opts = attrs.get("scene-options", {})
+            if "clickableOnlyEvents" in scene_opts:
                 self.panel[f"{camname}_button_{Mode.EDIT.value}"].set_active(
-                    not self.scene_options["attributes"]["scene-options"]["clickableOnlyEvents"])
+                    not scene_opts["clickableOnlyEvents"])
 
     def make_hudtext(self, label, position, text):
         text = Text(
@@ -249,7 +300,8 @@ class User:
                               position.y/SCL_HUD,
                               position.z/SCL_HUD),
             color=CLR_HUDTEXT,
-            scale=Scale(0.1/SCL_HUD, 0.1/SCL_HUD, 0.1/SCL_HUD),
+            scale=Scale(SCL_HUDTEXT/SCL_HUD, SCL_HUDTEXT/SCL_HUD, SCL_HUDTEXT/SCL_HUD),
+            private_userid=self.userid,
         )
         self.scene.add_object(text)
         return text
@@ -268,9 +320,10 @@ class User:
             self.lamp = Light(
                 object_id=f"{self.camname}_lamp",
                 parent=self.hud.object_id,
-                material=Material(color=Color(144, 144, 173)),
+                material=Material(color=CLR_LAMP),
                 type="point",
-                intensity=0.75)
+                intensity=LAMP_INTENSITY,
+                private_userid=self.userid)
             self.scene.add_object(self.lamp)
         elif self.lamp:
             self.scene.delete_object(self.lamp)
@@ -278,9 +331,9 @@ class User:
     def set_clipboard(self,
                       callback=None,
                       object_type=None,
-                      scale=Scale(0.05, 0.05, 0.05),
+                      scale=SCL_CLIPBOARD,
                       position=Position(0, 0, -CLIP_RADIUS/SCL_HUD),
-                      color=Color(255, 255, 255),
+                      color=CLR_WHITE,
                       url=None):
         if object_type:
             self.clipboard = Object(  # show item to be created
@@ -289,20 +342,22 @@ class User:
                 position=position,
                 parent=self.hud.object_id,
                 scale=Scale(scale.x/SCL_HUD, scale.y/SCL_HUD, scale.z/SCL_HUD),
-                material=Material(color=color, transparent=True, opacity=0.4),
+                material=Material(color=color, transparent=True, opacity=OPC_OVERLAY),
                 url=url,
                 clickable=True,
-                evt_handler=callback)
+                evt_handler=callback,
+                private_userid=self.userid)
             self.scene.add_object(self.clipboard)
         self.cliptarget = Circle(  # add helper target object to find true origin
             object_id=f"{self.camname}_cliptarget",
             position=position,
             parent=self.hud.object_id,
-            scale=Scale(0.005/SCL_HUD, 0.005/SCL_HUD, 0.005/SCL_HUD),
-            material=Material(color=Color(255, 255, 255),
-                              transparent=True, opacity=0.4),
+            scale=Scale(SCL_CLIPTARGET/SCL_HUD, SCL_CLIPTARGET/SCL_HUD, SCL_CLIPTARGET/SCL_HUD),
+            material=Material(color=CLR_WHITE,
+                              transparent=True, opacity=OPC_OVERLAY),
             clickable=True,
-            evt_handler=callback)
+            evt_handler=callback,
+            private_userid=self.userid)
         self.scene.add_object(self.cliptarget)
 
     def get_clipboard(self):
@@ -320,8 +375,26 @@ class User:
             self.scene.delete_object(self.clipboard)
 
     def delete(self):
-        self.scene.delete_object(self.hud)
-        self.scene.delete_object(self.follow)
+        # clean up clipboard
+        self.del_clipboard()
+        # clean up panel buttons
+        for btn in self.panel.values():
+            btn.delete()
+        # clean up dropdown buttons
+        for btn in self.dbuttons.values():
+            btn.delete()
+        # clean up HUD text objects
+        for obj in [self.hudtext_left, self.hudtext_right, self.hudtext_status]:
+            if obj.object_id in self.scene.all_objects:
+                self.scene.delete_object(obj)
+        # clean up lamp
+        if self.lamp and self.lamp.object_id in self.scene.all_objects:
+            self.scene.delete_object(self.lamp)
+        # clean up follow and HUD parent
+        if self.follow.object_id in self.scene.all_objects:
+            self.scene.delete_object(self.follow)
+        if self.hud.object_id in self.scene.all_objects:
+            self.scene.delete_object(self.hud)
 
     def set_clickableOnlyEvents(self, edit_on):
         if self.scene_options:
@@ -330,7 +403,6 @@ class User:
             object_id = 'scene-options'
         opt_obj = Object(object_id=object_id, persist=True)
         opt_obj.type = 'scene-options'
-        del opt_obj.data.object_type
         opt_obj.data['scene-options'] = {
             "clickableOnlyEvents": not edit_on
         }
@@ -344,13 +416,14 @@ class User:
 class Button:
     def __init__(self, scene: Scene, camname, mode, x=0, y=0, label="", parent=None,
                  drop=None, color=CLR_BUTTON, enable=True, callback=None,
-                 btype=ButtonType.ACTION):
+                 btype=ButtonType.ACTION, private_userid=None):
         self.scene = scene
+        self.private_userid = private_userid
         if label == "":
             label = mode.value
         if parent is None:
             parent = camname
-            scale = Scale(0.1, 0.1, 0.01)
+            scale = SCL_BUTTON
         else:
             scale = Scale(1, 1, 1)
         self.type = btype
@@ -384,10 +457,11 @@ class Button:
                 transparent=True,
                 opacity=OPC_BUTTON,
                 shader="flat"),
-            position=Position(x * 1.1, PANEL_RADIUS, y * -1.1),
+            position=Position(x * BUTTON_SPACING, PANEL_RADIUS, y * -BUTTON_SPACING),
             scale=scale,
             clickable=True,
             evt_handler=callback,
+            private_userid=private_userid,
         )
         scene.add_object(self.button)
         scale = Scale(1, 1, 1)
@@ -399,9 +473,10 @@ class Button:
             value=self.label,
             # position inside to prevent ray events
             position=Position(0, -0.1, 0),
-            rotation=Rotation(-0.7, 0, 0, 0.7),
+            rotation=ROT_FACE_DOWN,
             scale=scale,
             color=self.colortxt,
+            private_userid=private_userid,
         )
         scene.add_object(self.text)
 
@@ -427,45 +502,10 @@ class Button:
 
     def delete(self):
         """Delete method so that child text object also gets deleted."""
-        self.scene.delete_object(self.text)
-        self.scene.delete_object(self.button)
-
-
-def init_origin(scene: Scene):
-    """Origin object, construction cone, so user knows ARB is running."""
-    size = [0.2, 0.4, 0.2]
-    scene.add_object(Object(
-        object_id=ARB_PARENT_ID,
-        position=scene.args["position"],
-        rotation=scene.args["rotation"],
-        scale=scene.args["scale"],
-    ))
-    scene.add_object(Cone(  # 370mm x 370mm # 750mm
-        object_id="arb-origin",
-        parent=ARB_PARENT_ID,
-        material=Material(
-            color=Color(255, 114, 33),
-            transparent=True,
-            opacity=0.5,
-            shader="flat"),
-        position=Position(0, size[1] / 2, 0),
-        scale=Scale(size[0] / 2, size[1], size[2] / 2)))
-    scene.add_object(Cone(
-        object_id="arb-origin-hole",
-        parent=ARB_PARENT_ID,
-        **{"material-extras": {"transparentOccluder": True}},
-        position=Position(0, size[1] - (size[1] / 2 / 15), 0),
-        scale=Scale(size[0] / 15, size[1] / 10, size[2] / 15)))
-    scene.add_object(Box(
-        object_id="arb-origin-base",
-        parent=ARB_PARENT_ID,
-        material=Material(
-            color=Color(0, 0, 0),
-            transparent=True,
-            opacity=0.5,
-            shader="flat"),
-        position=Position(0, size[1] / 20, 0),
-        scale=Scale(size[0], size[1] / 10, size[2])))
+        if self.text.object_id in self.scene.all_objects:
+            self.scene.delete_object(self.text)
+        if self.button.object_id in self.scene.all_objects:
+            self.scene.delete_object(self.button)
 
 
 def opaque_obj(scene: Scene, object_id, opacity):
@@ -532,13 +572,13 @@ def delete_obj(scene: Scene, object_id):
 
 
 def temp_loc_marker(position, color):
-    return Sphere(ttl=120, material=Material(color=color, transparent=True, opacity=0.5),
-                  position=position, scale=Scale(0.02, 0.02, 0.02))
+    return Sphere(ttl=TTL_MARKER, material=Material(color=color, transparent=True, opacity=OPC_TRANSLUCENT),
+                  position=position, scale=Scale(SCL_LOC_MARKER, SCL_LOC_MARKER, SCL_LOC_MARKER))
 
 
 def temp_rot_marker(position, rotation):
-    return Box(ttl=120, rotation=rotation, material=Material(color=Color(255, 255, 255)),
-               position=position, scale=Scale(0.02, 0.01, 0.15))
+    return Box(ttl=TTL_MARKER, rotation=rotation, material=Material(color=CLR_WHITE),
+               position=position, scale=SCL_ROT_MARKER)
 
 
 def rotation_quat2radian(quat):

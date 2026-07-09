@@ -8,7 +8,7 @@ import math
 
 #FILESTORE SETTINGS
 FILESTORE = "https://arenaxr.org/" #main server
-FILEPATH = "store/users/johnchoi/BoschPendulum/" #Path
+FILEPATH = "store/users/wiselab/BoschPendulum/" #Path
 HEADER = "BP"
 VERBOSE = False
 

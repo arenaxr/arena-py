@@ -86,7 +86,7 @@ class NPC:
             position=CFG.PLANE_POSITION,
             rotation=CFG.PLANE_ROTATION,
             scale=Scale(random.uniform(0, 0.001),random.uniform(0, 0.001),random.uniform(0, 0.001)), #Start at zero, not PLANE_SIZE to hide at start
-            url = "https://arenaxr.org/store/users/johnchoi/Images/nyan.jpg",
+            url = "https://arenaxr.org/store/users/wiselab/Images/nyan.jpg",
             material = Material(transparent = True, opacity = CFG.PLANE_OPACITY, visible = False),
             parent=self.root,
 
@@ -99,7 +99,7 @@ class NPC:
             position=CFG.PLANE_POSITION,
             rotation=CFG.PLANE_ROTATION,
             scale=Scale(random.uniform(0, 0.001),random.uniform(0, 0.001),random.uniform(0, 0.001)), #Start at zero, not PLANE_SIZE to hide at start
-            material = Material(src = "https://arenaxr.org/store/users/johnchoi/Videos/rays.mp4", transparent = True, opacity = CFG.PLANE_OPACITY, w = 1920, h = 1080, size = 1, visible = False),
+            material = Material(src = "https://arenaxr.org/store/users/wiselab/Videos/rays.mp4", transparent = True, opacity = CFG.PLANE_OPACITY, w = 1920, h = 1080, size = 1, visible = False),
             parent=self.root,
             clickable=True,
             persist=True

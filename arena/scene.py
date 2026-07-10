@@ -697,7 +697,7 @@ class Scene(ArenaMQTT):
                 payload = self._apply_delta(payload, action)
 
             # Rate limiting and duplicate suppression per object_id
-            object_id = obj.get("object_id") if isinstance(obj, dict) else obj["object_id"]
+            object_id = obj.get("object_id") if isinstance(obj, dict) else getattr(obj, "object_id", None)
             allowed, warning = self.publish_throttle.check(object_id, payload)
             if not allowed:
                 print(warning)

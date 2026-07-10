@@ -17,8 +17,8 @@ to minimise impact on local publish performance.
 """
 
 import json
+import time
 from collections import deque
-from datetime import datetime
 
 # Maximum allowed publishes per object_id within WINDOW_SECS (100 ms average interval)
 RATE_LIMIT = 10
@@ -67,7 +67,7 @@ class PublishThrottle:
             )
 
         # --- rate check ---
-        now = datetime.now().timestamp()
+        now = time.time()
         q = self._timestamps.setdefault(object_id, deque())
         cutoff = now - WINDOW_SECS
         while q and q[0] < cutoff:

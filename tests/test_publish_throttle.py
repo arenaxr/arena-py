@@ -12,7 +12,6 @@ Covers:
 import json
 import time
 import unittest
-from unittest.mock import patch
 
 from arena.utils.publish_throttle import (
     RATE_LIMIT,

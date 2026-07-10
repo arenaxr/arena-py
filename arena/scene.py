@@ -26,6 +26,7 @@ from .utils import (
     ArenaCmdInterpreter,
     ArenaTelemetry,
     ProgramRunInfo,
+    PublishThrottle,
     QueueStats,
     Utils,
 )
@@ -156,6 +157,9 @@ class Scene(ArenaMQTT):
             # Delta compression: shadow map of last-published data dicts (JSON primitives)
             self.delta_compression = delta_compression
             self._last_published_state = {}  # object_id -> data dict
+
+            # Publish throttle: per-object-id rate limiting and duplicate suppression
+            self.publish_throttle = PublishThrottle()
 
             # setup program run info to collect stats
             self.run_info = ProgramRunInfo(
@@ -691,6 +695,14 @@ class Scene(ArenaMQTT):
             # deletions for omitted keys.
             if self.delta_compression and not custom_payload:
                 payload = self._apply_delta(payload, action)
+
+            # Rate limiting and duplicate suppression per object_id
+            object_id = obj.get("object_id") if isinstance(obj, dict) else getattr(obj, "object_id", None)
+            allowed, warning = self.publish_throttle.check(object_id, payload)
+            if not allowed:
+                print(warning)
+                self.telemetry.add_event(warning)
+                return None
 
             self.transport.publish(topic, payload, qos=0)
             if self.debug:

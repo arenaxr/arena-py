@@ -4,6 +4,33 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [1.6.0](https://github.com/arenaxr/arena-py/compare/v1.5.0...v1.6.0) (2026-07-08)
+
+
+### Features
+
+* diff update msgs for deltas only ([d460a08](https://github.com/arenaxr/arena-py/commit/d460a082a86cfe162acec3661f698929bc90300d))
+* diff update msgs for deltas only ([23bd8ca](https://github.com/arenaxr/arena-py/commit/23bd8ca4b98daf5c9c09157846e5ede57a85c285))
+
+
+### Bug Fixes
+
+* **auth:** fix cookie overwrite, inverted error check, and scope consistency ([5b31999](https://github.com/arenaxr/arena-py/commit/5b31999fdeb45f75da832e1e2171deff18cb596a))
+* pre-probe MQTT port for clear error on blocked networks ([#107](https://github.com/arenaxr/arena-py/issues/107)) ([109571b](https://github.com/arenaxr/arena-py/commit/109571baa103b56de15565cc4310e96236f5545e))
+* preserve object_type in delta-compressed updates ([bc7d169](https://github.com/arenaxr/arena-py/commit/bc7d169c32846fb10374d4f45815c166a74702fc))
+* restore error/event output in ArenaTelemetry stub ([886998c](https://github.com/arenaxr/arena-py/commit/886998c50fbe9fd986dc994f921d9b1cafd46c6a))
+* silence noisy span tracing and print warnings directly ([b3d61f6](https://github.com/arenaxr/arena-py/commit/b3d61f659e48f0950bf88e30fc588b17a34fc44c))
+* update_attributes deleted-before-read for persist/ttl/private ([27888c4](https://github.com/arenaxr/arena-py/commit/27888c46d35370381a4844081aae3cb1a6d745c6))
+
+
+### Documentation
+
+* add AGENTS.md as documentation index for agents and humans ([d0bc6dc](https://github.com/arenaxr/arena-py/commit/d0bc6dcc684f8fcbf19fe9255144ea440a681469))
+* added requirements.md for maintainers ([e95bb24](https://github.com/arenaxr/arena-py/commit/e95bb24070b6473b741a3f800ea22a50e7e3d9de))
+* include code style/messaging guides ([39ace2d](https://github.com/arenaxr/arena-py/commit/39ace2dc9e93ede2f014db50acfff8d13f7ca6a5))
+* keep full path links for pypi ([c87b39d](https://github.com/arenaxr/arena-py/commit/c87b39d4cb4f48d168c7e16458ec15f62a6f4667))
+* modernize contributing for agents ([b15223a](https://github.com/arenaxr/arena-py/commit/b15223aa0b6deae3ed9cecbe1b51029a91f9b66a))
+
 ## [1.5.0](https://github.com/arenaxr/arena-py/compare/v1.4.1...v1.5.0) (2026-02-25)
 
 

@@ -30,3 +30,8 @@ To develop `arena-py` locally:
 - Maintain strict type-hinting conventions across schema definitions.
 
 The `arena-py` uses [Release Please](https://github.com/googleapis/release-please) to automate CHANGELOG generation and semantic versioning. Your PR titles *must* follow Conventional Commit standards (e.g., `feat:`, `fix:`, `chore:`).
+
+
+## CI & Dependency Management Conventions
+- **GitHub Actions Pinning**: All GitHub Action references in `.github/workflows/` must be pinned to full 40-character commit SHAs with a version comment (e.g., `uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0`).
+- **Dependabot Configuration**: Dependabot version updates are enabled via `.github/dependabot.yml` for `github-actions` and native package ecosystems.

@@ -15,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.7.0
     - name: Set up Python
-      uses: actions/setup-python@0ae58361cdfd39e2950bed97a1e26aa20c3d8955 # v4.8.0
+      uses: actions/setup-python@b64ffcaf5b410884ad320a9cfac8866006a109aa # v4.8.0
       with:
         python-version: "3.x"
     - name: Install pypa/build

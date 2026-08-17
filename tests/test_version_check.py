@@ -1,5 +1,7 @@
 import io
+import os
 import sys
+import tempfile
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -8,10 +10,33 @@ sys.modules["paho.mqtt"] = MagicMock()
 sys.modules["paho.mqtt.client"] = MagicMock()
 sys.modules["deprecated"] = MagicMock()
 
+from arena.utils.settings import Settings
 from arena.utils.version import version_check
 
 
 class TestVersionCheck(unittest.TestCase):
+    def setUp(self):
+        """Point the version-check cache at a throwaway directory.
+
+        version_check() both reads and writes a persistent cache under
+        ~/.arena, so without isolation these tests would depend on (and
+        pollute) the developer's real home directory, and the cache written
+        by one test would short-circuit the mocked urlopen in the next.
+        Each test gets a fresh, empty cache directory instead.
+        """
+        tmp_home = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp_home.cleanup)
+
+        # Settings._arena_user_dir is resolved from Path.home() at import time,
+        # so patching HOME alone is not enough - override the attribute too.
+        self.enterContext(patch.dict(
+            os.environ,
+            {"HOME": tmp_home.name, "USERPROFILE": tmp_home.name},
+        ))
+        self.enterContext(patch.object(
+            Settings, "_arena_user_dir", os.path.join(tmp_home.name, ".arena")
+        ))
+
     @patch('arena.utils.version.request.urlopen')
     @patch('arena.utils.version.metadata.version')
     def test_update_available(self, mock_version, mock_urlopen):

@@ -250,8 +250,14 @@ class TestDeltaIntegration(unittest.TestCase):
         result = scene._apply_delta(json.dumps(update_msg), "update")
         result_msg = json.loads(result)
 
-        # data should have full position (shallow diff sends complete changed dicts)
-        self.assertEqual(result_msg["data"], {"position": {"x": 2.852, "y": 1.6, "z": 8.88}})
+        # data should have full position (shallow diff sends complete changed dicts).
+        # object_type is always re-attached to the delta, because the browser's
+        # setObjectAttributes dispatches on data.object_type to decide whether an
+        # attribute is component-level or entity-level.
+        self.assertEqual(
+            result_msg["data"],
+            {"position": {"x": 2.852, "y": 1.6, "z": 8.88}, "object_type": "camera"},
+        )
         # top-level fields preserved
         self.assertEqual(result_msg["object_id"], "cam1")
         self.assertEqual(result_msg["action"], "update")
@@ -298,7 +304,8 @@ class TestDeltaIntegration(unittest.TestCase):
         self.assertEqual(scene._apply_delta(payload, "update"), payload)
 
     def test_empty_delta_heartbeat(self):
-        """Identical consecutive updates should produce empty data {} (heartbeat)."""
+        """Identical consecutive updates should produce a data payload holding
+        nothing but the always-preserved object_type (heartbeat)."""
         scene = self._make_scene()
 
         msg = {"object_id": "hb1", "action": "create", "data": {"object_type": "box"}}
@@ -307,7 +314,9 @@ class TestDeltaIntegration(unittest.TestCase):
         # Same data again as update
         update = {"object_id": "hb1", "action": "update", "data": {"object_type": "box"}}
         result = json.loads(scene._apply_delta(json.dumps(update), "update"))
-        self.assertEqual(result["data"], {})
+        # No changed fields, so the delta itself is empty; object_type is re-attached
+        # so the browser can still dispatch attribute handling correctly.
+        self.assertEqual(result["data"], {"object_type": "box"})
 
 
 if __name__ == "__main__":

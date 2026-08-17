@@ -175,6 +175,11 @@ class ArenaMQTT(object):
                 PUBLISH_TOPICS.DEVICE.substitute(self.topicParams)
             )
 
+        # A caller-supplied transport (for example the MockMQTTTransport used by
+        # arena.test_system) implements its own connection semantics and may not
+        # speak TCP at all, so the raw socket reachability pre-probe below is
+        # only meaningful for the default network transport.
+        self.probe_broker_reachable = transport is None
         if transport:
             self.transport = transport
         else:
@@ -226,20 +231,21 @@ class ArenaMQTT(object):
             self.transport.tls_set_context(ssl._create_unverified_context())
             self.transport.tls_insecure_set(True)
         # pre-probe MQTT port to fail fast with a clear error on blocked networks
-        probe_timeout = 5  # seconds
-        try:
-            probe = socket.create_connection((self.mqtt_host, port), timeout=probe_timeout)
-            probe.close()
-        except (socket.timeout, OSError) as err:
-            print(f"\n{'='*60}")
-            print(f"ERROR: Cannot reach MQTT broker at {self.mqtt_host}:{port}")
-            print(f"  Connection failed: {err}")
-            print(f"")
-            print(f"  This commonly happens when your network blocks port {port}")
-            print(f"  (e.g. campus VPN, eduroam, corporate firewall).")
-            print(f"  Try connecting from a different network.")
-            print(f"{'='*60}\n")
-            sys.exit(1)
+        if self.probe_broker_reachable:
+            probe_timeout = 5  # seconds
+            try:
+                probe = socket.create_connection((self.mqtt_host, port), timeout=probe_timeout)
+                probe.close()
+            except (socket.timeout, OSError) as err:
+                print(f"\n{'='*60}")
+                print(f"ERROR: Cannot reach MQTT broker at {self.mqtt_host}:{port}")
+                print(f"  Connection failed: {err}")
+                print(f"")
+                print(f"  This commonly happens when your network blocks port {port}")
+                print(f"  (e.g. campus VPN, eduroam, corporate firewall).")
+                print(f"  Try connecting from a different network.")
+                print(f"{'='*60}\n")
+                sys.exit(1)
 
         try:
             self.transport.connect(self.mqtt_host, port=port, keepalive=60)

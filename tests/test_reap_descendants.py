@@ -7,6 +7,8 @@ Object.all_objects is global class state, so every test clears it before and
 after itself to avoid leaking objects into the rest of the suite.
 """
 
+import contextlib
+import io
 import unittest
 from unittest.mock import patch
 
@@ -40,6 +42,18 @@ class ReapTestCase(unittest.TestCase):
         if parent is None:
             return Object(object_id=object_id)
         return Object(object_id=object_id, parent=parent)
+
+    @staticmethod
+    def reap_capturing_output(object_id):
+        """Reaps object_id, returning (reaped_ids, anything printed).
+
+        The library reports warnings with print("[WARNING]", ...), so the bound
+        warnings are asserted on stdout rather than through the logging module.
+        """
+        captured = io.StringIO()
+        with contextlib.redirect_stdout(captured):
+            reaped = Object.remove_descendants(object_id)
+        return reaped, captured.getvalue()
 
 
 class TestRemoveDescendants(ReapTestCase):
@@ -112,15 +126,15 @@ class TestRemoveDescendants(ReapTestCase):
 
         Object.remove(Object.get("root"))
         with patch.object(Object, "MAX_REAP_DESCENDANTS", 3):
-            with self.assertLogs(level="WARNING") as logs:
-                reaped = Object.remove_descendants("root")
+            reaped, output = self.reap_capturing_output("root")
 
         self.assertEqual(len(reaped), 3)
         # The walk stopped: the remaining children are still in the store.
         self.assertEqual(len(Object.all_objects), 3)
-        message = "\n".join(logs.output)
-        self.assertIn("root", message)
-        self.assertIn("MAX_REAP_DESCENDANTS", message)
+        self.assertIn("[WARNING]", output)
+        self.assertIn("root", output)                    # names the deleted object
+        self.assertIn("3 objects", output)               # names how many were reaped
+        self.assertIn("MAX_REAP_DESCENDANTS (3)", output)  # names the bound that was hit
 
     def test_depth_bound_stops_walk_and_warns(self):
         """MAX_REAP_DEPTH caps how deep below the deleted object reaping follows."""
@@ -132,14 +146,14 @@ class TestRemoveDescendants(ReapTestCase):
 
         Object.remove(Object.get("root"))
         with patch.object(Object, "MAX_REAP_DEPTH", 2):
-            with self.assertLogs(level="WARNING") as logs:
-                reaped = Object.remove_descendants("root")
+            reaped, output = self.reap_capturing_output("root")
 
         self.assertEqual(sorted(reaped), ["level0", "level1"])
         self.assertEqual(sorted(Object.all_objects), ["level2", "level3", "level4"])
-        message = "\n".join(logs.output)
-        self.assertIn("root", message)
-        self.assertIn("MAX_REAP_DEPTH", message)
+        self.assertIn("[WARNING]", output)
+        self.assertIn("root", output)              # names the deleted object
+        self.assertIn("2 objects", output)         # names how many were reaped
+        self.assertIn("MAX_REAP_DEPTH (2)", output)  # names the bound that was hit
 
     def test_no_warning_when_walk_completes_within_bounds(self):
         """Bounds that are not reached stay silent."""
@@ -148,8 +162,10 @@ class TestRemoveDescendants(ReapTestCase):
 
         Object.remove(Object.get("root"))
         with patch.object(Object, "MAX_REAP_DEPTH", 2), patch.object(Object, "MAX_REAP_DESCENDANTS", 2):
-            with self.assertNoLogs(level="WARNING"):
-                self.assertEqual(Object.remove_descendants("root"), ["child"])
+            reaped, output = self.reap_capturing_output("root")
+
+        self.assertEqual(reaped, ["child"])
+        self.assertEqual(output, "")
 
     def test_delayed_prop_tasks_cancelled_for_descendants(self):
         """Reaping goes through Object.remove, so pending tasks are cancelled."""

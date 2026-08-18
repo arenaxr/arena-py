@@ -1,4 +1,3 @@
-import logging
 import uuid
 
 from ..base_object import *
@@ -19,7 +18,7 @@ class Object(BaseObject):
     # Bounds for cascaded orphan reaping, see remove_descendants(). The scene graph
     # is only defined by free-form "parent" strings, so a malformed scene can nest
     # arbitrarily deep or wide; these caps keep a single delete from stalling the
-    # message loop, and reaping stops with a warning when either one is reached.
+    # message loop, and reaping stops with a printed warning when either is reached.
     MAX_REAP_DESCENDANTS = 10000 # most descendants dropped for one deleted object
     MAX_REAP_DEPTH = 64 # deepest level of nesting followed below the deleted object
 
@@ -293,11 +292,9 @@ class Object(BaseObject):
             depth += 1
 
         if bound_hit:
-            logging.warning(
-                "Stopped reaping descendants of '%s' after %d objects: hit %s. "
-                "Orphaned descendants may remain in the local scene state.",
-                object_id, len(removed), bound_hit,
-            )
+            print("[WARNING]", f"Stopped reaping descendants of {object_id} after "
+                  f"{len(removed)} objects: hit {bound_hit}. Orphaned descendants "
+                  f"may remain in the local scene state.")
         return removed
 
     @classmethod

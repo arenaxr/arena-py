@@ -341,6 +341,11 @@ class Scene(ArenaMQTT):
                             elif self.delete_obj_callback:
                                 self.callback_wrapper(self.delete_obj_callback, obj, payload)
                             Object.remove(obj)
+                            # The server only announces the deleted object itself;
+                            # its descendants are now orphans, so drop them locally.
+                            # No delete_obj_callback is fired for them, since the
+                            # server never sent a delete for those object_ids.
+                            Object.remove_descendants(object_id)
                             span.add_event("Object delete.")
 
                             continue
@@ -555,6 +560,9 @@ class Scene(ArenaMQTT):
         """Public function to delete an object."""
         payload = {"object_id": obj.object_id}
         Object.remove(obj)
+        # Deleting a parent orphans its descendants; drop them locally too so this
+        # scene's state matches what the renderer shows after the delete.
+        Object.remove_descendants(obj.object_id)
         return self._publish(payload, "delete", custom_payload=True)
 
     def delete_user_objects(self, userid):

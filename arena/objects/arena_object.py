@@ -1,3 +1,4 @@
+import logging
 import uuid
 
 from ..base_object import *
@@ -14,6 +15,13 @@ class Object(BaseObject):
     object_type = "entity"
     all_objects = {} # dict of all objects created so far
     private_objects = {} # dict of all private objects created so far
+
+    # Bounds for cascaded orphan reaping, see remove_descendants(). The scene graph
+    # is only defined by free-form "parent" strings, so a malformed scene can nest
+    # arbitrarily deep or wide; these caps keep a single delete from stalling the
+    # message loop, and reaping stops with a warning when either one is reached.
+    MAX_REAP_DESCENDANTS = 10000 # most descendants dropped for one deleted object
+    MAX_REAP_DEPTH = 64 # deepest level of nesting followed below the deleted object
 
     def __init__(self, evt_handler=None, update_handler=None, **kwargs):
         # "object_id" is required in kwargs, defaulted to random uuid4
@@ -237,6 +245,60 @@ class Object(BaseObject):
         if (hasattr(obj, "delayed_prop_tasks")):
             for task in obj.delayed_prop_tasks.values():  # Cancel all pending tasks
                 task.cancel()
+
+    @classmethod
+    def remove_descendants(cls, object_id):
+        """Removes every descendant of object_id from the local object store.
+
+        The ARENA server publishes a single delete for the object that was actually
+        deleted, so each client is responsible for dropping the objects that delete
+        orphaned. Returns the list of removed descendant object_ids.
+        """
+        # Index parent -> children in a single pass over the store, so the walk
+        # below never has to re-scan all_objects.
+        children_of = {}
+        for child in list(cls.all_objects.values()):
+            parent = getattr(getattr(child, "data", None), "parent", None)
+            if parent:
+                children_of.setdefault(parent, []).append(child.object_id)
+
+        removed = []
+        # Visited ids terminate cycles and repeated parents in malformed chains.
+        # The deleted object counts as visited so a cycle back to it cannot loop.
+        visited = {object_id}
+        frontier = list(children_of.get(object_id, []))
+        depth = 1
+        bound_hit = None
+
+        while frontier:
+            if depth > cls.MAX_REAP_DEPTH:
+                bound_hit = f"MAX_REAP_DEPTH ({cls.MAX_REAP_DEPTH})"
+                break
+            next_frontier = []
+            for child_id in frontier:
+                if child_id in visited:
+                    continue
+                visited.add(child_id)
+                if len(removed) >= cls.MAX_REAP_DESCENDANTS:
+                    bound_hit = f"MAX_REAP_DESCENDANTS ({cls.MAX_REAP_DESCENDANTS})"
+                    break
+                child = cls.all_objects.get(child_id)
+                if child is not None: # already gone, e.g. a delete raced this one
+                    cls.remove(child)
+                    removed.append(child_id)
+                next_frontier.extend(children_of.get(child_id, []))
+            if bound_hit:
+                break
+            frontier = next_frontier
+            depth += 1
+
+        if bound_hit:
+            logging.warning(
+                "Stopped reaping descendants of '%s' after %d objects: hit %s. "
+                "Orphaned descendants may remain in the local scene state.",
+                object_id, len(removed), bound_hit,
+            )
+        return removed
 
     @classmethod
     def exists(cls, object_id):

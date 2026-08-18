@@ -262,8 +262,18 @@ class Object(BaseObject):
         """
         # Index parent -> children in a single pass over the store, so the walk
         # below never has to re-scan all_objects.
+        #
+        # Only scene objects are indexed. all_objects also holds records that are
+        # not part of the scene graph, such as Program, whose data.parent names
+        # the runtime the program should be deployed to. Indexing those would let
+        # a scene object whose id happens to match a runtime name reap the
+        # program along with its real children. Every renderable type subclasses
+        # Object, so an isinstance check keeps new scene objects covered while
+        # leaving non-scene records out.
         children_of = {}
         for child in list(cls.all_objects.values()):
+            if not isinstance(child, Object):
+                continue
             parent = getattr(getattr(child, "data", None), "parent", None)
             if parent:
                 children_of.setdefault(parent, []).append(child.object_id)

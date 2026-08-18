@@ -14,7 +14,7 @@ import io
 import unittest
 from unittest.mock import patch
 
-from arena.objects import Object
+from arena.objects import Object, Program
 from arena.test_system import ArenaE2ETest
 
 
@@ -211,6 +211,46 @@ class TestRemoveDescendants(ReapTestCase):
 
         self.assertEqual(reaped, ["child"])
         self.assertEqual(Object.all_objects, {})
+
+
+class TestNonSceneRecordsSurviveReaping(ReapTestCase):
+    """Object.all_objects also holds records that are not in the scene graph."""
+
+    @staticmethod
+    def make_program(object_id, parent):
+        """A Program whose data.parent is a target runtime, not a scene parent."""
+        return Program(
+            object_id=object_id,
+            name="test_module",
+            filename="test_module.py",
+            filetype="PY",
+            parent=parent,
+        )
+
+    def test_program_naming_deleted_id_as_its_runtime_is_not_reaped(self):
+        """A runtime name colliding with a deleted object's id must not reap the program."""
+        self.make("root")
+        self.make("scene_child", parent="root")
+        program = self.make_program("prog", parent="root")
+
+        Object.remove(Object.get("root"))
+        reaped = Object.remove_descendants("root")
+
+        self.assertEqual(reaped, ["scene_child"])          # the real child is reaped
+        self.assertEqual(sorted(Object.all_objects), ["prog"])  # the program is not
+        self.assertIs(Object.get("prog"), program)
+
+    def test_reaping_does_not_walk_through_a_program(self):
+        """A program is not a scene-graph link, so nothing is reaped beyond it."""
+        self.make("root")
+        self.make_program("prog", parent="root")
+        self.make("under_prog", parent="prog")  # e.g. a scene object sharing that name
+
+        Object.remove(Object.get("root"))
+        reaped = Object.remove_descendants("root")
+
+        self.assertEqual(reaped, [])
+        self.assertEqual(sorted(Object.all_objects), ["prog", "under_prog"])
 
 
 class TestPrivateObjectCleanup(ReapTestCase):
@@ -429,6 +469,33 @@ class TestSceneInboundDeleteReaps(SceneReapTestCase):
         self.assertNotIn("reap_child", harness.scene.all_objects)
         self.assertNotIn("reap_grandchild", harness.scene.all_objects)
         self.assertIn("reap_bystander", harness.scene.all_objects)
+
+
+class TestDeleteCallbackPolicy(SceneReapTestCase):
+    """delete_obj_callback fires only for the object the server announced.
+
+    Reaped descendants are inferred locally; the server never published a delete
+    for them, so firing the callback for each would invent events the scene never
+    received. This test pins that contract down.
+    """
+
+    async def test_callback_fires_once_for_announced_root_and_never_for_reaped(self):
+        harness = self.make_harness()
+        self.make_tree(harness.scene)
+        deleted = []
+
+        def delete_obj_callback(scene, obj, msg):
+            deleted.append(obj.object_id)
+
+        harness.scene.delete_obj_callback = delete_obj_callback
+
+        await self.inject_delete(harness, "reap_parent")
+
+        # The descendants really were reaped, so the callback count below is not
+        # trivially satisfied by a delete that cascaded to nothing.
+        self.assertNotIn("reap_child", harness.scene.all_objects)
+        self.assertNotIn("reap_grandchild", harness.scene.all_objects)
+        self.assertEqual(deleted, ["reap_parent"])
 
 
 class TestForgetPublishedState(SceneReapTestCase):

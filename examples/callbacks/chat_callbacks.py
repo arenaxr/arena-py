@@ -15,7 +15,11 @@ COMMAND = "!echo "
 
 def chat_handler(scene, chatmsg, _rawmsg):
     text = chatmsg.text.strip()
-    print(f"Chat message from {chatmsg.dn} ({chatmsg.object_id}): {text}")
+    # Only fields the sender actually sent are set, so test before reading one:
+    # the web client's `chat-ctrl` control messages arrive on this same topic
+    # branch carrying no display name.
+    sender = chatmsg.dn if "dn" in chatmsg else chatmsg.object_id
+    print(f"Chat message from {sender} ({chatmsg.object_id}): {text}")
     # Reply only to an explicit command, never to every message received. Two
     # programs that each answer every chat would keep answering each other.
     if text.startswith(COMMAND):

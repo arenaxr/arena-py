@@ -21,6 +21,14 @@ class Event(BaseObject):
         _type = kwargs.get("type", "mousedown")
         if "type" in kwargs: del kwargs["type"]
 
+        # consume "object" so it lands on the Event itself. Left in kwargs it
+        # would fall through into DataEvent (which has no Object-rejection
+        # guard) and ride onto the wire nested under "data", or be dropped
+        # outright when the caller also passed a "data" dict. Either way the
+        # caller's object never reaches the attribute they asked for.
+        _object = kwargs.get("object", None)
+        if "object" in kwargs: del kwargs["object"]
+
         kwargs = kwargs.get("data", kwargs)
         data = DataEvent(**kwargs)
         super().__init__(
@@ -31,7 +39,7 @@ class Event(BaseObject):
                 # the scene Object this event targets, when it is known locally.
                 # Scene fills it in for inbound events whose target it can resolve;
                 # events a program builds itself have no target object to resolve.
-                object=None
+                object=_object
             )
 
     def json_preprocess(self, **kwargs):
@@ -40,10 +48,12 @@ class Event(BaseObject):
         # It must never reach the wire: it would leak the same private state that
         # Object.json_preprocess strips, and a hand or camera target carries a
         # reference cycle (obj.camera <-> user.hands) that json.dumps cannot encode.
+        # The filter runs last, after the merge, so a caller passing
+        # object= into json() cannot reintroduce the key either.
         skipped_keys = ["object"]
-        json_payload = {k: v for k, v in vars(self).items() if k not in skipped_keys}
+        json_payload = dict(vars(self))
         json_payload.update(kwargs)
-        return json_payload
+        return {k: v for k, v in json_payload.items() if k not in skipped_keys}
 
     # TODO (mwfarb): We should standardize this json() transform into BaseObject from Object/Event/Program
     def json(self, **kwargs):

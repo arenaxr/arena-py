@@ -63,11 +63,16 @@ class EventObjectRefTestCase(unittest.TestCase):
 
     @staticmethod
     def make_event(target):
+        """Builds a clientEvent the way Scene.generate_click_event does.
+
+        targetPosition, not position: DataEvent.position is a deprecated
+        property whose getter returns None, so it would not read back.
+        """
         return Event(
             object_id="test_client",
             type="mousedown",
             target=target,
-            position=Position(0, 0, 0),
+            targetPosition=Position(0, 0, 0),
         )
 
     def test_event_object_defaults_to_none(self):
@@ -79,6 +84,19 @@ class EventObjectRefTestCase(unittest.TestCase):
         """
         event = self.make_event("some_box")
         self.assertIsNone(event.object)
+
+    def test_object_is_an_instance_attribute(self):
+        """object lives on the instance, not on the class.
+
+        A class-level default would read the same through evt.object but would
+        make "object" in evt and vars(evt) disagree with every other Event
+        field, and Event.json() builds its payload out of vars(self).
+        """
+        event = self.make_event("some_box")
+
+        self.assertIn("object", vars(event))
+        self.assertIn("object", event)
+        self.assertNotIn("object", vars(type(event)))
 
     def test_json_omits_object_reference(self):
         """The wire payload carries the target id, never the object itself."""
@@ -150,16 +168,117 @@ class EventObjectRefTestCase(unittest.TestCase):
 
         self.assertNotIn("object", payload)
 
-    def test_json_kwargs_cannot_reintroduce_object(self):
-        """json(**kwargs) merges after the filter, so the filter must come first."""
-        box = Box(object_id="ref_box", position=(1, 2, 3))
-        event = self.make_event("ref_box")
-        event.object = box
+    def test_json_other_kwargs_still_merge(self):
+        """Filtering object out must not disturb the kwargs callers do pass.
 
-        payload = json.loads(event.json(action="clientEvent"))
+        Scene._publish calls json(action=..., timestamp=...), so those have to
+        survive the filter.
+        """
+        event = self.make_event("ref_box")
+
+        payload = json.loads(event.json(action="clientEvent", timestamp="t"))
+
+        self.assertEqual(payload["action"], "clientEvent")
+        self.assertEqual(payload["timestamp"], "t")
+
+    def test_json_object_kwarg_cannot_reintroduce_object(self):
+        """A caller passing object= into json() cannot put it on the wire.
+
+        json() merges **kwargs into the payload, so the filter has to run after
+        that merge, not before it. Filtered first, this kwarg walks straight
+        back in and leaks the private state below.
+        """
+        box = Box(object_id="ref_box", position=(1, 2, 3))
+        box.evt_handler = lambda scene, evt, msg: None
+        event = self.make_event("ref_box")
+
+        wire = event.json(object=box)
+
+        self.assertNotIn("object", json.loads(wire))
+        for private_key in (
+            "evt_handler",
+            "update_handler",
+            "animations",
+            "delayed_prop_tasks",
+        ):
+            self.assertNotIn(private_key, wire)
+
+    def test_json_object_kwarg_with_hand_does_not_raise(self):
+        """Same kwarg, with the cycle: reintroducing a hand would raise.
+
+        Filtered before the merge this is not bloat but a hard
+        ValueError: Circular reference detected out of json.dumps.
+        """
+        hand = make_linked_hand(make_camera())
+        event = self.make_event(hand.object_id)
+
+        payload = json.loads(event.json(object=hand))  # must not raise
 
         self.assertNotIn("object", payload)
-        self.assertEqual(payload["action"], "clientEvent")
+
+    def test_constructor_object_kwarg_sets_the_attribute(self):
+        """Event(object=obj) has to reach the attribute it names.
+
+        Unconsumed, "object" falls through into DataEvent, which has no
+        Object-rejection guard, so it lands in data instead of on the Event.
+        """
+        box = Box(object_id="ref_box", position=(1, 2, 3))
+
+        event = Event(
+            object_id="test_client",
+            type="mousedown",
+            target="ref_box",
+            object=box,
+        )
+
+        self.assertIs(event.object, box)
+        self.assertNotIn("object", vars(event.data))
+
+    def test_constructor_object_kwarg_stays_off_the_wire(self):
+        """...and having reached the attribute, it is filtered like any other.
+
+        Left in data it would ride out nested under "data", carrying the same
+        private state the top-level filter exists to strip.
+        """
+        box = Box(object_id="ref_box", position=(1, 2, 3))
+        box.evt_handler = lambda scene, evt, msg: None
+
+        wire = Event(
+            object_id="test_client",
+            type="mousedown",
+            target="ref_box",
+            object=box,
+        ).json()
+
+        payload = json.loads(wire)
+        self.assertNotIn("object", payload)
+        self.assertNotIn("object", payload["data"])
+        for private_key in (
+            "evt_handler",
+            "update_handler",
+            "animations",
+            "delayed_prop_tasks",
+        ):
+            self.assertNotIn(private_key, wire)
+
+    def test_constructor_object_kwarg_with_data_dict_sets_the_attribute(self):
+        """The data-dict shape must not discard the object silently.
+
+        Event.__init__ replaces kwargs with kwargs["data"] when a data dict is
+        given, so an unconsumed "object" is dropped outright, with no error.
+        """
+        box = Box(object_id="ref_box", position=(1, 2, 3))
+
+        event = Event(
+            object_id="test_client",
+            type="mousedown",
+            data={"target": "ref_box"},
+            object=box,
+        )
+
+        self.assertIs(event.object, box)
+        self.assertEqual(event.data.target, "ref_box")
+        self.assertNotIn("object", json.loads(event.json()))
 
 
 class SceneEvtHandlerObjectRefTestCase(unittest.IsolatedAsyncioTestCase):
@@ -204,7 +323,9 @@ class SceneEvtHandlerObjectRefTestCase(unittest.IsolatedAsyncioTestCase):
                 "type": "mousedown",
                 "data": {
                     "target": target,
-                    "position": {"x": 0, "y": 0, "z": 0},
+                    # targetPosition, not the deprecated position: this is the
+                    # spelling that reads back off the DataEvent
+                    "targetPosition": {"x": 0, "y": 0, "z": 0},
                 },
             },
         )
@@ -249,6 +370,8 @@ class SceneEvtHandlerObjectRefTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(received[0].data.target, "click_box")
         self.assertEqual(received[0].object_id, "test_client")
         self.assertEqual(received[0].type, "mousedown")
+        # reads back, unlike the deprecated data.position whose getter is None
+        self.assertEqual(vars(received[0].data.targetPosition)["x"], 0)
 
     async def test_handler_may_republish_its_event(self):
         """A handler that re-emits the event it was handed must not break.
@@ -295,6 +418,33 @@ class SceneEvtHandlerObjectRefTestCase(unittest.IsolatedAsyncioTestCase):
         ]
         self.assertEqual(len(echoed), 1)
         self.assertNotIn("object", echoed[0])
+
+    async def test_generate_click_event_object_kwarg_stays_off_the_wire(self):
+        """The public path that forwards **kwargs into Event.__init__.
+
+        generate_click_event passes its **kwargs straight through, so object=
+        is the natural thing to write once event.object is documented. It has
+        to reach the attribute, and stay off the wire.
+        """
+        harness = await self.make_harness()
+        box = Box(object_id="click_box", position=(1, 2, 3), clickable=True)
+        box.evt_handler = lambda scene, evt, msg: None
+        harness.scene.add_object(box)
+        before = len(harness.capture_published_messages())
+
+        harness.scene.generate_click_event(box, object=box)
+        await harness.run_step(0.2)
+
+        published = harness.capture_published_messages()[before:]
+        echoed = [
+            json.loads(m["payload"])
+            for m in published
+            if json.loads(m["payload"]).get("action") == "clientEvent"
+        ]
+        self.assertEqual(len(echoed), 1)
+        self.assertNotIn("object", echoed[0])
+        self.assertNotIn("object", echoed[0]["data"])
+        self.assertNotIn("evt_handler", json.dumps(echoed[0]))
 
     async def test_unknown_target_leaves_object_none(self):
         """An event for an object this client does not know keeps object None.

@@ -1,17 +1,25 @@
-"""Deprecated key access: dict-style access must honor the @deprecated properties
-that attribute-style access already honors, and the backward-compatible attribute
-key aliases must announce themselves.
+"""Deprecated key access: dict-style access reports the same deprecations that
+attribute-style access already reports, without changing what any lookup that
+works today returns, and deprecation warnings are attributed to the caller.
 """
+import functools
 import os
+import sysconfig
+import threading
 import unittest
+from unittest import mock
 import warnings
 
-from arena.attributes.data import DEPRECATED_ATTRIBUTE_ALIASES, Data
+from arena.attributes.color import Color
 from arena.attributes.data_event import DataEvent
-from arena.attributes.dynamic_body import Physics
+from arena.attributes.dynamic_body import DynamicBody, Physics
 from arena.attributes.rotation import Rotation
 from arena.base_object import BaseObject
+from arena.objects.arena_object import Object
+from arena.objects.light import Light
+from arena.objects.text import Text
 from arena.utils import deprecated
+from arena.utils import utils as arena_utils
 
 SENTINEL = "value-from-property"
 THIS_FILE = os.path.basename(__file__)
@@ -20,133 +28,350 @@ THIS_FILE = os.path.basename(__file__)
 class DeprecatedKeyHolder(BaseObject):
     """Stand-in for any class declaring a deprecated key as a property."""
 
+    writes = []
+
     @property
     @deprecated("DEPRECATED: old_key is deprecated, use new_key instead.")
     def old_key(self):
         return SENTINEL
 
+    @old_key.setter
+    @deprecated("DEPRECATED: old_key is deprecated, use new_key instead.")
+    def old_key(self, value):
+        # Mirrors the deprecated setters in the library: records nothing, stores
+        # nothing. The list only lets the tests prove the setter was reached.
+        DeprecatedKeyHolder.writes.append(value)
 
-class TestDictStyleDeprecationWarnings(unittest.TestCase):
+    @property
+    def plain_key(self):
+        """A property that is not deprecated, and so is not a dict-style key."""
+        return "not-a-key"
+
+    @property
+    @deprecated("DEPRECATED: broken_key is deprecated, use new_key instead.")
+    def broken_key(self):
+        raise AttributeError("'DeprecatedKeyHolder' object has no attribute 'missing'")
+
+
+def record(call):
+    """Runs call and returns (result, [messages], [(basename, lineno)])."""
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        result = call()
+    return (
+        result,
+        [str(w.message) for w in caught],
+        [(os.path.basename(w.filename), w.lineno) for w in caught],
+    )
+
+
+def compiled_accessor(filename):
+    """A one-line `event["source"]` reader that claims to live in `filename`.
+
+    The file need not exist: only the frame's co_filename decides whether the frame
+    walk in warn_deprecated treats it as the calling program's code.
+    """
+    namespace = {}
+    exec(compile('def access(event):\n    return event["source"]\n', filename, "exec"), namespace)
+    return namespace["access"]
+
+
+class TestDeprecatedPropertiesAreMarked(unittest.TestCase):
+    """Dict-style access finds the deprecated properties through the marker the
+    @deprecated decorator leaves on the getter, so the marker has to survive the
+    property() wrapping at every site that declares one."""
+
+    def test_library_deprecated_properties_carry_the_marker(self):
+        for owner, name in (
+            (DataEvent, "source"),
+            (DataEvent, "clickPos"),
+            (DataEvent, "position"),
+            (Text, "text"),
+            (Light, "light"),
+        ):
+            with self.subTest(prop=f"{owner.__name__}.{name}"):
+                prop = getattr(owner, name)
+                self.assertIsInstance(prop, property)
+                self.assertIsNotNone(getattr(prop.fget, "__arena_deprecated__", None))
+                self.assertIsNotNone(getattr(prop.fset, "__arena_deprecated__", None))
+
+
+class TestDeprecatedKeyDeclarations(unittest.TestCase):
+    """Which names dict-style access reaches is decided per class, when the class is
+    created, so inheritance and overriding have to be accounted for."""
+
+    def test_subclass_inherits_the_deprecated_keys_of_its_base(self):
+        class Sub(DeprecatedKeyHolder):
+            pass
+
+        self.assertIn("old_key", Sub._arena_deprecated_keys)
+        holder = Sub(new_key="kept")
+        with self.assertWarns(DeprecationWarning):
+            self.assertEqual(SENTINEL, holder["old_key"])
+
+    def test_a_name_redefined_as_something_else_is_no_longer_a_key(self):
+        class Sub(DeprecatedKeyHolder):
+            old_key = "just a class attribute now"
+
+        self.assertNotIn("old_key", Sub._arena_deprecated_keys)
+        holder = Sub(new_key="kept")
+        _, messages, _ = record(
+            lambda: self.assertRaises(KeyError, lambda: holder["old_key"])
+        )
+        self.assertEqual([], messages)
+
+
+class TestDictStyleReads(unittest.TestCase):
     def test_dict_access_to_deprecated_property_warns_and_returns_value(self):
         holder = DeprecatedKeyHolder(new_key="kept")
         with self.assertWarns(DeprecationWarning):
             value = holder["old_key"]
-        self.assertEqual(value, SENTINEL)
+        self.assertEqual(SENTINEL, value)
 
     def test_attribute_and_dict_access_agree(self):
         holder = DeprecatedKeyHolder(new_key="kept")
-        with warnings.catch_warnings(record=True) as attr_warnings:
-            warnings.simplefilter("always")
-            attr_value = holder.old_key
-        with warnings.catch_warnings(record=True) as item_warnings:
-            warnings.simplefilter("always")
-            item_value = holder["old_key"]
+        attr_value, attr_messages, _ = record(lambda: holder.old_key)
+        item_value, item_messages, _ = record(lambda: holder["old_key"])
         self.assertEqual(attr_value, item_value)
-        self.assertEqual(
-            [str(w.message) for w in attr_warnings],
-            [str(w.message) for w in item_warnings],
-        )
+        self.assertEqual(attr_messages, item_messages)
 
     def test_dict_access_to_deprecated_property_of_data_event_warns(self):
         event = DataEvent(target="an-object-id")
-        with self.assertWarns(DeprecationWarning):
-            self.assertIsNone(event["source"])
-        with self.assertWarns(DeprecationWarning):
-            self.assertIsNone(event["clickPos"])
+        for key in ("source", "clickPos", "position"):
+            with self.subTest(key=key):
+                with self.assertWarns(DeprecationWarning):
+                    self.assertIsNone(event[key])
 
     def test_dict_access_to_present_key_does_not_warn(self):
         event = DataEvent(target="an-object-id")
-        with warnings.catch_warnings(record=True) as caught:
-            warnings.simplefilter("always")
-            self.assertEqual(event["target"], "an-object-id")
-        self.assertEqual([], [str(w.message) for w in caught])
+        value, messages, _ = record(lambda: event["target"])
+        self.assertEqual("an-object-id", value)
+        self.assertEqual([], messages)
+
+    def test_stored_key_wins_over_a_same_named_deprecated_property(self):
+        """The invariant the whole design rests on: a deprecated key that arrived on
+        the wire is stored on the instance, and reading it must still return what
+        arrived, silently. Consulting the property first would answer None instead."""
+        event = DataEvent(target="an-object-id", source="a-camera-id")
+        self.assertIn("source", vars(event))
+        value, messages, _ = record(lambda: event["source"])
+        self.assertEqual("a-camera-id", value)
+        self.assertEqual([], messages)
+
+        holder = DeprecatedKeyHolder(old_key="stored-on-the-instance")
+        value, messages, _ = record(lambda: holder["old_key"])
+        self.assertEqual("stored-on-the-instance", value)
+        self.assertEqual([], messages)
+
+    def test_every_wire_delivered_deprecated_key_reads_back_unchanged(self):
+        """The production shape of the case above: a clientEvent payload carrying
+        the deprecated keys, fed in the way scene.py feeds inbound messages."""
+        payload = {
+            "target": "an-object-id",
+            "source": "a-camera-id",
+            "clickPos": {"x": 1, "y": 2, "z": 3},
+            "position": {"x": 4, "y": 5, "z": 6},
+        }
+        event, messages, _ = record(lambda: DataEvent(**payload))
+        self.assertEqual([], messages)
+        for key in payload:
+            with self.subTest(key=key):
+                value, messages, _ = record(lambda k=key: event[k])
+                self.assertEqual([], messages)
+                self.assertIsNotNone(value)
 
     def test_unknown_key_still_raises_key_error(self):
-        event = DataEvent(target="an-object-id")
-        for holder in (event, DeprecatedKeyHolder(new_key="kept")):
-            with self.subTest(holder=type(holder).__name__):
-                with warnings.catch_warnings(record=True) as caught:
-                    warnings.simplefilter("always")
-                    with self.assertRaises(KeyError):
-                        holder["no_such_key"]
-                self.assertEqual([], [str(w.message) for w in caught])
+        holder = DeprecatedKeyHolder(new_key="kept")
+        for target in (DataEvent(target="an-object-id"), holder):
+            with self.subTest(target=type(target).__name__):
+                _, messages, _ = record(
+                    lambda t=target: self.assertRaises(KeyError, lambda: t["no_such_key"])
+                )
+                self.assertEqual([], messages)
 
     def test_methods_are_not_reachable_by_dict_access(self):
-        # The fallback only consults properties, so methods and other class
-        # attributes stay invisible to dict-style access.
         event = DataEvent(target="an-object-id")
         with self.assertRaises(KeyError):
             event["json"]
 
-    def test_non_deprecated_property_is_reachable_by_dict_access(self):
-        # The fallback is not limited to deprecated properties: any class-level
-        # property is now readable with either access style.
-        rotation = Rotation(0, 0, 0)
-        self.assertNotIn("is_quaternion", vars(rotation))
-        self.assertEqual(rotation["is_quaternion"], rotation.is_quaternion)
+    def test_non_deprecated_property_is_not_reachable_by_dict_access(self):
+        """The fallback is limited to deprecated properties, so every other
+        class-level property keeps raising KeyError as it did before."""
+        # Object.all_objects is global class state, so do not leak this one.
+        box = Object(object_id="deprecated-key-access-probe", object_type="box")
+        self.addCleanup(Object.all_objects.pop, box.object_id, None)
+        cases = (
+            (Rotation(0, 0, 0), "is_quaternion"),
+            (Color(0, 0, 0), "hex"),
+            (box, "clickable"),
+            (DeprecatedKeyHolder(new_key="kept"), "plain_key"),
+        )
+        for target, key in cases:
+            with self.subTest(target=type(target).__name__, key=key):
+                self.assertNotIn(key, vars(target))
+                self.assertIsInstance(getattr(type(target), key), property)
+                _, messages, _ = record(
+                    lambda t=target, k=key: self.assertRaises(KeyError, lambda: t[k])
+                )
+                self.assertEqual([], messages)
+
+    def test_non_string_key_raises_key_error(self):
+        event = DataEvent(target="an-object-id")
+        for key in (0, None, 3.5, b"source", (1, 2)):
+            with self.subTest(key=key):
+                with self.assertRaises(KeyError):
+                    event[key]
+        # list() reaches for event[0]; it must fail the same way it always did.
+        with self.assertRaises(KeyError):
+            list(event)
+
+    def test_attribute_error_from_a_deprecated_getter_becomes_key_error(self):
+        """A subscript must not raise AttributeError: dict-style access keeps the
+        mapping contract, and the original error stays in the traceback chain."""
+        holder = DeprecatedKeyHolder(new_key="kept")
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            with self.assertRaises(KeyError) as caught:
+                holder["broken_key"]
+        self.assertEqual("broken_key", caught.exception.args[0])
+        self.assertIsInstance(caught.exception.__cause__, AttributeError)
+
+
+class TestDictStyleWrites(unittest.TestCase):
+    def setUp(self):
+        DeprecatedKeyHolder.writes = []
+
+    def test_write_to_deprecated_key_goes_through_the_property(self):
+        holder = DeprecatedKeyHolder(new_key="kept")
+        _, messages, _ = record(lambda: holder.__setitem__("old_key", "written"))
+        self.assertEqual(
+            ["DEPRECATED: old_key is deprecated, use new_key instead."], messages
+        )
+        self.assertEqual(["written"], DeprecatedKeyHolder.writes)
+        self.assertNotIn("old_key", vars(holder))
+
+    def test_write_matches_the_attribute_style_write(self):
+        item_holder = DeprecatedKeyHolder(new_key="kept")
+        attr_holder = DeprecatedKeyHolder(new_key="kept")
+        _, item_messages, _ = record(lambda: item_holder.__setitem__("old_key", "written"))
+        _, attr_messages, _ = record(lambda: setattr(attr_holder, "old_key", "written"))
+        self.assertEqual(attr_messages, item_messages)
+        self.assertEqual(vars(attr_holder), vars(item_holder))
+
+    def test_deprecated_key_written_dict_style_does_not_reach_the_wire(self):
+        event = DataEvent(target="an-object-id")
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            event["source"] = "a-camera-id"
+        self.assertNotIn("source", event.json())
+        value, messages, _ = record(lambda: event["source"])
+        self.assertIsNone(value)
+        self.assertEqual(1, len(messages))
+
+    def test_write_to_a_normal_key_stores_it_without_warning(self):
+        holder = DeprecatedKeyHolder(new_key="kept")
+        _, messages, _ = record(lambda: holder.__setitem__("new_key", "replaced"))
+        self.assertEqual([], messages)
+        self.assertEqual("replaced", holder["new_key"])
+
+    def test_write_to_a_non_deprecated_property_name_is_stored_as_before(self):
+        holder = DeprecatedKeyHolder(new_key="kept")
+        _, messages, _ = record(lambda: holder.__setitem__("plain_key", "stored"))
+        self.assertEqual([], messages)
+        self.assertEqual("stored", vars(holder)["plain_key"])
 
 
 class TestWarningAttribution(unittest.TestCase):
     """Python's default warning filters only show a DeprecationWarning raised by the
     running program, so a warning attributed to arena-py itself is never seen."""
 
-    def _record(self, call):
-        with warnings.catch_warnings(record=True) as caught:
-            warnings.simplefilter("always")
-            call()
-        return [os.path.basename(w.filename) for w in caught]
-
     def test_dict_access_warning_points_at_calling_code(self):
         event = DataEvent(target="an-object-id")
-        self.assertEqual([THIS_FILE], self._record(lambda: event["source"]))
+        _, _, locations = record(lambda: event["source"])
+        self.assertEqual([THIS_FILE], [name for name, _ in locations])
 
     def test_attribute_access_warning_points_at_calling_code(self):
         event = DataEvent(target="an-object-id")
-        self.assertEqual([THIS_FILE], self._record(lambda: event.source))
+        _, _, locations = record(lambda: event.source)
+        self.assertEqual([THIS_FILE], [name for name, _ in locations])
 
-    def test_alias_warning_points_at_calling_code(self):
-        self.assertEqual([THIS_FILE], self._record(lambda: Data(clickable=True)))
+    def test_caller_in_a_directory_sharing_the_package_prefix_is_not_skipped(self):
+        """arenaxr also ships arena-robot; a directory whose path merely starts with
+        the same characters as the package directory is not inside the package. The
+        installed-package rule is switched off here so that this exercises only the
+        package-directory rule, wherever arena-py itself happens to live."""
+        event = DataEvent(target="an-object-id")
+        sibling = arena_utils._PACKAGE_DIR.rstrip(os.sep) + "_robot" + os.sep + "mycode.py"
+        access = compiled_accessor(sibling)
+        with mock.patch.object(arena_utils, "_EXTERNAL_CODE_DIRS", ()):
+            _, _, locations = record(lambda: access(event))
+        self.assertEqual([("mycode.py", 2)], locations)
 
-    def test_deprecated_class_warns_once_and_points_at_calling_code(self):
-        # Physics subclasses the also-deprecated DynamicBody; one construction must
-        # still produce exactly one warning, the most derived one.
+    def test_frames_of_the_standard_library_and_installed_packages_are_skipped(self):
+        """A deprecated name reached through a stdlib callback or an installed
+        package must not be blamed on that package: warnings would also record its
+        already-warned registry in that module's globals."""
+        event = DataEvent(target="an-object-id")
+        paths = sysconfig.get_paths()
+        for key in ("stdlib", "purelib"):
+            with self.subTest(location=key):
+                access = compiled_accessor(os.path.join(paths[key], "other_pkg", "mod.py"))
+                _, _, locations = record(lambda: access(event))
+                self.assertEqual([THIS_FILE], [name for name, _ in locations])
+
+    def test_attribution_falls_back_to_the_library_without_a_caller_frame(self):
+        """When the stack holds no frame of the calling program at all - here the
+        deprecated read is the thread's target - the warning is attributed to
+        arena-py, never to the standard library frame that happened to run it."""
+        event = DataEvent(target="an-object-id")
+
+        def read_in_thread():
+            thread = threading.Thread(target=functools.partial(getattr, event, "source"))
+            thread.start()
+            thread.join()
+
         with warnings.catch_warnings(record=True) as caught:
             warnings.simplefilter("always")
-            Physics(type="dynamic")
-        self.assertEqual([Physics.__arena_deprecated__], [str(w.message) for w in caught])
-        self.assertEqual([THIS_FILE], [os.path.basename(w.filename) for w in caught])
+            read_in_thread()
+        self.assertEqual(1, len(caught))
+        self.assertTrue(
+            os.path.abspath(caught[0].filename).startswith(arena_utils._PACKAGE_DIR),
+            f"attributed to {caught[0].filename}",
+        )
 
 
-class TestDeprecatedAttributeAliases(unittest.TestCase):
-    def _warnings_for(self, **kwargs):
-        with warnings.catch_warnings(record=True) as caught:
-            warnings.simplefilter("always")
-            data = Data(**kwargs)
-        return data, [str(w.message) for w in caught]
+class TestDeprecatedClassWarnings(unittest.TestCase):
+    def test_each_distinct_message_in_the_hierarchy_is_reported_once(self):
+        """Physics is a deprecated subclass of the deprecated DynamicBody: the class
+        change and the attribute-key change are different things to fix, so one
+        construction reports both, each exactly once, at the caller's line."""
+        _, messages, locations = record(lambda: Physics(type="dynamic"))
+        self.assertEqual(
+            [
+                Physics.__arena_deprecated_msgs__[0],
+                DynamicBody.__arena_deprecated_msgs__[0],
+            ],
+            messages,
+        )
+        self.assertEqual([THIS_FILE, THIS_FILE], [name for name, _ in locations])
 
-    def test_physics_alias_warns_exactly_once(self):
-        data, messages = self._warnings_for(physics=True)
-        self.assertEqual([DEPRECATED_ATTRIBUTE_ALIASES["physics"]], messages)
-        self.assertEqual(True, data["physics"])
+    def test_a_message_repeated_in_the_hierarchy_is_reported_once(self):
+        message = "DEPRECATED: repeated in the hierarchy."
 
-    def test_clickable_alias_warns_exactly_once(self):
-        data, messages = self._warnings_for(clickable=True)
-        self.assertEqual([DEPRECATED_ATTRIBUTE_ALIASES["clickable"]], messages)
-        self.assertEqual(True, data["clickable"])
+        @deprecated(message)
+        class Base(BaseObject):
+            pass
 
-    def test_current_keys_do_not_warn(self):
-        _, messages = self._warnings_for(physx_body={"type": "dynamic"}, click_listener={})
-        self.assertEqual([], messages)
+        @deprecated(message)
+        class Derived(Base):
+            pass
 
-    def test_alias_does_not_double_warn_for_self_announcing_value(self):
-        # Physics is itself decorated with @deprecated, so it has already warned by
-        # the time the value reaches Data; the alias must not warn a second time.
-        with warnings.catch_warnings(record=True) as caught:
-            warnings.simplefilter("always")
-            physics = Physics(type="dynamic")
-        self.assertTrue([str(w.message) for w in caught])
-        _, messages = self._warnings_for(physics=physics)
-        self.assertEqual([], messages)
+        _, messages, _ = record(lambda: Derived())
+        self.assertEqual([message], messages)
+
+    def test_a_plain_deprecated_class_still_reports_its_own_message(self):
+        _, messages, _ = record(lambda: DynamicBody(type="dynamic"))
+        self.assertEqual([DynamicBody.__arena_deprecated_msgs__[0]], messages)
 
 
 if __name__ == "__main__":

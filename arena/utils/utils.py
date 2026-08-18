@@ -2,6 +2,7 @@
 import functools
 import os
 import sys
+import sysconfig
 import warnings
 
 from . import not_numpy as np
@@ -24,42 +25,113 @@ def _showwarning_yellow(message, category, filename, lineno, file=None, line=Non
 warnings.showwarning = _showwarning_yellow
 
 
-_PACKAGE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Trailing separator, so that a sibling directory sharing the prefix (arena_robot,
+# arena_helpers, ...) is not mistaken for part of arena-py.
+_PACKAGE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep
+
+
+def _external_code_dirs():
+    """Directory prefixes of code that is neither arena-py nor the calling program:
+    the standard library and installed packages."""
+    dirs = set()
+    try:
+        paths = sysconfig.get_paths()
+    except Exception:  # pragma: no cover - interpreter without full sysconfig
+        paths = {}
+    for key in ("stdlib", "platstdlib", "purelib", "platlib"):
+        path = paths.get(key)
+        if path:
+            dirs.add(os.path.abspath(path) + os.sep)
+    return tuple(sorted(dirs))
+
+
+_EXTERNAL_CODE_DIRS = _external_code_dirs()
 
 
 def warn_deprecated(msg):
-    """Emit a DeprecationWarning for a deprecated key or keyword argument.
-    The warning is attributed to the first frame outside arena-py, so that it points
-    at the caller's own code and stays visible under Python's default warning
-    filters, which only show DeprecationWarning raised from the running program.
+    """Emit a DeprecationWarning for a deprecated key, keyword argument or member.
+
+    The warning is attributed to the first frame belonging to the calling program.
+    arena-py's own frames are skipped, so the warning points at the code that has to
+    change, and standard-library and installed-package frames are skipped too, so a
+    deprecated name reached through a stdlib callback (an asyncio callback, a thread
+    bootstrap) is not blamed on the standard library. Attribution matters twice
+    over: Python's default filters only show a DeprecationWarning raised from the
+    running program, and warnings records its already-warned registry in the globals
+    of whichever module it attributes to. When the stack holds no frame of the
+    calling program, the warning is attributed to arena-py itself.
+
     Use this where the deprecated name is handled several calls deep; where the
-    caller reaches the deprecated name directly, use the @deprecated decorator."""
-    stacklevel = 2
-    frame = sys._getframe(1)
-    while frame is not None and os.path.abspath(frame.f_code.co_filename).startswith(_PACKAGE_DIR):
+    caller reaches the deprecated name directly, use the @deprecated decorator,
+    which routes through here.
+    """
+    getframe = getattr(sys, "_getframe", None)
+    if getframe is None:
+        # Interpreters without frame introspection (arena-py also targets
+        # RustPython/wasm): warn from our immediate caller without walking.
+        warnings.warn(msg, DeprecationWarning, stacklevel=3)
+        return
+    frame = getframe(1)
+    stacklevel = 2  # the stacklevel that names `frame`
+    while frame is not None:
+        filename = frame.f_code.co_filename
+        if not filename.startswith("<frozen "):
+            filename = os.path.abspath(filename)
+            if not filename.startswith(_PACKAGE_DIR) and not filename.startswith(_EXTERNAL_CODE_DIRS):
+                warnings.warn(msg, DeprecationWarning, stacklevel=stacklevel)
+                return
         frame = frame.f_back
         stacklevel += 1
-    warnings.warn(msg, DeprecationWarning, stacklevel=stacklevel)
+    warnings.warn(msg, DeprecationWarning, stacklevel=2)
+
+
+def _announced_by_derived_class(cls, declaring_cls, msg):
+    """True when a class derived from declaring_cls already announced msg for the
+    construction in progress. The __init__ wrappers run from the most derived class
+    downwards, so a message declared further down the MRO has already been emitted."""
+    for ancestor in cls.__mro__:
+        if ancestor is declaring_cls:
+            return False
+        if msg in ancestor.__dict__.get("__arena_deprecated_msgs__", ()):
+            return True
+    return False
 
 
 def deprecated(msg):
-    """Decorator to mark a function, property, or class as deprecated.
-    Emits a DeprecationWarning with the given message when called."""
+    """Decorator to mark a function, property accessor, or class as deprecated.
+
+    A decorated function or property accessor emits a DeprecationWarning with the
+    given message each time it is called, and carries the message as
+    ``__arena_deprecated__`` so that a deprecated member can be told apart from any
+    other one; ``BaseObject.__getitem__`` uses that marker to decide which
+    properties dict-style access reaches.
+
+    A decorated class emits its message when an instance is constructed. Each
+    distinct message is emitted once per construction, so a deprecated subclass of a
+    deprecated class reports both the class change and the attribute change without
+    repeating either. A class records its own messages in
+    ``__arena_deprecated_msgs__``.
+
+    Warnings go through warn_deprecated, which attributes them to the caller.
+    """
     def decorator(func_or_class):
         if isinstance(func_or_class, type):
             # Class decorator: wrap __init__
             orig_init = func_or_class.__init__
             @functools.wraps(orig_init)
             def new_init(self, *args, **kwargs):
-                # Only the most derived deprecated class announces itself, so that a
-                # deprecated subclass of a deprecated class warns once, not twice.
-                if getattr(type(self), "__arena_deprecated__", None) == msg:
+                # One warning per distinct message per construction: a more derived
+                # deprecated class announcing this same message has already warned.
+                if not _announced_by_derived_class(type(self), func_or_class, msg):
                     warn_deprecated(msg)
                 orig_init(self, *args, **kwargs)
             func_or_class.__init__ = new_init
-            # Marker so callers can tell the class already announces its own
-            # deprecation and avoid emitting a duplicate warning for it.
-            func_or_class.__arena_deprecated__ = msg
+            # The class's own messages, so a base class can tell whether a class
+            # derived from it has already announced the same message.
+            func_or_class.__arena_deprecated_msgs__ = (
+                *func_or_class.__dict__.get("__arena_deprecated_msgs__", ()),
+                msg,
+            )
             return func_or_class
         else:
             # Function / property accessor decorator
@@ -67,6 +139,8 @@ def deprecated(msg):
             def wrapper(*args, **kwargs):
                 warn_deprecated(msg)
                 return func_or_class(*args, **kwargs)
+            # Marker for dict-style access, see BaseObject.__getitem__.
+            wrapper.__arena_deprecated__ = msg
             return wrapper
     return decorator
 

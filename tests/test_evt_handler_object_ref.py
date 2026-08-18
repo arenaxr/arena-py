@@ -12,6 +12,11 @@ task state that Object.json_preprocess exists to strip, and outright raising
 "Circular reference detected" for a hand or camera target, whose obj.camera /
 user.hands links form a real cycle (see Scene._process_message).
 
+A third group pins the trust boundary. Inbound payloads reach Event(**payload)
+directly, so a remote sender can put a top-level "object" in one; the constructor
+keeps the value only when it really is a scene Object, so a sender cannot hand a
+handler something that is not.
+
 Object.all_objects and Object.private_objects are global class state, so every
 test clears them before and after itself to avoid leaking objects into the rest
 of the suite.
@@ -280,6 +285,58 @@ class EventObjectRefTestCase(unittest.TestCase):
         self.assertEqual(event.data.target, "ref_box")
         self.assertNotIn("object", json.loads(event.json()))
 
+    def test_constructor_ignores_non_object_object_kwarg(self):
+        """A value that is not a scene Object is not a scene Object reference.
+
+        Inbound clientEvent payloads are handed to this same constructor as
+        Event(**payload), so this is the shape a remote sender reaches it with.
+        json.loads cannot produce an Object, so keeping the kwarg only when it
+        is one leaves the documented contract -- a scene Object, or None -- true
+        no matter who called.
+        """
+        event = Event(
+            object_id="test_client",
+            type="mousedown",
+            target="ref_box",
+            object="ref_box",
+        )
+
+        self.assertIsNone(event.object)
+        # consumed, not diverted: it must not reappear nested under data either
+        self.assertNotIn("object", vars(event.data))
+        self.assertNotIn("object", json.loads(event.json()))
+
+    def test_constructor_ignores_object_shaped_dict(self):
+        """Looking like an Object on the wire is not enough to be one.
+
+        A dict is what a sender actually gets to send, and it is the value a
+        handler doing evt.object.data.position would choke on.
+        """
+        event = Event(
+            object_id="test_client",
+            type="mousedown",
+            target="ref_box",
+            object={"object_id": "spoofed_box", "data": {"position": {"x": 9, "y": 9, "z": 9}}},
+        )
+
+        self.assertIsNone(event.object)
+
+    def test_data_nested_object_stays_in_data(self):
+        """The guard is on the attribute, and does not reach into data.
+
+        A caller-supplied data dict is passed through as the caller wrote it, so
+        data["object"] stays a plain data field. It is not the attribute this
+        branch introduces, and evt.object is unaffected by it.
+        """
+        event = Event(
+            object_id="test_client",
+            type="mousedown",
+            data={"target": "ref_box", "object": "nested"},
+        )
+
+        self.assertIsNone(event.object)
+        self.assertEqual(vars(event.data)["object"], "nested")
+
 
 class SceneEvtHandlerObjectRefTestCase(unittest.IsolatedAsyncioTestCase):
     """The inbound clientEvent path hands its resolved object to the handler."""
@@ -309,25 +366,31 @@ class SceneEvtHandlerObjectRefTestCase(unittest.IsolatedAsyncioTestCase):
         return harness
 
     @staticmethod
-    async def inject_client_event(harness, target, event_id="test_client"):
+    async def inject_client_event(harness, target, event_id="test_client", payload_extras=None):
         """Injects a clientEvent aimed at target, as the inbound handler sees it.
 
         Scene._process_message drops any scene message whose payload object_id
         disagrees with the topic's uuid token, so the two must match.
+
+        payload_extras adds top-level keys to the payload, for the tests that
+        model what a remote sender can put in one.
         """
+        payload = {
+            "object_id": event_id,
+            "action": "clientEvent",
+            "type": "mousedown",
+            "data": {
+                "target": target,
+                # targetPosition, not the deprecated position: this is the
+                # spelling that reads back off the DataEvent
+                "targetPosition": {"x": 0, "y": 0, "z": 0},
+            },
+        }
+        if payload_extras:
+            payload.update(payload_extras)
         harness.inject_message(
             f"realm/s/user/test_scene/o/other_client/{event_id}",
-            {
-                "object_id": event_id,
-                "action": "clientEvent",
-                "type": "mousedown",
-                "data": {
-                    "target": target,
-                    # targetPosition, not the deprecated position: this is the
-                    # spelling that reads back off the DataEvent
-                    "targetPosition": {"x": 0, "y": 0, "z": 0},
-                },
-            },
+            payload,
         )
         await harness.run_step(0.2)
 
@@ -475,6 +538,70 @@ class SceneEvtHandlerObjectRefTestCase(unittest.IsolatedAsyncioTestCase):
         events = [e for e in received if isinstance(e, Event)]
         self.assertEqual(len(events), 1)
         self.assertIs(events[0].object, box)
+
+    async def test_payload_object_does_not_reach_an_unresolved_event(self):
+        """A sender cannot fill in the reference the lookup declined to fill in.
+
+        This is the case with nothing to overwrite the sender's value: the
+        target is unknown, so the library never assigns, and on_msg_callback is
+        handed the event as parsed. It has to read None, the documented answer,
+        not whatever the payload carried.
+        """
+        harness = await self.make_harness()
+        received = []
+        harness.scene.on_msg_callback = lambda scene, evt, msg: received.append(evt)
+
+        await self.inject_client_event(
+            harness,
+            "no_such_object",
+            payload_extras={"object": {"object_id": "spoofed_box", "data": {"position": {"x": 9, "y": 9, "z": 9}}}},
+        )
+
+        events = [e for e in received if isinstance(e, Event)]
+        self.assertEqual(len(events), 1)
+        self.assertIsNone(events[0].object)
+
+    async def test_payload_object_cannot_shadow_a_resolved_target(self):
+        """And where the lookup does succeed, the real object still wins.
+
+        A sender aiming at an object this client owns must not be able to hand
+        that object's own evt_handler a substitute for it.
+        """
+        harness = await self.make_harness()
+        box = Box(object_id="click_box", position=(0, 0, 0), clickable=True)
+        received = []
+        box.evt_handler = lambda scene, evt, msg: received.append(evt)
+        harness.scene.add_object(box)
+
+        await self.inject_client_event(
+            harness, "click_box", payload_extras={"object": {"object_id": "spoofed_box"}}
+        )
+
+        self.assertEqual(len(received), 1)
+        self.assertIs(received[0].object, box)
+
+    async def test_payload_object_is_not_echoed_back_onto_the_wire(self):
+        """A handler re-emitting such an event must not republish the value.
+
+        The re-emit path is how a sender-supplied value would leave this client
+        again, so the sentinel is looked for anywhere in the payload, not just
+        under its own key.
+        """
+        harness = await self.make_harness()
+        harness.scene.on_msg_callback = (
+            lambda scene, evt, msg: scene.generate_custom_event(evt) if isinstance(evt, Event) else None
+        )
+        before = len(harness.capture_published_messages())
+
+        await self.inject_client_event(
+            harness, "no_such_object", payload_extras={"object": {"object_id": "spoofed_box"}}
+        )
+
+        published = harness.capture_published_messages()[before:]
+        echoed = [m["payload"] for m in published if json.loads(m["payload"]).get("action") == "clientEvent"]
+        self.assertEqual(len(echoed), 1)
+        self.assertNotIn("object", json.loads(echoed[0]))
+        self.assertNotIn("spoofed_box", echoed[0])
 
 
 if __name__ == "__main__":

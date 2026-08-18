@@ -2,6 +2,7 @@ import uuid
 
 from ..attributes import DataEvent
 from ..base_object import *
+from ..objects import Object
 
 
 class Event(BaseObject):
@@ -29,6 +30,17 @@ class Event(BaseObject):
         _object = kwargs.get("object", None)
         if "object" in kwargs: del kwargs["object"]
 
+        # ...and keep it only if it really is a scene Object. Inbound clientEvent
+        # payloads reach this same constructor as Event(**payload) (see
+        # Scene._process_message), so a remote sender can put a top-level
+        # "object" of its own in the payload. json.loads can only ever produce a
+        # str/dict/list/number, never an Object, so this check is what separates
+        # a local caller's live reference from a sender-supplied value, at every
+        # construction site rather than only on the one inbound path. Anything
+        # else becomes None, the documented answer for "no object was resolved".
+        if not isinstance(_object, Object):
+            _object = None
+
         kwargs = kwargs.get("data", kwargs)
         data = DataEvent(**kwargs)
         super().__init__(
@@ -36,9 +48,10 @@ class Event(BaseObject):
                 action=action,
                 type=_type,
                 data=data,
-                # the scene Object this event targets, when it is known locally.
-                # Scene fills it in for inbound events whose target it can resolve;
-                # events a program builds itself have no target object to resolve.
+                # the scene Object this event targets, when it is known locally,
+                # and never a value an inbound payload supplied for it. Scene fills
+                # it in for inbound events whose target it can resolve; events a
+                # program builds itself have no target object to resolve.
                 object=_object
             )
 

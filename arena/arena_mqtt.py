@@ -164,10 +164,16 @@ class ArenaMQTT(object):
             self.ignore_topic = PUBLISH_TOPICS.DEVICE.substitute(self.topicParams)
 
         # check for valid permissions to write to all objects topics
+        self.can_publish_chat = False
         if self.scene:
             self.can_publish_obj = self.auth.has_publish_rights(
                 token,
                 PUBLISH_TOPICS.SCENE_OBJECTS.substitute({**self.topicParams, **{"objectId": "anyfoobject"}})
+            )
+            # chat lives on its own topic branch, so it needs its own permission check
+            self.can_publish_chat = self.auth.has_publish_rights(
+                token,
+                PUBLISH_TOPICS.SCENE_CHAT.substitute(self.topicParams)
             )
         elif self.device:
             self.can_publish_obj = self.auth.has_publish_rights(

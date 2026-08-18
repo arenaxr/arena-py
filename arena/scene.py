@@ -663,16 +663,83 @@ class Scene(ArenaMQTT):
         delayed_task.object_id = obj.object_id
         return delayed_task
 
-    def _publish(self, obj: Object, action, custom_payload=False, publish_topic=PUBLISH_TOPICS.SCENE_OBJECTS):
-        """Publishes to mqtt broker with "action":action."""
+    def send_chat(self, text, to_uid=None, display_name=None):
+        """Publishes a chat message to the scene's chat panel.
+
+        Chat is the counterpart of the ``on_chat_callback`` handler: this program
+        appears in the scene chat as a regular participant. Chat payloads carry no
+        ``action`` and no ``data`` field, so they are never delta-compressed.
+
+        :param text: Body of the chat message, or a Chat to publish as-is (required).
+        :param str to_uid: Send privately to this single user id; None (default)
+            sends to everyone in the scene (optional).
+        :param str display_name: Sender name shown in the chat panel. Defaults to
+            this program's ARENA username (optional).
+        :return: JSON string of the published payload.
+        """
+        chatmsg = text if isinstance(text, Chat) else Chat(text=text)
+        # object_id must match the topic idTag token or receivers discard the message
+        chatmsg.object_id = self.userid
+        if display_name is not None:
+            chatmsg.dn = display_name
+        elif chatmsg.dn is None:
+            chatmsg.dn = self.username
+
+        if to_uid is None:
+            publish_topic = PUBLISH_TOPICS.SCENE_CHAT
+            topic_params = None
+        else:
+            publish_topic = PUBLISH_TOPICS.SCENE_CHAT_PRIVATE
+            topic_params = {"toUid": to_uid}
+
+        payload = vars(chatmsg).copy()
+        # 'topic' is a receive-side annotation (see on_message handling), never sent
+        payload.pop("topic", None)
+
+        # action=None: chat has no "action" key, unlike scene object messages
+        return self._publish(
+            payload,
+            None,
+            custom_payload=True,
+            publish_topic=publish_topic,
+            topic_params=topic_params,
+        )
+
+    def _publish(
+        self,
+        obj: Object,
+        action,
+        custom_payload=False,
+        publish_topic=PUBLISH_TOPICS.SCENE_OBJECTS,
+        topic_params=None,
+    ):
+        """Publishes to mqtt broker with "action":action.
+
+        :param obj: Object (or plain dict, with custom_payload) to publish.
+        :param action: Value of the payload "action" key; None omits the key entirely,
+            for wire formats like chat that carry no action.
+        :param bool custom_payload: If true, obj is a plain dict to publish as-is.
+        :param publish_topic: Template from PUBLISH_TOPICS to publish on.
+        :param dict topic_params: Extra substitutions for publish_topic, for templates
+            needing more than the scene topic params (for example "toUid").
+        """
         obj_type = None
         if "type" in obj:
             obj_type = obj["type"]
 
         with self.telemetry.start_publish_span(obj["object_id"], action, obj_type) as span:
-            topic = publish_topic.substitute({**self.topicParams, **{"objectId": obj["object_id"]}})
+            topic = publish_topic.substitute(
+                {**self.topicParams, **{"objectId": obj["object_id"]}, **(topic_params or {})}
+            )
 
-            if publish_topic == PUBLISH_TOPICS.SCENE_OBJECTS:
+            if publish_topic in (PUBLISH_TOPICS.SCENE_CHAT, PUBLISH_TOPICS.SCENE_CHAT_PRIVATE):
+                # self.can_publish_chat indicates if we can publish on the chat topic branch
+                if not self.can_publish_chat:
+                    self.telemetry.set_error(
+                        f"ERROR: Publish failed! You do not have permission to publish to topic {topic} on {self.web_host}",
+                        span,
+                    )
+            elif publish_topic == PUBLISH_TOPICS.SCENE_OBJECTS:
                 # self.can_publish_obj indicates if we can publish on the default publish_topic (PUBLISH_TOPICS.SCENE_OBJECTS)
                 if not self.can_publish_obj:
                     self.telemetry.set_error(
@@ -688,7 +755,8 @@ class Scene(ArenaMQTT):
 
             if custom_payload:
                 tmp_obj = obj
-                tmp_obj["action"] = action
+                if action is not None:
+                    tmp_obj["action"] = action
                 tmp_obj["timestamp"] = d
                 payload = json.dumps(tmp_obj)
             else:

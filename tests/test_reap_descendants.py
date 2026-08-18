@@ -435,10 +435,13 @@ class TestForgetPublishedState(SceneReapTestCase):
     """The shadow-map helper is tolerant of ids it has never seen."""
 
     async def test_unknown_object_ids_are_ignored(self):
+        """Ids with no entry are skipped, and the known id is still forgotten."""
         harness = self.make_harness(delta_compression=True)
-        harness.scene._last_published_state["kept"] = {"object_type": "box"}
+        harness.scene._last_published_state["published"] = {"object_type": "box"}
 
-        harness.scene._forget_published_state(["never_published", "kept", "also_missing"])
+        harness.scene._forget_published_state(
+            ["never_published", "published", "also_missing"]
+        )
 
         self.assertEqual(harness.scene._last_published_state, {})
 

@@ -109,13 +109,19 @@ def deprecated(msg):
     A decorated class emits its message when an instance is constructed. Each
     distinct message is emitted once per construction, so a deprecated subclass of a
     deprecated class reports both the class change and the attribute change without
-    repeating either. A class records its own messages in
+    repeating either, and applying this decorator twice to one class with the same
+    message is a no-op the second time. A class records its own messages in
     ``__arena_deprecated_msgs__``.
 
     Warnings go through warn_deprecated, which attributes them to the caller.
     """
     def decorator(func_or_class):
         if isinstance(func_or_class, type):
+            if msg in func_or_class.__dict__.get("__arena_deprecated_msgs__", ()):
+                # This class already announces this exact message: a second wrapper
+                # would emit it twice per construction, and each distinct message is
+                # reported once. Applying the decorator again is a no-op per message.
+                return func_or_class
             # Class decorator: wrap __init__
             orig_init = func_or_class.__init__
             @functools.wraps(orig_init)

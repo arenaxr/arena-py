@@ -11,6 +11,14 @@ from .scale import Scale
 from .translate import ATTRIBUTE_CLASS_TRANSLATION, KEYWORD_ATTRIBUTE_TRANSLATION
 from .video_control import VideoControl
 
+# Attribute keys only kept working for backward-compatibility, see the
+# backward-compatibility entries of ATTRIBUTE_KEYWORD_TRANSLATION in translate.py.
+# They keep working, but now say so.
+DEPRECATED_ATTRIBUTE_ALIASES = {
+    "physics": "DEPRECATED: data.physics is deprecated, use data.physx_body instead.",
+    "clickable": "DEPRECATED: data.clickable is deprecated, use data.click_listener instead.",
+}
+
 
 class Data(Attribute):
     """
@@ -79,6 +87,11 @@ class Data(Attribute):
         new_data = new_data.get("data", new_data)
         dash_words = []
         for k, v in new_data.items():
+
+            # warn on deprecated key aliases, unless the value's own class already
+            # announces its deprecation, which would make this a duplicate warning
+            if k in DEPRECATED_ATTRIBUTE_ALIASES and not getattr(type(v), "__arena_deprecated__", None):
+                warn_deprecated(DEPRECATED_ATTRIBUTE_ALIASES[k])
 
             # when value is None, do not parse it
             if v is None:

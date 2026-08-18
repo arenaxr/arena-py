@@ -1,5 +1,6 @@
 # simple general purpose functions
 import functools
+import os
 import sys
 import warnings
 
@@ -23,6 +24,24 @@ def _showwarning_yellow(message, category, filename, lineno, file=None, line=Non
 warnings.showwarning = _showwarning_yellow
 
 
+_PACKAGE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def warn_deprecated(msg):
+    """Emit a DeprecationWarning for a deprecated key or keyword argument.
+    The warning is attributed to the first frame outside arena-py, so that it points
+    at the caller's own code and stays visible under Python's default warning
+    filters, which only show DeprecationWarning raised from the running program.
+    Use this where the deprecated name is handled several calls deep; where the
+    caller reaches the deprecated name directly, use the @deprecated decorator."""
+    stacklevel = 2
+    frame = sys._getframe(1)
+    while frame is not None and os.path.abspath(frame.f_code.co_filename).startswith(_PACKAGE_DIR):
+        frame = frame.f_back
+        stacklevel += 1
+    warnings.warn(msg, DeprecationWarning, stacklevel=stacklevel)
+
+
 def deprecated(msg):
     """Decorator to mark a function, property, or class as deprecated.
     Emits a DeprecationWarning with the given message when called."""
@@ -32,15 +51,21 @@ def deprecated(msg):
             orig_init = func_or_class.__init__
             @functools.wraps(orig_init)
             def new_init(self, *args, **kwargs):
-                warnings.warn(msg, DeprecationWarning, stacklevel=2)
+                # Only the most derived deprecated class announces itself, so that a
+                # deprecated subclass of a deprecated class warns once, not twice.
+                if getattr(type(self), "__arena_deprecated__", None) == msg:
+                    warn_deprecated(msg)
                 orig_init(self, *args, **kwargs)
             func_or_class.__init__ = new_init
+            # Marker so callers can tell the class already announces its own
+            # deprecation and avoid emitting a duplicate warning for it.
+            func_or_class.__arena_deprecated__ = msg
             return func_or_class
         else:
             # Function / property accessor decorator
             @functools.wraps(func_or_class)
             def wrapper(*args, **kwargs):
-                warnings.warn(msg, DeprecationWarning, stacklevel=2)
+                warn_deprecated(msg)
                 return func_or_class(*args, **kwargs)
             return wrapper
     return decorator

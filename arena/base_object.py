@@ -22,7 +22,17 @@ class BaseObject(object):
         return str(vars(self))
 
     def __getitem__(self, name):
-        return self.__dict__[name]
+        try:
+            return self.__dict__[name]
+        except KeyError:
+            # Fall back to a class-level property when the key is not stored on the
+            # instance, so dict-style access honors the same @deprecated properties
+            # that attribute-style access already does. Only properties are consulted,
+            # so methods and other class attributes stay invisible to dict-style
+            # access, and a genuinely unknown key still raises KeyError.
+            if isinstance(getattr(type(self), name, None), property):
+                return getattr(self, name)
+            raise
 
     def __setitem__(self, name, attr):
         self.add(name, attr)

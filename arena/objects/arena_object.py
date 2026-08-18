@@ -15,6 +15,13 @@ class Object(BaseObject):
     all_objects = {} # dict of all objects created so far
     private_objects = {} # dict of all private objects created so far
 
+    # Bounds for cascaded orphan reaping, see remove_descendants(). The scene graph
+    # is only defined by free-form "parent" strings, so a malformed scene can nest
+    # arbitrarily deep or wide; these caps keep a single delete from stalling the
+    # message loop, and reaping stops with a printed warning when either is reached.
+    MAX_REAP_DESCENDANTS = 10000 # most descendants dropped for one deleted object
+    MAX_REAP_DEPTH = 64 # deepest level of nesting followed below the deleted object
+
     def __init__(self, evt_handler=None, update_handler=None, **kwargs):
         # "object_id" is required in kwargs, defaulted to random uuid4
         object_id = kwargs.get("object_id", str(uuid.uuid4()))
@@ -234,9 +241,78 @@ class Object(BaseObject):
     def remove(cls, obj):
         object_id = obj.object_id
         del Object.all_objects[object_id]
+        # Private objects are indexed a second time, per user, by add_private().
+        # Dropping only the all_objects entry would leave a strong reference in
+        # private_objects, and get_private_objects() would keep handing back
+        # objects that are gone from the scene.
+        private_userid = getattr(obj, "_private_userid", None)
+        if private_userid is not None:
+            Object.private_objects.get(private_userid, {}).pop(object_id, None)
         if (hasattr(obj, "delayed_prop_tasks")):
             for task in obj.delayed_prop_tasks.values():  # Cancel all pending tasks
                 task.cancel()
+
+    @classmethod
+    def remove_descendants(cls, object_id):
+        """Removes every descendant of object_id from the local object store.
+
+        The ARENA server publishes a single delete for the object that was actually
+        deleted, so each client is responsible for dropping the objects that delete
+        orphaned. Returns the list of removed descendant object_ids.
+        """
+        # Index parent -> children in a single pass over the store, so the walk
+        # below never has to re-scan all_objects.
+        #
+        # Only scene objects are indexed. all_objects also holds records that are
+        # not part of the scene graph, such as Program, whose data.parent names
+        # the runtime the program should be deployed to. Indexing those would let
+        # a scene object whose id happens to match a runtime name reap the
+        # program along with its real children. Every renderable type subclasses
+        # Object, so an isinstance check keeps new scene objects covered while
+        # leaving non-scene records out.
+        children_of = {}
+        for child in list(cls.all_objects.values()):
+            if not isinstance(child, Object):
+                continue
+            parent = getattr(getattr(child, "data", None), "parent", None)
+            if parent:
+                children_of.setdefault(parent, []).append(child.object_id)
+
+        removed = []
+        # Visited ids terminate cycles and repeated parents in malformed chains.
+        # The deleted object counts as visited so a cycle back to it cannot loop.
+        visited = {object_id}
+        frontier = list(children_of.get(object_id, []))
+        depth = 1
+        bound_hit = None
+
+        while frontier:
+            if depth > cls.MAX_REAP_DEPTH:
+                bound_hit = f"MAX_REAP_DEPTH ({cls.MAX_REAP_DEPTH})"
+                break
+            next_frontier = []
+            for child_id in frontier:
+                if child_id in visited:
+                    continue
+                visited.add(child_id)
+                if len(removed) >= cls.MAX_REAP_DESCENDANTS:
+                    bound_hit = f"MAX_REAP_DESCENDANTS ({cls.MAX_REAP_DESCENDANTS})"
+                    break
+                child = cls.all_objects.get(child_id)
+                if child is not None: # already gone, e.g. a delete raced this one
+                    cls.remove(child)
+                    removed.append(child_id)
+                next_frontier.extend(children_of.get(child_id, []))
+            if bound_hit:
+                break
+            frontier = next_frontier
+            depth += 1
+
+        if bound_hit:
+            print("[WARNING]", f"Stopped reaping descendants of {object_id} after "
+                  f"{len(removed)} objects: hit {bound_hit}. Orphaned descendants "
+                  f"may remain in the local scene state.")
+        return removed
 
     @classmethod
     def exists(cls, object_id):

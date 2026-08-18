@@ -241,6 +241,13 @@ class Object(BaseObject):
     def remove(cls, obj):
         object_id = obj.object_id
         del Object.all_objects[object_id]
+        # Private objects are indexed a second time, per user, by add_private().
+        # Dropping only the all_objects entry would leave a strong reference in
+        # private_objects, and get_private_objects() would keep handing back
+        # objects that are gone from the scene.
+        private_userid = getattr(obj, "_private_userid", None)
+        if private_userid is not None:
+            Object.private_objects.get(private_userid, {}).pop(object_id, None)
         if (hasattr(obj, "delayed_prop_tasks")):
             for task in obj.delayed_prop_tasks.values():  # Cancel all pending tasks
                 task.cancel()

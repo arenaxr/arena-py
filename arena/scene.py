@@ -345,7 +345,10 @@ class Scene(ArenaMQTT):
                             # its descendants are now orphans, so drop them locally.
                             # No delete_obj_callback is fired for them, since the
                             # server never sent a delete for those object_ids.
-                            Object.remove_descendants(object_id)
+                            reaped = Object.remove_descendants(object_id)
+                            # This scene may have published these objects itself, so
+                            # forget the deleted object and its reaped descendants.
+                            self._forget_published_state([object_id, *reaped])
                             span.add_event("Object delete.")
 
                             continue
@@ -562,7 +565,11 @@ class Scene(ArenaMQTT):
         Object.remove(obj)
         # Deleting a parent orphans its descendants; drop them locally too so this
         # scene's state matches what the renderer shows after the delete.
-        Object.remove_descendants(obj.object_id)
+        reaped = Object.remove_descendants(obj.object_id)
+        # This delete publishes a custom payload, which skips _apply_delta and so
+        # its shadow-state cleanup; forget the deleted object here, along with
+        # every descendant reaped above.
+        self._forget_published_state([obj.object_id, *reaped])
         return self._publish(payload, "delete", custom_payload=True)
 
     def delete_user_objects(self, userid):
@@ -704,6 +711,19 @@ class Scene(ArenaMQTT):
             if self.debug:
                 self.telemetry.add_event(f"[publish] {topic} {payload}")
             return payload
+
+    def _forget_published_state(self, object_ids):
+        """Drops delta-compression shadow state for each of object_ids.
+
+        _last_published_state caches the last full data dict published per
+        object_id, so deleted object_ids have to be dropped from it: otherwise
+        the cache grows with every delete, and a later object reusing a deleted
+        object_id is diffed against state the renderer no longer holds.
+
+        object_ids that were never published are simply ignored.
+        """
+        for object_id in object_ids:
+            self._last_published_state.pop(object_id, None)
 
     def _apply_delta(self, payload_str, action):
         """Apply delta compression to a JSON payload string.

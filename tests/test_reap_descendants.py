@@ -3,8 +3,10 @@
 The ARENA server publishes a single delete for the object that was deleted, so
 clients must drop that object's descendants from their own state themselves.
 
-Object.all_objects is global class state, so every test clears it before and
-after itself to avoid leaking objects into the rest of the suite.
+Object.all_objects and Object.private_objects are global class state, so every
+test clears them before and after itself to avoid leaking objects into the rest
+of the suite. Scene._last_published_state (the delta-compression shadow map) is
+per-scene, so it goes away with the harness that owns it.
 """
 
 import contextlib
@@ -211,8 +213,68 @@ class TestRemoveDescendants(ReapTestCase):
         self.assertEqual(Object.all_objects, {})
 
 
-class TestSceneDeleteObjectReaps(unittest.IsolatedAsyncioTestCase):
-    """scene.delete_object must reap locally, not just publish one delete."""
+class TestPrivateObjectCleanup(ReapTestCase):
+    """Object.remove() owns the private_objects index, for reaps and single deletes."""
+
+    USER = "private_user"
+
+    def setUp(self):
+        super().setUp()
+        # add_private() requires the per-user bucket to exist; a scene creates it
+        # (via reset_private_objects) when the user joins.
+        Object.private_objects[self.USER] = {}
+
+    def make_private(self, object_id, parent=None):
+        kwargs = {"object_id": object_id, "private_userid": self.USER}
+        if parent is not None:
+            kwargs["parent"] = parent
+        return Object(**kwargs)
+
+    def test_reaped_private_descendants_dropped_from_private_objects(self):
+        """A cascade drops private descendants from both indexes, not just all_objects."""
+        self.make("root")
+        self.make_private("private_child", parent="root")
+        self.make_private("private_grandchild", parent="private_child")
+        self.make_private("private_bystander")
+
+        Object.remove(Object.get("root"))
+        reaped = Object.remove_descendants("root")
+
+        self.assertEqual(sorted(reaped), ["private_child", "private_grandchild"])
+        self.assertEqual(sorted(Object.private_objects[self.USER]), ["private_bystander"])
+        self.assertEqual(sorted(Object.all_objects), ["private_bystander"])
+
+    def test_remove_drops_private_entry_for_single_object(self):
+        """The single-object delete path is cleaned by the same code."""
+        obj = self.make_private("lone_private")
+
+        Object.remove(obj)
+
+        self.assertEqual(Object.private_objects[self.USER], {})
+        self.assertEqual(Object.all_objects, {})
+
+    def test_remove_public_object_leaves_private_index_alone(self):
+        """A public delete does not touch another user's private entries."""
+        public = self.make("public_obj")
+        self.make_private("private_obj")
+
+        Object.remove(public)
+
+        self.assertEqual(sorted(Object.private_objects[self.USER]), ["private_obj"])
+
+    def test_remove_is_safe_when_private_bucket_is_gone(self):
+        """A private object outliving its user's bucket removes without raising."""
+        obj = self.make_private("orphan_private")
+        # delete_user_objects() drops the whole per-user bucket on user leave.
+        del Object.private_objects[self.USER]
+
+        Object.remove(obj)  # must not raise
+
+        self.assertEqual(Object.all_objects, {})
+
+
+class SceneReapTestCase(unittest.IsolatedAsyncioTestCase):
+    """Base case for reaping through a Scene, on a mock transport."""
 
     def setUp(self):
         Object.all_objects.clear()
@@ -222,19 +284,163 @@ class TestSceneDeleteObjectReaps(unittest.IsolatedAsyncioTestCase):
         Object.all_objects.clear()
         Object.private_objects.clear()
 
-    async def test_delete_object_reaps_descendants(self):
+    @staticmethod
+    def make_harness(delta_compression=False):
         harness = ArenaE2ETest(scene_name="test_scene", realm="realm", namespace="user")
         Object.all_objects.clear()  # drop objects loaded from mock persist
+        # The harness turns delta compression off for trace replay; the shadow map
+        # is only populated when it is on.
+        harness.scene.delta_compression = delta_compression
+        return harness
 
-        parent = Object(object_id="reap_parent", object_type="box")
-        Object(object_id="reap_child", object_type="box", parent="reap_parent")
-        Object(object_id="reap_grandchild", object_type="box", parent="reap_child")
-        Object(object_id="reap_bystander", object_type="box")
+    @staticmethod
+    def make_tree(scene, publish=False):
+        """Builds parent -> child -> grandchild plus a bystander, optionally published."""
+        objs = [
+            Object(object_id="reap_parent", object_type="box"),
+            Object(object_id="reap_child", object_type="box", parent="reap_parent"),
+            Object(object_id="reap_grandchild", object_type="box", parent="reap_child"),
+            Object(object_id="reap_bystander", object_type="box"),
+        ]
+        if publish:
+            for obj in objs:
+                scene.add_object(obj)
+        return objs[0]
+
+    async def inject_delete(self, harness, object_id):
+        """Injects a server delete for object_id, as the inbound handler sees it."""
+        harness._start_tasks()
+        for _ in range(10):  # subscriptions are set up by the connect task
+            if harness.transport.subscriptions:
+                break
+            await harness.run_step(0.1)
+        harness.inject_message(
+            f"realm/s/user/test_scene/o/other_client/{object_id}",
+            {"object_id": object_id, "action": "delete", "type": "object"},
+        )
+        await harness.run_step(0.1)
+
+
+class TestSceneDeleteObjectReaps(SceneReapTestCase):
+    """scene.delete_object must reap locally, not just publish one delete."""
+
+    async def test_delete_object_reaps_descendants(self):
+        harness = self.make_harness()
+        parent = self.make_tree(harness.scene)
 
         harness.scene.delete_object(parent)
         await harness.run_step(0.1)
 
         self.assertEqual(sorted(harness.scene.all_objects), ["reap_bystander"])
+
+    async def test_delete_object_clears_shadow_map_for_root_and_descendants(self):
+        """delete_object publishes a custom payload, which skips _apply_delta's cleanup."""
+        harness = self.make_harness(delta_compression=True)
+        parent = self.make_tree(harness.scene, publish=True)
+        shadow = harness.scene._last_published_state
+        for object_id in ("reap_parent", "reap_child", "reap_grandchild", "reap_bystander"):
+            self.assertIn(object_id, shadow)  # publishing recorded each one
+
+        harness.scene.delete_object(parent)
+        await harness.run_step(0.1)
+
+        self.assertNotIn("reap_parent", shadow)      # the deleted object itself
+        self.assertNotIn("reap_child", shadow)       # reaped descendants
+        self.assertNotIn("reap_grandchild", shadow)
+        self.assertIn("reap_bystander", shadow)      # untouched object keeps its state
+
+    async def test_delete_object_of_unpublished_object_does_not_raise(self):
+        """Nothing was published, so no shadow-map key exists to clear."""
+        harness = self.make_harness(delta_compression=True)
+        parent = self.make_tree(harness.scene)
+        self.assertEqual(harness.scene._last_published_state, {})
+
+        harness.scene.delete_object(parent)  # must not raise
+        await harness.run_step(0.1)
+
+        self.assertEqual(sorted(harness.scene.all_objects), ["reap_bystander"])
+
+    async def test_delete_object_drops_reaped_private_descendants(self):
+        """get_private_objects() must not return objects the cascade deleted."""
+        harness = self.make_harness()
+        harness.scene.reset_private_objects("private_user")
+        parent = Object(object_id="reap_parent", object_type="box")
+        Object(
+            object_id="reap_private_child",
+            object_type="box",
+            parent="reap_parent",
+            private_userid="private_user",
+        )
+        Object(
+            object_id="reap_private_bystander",
+            object_type="box",
+            private_userid="private_user",
+        )
+
+        harness.scene.delete_object(parent)
+        await harness.run_step(0.1)
+
+        self.assertEqual(
+            sorted(harness.scene.get_private_objects("private_user")),
+            ["reap_private_bystander"],
+        )
+
+
+class TestSceneInboundDeleteReaps(SceneReapTestCase):
+    """An inbound server delete must clean up the same local state."""
+
+    async def test_inbound_delete_reaps_descendants(self):
+        harness = self.make_harness()
+        self.make_tree(harness.scene)
+
+        await self.inject_delete(harness, "reap_parent")
+
+        # Asserted per object_id: starting the scene tasks also loads the
+        # harness's mock persist objects into the store.
+        self.assertNotIn("reap_parent", harness.scene.all_objects)
+        self.assertNotIn("reap_child", harness.scene.all_objects)
+        self.assertNotIn("reap_grandchild", harness.scene.all_objects)
+        self.assertIn("reap_bystander", harness.scene.all_objects)
+
+    async def test_inbound_delete_clears_shadow_map_for_root_and_descendants(self):
+        """Objects this scene published are forgotten when the server deletes them."""
+        harness = self.make_harness(delta_compression=True)
+        self.make_tree(harness.scene, publish=True)
+        shadow = harness.scene._last_published_state
+        for object_id in ("reap_parent", "reap_child", "reap_grandchild", "reap_bystander"):
+            self.assertIn(object_id, shadow)  # publishing recorded each one
+
+        await self.inject_delete(harness, "reap_parent")
+
+        self.assertNotIn("reap_parent", shadow)      # the deleted object itself
+        self.assertNotIn("reap_child", shadow)       # reaped descendants
+        self.assertNotIn("reap_grandchild", shadow)
+        self.assertIn("reap_bystander", shadow)      # untouched object keeps its state
+
+    async def test_inbound_delete_of_unpublished_object_does_not_raise(self):
+        """A delete for objects with no shadow-map entry still reaps cleanly."""
+        harness = self.make_harness(delta_compression=True)
+        self.make_tree(harness.scene)
+        self.assertEqual(harness.scene._last_published_state, {})
+
+        await self.inject_delete(harness, "reap_parent")
+
+        self.assertNotIn("reap_parent", harness.scene.all_objects)
+        self.assertNotIn("reap_child", harness.scene.all_objects)
+        self.assertNotIn("reap_grandchild", harness.scene.all_objects)
+        self.assertIn("reap_bystander", harness.scene.all_objects)
+
+
+class TestForgetPublishedState(SceneReapTestCase):
+    """The shadow-map helper is tolerant of ids it has never seen."""
+
+    async def test_unknown_object_ids_are_ignored(self):
+        harness = self.make_harness(delta_compression=True)
+        harness.scene._last_published_state["kept"] = {"object_type": "box"}
+
+        harness.scene._forget_published_state(["never_published", "kept", "also_missing"])
+
+        self.assertEqual(harness.scene._last_published_state, {})
 
 
 if __name__ == "__main__":

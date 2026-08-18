@@ -27,13 +27,27 @@ class Event(BaseObject):
                 object_id=object_id,
                 action=action,
                 type=_type,
-                data=data
+                data=data,
+                # the scene Object this event targets, when it is known locally.
+                # Scene fills it in for inbound events whose target it can resolve;
+                # events a program builds itself have no target object to resolve.
+                object=None
             )
+
+    def json_preprocess(self, **kwargs):
+        # kwargs are for additional param to add to json, like "action":"create"
+        # "object" is a live reference to a scene Object, for local handler use only.
+        # It must never reach the wire: it would leak the same private state that
+        # Object.json_preprocess strips, and a hand or camera target carries a
+        # reference cycle (obj.camera <-> user.hands) that json.dumps cannot encode.
+        skipped_keys = ["object"]
+        json_payload = {k: v for k, v in vars(self).items() if k not in skipped_keys}
+        json_payload.update(kwargs)
+        return json_payload
 
     # TODO (mwfarb): We should standardize this json() transform into BaseObject from Object/Event/Program
     def json(self, **kwargs):
-        json_payload = vars(self).copy()
-        json_payload.update(kwargs)
+        json_payload = self.json_preprocess(**kwargs)
 
         data = vars(json_payload["data"])
         json_data = {}

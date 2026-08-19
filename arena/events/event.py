@@ -31,10 +31,12 @@ class Event(BaseObject):
         if "type" in kwargs: del kwargs["type"]
 
         # consume "object" so it lands on the Event itself. Left in kwargs it
-        # would fall through into DataEvent (which has no Object-rejection
-        # guard) and ride onto the wire nested under "data", or be dropped
-        # outright when the caller also passed a "data" dict. Either way the
-        # caller's object never reaches the attribute they asked for.
+        # would fall through into DataEvent, whose Object-rejection guard now
+        # raises ValueError for it, or be dropped outright when the caller also
+        # passed a "data" dict. Either way the caller's object never reaches the
+        # attribute they asked for, so this consumption is still required - it is
+        # now what keeps the documented Event(object=obj) spelling working instead
+        # of raising.
         _object = kwargs.get("object", None)
         if "object" in kwargs: del kwargs["object"]
 

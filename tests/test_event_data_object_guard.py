@@ -1,8 +1,8 @@
 """Event data must refuse a live Arena Object, the way scene data already does.
 
-Data.update_data raises ValueError for an Object stored under any key but
-"parent", so a scene object can never end up nested inside another object's
-data. DataEvent.update_data had no equivalent guard: its fallback is
+Data.update_data raises ValueError for an Object stored as a direct value
+under any key but "parent". DataEvent.update_data had no equivalent guard: its
+fallback is
 `try: data[k] = Attribute(**v) / except: data[k] = v`, and an Object fails that
 coercion, so it was stored as-is.
 
@@ -15,8 +15,11 @@ raises "Circular reference detected" at publish time, far from the assignment
 that caused it.
 
 These tests pin the guard, and pin that it fires at assignment time for every
-key and for Object subclasses at any depth, since that is what makes the error
-point at the caller's mistake rather than at a later publish.
+key and for Object subclasses at any inheritance depth, since that is what makes
+the error point at the caller's mistake rather than at a later publish. The guard
+inspects direct values only -- an Object reached through a list or dict value is
+still accepted, and still leaks or cycles at publish time -- so nothing here
+claims otherwise; recursing is a follow-up.
 
 Object.all_objects and Object.private_objects are global class state, so every
 test clears them before and after itself to avoid leaking objects into the rest
@@ -33,6 +36,20 @@ from arena.events import Event
 from arena.objects import Box, Camera, HandLeft, Model, Object
 
 PRIVATE_KEYS = ("evt_handler", "update_handler", "animations", "delayed_prop_tasks")
+
+
+class ObjectWithNoObjectId(Object):
+    """An Object subclass whose __init__ deliberately skips super().__init__.
+
+    That leaves the instance with no object_id at all, which is the shape the
+    guard's defensive getattr exists for. Owned by this file on purpose: a user
+    subclass that skips super() is the case that has to keep working, and pinning
+    it against a stub keeps the test independent of whether any particular
+    library class happens to skip super() today.
+    """
+
+    def __init__(self):
+        pass
 
 
 class EventDataObjectGuardTestCase(unittest.TestCase):
@@ -95,9 +112,13 @@ class TestObjectIsRejected(EventDataObjectGuardTestCase):
         only reopen the leak under one key.
         """
         box = Box(object_id="box1", position=(1, 2, 3))
-        self.assertEqual({"parent": box}, Data.update_data({}, {"parent": box}))
-        with self.assertRaises(ValueError):
+        # Scene data accepts the key. Exactly what it stores there is Data's
+        # business and a known follow-up, so this only pins that it is accepted,
+        # not that the value survives as a live Object.
+        self.assertIn("parent", Data.update_data({}, {"parent": box}))
+        with self.assertRaises(ValueError) as caught:
             DataEvent(parent=box)
+        self.assertEqual("Invalid Arena Object as attribute parent: box1", str(caught.exception))
 
     def test_subclass_more_than_one_level_deep_is_rejected(self):
         """Model subclasses GltfModel, which subclasses Object.
@@ -117,14 +138,19 @@ class TestObjectIsRejected(EventDataObjectGuardTestCase):
         with self.assertRaises(ValueError):
             DataEvent(thing=obj)
 
-    def test_camera_without_an_object_id_still_reports_a_usable_error(self):
-        """Camera.__init__ skips super().__init__ when data has no position or
-        rotation, leaving the instance with no object_id at all. Reading it
-        unguarded for the message would raise AttributeError from inside the
-        guard, hiding the actual problem."""
+    def test_object_without_an_object_id_still_reports_a_usable_error(self):
+        """A subclass that skips super().__init__ has no object_id at all.
+
+        Reading it unguarded for the message would raise AttributeError from
+        inside the guard, hiding the actual problem. The guard falls back to the
+        class name instead, so the caller still learns what they passed.
+        """
         with self.assertRaises(ValueError) as caught:
-            DataEvent(thing=Camera(object_id="camera_no_pose"))
-        self.assertEqual("Invalid Arena Object as attribute thing: Camera", str(caught.exception))
+            DataEvent(thing=ObjectWithNoObjectId())
+        self.assertEqual(
+            "Invalid Arena Object as attribute thing: ObjectWithNoObjectId",
+            str(caught.exception),
+        )
 
 
 class TestEventConstructionIsRejected(EventDataObjectGuardTestCase):
@@ -139,8 +165,10 @@ class TestEventConstructionIsRejected(EventDataObjectGuardTestCase):
             Event(object_id="e1", type="mousedown", data={"object": box})
 
     def test_private_object_state_can_no_longer_reach_the_wire(self):
-        """The point of the guard: the payload that used to carry private state
-        is now never built at all, so there is nothing to publish."""
+        """The point of the guard: an Object passed as a direct value is refused
+        at assignment, so this payload is never built and there is nothing to
+        publish. Only direct values -- an Object inside a list or dict value is
+        still accepted and still published, which is the follow-up."""
         box = Box(object_id="box1", position=(1, 2, 3))
         box.evt_handler = lambda scene, evt, msg: None
         with self.assertRaises(ValueError):

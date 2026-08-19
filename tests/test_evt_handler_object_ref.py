@@ -224,8 +224,11 @@ class EventObjectRefTestCase(unittest.TestCase):
     def test_constructor_object_kwarg_sets_the_attribute(self):
         """Event(object=obj) has to reach the attribute it names.
 
-        Unconsumed, "object" falls through into DataEvent, which has no
-        Object-rejection guard, so it lands in data instead of on the Event.
+        Unconsumed, "object" falls through into DataEvent, whose
+        Object-rejection guard now raises ValueError for it. Consuming it in
+        Event.__init__ is what keeps this documented spelling working rather
+        than raising, and is what puts the object on the Event instead of in
+        data.
         """
         box = Box(object_id="ref_box", position=(1, 2, 3))
 

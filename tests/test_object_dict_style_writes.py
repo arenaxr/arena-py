@@ -16,13 +16,17 @@ is public API and renaming it is what this fix avoids.
 
 They also re-pin the routing PR #248 added, because that ran through the same
 line: a name declared as a @deprecated property still goes through the property
-rather than being stored.
+rather than being stored. A name the class exposes as a plain read-only property
+is not routed, so a write to one is stored and the property keeps reporting what
+data says -- a deliberate divergence between the two access styles, pinned here
+under its own name.
 
 Object.all_objects and Object.private_objects are global class state, so every
 test clears them before and after itself to avoid leaking objects into the rest
 of the suite.
 """
 
+import inspect
 import json
 import unittest
 import warnings
@@ -52,9 +56,14 @@ class TestDictStyleWritesOnAnObject(ObjectDictWriteTestCase):
 
     def test_write_round_trips_through_the_read(self):
         """__getitem__ reads self.__dict__, so __setitem__ has to write it: the
-        two access styles must agree about where a plain key lives."""
+        two access styles must agree about where a plain key lives.
+
+        Only names the class does not expose as a property. A read-only property
+        name diverges on purpose -- see
+        TestReadOnlyPropertyNamesDiverge below.
+        """
         box = Box(object_id="b", position=(0, 0, 0))
-        for key, value in (("foo", 1), ("position", 1), ("clickable", 1)):
+        for key, value in (("foo", 1), ("position", 1)):
             with self.subTest(key=key):
                 box[key] = value
                 self.assertEqual(value, box[key])
@@ -110,6 +119,10 @@ class TestRegistryClassmethodIsUnchanged(ObjectDictWriteTestCase):
 
     def test_add_is_still_a_classmethod_taking_one_argument(self):
         self.assertTrue(isinstance(Object.__dict__["add"], classmethod))
+        # bound to the class, so cls is already supplied: one argument left, and
+        # still named "obj". Object.add(self) is how Object.__init__ and
+        # Program.__init__ call it.
+        self.assertEqual(["obj"], list(inspect.signature(Object.add).parameters))
 
     def test_a_dict_style_write_does_not_touch_the_registry(self):
         """The bug was a call into the registry. A write must not add entries -
@@ -124,6 +137,41 @@ class TestRegistryClassmethodIsUnchanged(ObjectDictWriteTestCase):
         holder = BaseObject(x=1)
         holder.add("y", 2)
         self.assertEqual(2, holder["y"])
+
+
+class TestReadOnlyPropertyNamesDiverge(ObjectDictWriteTestCase):
+    """A dict-style write to a read-only property name is stored on the instance
+    and does not change the property, so for such a name the two access styles
+    deliberately disagree.
+
+    __setitem__ routes only names declared as @deprecated properties through the
+    property (PR #248); every other name is stored. Object.clickable is a plain
+    read-only property computed from data, so it is stored past -- accepted
+    behaviour, not something this fix introduces or tries to change.
+    """
+
+    def test_write_to_a_read_only_property_name_is_stored_and_leaves_the_property(self):
+        box = Box(object_id="b", position=(0, 0, 0))
+        self.assertFalse(box.clickable)
+
+        box["clickable"] = 1
+
+        # stored where __getitem__ reads, and the property still reports data
+        self.assertEqual(1, box["clickable"])
+        self.assertEqual(1, vars(box)["clickable"])
+        self.assertFalse(box.clickable)
+
+    def test_such_a_write_ships_a_top_level_key_in_the_payload(self):
+        """Being stored means being published, like any other top-level write.
+
+        Spelled out rather than left implied: "clickable" is a name the schema
+        gives a meaning inside data, so a top-level one is the caller's doing.
+        """
+        box = Box(object_id="b", position=(0, 0, 0))
+        box["clickable"] = 1
+        payload = json.loads(box.json())
+        self.assertEqual(1, payload["clickable"])
+        self.assertNotIn("clickable", payload["data"])
 
 
 class TestDeprecatedRoutingStillApplies(ObjectDictWriteTestCase):

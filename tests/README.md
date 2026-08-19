@@ -132,6 +132,11 @@ class TestMyFeature(unittest.IsolatedAsyncioTestCase):
         # they never appear) instead of guessing at a sleep long enough.
         await harness.start_and_wait_until_subscribed()
         
+        # capture_published_messages() is cumulative and the startup
+        # $NETWORK/latency publish has already landed by now, so record an
+        # offset and slice your own window out of it.
+        before = len(harness.capture_published_messages())
+
         # Add objects directly
         harness.scene.add_object(Box(object_id="my_box"))
         
@@ -140,11 +145,20 @@ class TestMyFeature(unittest.IsolatedAsyncioTestCase):
         
         # Check outputs
         # capture_published_messages() returns payloads as JSON strings
-        msgs = harness.capture_published_messages()
+        msgs = harness.capture_published_messages()[before:]
         self.assertTrue(
             any(json.loads(m["payload"])["object_id"] == "my_box" for m in msgs)
         )
 ```
+
+## Injecting Messages
+
+> [!CAUTION]
+> `harness.inject_message(topic, payload)` silently drops anything that arrives before the scene has subscribed, and a test that does not notice passes vacuously. Before writing one:
+> - `await harness.start_and_wait_until_subscribed()` **before** injecting, and before recording a baseline publish count. Subscriptions are registered only from the async `on_connect` callback; this helper polls until a callback is actually in place rather than betting one fixed interval on that hop, and raises `AssertionError` naming the step budget if it never happens. Do not hand-roll `_start_tasks()` plus a sleep — `_start_tasks()` followed by a single `run_step()` delivers nothing.
+> - `await harness.run_step()` *after* injecting, too, or the message is never processed — injecting only queues the work on the loop.
+> - Injected topics must match the scene's subscription exactly. A wrong namespace or scene name is still dropped silently, with no error.
+> - `capture_published_messages()` returns **JSON-string** payloads on the transport's **cumulative** list. Use `json.loads(m["payload"])`, and slice from a saved `before = len(...)` offset — `start_and_wait_until_subscribed()` lets the startup `$NETWORK/latency` publish land, so one message is already there when it returns.
 
 ## Key Components
 

@@ -12,6 +12,21 @@ from ..env import PROGRAM_STATS_UPDATE_INTERVAL_MS, _get_arena_env, _get_env
 from ..event_loop import PersistentWorker
 
 
+def _utc_now_iso_ms():
+    """Now, as UTC with millisecond precision and a Zulu suffix.
+
+    Millisecond precision with a Zulu suffix and no numeric offset: an offset and
+    a "Z" together do not parse. datetime.now(UTC).isoformat() ends in "+00:00",
+    so trimming three characters cuts into the offset instead of the microseconds
+    and leaves both an offset and a "Z" behind ("...826273+00Z"), which browsers
+    and datetime.strptime alike reject. The run-info timestamps built from this
+    reach consumers on the scene-program topic, so their format is a contract:
+    "%Y-%m-%dT%H:%M:%S.%fZ", e.g. "2025-12-16T22:11:11.001Z".
+    """
+    now = datetime.now(UTC)
+    return f"{now.strftime('%Y-%m-%dT%H:%M:%S')}.{now.microsecond // 1000:03d}Z"
+
+
 class GetPublicAttrsMixin():
     def get_attrs(self, **kwargs):
         """ Return object public members only. """
@@ -50,8 +65,8 @@ class ProgramRunInfo(BaseObject, GetPublicAttrsMixin):
         self.env=_get_arena_env()
 
         # run stats
-        self.create_time =  datetime.now(UTC).isoformat()[:-3]+"Z"
-        self.last_active_time =  datetime.now(UTC).isoformat()[:-3]+"Z"
+        self.create_time =  _utc_now_iso_ms()
+        self.last_active_time =  _utc_now_iso_ms()
         self.rcv_msgs = 0
         self.pub_msgs = 0
         # init when a message is sent/received (so we can see if messages were never sent/received)
@@ -66,7 +81,7 @@ class ProgramRunInfo(BaseObject, GetPublicAttrsMixin):
 
         self._msg_rate_time_start = datetime.now()
         self._rcv_msgs_start = self.rcv_msgs
-        self._pub_msgs_start = self.rcv_msgs
+        self._pub_msgs_start = self.pub_msgs
         self._update_count = 0
 
         if evt_loop:
@@ -85,7 +100,7 @@ class ProgramRunInfo(BaseObject, GetPublicAttrsMixin):
         rcv_msgs = self.rcv_msgs - self._rcv_msgs_start
         pub_msgs = self.pub_msgs - self._pub_msgs_start
         self._rcv_msgs_start=self.rcv_msgs
-        self._pub_msgs_start=self.rcv_msgs
+        self._pub_msgs_start=self.pub_msgs
         if elapsed.seconds > 0:
             rcv_msgs_per_sec = rcv_msgs  / elapsed.seconds
             pub_msgs_per_sec = pub_msgs  / elapsed.seconds
@@ -108,13 +123,13 @@ class ProgramRunInfo(BaseObject, GetPublicAttrsMixin):
 
     def msg_rcv(self):
         """Update stats when a message is received. """
-        self.last_rcv_time = datetime.now(UTC).isoformat()[:-3]+"Z"
+        self.last_rcv_time = _utc_now_iso_ms()
         self.rcv_msgs = self.rcv_msgs + 1
         self.last_active_time = self.last_rcv_time
 
     def msg_publish(self):
         """Update stats when a message is published. """
-        self.last_pub_time = datetime.now(UTC).isoformat()[:-3]+"Z"
+        self.last_pub_time = _utc_now_iso_ms()
         self.pub_msgs = self.pub_msgs + 1
         self.last_active_time = self.last_pub_time
 

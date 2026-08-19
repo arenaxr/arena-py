@@ -247,6 +247,16 @@ class Scene(ArenaMQTT):
                 continue
 
             # extract payload
+            # Seeded before the try because the except below interpolates
+            # payload_str: if the decode is what raised, the assignment inside
+            # the try never happened and the except raised UnboundLocalError
+            # out of process_message, ending the task that drains msg_queue --
+            # the failure the guards below exist to close, past all of them.
+            # Latent, not reachable from a broker: paho always delivers bytes
+            # and bytes.decode(..., "ignore") cannot raise, so only a test
+            # double or a future transport gets there. The raw payload is also
+            # the only useful thing to report when the decode is what failed.
+            payload_str = msg.payload
             try:
                 payload_str = msg.payload.decode("utf-8", "ignore")
                 payload = json.loads(payload_str)

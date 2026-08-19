@@ -40,6 +40,24 @@ class _BaseExc(BaseException):
     """A BaseException the asyncio machinery has no special handling for."""
 
 
+def receive_loop_task(scene):
+    """The single live asyncio task running scene.process_message.
+
+    Picked out by identity rather than by "the only task that finished", so a
+    harness that grows another short-lived task cannot make a test read a
+    surviving guard as a swallowed exception. Each of the harness's tasks is an
+    AsyncWorker.run frame whose `self.func` is the bound method it drives, so a
+    running task is identifiable while its frame is still alive -- call this
+    before the exception under test, not after.
+    """
+    for task in asyncio.all_tasks():
+        frame = task.get_coro().cr_frame
+        worker = frame.f_locals.get("self") if frame else None
+        if getattr(worker, "func", None) == scene.process_message:
+            return task
+    raise AssertionError("no live task is running scene.process_message")
+
+
 def chat_topic(uuid, user_client="other_client"):
     """Topic for an inbound scene chat message from another client.
 
@@ -328,7 +346,7 @@ class ChatHandlerIsolationTestCase(unittest.IsolatedAsyncioTestCase):
         about the guard.
         """
         harness = await self.make_harness()
-        tasks = asyncio.all_tasks()  # includes the live process_message task
+        receive_loop = receive_loop_task(harness.scene)
 
         def on_chat(scene, chatmsg, msg):
             raise _BaseExc("not a handler bug")
@@ -348,8 +366,9 @@ class ChatHandlerIsolationTestCase(unittest.IsolatedAsyncioTestCase):
         # the receive loop's task is the one that died, carrying the raised
         # BaseException. Retrieving it also keeps asyncio from reporting it as
         # never retrieved when the task is collected.
-        died = [t for t in tasks if t.done() and not t.cancelled()]
-        self.assertEqual([type(t.exception()) for t in died], [_BaseExc])
+        self.assertTrue(receive_loop.done())
+        self.assertFalse(receive_loop.cancelled())
+        self.assertIsInstance(receive_loop.exception(), _BaseExc)
 
     async def test_non_object_payload_does_not_stop_the_loop(self):
         """A bare JSON array on a scene topic is skipped, not fatal.
@@ -374,6 +393,45 @@ class ChatHandlerIsolationTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(handled, ["hello"])
         self.assertEqual(harness.scene.msg_queue.qsize(), 0)
         self.assertIn("non-object payload", stdout.getvalue())
+
+    async def test_undecodable_payload_does_not_stop_the_loop(self):
+        """A payload whose decode raises is reported and skipped, not fatal.
+
+        The malformed-payload handler interpolates payload_str, which is
+        assigned inside the try it guards. So when the *decode* is what raised,
+        the handler itself raises UnboundLocalError, which escapes both try
+        blocks and ends the task draining msg_queue for the rest of the session
+        -- the same permanent failure the dispatch guards above exist to close,
+        reached one line earlier and past all of them.
+
+        Not reachable from a real broker today: paho always delivers bytes and
+        bytes.decode("utf-8", "ignore") cannot raise. It is reachable from a
+        test double or a future transport, which is what this test uses -- a str
+        payload handed straight to MockMQTTTransport.mock_receive, since
+        ArenaE2ETest.inject_message always encodes to bytes.
+        """
+        harness = await self.make_harness()
+        handled = []
+        harness.scene.on_chat_callback = lambda scene, chatmsg, msg: handled.append(chatmsg.text)
+
+        stdout = io.StringIO()
+        with contextlib.redirect_stdout(stdout):
+            # a str has no .decode, so the decode inside the try raises
+            harness.transport.mock_receive(chat_topic("bad_uid"), "not-bytes")
+            await harness.run_step(0.2)
+            await self.inject_chat(harness, "hello")
+
+        # asserted first, and by name, because it is the defect: the receive
+        # loop dies with the handler's own UnboundLocalError, and AsyncWorker.run
+        # prints that traceback to stdout on its way out.
+        reported = stdout.getvalue()
+        self.assertNotIn("UnboundLocalError", reported)
+        self.assertEqual(handled, ["hello"])
+        self.assertEqual(harness.scene.msg_queue.qsize(), 0)
+        # the report has to name the payload it choked on, not the previous
+        # message's payload and not nothing at all
+        self.assertIn("Malformed payload", reported)
+        self.assertIn("not-bytes", reported)
 
     async def test_good_chat_handler_is_unaffected(self):
         """The ordinary path is untouched: no guard, no swallowing, no change.

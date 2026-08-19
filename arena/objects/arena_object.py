@@ -156,7 +156,14 @@ class Object(BaseObject):
 
     def json_preprocess(self, **kwargs):
         # kwargs are for additional param to add to json, like "action":"create"
-        skipped_keys = ["evt_handler", "update_handler", "animations", "delayed_prop_tasks", "_private_userid"]
+        # "camera" and "hands" are the back-references Scene maintains between a
+        # user and its hands for handler convenience (user.hands[type] = obj;
+        # obj.camera = user). They are local state like the rest of this list,
+        # they have no place on the wire -- the server pairs a hand with its user
+        # through data.dep -- and left in they form a reference cycle that makes
+        # json.dumps raise "Circular reference detected" from either end.
+        skipped_keys = ["evt_handler", "update_handler", "animations", "delayed_prop_tasks", "_private_userid",
+                        "camera", "hands"]
         json_payload = {k: v for k, v in vars(self).items() if k not in skipped_keys}
         json_payload.update(kwargs)
         return json_payload

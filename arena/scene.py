@@ -699,9 +699,15 @@ class Scene(ArenaMQTT):
                 # True and substitute() would render a literal "None" recipient
                 # token. Object.add_private() reads the same attribute the same
                 # way.
-                if getattr(obj, "_private_userid", None):
+                #
+                # Bound once, and the recipient token comes from the same read:
+                # getattr() also finds a class attribute, while obj[...] looks
+                # only in the instance dict and raises KeyError, so testing one
+                # and substituting the other could disagree.
+                private_userid = getattr(obj, "_private_userid", None)
+                if private_userid:
                     topic = PUBLISH_TOPICS.SCENE_OBJECTS_PRIVATE.substitute(
-                        {**self.topicParams, **{"objectId": obj['object_id'], "toUid": obj['_private_userid']}}
+                        {**self.topicParams, **{"objectId": obj["object_id"], "toUid": private_userid}}
                     )
 
             d = datetime.now(UTC).isoformat()[:-3] + "Z"

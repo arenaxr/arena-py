@@ -23,7 +23,30 @@ This document covers **development rules and conventions** specific to this repo
 To develop `arena-py` locally:
 1. Clone the repository and enter the directory.
 2. Install via pip in editable mode: `pip install -e .`
-3. Run tests or example scripts pointing to a local or dev ARENA instance.
+3. Run the unit tests (see **Testing** below) — they need no ARENA instance. Example scripts, and the manual `system-tests/`, do require a local or dev ARENA instance.
+
+## Testing
+
+The `tests/` suite is **fully offline** — it runs against the `MockMQTTTransport` harness, so no live MQTT broker, no network, and no auth flow are needed. The editable install above is the only setup step.
+
+Run the whole suite exactly as CI does, from the repository root:
+
+```bash
+python -m unittest discover tests
+```
+
+Narrow it while iterating — one file, one class, one test:
+
+```bash
+python -m unittest tests.test_chat
+python -m unittest tests.test_chat.TestChatSend
+python -m unittest tests.test_chat.TestChatSend.test_text_must_be_text
+```
+
+> [!NOTE]
+> Two things that look like failures but are not. The suite prints `RuntimeWarning: coroutine ... was never awaited` tracebacks to stderr *after* the `OK` line — that is interpreter shutdown noise, and the exit code is still `0`. And `python tests/test_foo.py` raises `ModuleNotFoundError: No module named 'arena'` unless you ran `pip install -e .` first, because that form does not put the repository root on `sys.path`.
+
+Writing a new test? Read [tests/README.md](tests/README.md) first — the message-injection harness fails **silently** when mis-sequenced. The separate [system-tests/](system-tests/) suite is manual, needs a live localhost server with a self-signed certificate, and is **not** run by CI.
 
 ## Code Style
 - Follow standard Python formatting guidelines (`black`, `flake8`, and `PEP 8`).

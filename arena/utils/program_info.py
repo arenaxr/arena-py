@@ -81,7 +81,7 @@ class ProgramRunInfo(BaseObject, GetPublicAttrsMixin):
 
         self._msg_rate_time_start = datetime.now()
         self._rcv_msgs_start = self.rcv_msgs
-        self._pub_msgs_start = self.rcv_msgs
+        self._pub_msgs_start = self.pub_msgs
         self._update_count = 0
 
         if evt_loop:
@@ -100,7 +100,7 @@ class ProgramRunInfo(BaseObject, GetPublicAttrsMixin):
         rcv_msgs = self.rcv_msgs - self._rcv_msgs_start
         pub_msgs = self.pub_msgs - self._pub_msgs_start
         self._rcv_msgs_start=self.rcv_msgs
-        self._pub_msgs_start=self.rcv_msgs
+        self._pub_msgs_start=self.pub_msgs
         if elapsed.seconds > 0:
             rcv_msgs_per_sec = rcv_msgs  / elapsed.seconds
             pub_msgs_per_sec = pub_msgs  / elapsed.seconds

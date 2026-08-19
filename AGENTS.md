@@ -23,21 +23,18 @@ Orientation for agents (and humans) working in this repo. Detailed docs live in 
 - [tools/init3d/README.md](tools/init3d/README.md) — init3d: a 3D program manager (similar to init.d).
 - [tools/poster-session/README.md](tools/poster-session/README.md) — programmatic poster session scene creation from Google Sheets.
 
-## Launchers & testing
+## Launchers
 - [launchers/README.md](launchers/README.md) — sample launcher scripts for running ARENA programs during demos.
-- [tests/README.md](tests/README.md) — testing infrastructure for E2E testing without a live MQTT broker.
+
+## Testing
+- [tests/README.md](tests/README.md) — testing infrastructure for E2E testing without a live MQTT broker. Read its **Injecting Messages** section before writing an injection test: injecting before the scene has subscribed is dropped silently, so a mis-sequenced test passes vacuously.
 - [system-tests/all-test.md](system-tests/all-test.md) — end-to-end system testing guide (localhost with self-signed certificate).
 
-Before committing, run the offline suite CI gates on — from the repository root, after `pip install -e .`:
+Before committing, run the offline suite CI gates on — from the repository root:
 
 ```bash
 python -m unittest discover tests   # all tests (exactly what CI runs)
 python -m unittest tests.test_chat  # one file, while iterating
 ```
 
-> [!CAUTION]
-> The injection harness fails **silently** — a mis-sequenced test reports no error, just no callback, so it can pass vacuously. Before writing one:
-> - Call `harness._start_tasks()` **and** `await harness.run_step()` *before* injecting. Subscriptions are registered only from the async `on_connect` callback; anything injected earlier is dropped without a trace.
-> - `await harness.run_step()` *after* injecting, too, or the message is never processed.
-> - Injected topics must match the scene's subscription exactly — a wrong namespace or scene name is dropped silently.
-> - `capture_published_messages()` returns **JSON-string** payloads on a **cumulative** list. Use `json.loads(m["payload"])`, and slice from a saved `before = len(...)` offset — a `$NETWORK/latency` publish is already present before your first action.
+These forms need only `paho-mqtt` installed. `pip install -e .` is required only to run a test as a script (`python tests/test_chat.py`), which the `-m unittest` forms above avoid.

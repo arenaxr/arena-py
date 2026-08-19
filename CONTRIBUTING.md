@@ -27,7 +27,7 @@ To develop `arena-py` locally:
 
 ## Testing
 
-The `tests/` suite is **fully offline** — it runs against the `MockMQTTTransport` harness, so no live MQTT broker, no network, and no auth flow are needed. The editable install above is the only setup step.
+The `tests/` suite is **fully offline** — it runs against the `MockMQTTTransport` harness, so no live MQTT broker, no network, and no auth flow are needed. The `-m unittest` forms below need only `paho-mqtt`; the editable install above is required only to run a test as a script (see the note below).
 
 Run the whole suite exactly as CI does, from the repository root:
 
@@ -44,9 +44,9 @@ python -m unittest tests.test_chat.TestChatSend.test_text_must_be_text
 ```
 
 > [!NOTE]
-> Two things that look like failures but are not. The suite prints `RuntimeWarning: coroutine ... was never awaited` tracebacks to stderr *after* the `OK` line — that is interpreter shutdown noise, and the exit code is still `0`. And `python tests/test_foo.py` raises `ModuleNotFoundError: No module named 'arena'` unless you ran `pip install -e .` first, because that form does not put the repository root on `sys.path`.
+> Two things that look like failures but are not. The suite prints `RuntimeWarning: coroutine ... was never awaited` tracebacks to stderr *throughout the run* — they start within the first few lines, interleave with the progress dots, and continue after the `OK` line. The great majority appear before `OK`, so pages of tracebacks mid-run are expected, not a failure: it is garbage-collection noise from discarded coroutines, and the exit code is still `0`. And `python tests/test_foo.py` raises `ModuleNotFoundError: No module named 'arena'` unless you ran `pip install -e .` first, because that form does not put the repository root on `sys.path`.
 
-Writing a new test? Read [tests/README.md](tests/README.md) first — the message-injection harness fails **silently** when mis-sequenced. The separate [system-tests/](system-tests/) suite is manual, needs a live localhost server with a self-signed certificate, and is **not** run by CI.
+Writing a new test? Read the **Injecting Messages** section of [tests/README.md](tests/README.md) first — the message-injection harness **silently** drops anything injected before the scene has subscribed, so a mis-sequenced test passes vacuously. The separate [system-tests/](system-tests/) suite is manual, needs a live localhost server with a self-signed certificate, and is **not** run by CI.
 
 ## Code Style
 - Follow standard Python formatting guidelines (`black`, `flake8`, and `PEP 8`).

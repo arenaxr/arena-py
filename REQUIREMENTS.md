@@ -105,7 +105,7 @@ graph TD
 |----|-------------|--------|
 | REQ-PY-030 | Event handling (click, mouseenter, mouseleave, collision) | [arena/events/](arena/events/) |
 | REQ-PY-031 | Event callbacks on objects | [arena/scene.py](arena/scene.py) |
-| REQ-PY-032 | Chat messaging (send/receive text) | [arena/chat/](arena/chat/) |
+| REQ-PY-032 | Chat messaging (send/receive text) | [arena/chat/](arena/chat/), [arena/scene.py#send_chat](arena/scene.py) |
 
 ### Task Scheduling
 

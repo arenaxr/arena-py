@@ -295,18 +295,28 @@ class Scene(ArenaMQTT):
                     continue
                 scene_msgtype = topic_split[TOPIC_TOKENS.SCENE_MSGTYPE]
                 # Handle chat messages without same payload expectations as other scene messages
-                if self.on_chat_callback and scene_msgtype == SCENE_MSGTYPES.CHAT:
-                    # Guarded like the object path below: this dispatch sits outside
-                    # that path's try, so an exception here would leave
-                    # process_message and end the task that drains msg_queue,
-                    # silently stopping all message handling for the rest of the
-                    # session. A handler that raises is a user bug; losing the
-                    # receive loop over it is not a proportionate consequence.
-                    try:
-                        chatmsg = Chat(**payload)
-                        self.callback_wrapper(self.on_chat_callback, chatmsg, msg)
-                    except Exception:
-                        self._report_dispatch_error(payload)
+                if scene_msgtype == SCENE_MSGTYPES.CHAT:
+                    # Ignore our own chat, mirroring the web client. The broker
+                    # reflects our publishes back to our own subscriptions, and the
+                    # private subscription covers our own private chat topic, so a
+                    # handler that replies to the sender would loop forever.
+                    if object_id != self.userid and self.on_chat_callback:
+                        # Guarded like the object path below: this dispatch sits outside
+                        # that path's try, so an exception here would leave
+                        # process_message and end the task that drains msg_queue,
+                        # silently stopping all message handling for the rest of the
+                        # session. A handler that raises is a user bug; losing the
+                        # receive loop over it is not a proportionate consequence.
+                        # Nested inside the self-chat filter rather than around it:
+                        # none of object_id, self.userid or on_chat_callback can
+                        # raise, so the filter needs no guard and keeping it outside
+                        # means a reflected self-chat is never reported as a
+                        # dispatch error.
+                        try:
+                            chatmsg = Chat(**payload)
+                            self.callback_wrapper(self.on_chat_callback, chatmsg, msg)
+                        except Exception:
+                            self._report_dispatch_error(payload)
                     continue
                 # Object updates only in these scene msg types
                 if scene_msgtype not in [SCENE_MSGTYPES.PRESENCE, SCENE_MSGTYPES.USER, SCENE_MSGTYPES.OBJECTS, SCENE_MSGTYPES.PROGRAM]:
@@ -713,16 +723,127 @@ class Scene(ArenaMQTT):
         delayed_task.object_id = obj.object_id
         return delayed_task
 
-    def _publish(self, obj: Object, action, custom_payload=False, publish_topic=PUBLISH_TOPICS.SCENE_OBJECTS):
-        """Publishes to mqtt broker with "action":action."""
+    @staticmethod
+    def _chat_text(text):
+        """Validates and normalises a chat message body to a string."""
+        if isinstance(text, str):
+            return text
+        if isinstance(text, bool) or not isinstance(text, (int, float)):
+            # The web client treats text as a string (it measures and slices it),
+            # so a null or structured body breaks the receiving chat panel.
+            raise TypeError(f"Chat text must be a string, got {type(text).__name__}.")
+        return str(text)
+
+    @staticmethod
+    def _check_chat_to_uid(to_uid):
+        """Rejects a private chat recipient that would corrupt the publish topic."""
+        if not isinstance(to_uid, str) or not to_uid:
+            raise ValueError(f"Chat to_uid must be a non-empty string, got {to_uid!r}.")
+        if any(c in to_uid for c in "+#/"):
+            # '+' and '#' are MQTT wildcards, which brokers reject on publish;
+            # '/' would silently publish one topic level deeper.
+            raise ValueError(f"Chat to_uid must not contain '+', '#' or '/', got {to_uid!r}.")
+
+    def send_chat(self, text, to_uid=None, display_name=None):
+        """Publishes a chat message to the scene's chat panel.
+
+        Chat is the counterpart of the ``on_chat_callback`` handler: this program
+        appears in the scene chat as a regular participant. Chat payloads carry no
+        ``action`` and no ``data`` field, so they are never delta-compressed.
+
+        The published payload always carries this program's own ``object_id`` (it
+        has to match the topic idTag token or receivers discard the message), a
+        ``type`` (``"chat"`` unless the Chat sets its own) and a ``dn``. A Chat
+        passed in is left untouched: those fields are filled on a copy, as is the
+        removal of the receive-side ``topic`` annotation, so a received Chat can
+        be handed straight back for relay.
+
+        :param text: Body of the chat message, or a Chat carrying it (required).
+            Numbers are converted to their string form; None and other non-text
+            values raise TypeError, since the web client requires text.
+        :param str to_uid: Send privately to this single user id; None (default)
+            sends to everyone in the scene (optional).
+        :param str display_name: Sender name shown in the chat panel. Defaults to
+            this program's ARENA username. This name is user-visible: the web
+            client lists this program among the scene's live users under it (optional).
+        :return: JSON string of the published payload, or None if nothing was sent.
+        """
+        # Copy before filling in the sender fields: a received Chat handed back
+        # for relay must come out of send_chat exactly as it went in.
+        chatmsg = Chat(**vars(text)) if isinstance(text, Chat) else Chat(text=text)
+
+        chatmsg.text = self._chat_text(chatmsg.text if "text" in chatmsg else None)
+        # object_id must match the topic idTag token or receivers discard the message
+        chatmsg.object_id = self.userid
+        if "type" not in chatmsg or chatmsg.type is None:
+            chatmsg.type = "chat"
+        if display_name is not None:
+            chatmsg.dn = display_name
+        elif "dn" not in chatmsg or chatmsg.dn is None:
+            chatmsg.dn = self.username
+
+        if to_uid is None:
+            publish_topic = PUBLISH_TOPICS.SCENE_CHAT
+            topic_params = None
+        else:
+            if to_uid == self.userid:
+                # Our own private chat topic is covered by our own private
+                # subscription, and the broker reflects our publishes back to us,
+                # so replying to ourselves is an unbounded message loop.
+                print("[WARNING]", f"Ignoring send_chat to self ({to_uid}); a chat sent to this program would loop.")
+                return None
+            self._check_chat_to_uid(to_uid)
+            publish_topic = PUBLISH_TOPICS.SCENE_CHAT_PRIVATE
+            topic_params = {"toUid": to_uid}
+
+        payload = vars(chatmsg).copy()
+        # 'topic' is a receive-side annotation (see on_message handling), never sent
+        payload.pop("topic", None)
+
+        # action=None: chat has no "action" key, unlike scene object messages
+        return self._publish(
+            payload,
+            None,
+            custom_payload=True,
+            publish_topic=publish_topic,
+            topic_params=topic_params,
+        )
+
+    def _publish(
+        self,
+        obj: Object,
+        action,
+        custom_payload=False,
+        publish_topic=PUBLISH_TOPICS.SCENE_OBJECTS,
+        topic_params=None,
+    ):
+        """Publishes to mqtt broker with "action":action.
+
+        :param obj: Object (or plain dict, with custom_payload) to publish.
+        :param action: Value of the payload "action" key; None omits the key entirely,
+            for wire formats like chat that carry no action.
+        :param bool custom_payload: If true, obj is a plain dict to publish as-is.
+        :param publish_topic: Template from PUBLISH_TOPICS to publish on.
+        :param dict topic_params: Extra substitutions for publish_topic, for templates
+            needing more than the scene topic params (for example "toUid").
+        """
         obj_type = None
         if "type" in obj:
             obj_type = obj["type"]
 
         with self.telemetry.start_publish_span(obj["object_id"], action, obj_type) as span:
-            topic = publish_topic.substitute({**self.topicParams, **{"objectId": obj["object_id"]}})
+            topic = publish_topic.substitute(
+                {**self.topicParams, **{"objectId": obj["object_id"]}, **(topic_params or {})}
+            )
 
-            if publish_topic == PUBLISH_TOPICS.SCENE_OBJECTS:
+            if publish_topic in (PUBLISH_TOPICS.SCENE_CHAT, PUBLISH_TOPICS.SCENE_CHAT_PRIVATE):
+                # self.can_publish_chat indicates if we can publish on the chat topic branch
+                if not self.can_publish_chat:
+                    self.telemetry.set_error(
+                        f"ERROR: Publish failed! You do not have permission to publish to topic {topic} on {self.web_host}",
+                        span,
+                    )
+            elif publish_topic == PUBLISH_TOPICS.SCENE_OBJECTS:
                 # self.can_publish_obj indicates if we can publish on the default publish_topic (PUBLISH_TOPICS.SCENE_OBJECTS)
                 if not self.can_publish_obj:
                     self.telemetry.set_error(
@@ -734,11 +855,16 @@ class Scene(ArenaMQTT):
                         {**self.topicParams, **{"objectId": obj['object_id'], "toUid": obj['_private_userid']}}
                     )
 
-            d = datetime.now(UTC).isoformat()[:-3] + "Z"
+            # Millisecond precision with a Zulu suffix and no numeric offset: an
+            # offset and a "Z" together do not parse (the web chat panel renders
+            # the message time straight from this field).
+            now = datetime.now(UTC)
+            d = f"{now.strftime('%Y-%m-%dT%H:%M:%S')}.{now.microsecond // 1000:03d}Z"
 
             if custom_payload:
                 tmp_obj = obj
-                tmp_obj["action"] = action
+                if action is not None:
+                    tmp_obj["action"] = action
                 tmp_obj["timestamp"] = d
                 payload = json.dumps(tmp_obj)
             else:

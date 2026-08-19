@@ -403,7 +403,7 @@ class SceneProgramInfoTimestampTest(TimestampAssertion, unittest.IsolatedAsyncio
 
         Scoped to those four fields: the envelope "timestamp" that travels in the
         same payload is a separate value from a separate code path, pinned by
-        test_published_envelope_timestamp_is_still_malformed below.
+        test_published_envelope_timestamp_is_a_utc_instant below.
         """
         harness = await self.make_connected_harness()
         for payload in await self.published_program_payloads(harness):
@@ -412,36 +412,27 @@ class SceneProgramInfoTimestampTest(TimestampAssertion, unittest.IsolatedAsyncio
                 self.assertIn(field, run_info, f"{field} missing from published run_info")
                 self.assert_arena_timestamp(run_info[field], f"published {field}")
 
-    async def test_published_envelope_timestamp_is_still_malformed(self):
-        """Pins PRESENT behaviour, not desired behaviour: the envelope is still broken.
+    async def test_published_envelope_timestamp_is_a_utc_instant(self):
+        """The envelope "timestamp" is well-formed, on the same contract as the rest.
 
-        The same published payload that now carries well-formed data.program.*
-        timestamps also carries a top-level "timestamp", and that one is still
-        built by the pre-fix expression in the publish path -- so a consumer of the
-        scene-program topic today sees four good values sitting next to one
-        unparseable "...+00Z". The run-info fix (issue #252) deliberately leaves
-        the publish path alone, because PR #247 fixes it and editing that path here
-        would conflict with it.
+        The published payload carries a top-level "timestamp" built by the publish
+        path in Scene._publish, separately from the four data.program.* values. It
+        used to be built by the pre-fix expression, so a consumer of the
+        scene-program topic saw four good values sitting next to one unparseable
+        "...+00Z"; PR #247 replaced that expression with millisecond-precision
+        Zulu formatting, so the envelope now holds to the same contract.
 
-        So this assertion is expected to FAIL once #247 lands. That is the point:
-        it should then be replaced by a passing assert_arena_timestamp call on this
-        same field, rather than relaxed or deleted.
+        Checked with the module's own assert_arena_timestamp, which is what the
+        data.program.* cases use: shape *and* instant, so a publish path that went
+        back to a numeric offset, to microsecond precision, or to a naive local
+        clock under a "Z" all fail here.
         """
         harness = await self.make_connected_harness()
         for payload in await self.published_program_payloads(harness):
             self.assertIn(
                 "timestamp", payload, "published program payload lost its envelope timestamp"
             )
-            envelope = payload["timestamp"]
-            self.assertIn(
-                "+00Z",
-                envelope,
-                f"envelope timestamp no longer carries offset-plus-Zulu ({envelope!r}) -- "
-                f"if the #247 publish-path fix landed, swap this case for "
-                f"self.assert_arena_timestamp(envelope, 'envelope timestamp')",
-            )
-            with self.assertRaises(ValueError):
-                datetime.strptime(envelope, TIME_FMT)
+            self.assert_arena_timestamp(payload["timestamp"], "envelope timestamp")
 
 
 if __name__ == "__main__":

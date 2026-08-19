@@ -7,7 +7,6 @@ import sys
 import threading
 import traceback
 import uuid
-from datetime import datetime, UTC
 from inspect import signature
 from pathlib import Path
 
@@ -857,9 +856,10 @@ class Scene(ArenaMQTT):
 
             # Millisecond precision with a Zulu suffix and no numeric offset: an
             # offset and a "Z" together do not parse (the web chat panel renders
-            # the message time straight from this field).
-            now = datetime.now(UTC)
-            d = f"{now.strftime('%Y-%m-%dT%H:%M:%S')}.{now.microsecond // 1000:03d}Z"
+            # the message time straight from this field). Shared with the run-info
+            # timestamps in ProgramRunInfo, which hold to the same contract; the
+            # format is spelled out once, in Utils.
+            d = Utils.utc_now_iso_ms()
 
             if custom_payload:
                 tmp_obj = obj

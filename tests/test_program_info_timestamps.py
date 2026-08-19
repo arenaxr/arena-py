@@ -16,12 +16,17 @@ timestamp is offset-qualified or Zulu, never both. So the assertion helper below
 is deliberately strict about the whole shape, and ProgramInfoTimestampGuardTest
 feeds it a known-bad value to prove it is strict enough to catch this -- a check
 loose enough to accept "+00Z" would make every other test here vacuous.
+
+Shape is not the whole contract, though: the "Z" claims UTC, so the helper also
+checks the value really is a UTC instant. Without that, swapping the producer's
+datetime.now(UTC) for datetime.now() keeps every shape assertion green while
+shipping local time under a "Z" -- four hours off under TZ=America/New_York.
 """
 
 import json
 import re
 import unittest
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta, timezone
 
 from arena.objects import Object
 from arena.test_system import ArenaE2ETest
@@ -38,6 +43,12 @@ TIME_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$")
 # The four run-info fields that reach the wire.
 TIME_FIELDS = ("create_time", "last_active_time", "last_rcv_time", "last_pub_time")
 
+# How far a timestamp may sit from now(UTC) and still count as "this instant".
+# Loose enough that a slow or heavily loaded CI runner can build the value minutes
+# before the assertion reads it; far tighter than any real timezone offset, the
+# smallest of which is 30 minutes, so a local-time reading cannot slip through.
+MAX_CLOCK_SKEW = timedelta(minutes=5)
+
 
 def old_timestamp():
     """The pre-fix expression, kept as the negative control's input.
@@ -53,7 +64,12 @@ def old_timestamp():
 class TimestampAssertion:
     """Mixin: the strict check shared by every case in this module."""
 
-    def assert_arena_timestamp(self, value, field):
+    def assert_timestamp_shape(self, value, field):
+        """Shape only: the contract format, nothing about which instant it names.
+
+        Returns the naive datetime the contract format parses out, for callers
+        that go on to check the instant.
+        """
         self.assertIsInstance(value, str, f"{field} should be a string, got {value!r}")
         self.assertRegex(
             value,
@@ -62,9 +78,29 @@ class TimestampAssertion:
             f"and no numeric offset, got {value!r}",
         )
         try:
-            datetime.strptime(value, TIME_FMT)
+            return datetime.strptime(value, TIME_FMT)
         except ValueError as e:
             self.fail(f"{field} does not parse with {TIME_FMT!r}: {value!r} ({e})")
+
+    def assert_arena_timestamp(self, value, field):
+        """The full contract: the right shape *and* the right instant.
+
+        The shape alone does not pin the zone. Replace the producer's
+        datetime.now(UTC) with datetime.now() and the trailing "Z" stays put, the
+        regex still matches, strptime still parses -- and the value is local time
+        wearing a UTC label, four hours out under TZ=America/New_York. So read the
+        parsed value as UTC, which is what the "Z" promises a consumer, and require
+        it to land within MAX_CLOCK_SKEW of now(UTC).
+        """
+        parsed = self.assert_timestamp_shape(value, field)
+        skew = abs(datetime.now(UTC) - parsed.replace(tzinfo=UTC))
+        self.assertLessEqual(
+            skew,
+            MAX_CLOCK_SKEW,
+            f"{field} carries a Zulu suffix but read as UTC it is {skew} away from "
+            f"now(UTC), so it is not the instant it claims to be -- a local clock "
+            f"reading labelled UTC looks exactly like this: {value!r}",
+        )
 
 
 class ProgramInfoTimestampGuardTest(TimestampAssertion, unittest.TestCase):
@@ -89,9 +125,32 @@ class ProgramInfoTimestampGuardTest(TimestampAssertion, unittest.TestCase):
         with self.assertRaises(self.failureException):
             self.assert_arena_timestamp("2026-08-19T02:04:18.826+00:00", "offset")
 
+    def test_helper_rejects_a_local_time_reading_labelled_utc(self):
+        """Right shape, wrong instant: what datetime.now() instead of now(UTC) emits.
+
+        Built against a fixed -04:00 offset rather than the runner's own zone, so
+        the case holds whatever TZ CI sets -- including UTC, where a producer bug
+        of this kind would otherwise be invisible.
+        """
+        local = datetime.now(timezone(timedelta(hours=-4))).replace(tzinfo=None)
+        value = f"{local.strftime('%Y-%m-%dT%H:%M:%S')}.{local.microsecond // 1000:03d}Z"
+        self.assert_timestamp_shape(value, "local_time")  # the shape is fine
+        with self.assertRaises(self.failureException):
+            self.assert_arena_timestamp(value, "local_time")
+
     def test_helper_accepts_the_contract_shape(self):
-        """The shape recorded in tests/trace_random_sphere.json."""
-        self.assert_arena_timestamp("2025-12-16T22:11:11.001Z", "contract")
+        """The shape recorded in tests/trace_random_sphere.json.
+
+        A recorded literal names a fixed instant in 2025, so this is the
+        shape-only check; the instant check has its own case below.
+        """
+        self.assert_timestamp_shape("2025-12-16T22:11:11.001Z", "contract")
+
+    def test_helper_accepts_a_freshly_built_contract_value(self):
+        """The full check, shape and instant together, on a value built just now."""
+        now = datetime.now(UTC)
+        value = f"{now.strftime('%Y-%m-%dT%H:%M:%S')}.{now.microsecond // 1000:03d}Z"
+        self.assert_arena_timestamp(value, "fresh")
 
 
 class ProgramRunInfoTimestampTest(TimestampAssertion, unittest.TestCase):
@@ -123,7 +182,11 @@ class ProgramRunInfoTimestampTest(TimestampAssertion, unittest.TestCase):
 
 
 class SceneProgramInfoTimestampTest(TimestampAssertion, unittest.IsolatedAsyncioTestCase):
-    """The same four fields, driven through a real Scene and onto the wire."""
+    """The same four fields, driven through a real Scene and onto the wire.
+
+    Plus one case on the envelope "timestamp" that rides along in the same payload,
+    which the run-info fix does not touch and which is still malformed.
+    """
 
     def setUp(self):
         Object.all_objects.clear()
@@ -173,9 +236,13 @@ class SceneProgramInfoTimestampTest(TimestampAssertion, unittest.IsolatedAsyncio
             self.assertIsNotNone(value, f"{field} was never set; the path did not run")
             self.assert_arena_timestamp(value, field)
 
-    async def test_fields_parse_in_the_published_program_payload(self):
-        """The values as a consumer of the scene-program topic actually sees them."""
-        harness = await self.make_connected_harness()
+    async def published_program_payloads(self, harness):
+        """The program payloads the harness put on the wire, decoded.
+
+        Drives a receive and a publish, then publishes the program object the way
+        the periodic stats update does, and returns the whole payloads -- envelope
+        included, not just data.program.
+        """
         scene = harness.scene
 
         harness.inject_message(
@@ -200,18 +267,61 @@ class SceneProgramInfoTimestampTest(TimestampAssertion, unittest.IsolatedAsyncio
             for m in harness.capture_published_messages()
             if "/p/" in m["topic"] or "program" in m["topic"]
         ]
-        run_infos = [
-            p["data"][ProgramRunInfo.object_type]
+        program_payloads = [
+            p
             for p in payloads
             if isinstance(p.get("data"), dict)
             and ProgramRunInfo.object_type in p["data"]
         ]
-        self.assertTrue(run_infos, "no published program payload carried run_info")
+        self.assertTrue(
+            program_payloads, "no published program payload carried run_info"
+        )
+        return program_payloads
 
-        for run_info in run_infos:
+    async def test_run_info_fields_parse_in_the_published_program_payload(self):
+        """The four data.program.* run-info fields, as published.
+
+        Scoped to those four fields: the envelope "timestamp" that travels in the
+        same payload is a separate value from a separate code path, pinned by
+        test_published_envelope_timestamp_is_still_malformed below.
+        """
+        harness = await self.make_connected_harness()
+        for payload in await self.published_program_payloads(harness):
+            run_info = payload["data"][ProgramRunInfo.object_type]
             for field in TIME_FIELDS:
                 self.assertIn(field, run_info, f"{field} missing from published run_info")
                 self.assert_arena_timestamp(run_info[field], f"published {field}")
+
+    async def test_published_envelope_timestamp_is_still_malformed(self):
+        """Pins PRESENT behaviour, not desired behaviour: the envelope is still broken.
+
+        The same published payload that now carries well-formed data.program.*
+        timestamps also carries a top-level "timestamp", and that one is still
+        built by the pre-fix expression in the publish path -- so a consumer of the
+        scene-program topic today sees four good values sitting next to one
+        unparseable "...+00Z". The run-info fix (issue #252) deliberately leaves
+        the publish path alone, because PR #247 fixes it and editing that path here
+        would conflict with it.
+
+        So this assertion is expected to FAIL once #247 lands. That is the point:
+        it should then be replaced by a passing assert_arena_timestamp call on this
+        same field, rather than relaxed or deleted.
+        """
+        harness = await self.make_connected_harness()
+        for payload in await self.published_program_payloads(harness):
+            self.assertIn(
+                "timestamp", payload, "published program payload lost its envelope timestamp"
+            )
+            envelope = payload["timestamp"]
+            self.assertIn(
+                "+00Z",
+                envelope,
+                f"envelope timestamp no longer carries offset-plus-Zulu ({envelope!r}) -- "
+                f"if the #247 publish-path fix landed, swap this case for "
+                f"self.assert_arena_timestamp(envelope, 'envelope timestamp')",
+            )
+            with self.assertRaises(ValueError):
+                datetime.strptime(envelope, TIME_FMT)
 
 
 if __name__ == "__main__":

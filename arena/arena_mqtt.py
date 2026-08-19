@@ -371,7 +371,23 @@ class ArenaMQTT(object):
         self.msg_queue.put_nowait(msg)
 
     def on_message_private(self, client, userdata, msg):
-        # Private messages are never reflected to self, no check required
+        # No self-filter here, unlike on_message above: ignore_topic is built from
+        # SCENE_PUBLIC_SELF and so matches only the public branch. Private messages
+        # *are* reflected to self -- our private subscription covers our own private
+        # topics, and the broker delivers our own publishes back on them. The chat
+        # work (PR #247) is what established this: it had to add an explicit
+        # object_id != self.userid check on the chat receive branch in
+        # Scene.process_message, because without it a handler that replied to the
+        # sender answered its own reply forever.
+        #
+        # That filter is confined to the chat branch: it is the only such check in
+        # the tree. The private object, user, presence and program paths have no
+        # equivalent -- all four reach the same Scene.process_message receive
+        # function, which whitelists exactly those four scene msgtypes -- so a
+        # program that publishes privately to itself on those paths sees its own
+        # message come back, and a handler that replies on one of them would need the
+        # same check. Deliberately not added here -- a blanket filter on this callback
+        # would also drop private messages a program legitimately sends itself.
         self.msg_queue.put_nowait(msg)
 
     async def process_message(self):

@@ -4,6 +4,7 @@ import os
 import sys
 import sysconfig
 import warnings
+from datetime import UTC, datetime
 
 from . import not_numpy as np
 
@@ -152,6 +153,39 @@ def deprecated(msg):
 
 
 class Utils(object):
+    @classmethod
+    def utc_now_iso_ms(cls, now=None):
+        """A UTC timestamp with millisecond precision and a Zulu suffix.
+
+        The one place this format is spelled out. It is a wire contract, not an
+        internal detail: it labels the envelope "timestamp" of every published
+        message and the four ProgramRunInfo run-info fields, both of which reach
+        consumers that parse them -- the web chat panel renders a message time
+        straight from the envelope field, examples/legacy/localization/gt-sync.py
+        parses that same envelope field with this exact format, and the run-info
+        fields reach consumers on the scene-program topic. So the contract is
+        "%Y-%m-%dT%H:%M:%S.%fZ" at millisecond precision, e.g.
+        "2025-12-16T22:11:11.001Z", and tests/test_program_info_timestamps.py and
+        tests/test_chat.py pin that shape.
+
+        Built by formatting rather than by trimming isoformat(): a numeric offset
+        and a "Z" together do not parse, and datetime.now(UTC).isoformat() ends in
+        "+00:00", so slicing three characters off cuts into the offset instead of
+        the microseconds and leaves both behind ("...826273+00Z"), which browsers
+        and datetime.strptime alike reject.
+
+        :param datetime now: the instant to render, which must be timezone-aware
+            and UTC. Defaults to datetime.now(UTC). Callers pass it so their own
+            module-level `datetime` is the one read, which is what lets a test
+            substitute a fixed clock for that module and still reach this
+            formatting -- patching a caller's `datetime` cannot affect the global
+            read here. ProgramRunInfo relies on that; see
+            ProgramRunInfoFixedClockTest.
+        """
+        if now is None:
+            now = datetime.now(UTC)
+        return f"{now.strftime('%Y-%m-%dT%H:%M:%S')}.{now.microsecond // 1000:03d}Z"
+
     @classmethod
     def tuple_to_string(cls, tup, sep=" "):
         """Turns a tuple into a string."""

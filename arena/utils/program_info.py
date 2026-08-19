@@ -10,21 +10,24 @@ from datetime import datetime, UTC
 from ..base_object import BaseObject
 from ..env import PROGRAM_STATS_UPDATE_INTERVAL_MS, _get_arena_env, _get_env
 from ..event_loop import PersistentWorker
+from .utils import Utils
 
 
 def _utc_now_iso_ms():
     """Now, as UTC with millisecond precision and a Zulu suffix.
 
-    Millisecond precision with a Zulu suffix and no numeric offset: an offset and
-    a "Z" together do not parse. datetime.now(UTC).isoformat() ends in "+00:00",
-    so trimming three characters cuts into the offset instead of the microseconds
-    and leaves both an offset and a "Z" behind ("...826273+00Z"), which browsers
-    and datetime.strptime alike reject. The run-info timestamps built from this
-    reach consumers on the scene-program topic, so their format is a contract:
-    "%Y-%m-%dT%H:%M:%S.%fZ", e.g. "2025-12-16T22:11:11.001Z".
+    The format itself lives in Utils.utc_now_iso_ms, which the publish path in
+    Scene._publish shares; see there for what the format is and why it is built
+    by formatting rather than by trimming isoformat().
+
+    The clock is read here rather than left to that helper's default so that the
+    instant comes from this module's own `datetime`, which is what lets a test
+    substitute a fixed clock for this module and have the run-info fields follow
+    it. Do not collapse this to a bare Utils.utc_now_iso_ms() -- the helper would
+    then read utils.py's `datetime` and ProgramRunInfoFixedClockTest could no
+    longer pin that these timestamps are UTC instants.
     """
-    now = datetime.now(UTC)
-    return f"{now.strftime('%Y-%m-%dT%H:%M:%S')}.{now.microsecond // 1000:03d}Z"
+    return Utils.utc_now_iso_ms(datetime.now(UTC))
 
 
 class GetPublicAttrsMixin():

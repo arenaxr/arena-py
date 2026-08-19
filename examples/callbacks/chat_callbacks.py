@@ -14,11 +14,14 @@ COMMAND = "!echo "
 
 
 def chat_handler(scene, chatmsg, _rawmsg):
-    text = chatmsg.text.strip()
     # Only fields the sender actually sent are set, so test before reading one:
     # the web client's `chat-ctrl` control messages arrive on this same topic
-    # branch carrying no display name.
-    sender = chatmsg.dn if "dn" in chatmsg else chatmsg.object_id
+    # branch, and they carry neither a display name nor, in some cases, any text.
+    # A field can also arrive explicitly null, which Chat keeps as a value rather
+    # than an omission, so a presence check alone still hands back None. Check for
+    # both, the way `Scene.send_chat` does before it normalises these two fields.
+    text = chatmsg.text.strip() if "text" in chatmsg and chatmsg.text is not None else ""
+    sender = chatmsg.dn if "dn" in chatmsg and chatmsg.dn is not None else chatmsg.object_id
     print(f"Chat message from {sender} ({chatmsg.object_id}): {text}")
     # Reply only to an explicit command, never to every message received. Two
     # programs that each answer every chat would keep answering each other.

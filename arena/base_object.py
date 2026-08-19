@@ -111,11 +111,19 @@ class BaseObject(object):
         name directly instead would put a key in the instance dict that the property
         was meant to handle, and ship it in json(). Every other name is stored as
         before.
+
+        The store is called as BaseObject.add rather than self.add on purpose.
+        Object defines `add` as a classmethod registry - Object.add(cls, obj),
+        which inserts into Object.all_objects - and that classmethod shadows this
+        instance method, so `self.add(name, attr)` raised
+        `TypeError: Object.add() takes 2 positional arguments but 3 were given`
+        for every dict-style write on every Object. Naming the definition to call
+        fixes the write without touching Object.add, which is public API.
         """
         if name in type(self)._arena_deprecated_write_keys:
             setattr(self, name, attr)
             return
-        self.add(name, attr)
+        BaseObject.add(self, name, attr)
 
     def __contains__(self, attr):
         return attr in self.__dict__

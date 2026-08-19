@@ -94,8 +94,8 @@ class Object(BaseObject):
             self._private_userid = private_userid  # None is public
             self.private = True # private objects are always private interaction
 
-        self.evt_handler = evt_handler
-        self.update_handler = update_handler
+        self.evt_handler = Object._checked_handler("evt_handler", evt_handler)
+        self.update_handler = Object._checked_handler("update_handler", update_handler)
         self.animations = []
 
         # add current object to all_objects dict
@@ -106,10 +106,41 @@ class Object(BaseObject):
 
         self.delayed_prop_tasks = {}  # dict of delayed property tasks
 
+    @staticmethod
+    def _checked_handler(name, handler):
+        """Returns handler if it can be called back, otherwise None.
+
+        evt_handler and update_handler are local-only fields: json_preprocess
+        strips them on the way out, so they never legitimately appear on the
+        wire in either direction. But Scene.process_message reaches both
+        __init__ and update_attributes with the raw inbound payload, so without
+        this a top-level "evt_handler" in a create or update message would bind
+        on any object this client knows -- a remote sender silencing that
+        object's events for the life of the process.
+
+        json.loads cannot produce a callable, so requiring one here leaves the
+        documented contract true no matter who called: a value a remote sender
+        can send is rejected outright, never coerced or stored.
+
+        Event.__init__ guards its own local-only "object" field at the same
+        parsing boundary, but not with the same test or the same disposition: it
+        keeps the value only when isinstance(_object, Object) holds and
+        substitutes None silently, None being that field's documented answer for
+        "nothing was resolved". A handler has no equivalent neutral value, so
+        this tests callable() instead and warns as it drops the value, rather
+        than coercing quietly.
+        """
+        if handler is None or callable(handler):
+            return handler
+        print("[WARNING]", f"Ignoring non-callable {name} of type {type(handler).__name__}; handlers must be callable.")
+        return None
+
     def update_attributes(self, evt_handler=None, update_handler=None, **kwargs):
+        evt_handler = Object._checked_handler("evt_handler", evt_handler)
         if evt_handler:
             self.evt_handler = evt_handler
 
+        update_handler = Object._checked_handler("update_handler", update_handler)
         if update_handler:
             self.update_handler = update_handler
 

@@ -274,8 +274,17 @@ class Scene(ArenaMQTT):
                 scene_msgtype = topic_split[TOPIC_TOKENS.SCENE_MSGTYPE]
                 # Handle chat messages without same payload expectations as other scene messages
                 if self.on_chat_callback and scene_msgtype == SCENE_MSGTYPES.CHAT:
-                    chatmsg = Chat(**payload)
-                    self.callback_wrapper(self.on_chat_callback, chatmsg, msg)
+                    # Guarded like the object path below: this dispatch sits outside
+                    # that path's try, so an exception here would leave
+                    # process_message and end the task that drains msg_queue,
+                    # silently stopping all message handling for the rest of the
+                    # session. A handler that raises is a user bug; losing the
+                    # receive loop over it is not a proportionate consequence.
+                    try:
+                        chatmsg = Chat(**payload)
+                        self.callback_wrapper(self.on_chat_callback, chatmsg, msg)
+                    except Exception:
+                        self._report_dispatch_error(payload)
                     continue
                 # Object updates only in these scene msg types
                 if scene_msgtype not in [SCENE_MSGTYPES.PRESENCE, SCENE_MSGTYPES.USER, SCENE_MSGTYPES.OBJECTS, SCENE_MSGTYPES.PROGRAM]:
@@ -403,14 +412,22 @@ class Scene(ArenaMQTT):
 
                     span.add_event("Handle Msg Done.")
 
-                except Exception as e:
-                    self.telemetry.set_error(
-                        f"Something went wrong!\n"
-                        f"-----------------------------\n"
-                        f"Source:\n{traceback.format_exc()}\n\n"
-                        f"Exception occured when processing payload: {payload}\n"
-                        f"-----------------------------\n"
-                    )
+                except Exception:
+                    self._report_dispatch_error(payload)
+
+    def _report_dispatch_error(self, payload):
+        """Reports an exception raised while dispatching an inbound message.
+
+        Shared by the chat and object branches of process_message so both report a
+        failing handler the same way, with the payload that provoked it.
+        """
+        self.telemetry.set_error(
+            f"Something went wrong!\n"
+            f"-----------------------------\n"
+            f"Source:\n{traceback.format_exc()}\n\n"
+            f"Exception occured when processing payload: {payload}\n"
+            f"-----------------------------\n"
+        )
 
     def callback_wrapper(self, func, arg, msg):
         """Checks for number of arguments for callback."""

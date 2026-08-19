@@ -255,6 +255,18 @@ class Scene(ArenaMQTT):
                 self.telemetry.add_event(f"Malformed payload: {payload_str}. {e}.")
                 continue
 
+            # A scene message is a JSON object. json.loads also accepts a bare
+            # array, number, string, boolean or null, and every line below reads
+            # payload as a mapping -- starting with the topic assignment, which
+            # sits outside every try, so a non-object payload raised TypeError
+            # there and ended the task that drains msg_queue for the rest of the
+            # session. Report it the way an unparseable payload is reported and
+            # move on to the next message.
+            if not isinstance(payload, dict):
+                print(f"[WARNING] Ignoring non-object payload: {payload_str}.")
+                self.telemetry.add_event(f"Ignoring non-object payload: {payload_str}.")
+                continue
+
             if self.debug:
                 # log messages received for debugging
                 self.telemetry.add_event(f"[received] {msg.topic} {payload}")

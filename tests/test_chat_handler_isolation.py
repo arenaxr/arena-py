@@ -351,6 +351,30 @@ class ChatHandlerIsolationTestCase(unittest.IsolatedAsyncioTestCase):
         died = [t for t in tasks if t.done() and not t.cancelled()]
         self.assertEqual([type(t.exception()) for t in died], [_BaseExc])
 
+    async def test_non_object_payload_does_not_stop_the_loop(self):
+        """A bare JSON array on a scene topic is skipped, not fatal.
+
+        json.loads accepts any JSON value, and the topic assignment that follows
+        it -- payload["topic"] = msg.topic -- sits outside every try, so a bare
+        array raised TypeError there and ended the receive loop for the rest of
+        the session, past both dispatch guards. #257 sanctions closing this at
+        the parsing boundary, so a payload that is not a JSON object is reported
+        and skipped like an unparseable one.
+        """
+        harness = await self.make_harness()
+        handled = []
+        harness.scene.on_chat_callback = lambda scene, chatmsg, msg: handled.append(chatmsg.text)
+
+        stdout = io.StringIO()
+        with contextlib.redirect_stdout(stdout):
+            harness.inject_message(chat_topic("bad_uid"), [1, 2, 3])
+            await harness.run_step(0.2)
+            await self.inject_chat(harness, "hello")
+
+        self.assertEqual(handled, ["hello"])
+        self.assertEqual(harness.scene.msg_queue.qsize(), 0)
+        self.assertIn("non-object payload", stdout.getvalue())
+
     async def test_good_chat_handler_is_unaffected(self):
         """The ordinary path is untouched: no guard, no swallowing, no change.
 

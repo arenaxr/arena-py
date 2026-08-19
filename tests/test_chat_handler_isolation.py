@@ -240,16 +240,15 @@ class ChatHandlerIsolationTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_chat_construction_failure_does_not_stop_the_loop(self):
         """The Chat(**payload) construction is inside the guard as well.
 
-        Chat is a bare BaseObject subclass, so its __init__ is
-        self.__dict__.update(kwargs) and almost any payload builds -- a payload
-        the *handler* then chokes on would be caught by the guard even with the
-        construction left outside it, and so would not pin the placement.
+        Chat keeps every field optional -- text, object_id, dn and type all
+        default to unset -- so almost any payload builds. A payload the *handler*
+        then chokes on would be caught by the guard even with the construction
+        left outside it, and so would not pin the placement.
 
         A JSON object carrying a "self" key is the case that does. It reaches
-        BaseObject.__init__ as a second binding for the bound-method receiver:
+        Chat.__init__ as a second binding for the bound-method receiver:
 
-            TypeError: BaseObject.__init__() got multiple values for argument
-            'self'
+            TypeError: Chat.__init__() got multiple values for argument 'self'
 
         The key is legal JSON and legal for the topic's object_id check, so any
         sender can put it on a scene chat topic. With Chat(**payload) outside

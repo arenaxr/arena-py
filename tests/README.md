@@ -126,6 +126,12 @@ class TestMyFeature(unittest.IsolatedAsyncioTestCase):
     async def test_my_logic(self):
         harness = ArenaE2ETest(scene_name="test", namespace="public")
         
+        # Required before inject_message(): the mock transport's subscriptions
+        # are registered from an async on_connect callback, and anything
+        # injected before that is dropped. This waits for them (and raises if
+        # they never appear) instead of guessing at a sleep long enough.
+        await harness.start_and_wait_until_subscribed()
+        
         # Add objects directly
         harness.scene.add_object(Box(object_id="my_box"))
         

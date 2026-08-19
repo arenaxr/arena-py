@@ -118,9 +118,9 @@ class TestChatReceive(unittest.IsolatedAsyncioTestCase):
         harness = ArenaE2ETest(scene_name="test_scene", realm="realm", namespace="user")
         if handler is not None:
             harness.scene.on_chat_callback = handler
-        # subscriptions are only registered from the async on_connect callback
-        harness._start_tasks()
-        await harness.run_step(STEP)
+        # subscriptions are only registered from the async on_connect callback,
+        # so wait for them rather than betting one fixed interval on the hop
+        await harness.start_and_wait_until_subscribed()
         return harness
 
     async def test_public_chat_delivered(self):
@@ -274,8 +274,7 @@ class TestChatSelfEchoLoop(unittest.IsolatedAsyncioTestCase):
             scene.send_chat(f"You said: {chatmsg.text}", to_uid=chatmsg.object_id)
 
         harness.scene.on_chat_callback = echo_handler
-        harness._start_tasks()
-        await harness.run_step(STEP)
+        await harness.start_and_wait_until_subscribed()
         return harness, replies
 
     async def test_self_addressed_chat_does_not_loop(self):
@@ -668,8 +667,7 @@ class TestChatExampleHandler(unittest.IsolatedAsyncioTestCase):
 
     async def _harness(self):
         harness = ArenaE2ETest(scene_name="test_scene", realm="realm", namespace="user")
-        harness._start_tasks()
-        await harness.run_step(STEP)
+        await harness.start_and_wait_until_subscribed()
         return harness
 
     def _textless_chat_ctrl(self):

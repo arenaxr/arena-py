@@ -309,7 +309,15 @@ class Scene(ArenaMQTT):
                                 if obj.evt_handler:
                                     self.callback_wrapper(obj.evt_handler, event, payload)
                                     continue
-                            span.add_event("Client event: {event}")
+                            # Interpolated, and from the identifying fields rather
+                            # than the Event itself: this string was missing its f
+                            # prefix and recorded literal braces, and a bare
+                            # {event} would dump vars(event), which for a resolved
+                            # target includes event.object -- a live scene Object
+                            # whose own repr carries the handler and task state
+                            # Object.json_preprocess exists to strip.
+                            target = event.data.target if "target" in event.data else None
+                            span.add_event(f"Client event: {event.type} on {target} from {event.object_id}")
                         elif action == "leave":
                             # special user presence message, new way to remove user
                             if object_id in self.users:

@@ -155,8 +155,16 @@ class LocalBackReferenceTestCase(unittest.TestCase):
     def test_a_camera_attribute_on_a_plain_object_is_still_skipped(self):
         """The key is skipped by name, so nothing can reintroduce the cycle.
 
-        A handler that hangs a user off an arbitrary object builds the same cycle
-        the scene builds for hands, and it has to serialize the same way.
+        A handler that hangs a user off a plain object builds the same cycle the
+        scene builds for hands, and that object serializes the same way:
+        Object.json_preprocess skips by key name, not by object kind.
+
+        This covers objects that use Object.json_preprocess, which is the plain
+        Box built here. It says nothing about the subclasses that override it
+        with their own hard-coded skipped_keys list -- GLTF and
+        ArenauiButtonPanel each carry one that did not gain these two keys, so
+        this shape still raises ValueError: Circular reference detected from
+        either of those. Bringing those lists into line is left as a follow-up.
         """
         camera = make_camera()
         box = Box(object_id="attached_box", position=(0, 0, 0))

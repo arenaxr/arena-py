@@ -161,8 +161,9 @@ class Utils(object):
         internal detail: it labels the envelope "timestamp" of every published
         message and the four ProgramRunInfo run-info fields, both of which reach
         consumers that parse them -- the web chat panel renders a message time
-        straight from the envelope field, and examples/legacy/localization/gt-sync.py
-        parses run-info fields with this exact format. So the contract is
+        straight from the envelope field, examples/legacy/localization/gt-sync.py
+        parses that same envelope field with this exact format, and the run-info
+        fields reach consumers on the scene-program topic. So the contract is
         "%Y-%m-%dT%H:%M:%S.%fZ" at millisecond precision, e.g.
         "2025-12-16T22:11:11.001Z", and tests/test_program_info_timestamps.py and
         tests/test_chat.py pin that shape.

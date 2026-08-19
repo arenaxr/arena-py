@@ -22,9 +22,10 @@ def make_ui_button_panel():
             if evt.data.buttonName in ["Option B", "D", "E", "F"]:  # Compare buttonName
                 print(f"{evt.data.buttonName} clicked!")
             elif evt.data.buttonName == "More":  # switch to second button set
-                scene.update_object(button_panel, buttons=second_buttonset)
+                # evt.object is the panel this event fired on
+                scene.update_object(evt.object, buttons=second_buttonset)
             elif evt.data.buttonIndex == 3:  # compare buttonIndex, switch 1st set
-                scene.update_object(button_panel, buttons=first_buttonset)
+                scene.update_object(evt.object, buttons=first_buttonset)
 
     button_panel = ArenauiButtonPanel(
         object_id="button-panel",

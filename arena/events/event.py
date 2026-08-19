@@ -2,11 +2,20 @@ import uuid
 
 from ..attributes import DataEvent
 from ..base_object import *
+from ..objects import Object
 
 
 class Event(BaseObject):
     """
     Event class. Wrapper around JSON for events.
+
+    Attributes:
+        object: the scene Object this event fired on, or None when no scene
+            object was resolved for it. Scene sets it for inbound clientEvents
+            whose target it finds in all_objects, so an evt_handler can use
+            evt.object instead of looking the target up again. Events a program
+            builds itself (generate_click_event, generate_custom_event) have no
+            target to resolve, so it is None. Local only: never serialized.
     """
     def __init__(self, **kwargs):
         # "object_id" is required in kwargs, defaulted to random uuid4
@@ -21,19 +30,55 @@ class Event(BaseObject):
         _type = kwargs.get("type", "mousedown")
         if "type" in kwargs: del kwargs["type"]
 
+        # consume "object" so it lands on the Event itself. Left in kwargs it
+        # would fall through into DataEvent (which has no Object-rejection
+        # guard) and ride onto the wire nested under "data", or be dropped
+        # outright when the caller also passed a "data" dict. Either way the
+        # caller's object never reaches the attribute they asked for.
+        _object = kwargs.get("object", None)
+        if "object" in kwargs: del kwargs["object"]
+
+        # ...and keep it only if it really is a scene Object. Inbound clientEvent
+        # payloads reach this same constructor as Event(**payload) (see
+        # Scene._process_message), so a remote sender can put a top-level
+        # "object" of its own in the payload. json.loads can only ever produce a
+        # str/dict/list/number, never an Object, so this check is what separates
+        # a local caller's live reference from a sender-supplied value, at every
+        # construction site rather than only on the one inbound path. Anything
+        # else becomes None, the documented answer for "no object was resolved".
+        if not isinstance(_object, Object):
+            _object = None
+
         kwargs = kwargs.get("data", kwargs)
         data = DataEvent(**kwargs)
         super().__init__(
                 object_id=object_id,
                 action=action,
                 type=_type,
-                data=data
+                data=data,
+                # the scene Object this event targets, when it is known locally,
+                # and never a value an inbound payload supplied for it. Scene fills
+                # it in for inbound events whose target it can resolve; events a
+                # program builds itself have no target object to resolve.
+                object=_object
             )
+
+    def json_preprocess(self, **kwargs):
+        # kwargs are for additional param to add to json, like "action":"create"
+        # "object" is a live reference to a scene Object, for local handler use only.
+        # It must never reach the wire: it would leak the same private state that
+        # Object.json_preprocess strips, and a hand or camera target carries a
+        # reference cycle (obj.camera <-> user.hands) that json.dumps cannot encode.
+        # The filter runs last, after the merge, so a caller passing
+        # object= into json() cannot reintroduce the key either.
+        skipped_keys = ["object"]
+        json_payload = dict(vars(self))
+        json_payload.update(kwargs)
+        return {k: v for k, v in json_payload.items() if k not in skipped_keys}
 
     # TODO (mwfarb): We should standardize this json() transform into BaseObject from Object/Event/Program
     def json(self, **kwargs):
-        json_payload = vars(self).copy()
-        json_payload.update(kwargs)
+        json_payload = self.json_preprocess(**kwargs)
 
         data = vars(json_payload["data"])
         json_data = {}

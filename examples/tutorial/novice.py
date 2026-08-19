@@ -11,8 +11,9 @@ async def func():
 
     def mouse_handler(scene, evt, msg):
         if evt.type == "mousedown":
-            box.data.position.x += 0.5
-            scene.update_object(box)
+            # evt.object is the box this event fired on
+            evt.object.data.position.x += 0.5
+            scene.update_object(evt.object)
 
     # add click_listener
     scene.update_object(box, click_listener=True, evt_handler=mouse_handler)

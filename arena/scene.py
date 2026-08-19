@@ -303,6 +303,9 @@ class Scene(ArenaMQTT):
                             # get object from target
                             if "target" in data and data["target"] in self.all_objects:
                                 obj = self.all_objects[data["target"]]
+                                # hand the resolved object to handlers, so they do
+                                # not have to repeat this lookup themselves
+                                event.object = obj
                                 if obj.evt_handler:
                                     self.callback_wrapper(obj.evt_handler, event, payload)
                                     continue

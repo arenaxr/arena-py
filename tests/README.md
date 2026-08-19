@@ -15,11 +15,17 @@ The testing system uses a **Mock Transport** layer to simulate MQTT communicatio
 python -m unittest discover tests
 ```
 
-Or run a specific test:
+Or run a specific file, class, or test, from the repository root:
 
 ```bash
-python tests/test_random_sphere.py
+python -m unittest tests.test_random_sphere
+python -m unittest tests.test_chat.TestChatSend.test_text_must_be_text
 ```
+
+Prefer these `-m unittest` forms over `python tests/test_random_sphere.py`:
+running a script inside `tests/` puts `tests/` on `sys.path` rather than the
+repository root, so it fails with `ModuleNotFoundError: No module named 'arena'`
+unless the package is installed with `pip install -e .`.
 
 ## Quick Start: Testing Existing Scripts
 
@@ -110,7 +116,10 @@ results = ArenaE2ETest.run_test_suite([
 For direct control, use the harness directly:
 
 ```python
+import json
 import unittest
+
+from arena import Box
 from arena.test_system import ArenaE2ETest
 
 class TestMyFeature(unittest.IsolatedAsyncioTestCase):
@@ -124,8 +133,11 @@ class TestMyFeature(unittest.IsolatedAsyncioTestCase):
         await harness.run_step(0.1)
         
         # Check outputs
+        # capture_published_messages() returns payloads as JSON strings
         msgs = harness.capture_published_messages()
-        self.assertTrue(any(m["payload"]["object_id"] == "my_box" for m in msgs))
+        self.assertTrue(
+            any(json.loads(m["payload"])["object_id"] == "my_box" for m in msgs)
+        )
 ```
 
 ## Key Components

@@ -11,6 +11,8 @@ the docs point readers at is held to the presence-aware reads its own comments
 describe.
 """
 
+import contextlib
+import io
 import json
 import os
 import unittest
@@ -656,6 +658,12 @@ class TestChatExampleHandler(unittest.IsolatedAsyncioTestCase):
     handler. That was survivable -- the receive branch's dispatch guard catches it
     and keeps the loop alive -- but it was still reported as a dispatch error on
     every such message, and the example still modelled the unguarded read.
+
+    "No text" has two spellings on the wire, and both need covering: the key can be
+    absent, or it can be present and explicitly null. Chat keeps an explicit None
+    as a value rather than an omission (the `_UNSET` sentinel in arena/chat/chat.py,
+    pinned by TestChatConstruction.test_explicit_none_is_kept), so a presence-only
+    guard passes on the second spelling and hands the None straight to `.strip()`.
     """
 
     async def _harness(self):
@@ -667,6 +675,14 @@ class TestChatExampleHandler(unittest.IsolatedAsyncioTestCase):
     def _textless_chat_ctrl(self):
         """The payload that used to break the handler: chat-ctrl, no dn, no text."""
         return {"object_id": "user_bob", "type": "chat-ctrl"}
+
+    def _null_field_chat_ctrl(self):
+        """The other spelling of "no text": the keys are there, carrying null.
+
+        A presence check passes on this one, so it is the payload the first fix
+        left behind.
+        """
+        return {"object_id": "user_bob", "type": "chat-ctrl", "dn": None, "text": None}
 
     async def test_textless_chat_ctrl_does_not_raise_in_the_handler(self):
         """Straight through the real receive path: no dispatch error is reported.
@@ -731,6 +747,78 @@ class TestChatExampleHandler(unittest.IsolatedAsyncioTestCase):
             if str(r.get("text", "")).startswith("You said:")
         ]
         self.assertEqual(replies, ["You said: hi"])
+
+    async def test_null_text_chat_ctrl_does_not_raise_in_the_handler(self):
+        """`"text": null` off the wire must not raise either.
+
+        Same assertion as the missing-key case, on the payload a presence-only
+        guard lets through: `"text" in chatmsg` is True and `chatmsg.text` is None,
+        so the read reached `None.strip()`.
+        """
+        harness = await self._harness()
+        load_chat_example_handler(harness)
+        harness.scene._report_dispatch_error = MagicMock()
+
+        harness.inject_message(
+            "realm/s/user/test_scene/c/someclient/user_bob",
+            self._null_field_chat_ctrl(),
+        )
+        await harness.run_step(STEP)
+
+        harness.scene._report_dispatch_error.assert_not_called()
+
+    async def test_the_presence_only_guard_is_what_used_to_fail(self):
+        """Negative control: the presence-only spelling really does break on null.
+
+        Without this the case above could go vacuous -- if Chat ever dropped an
+        explicit None, or coerced it, the guard's second half would be doing no
+        work. It pins both halves of the gap: the text read raised, and the
+        display-name read quietly yielded None where a sender name belongs.
+        """
+        chatmsg = Chat(**self._null_field_chat_ctrl())
+        self.assertIn("text", chatmsg, "an explicit null must stay a present key")
+        self.assertIsNone(chatmsg.text)
+        with self.assertRaises(AttributeError):
+            chatmsg.text.strip() if "text" in chatmsg else ""  # the presence-only spelling
+        self.assertIn("dn", chatmsg, "an explicit null must stay a present key")
+        # The dn read does not raise; it hands back the null instead of falling back.
+        self.assertIsNone(chatmsg.dn if "dn" in chatmsg else chatmsg.object_id)
+
+    async def test_null_display_name_falls_back_to_object_id(self):
+        """The same fix on the next line: a null dn resolves to the object_id.
+
+        Through the real receive path, reading what the example prints, because
+        that is the only place the resolved sender is observable.
+        """
+        harness = await self._harness()
+        load_chat_example_handler(harness)
+
+        harness.inject_message(
+            "realm/s/user/test_scene/c/someclient/user_bob",
+            self._null_field_chat_ctrl(),
+        )
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            await harness.run_step(STEP)
+
+        self.assertIn("Chat message from user_bob (user_bob): ", out.getvalue())
+        self.assertNotIn("Chat message from None", out.getvalue())
+
+    async def test_null_text_chat_ctrl_draws_no_reply(self):
+        """A null text is no command, so the example must stay quiet for it too."""
+        harness = await self._harness()
+        load_chat_example_handler(harness)
+
+        harness.inject_message(
+            "realm/s/user/test_scene/c/someclient/user_bob",
+            self._null_field_chat_ctrl(),
+        )
+        await harness.run_step(STEP)
+
+        replies = [payload_of(msg) for msg in chat_messages(harness)]
+        self.assertEqual(
+            [r for r in replies if str(r.get("text", "")).startswith("You said:")], []
+        )
 
 
 if __name__ == "__main__":

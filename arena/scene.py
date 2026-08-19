@@ -682,7 +682,24 @@ class Scene(ArenaMQTT):
                         f"ERROR: Publish failed! You do not have permission to publish to topic {topic} on {self.web_host}",
                         span,
                     )
-                elif hasattr(obj, "_private_userid"):
+                # Private objects belong on the private topic no matter what the
+                # permission pre-check said. set_error() only reports and falls
+                # through to the publish below, so selecting the private topic in
+                # an `elif` here would send a private object out on the public
+                # objects topic whenever can_publish_obj was False. The error
+                # report stays above this rewrite on purpose: it names the
+                # seven-level topic can_publish_obj was actually computed
+                # against, which is what the permission complaint is about.
+                #
+                # Truthiness, not hasattr: update_attributes() stores
+                # _private_userid whenever the key is passed, without the
+                # truthiness guard __init__ applies, so update_object(obj,
+                # private_userid=None) - making an object public again - leaves
+                # the attribute present and set to None. hasattr would then be
+                # True and substitute() would render a literal "None" recipient
+                # token. Object.add_private() reads the same attribute the same
+                # way.
+                if getattr(obj, "_private_userid", None):
                     topic = PUBLISH_TOPICS.SCENE_OBJECTS_PRIVATE.substitute(
                         {**self.topicParams, **{"objectId": obj['object_id'], "toUid": obj['_private_userid']}}
                     )

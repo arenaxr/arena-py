@@ -13,6 +13,7 @@ def box_click(scene, evt, msg):
     global orig_position
     global grabbing
 
+    # evt.object is the box this event fired on, scene.users[evt.object_id] the clicker
     if evt.type == "mousedown":
         clicker = scene.users[evt.object_id]
         hand = clicker.hands.get('handRight', None)
@@ -20,16 +21,16 @@ def box_click(scene, evt, msg):
         if hand is not None and not grabbing:
             print("grabbed")
             grabbing = True
-            grab_dist = hand.data.position.distance_to(my_box.data.position)
-            my_box.update_attributes(parent='rightHand', position=(0,0,-grab_dist))
-            scene.update_object(my_box)
+            grab_dist = hand.data.position.distance_to(evt.object.data.position)
+            evt.object.update_attributes(parent='rightHand', position=(0,0,-grab_dist))
+            scene.update_object(evt.object)
 
     elif evt.type == "mouseup":
         if grabbing:
             print("released")
             grabbing = False
-            my_box.update_attributes(parent=None, position=orig_position)
-            scene.update_object(my_box)
+            evt.object.update_attributes(parent=None, position=orig_position)
+            scene.update_object(evt.object)
 
 my_box = Box(
     object_id="my_box",

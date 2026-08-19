@@ -1,0 +1,100 @@
+[
+    {
+        "type": "output",
+        "timestamp": 1734394000.0,
+        "topic": "realm/s/public/example/o/pyClient-000000/button-panel",
+        "payload": {
+            "object_id": "button-panel",
+            "action": "create",
+            "type": "object",
+            "data": {
+                "object_type": "arenaui-button-panel",
+                "title": "Option Buttons",
+                "buttons": [
+                    {"name": "Prompt A"},
+                    {"name": "Option B"},
+                    {"name": "More"}
+                ]
+            }
+        }
+    },
+    {
+        "type": "input",
+        "timestamp": 1734394010.0,
+        "topic": "realm/s/public/example/u/clicker_web/camera_clicker_clicker",
+        "payload": {
+            "object_id": "camera_clicker_clicker",
+            "action": "clientEvent",
+            "type": "buttonClick",
+            "data": {
+                "target": "button-panel",
+                "buttonName": "More",
+                "buttonIndex": 2,
+                "targetPosition": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                }
+            },
+            "timestamp": "2025-12-16T22:11:11.001Z"
+        }
+    },
+    {
+        "type": "output",
+        "timestamp": 1734394011.0,
+        "topic": "realm/s/public/example/o/pyClient-000000/button-panel",
+        "payload": {
+            "object_id": "button-panel",
+            "action": "update",
+            "type": "object",
+            "data": {
+                "object_type": "arenaui-button-panel",
+                "buttons": [
+                    {"name": "D"},
+                    {"name": "E"},
+                    {"name": "F"},
+                    {"name": "Back"}
+                ]
+            }
+        }
+    },
+    {
+        "type": "input",
+        "timestamp": 1734394020.0,
+        "topic": "realm/s/public/example/u/clicker_web/camera_clicker_clicker",
+        "payload": {
+            "object_id": "camera_clicker_clicker",
+            "action": "clientEvent",
+            "type": "buttonClick",
+            "data": {
+                "target": "button-panel",
+                "buttonName": "Back",
+                "buttonIndex": 3,
+                "targetPosition": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                }
+            },
+            "timestamp": "2025-12-16T22:11:21.001Z"
+        }
+    },
+    {
+        "type": "output",
+        "timestamp": 1734394021.0,
+        "topic": "realm/s/public/example/o/pyClient-000000/button-panel",
+        "payload": {
+            "object_id": "button-panel",
+            "action": "update",
+            "type": "object",
+            "data": {
+                "object_type": "arenaui-button-panel",
+                "buttons": [
+                    {"name": "Prompt A"},
+                    {"name": "Option B"},
+                    {"name": "More"}
+                ]
+            }
+        }
+    }
+]

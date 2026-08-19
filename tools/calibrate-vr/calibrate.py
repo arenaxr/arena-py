@@ -414,7 +414,7 @@ def add_rotation_clicks(parent, axis, direction):
 
 # Handles mouse events for the axis cones
 def mouse_handler(_scene, evt, _msg):
-    obj = scene.all_objects[evt.data.target]
+    obj = evt.object  # the cone this event fired on
     parts = evt.data.target.split("-")
     attribute = parts[1]
     axis = parts[2]

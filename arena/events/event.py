@@ -8,6 +8,14 @@ from ..objects import Object
 class Event(BaseObject):
     """
     Event class. Wrapper around JSON for events.
+
+    Attributes:
+        object: the scene Object this event fired on, or None when no scene
+            object was resolved for it. Scene sets it for inbound clientEvents
+            whose target it finds in all_objects, so an evt_handler can use
+            evt.object instead of looking the target up again. Events a program
+            builds itself (generate_click_event, generate_custom_event) have no
+            target to resolve, so it is None. Local only: never serialized.
     """
     def __init__(self, **kwargs):
         # "object_id" is required in kwargs, defaulted to random uuid4

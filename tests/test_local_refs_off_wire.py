@@ -17,6 +17,13 @@ user through data.dep, which these tests also pin as unaffected. Objects that
 are not cameras or hands never carried either key, so their payloads are
 unchanged -- test_normal_object_payload_is_unchanged is what holds that down.
 
+Camera.__init__ sets two more locals of the same kind next to hands --
+hand_found_callback and hand_remove_callback -- and those shipped on every
+camera payload too: null while unset, and {} once a program registers a real
+callback, because BaseObjectJSONEncoder.default falls through to vars() on a
+function. Not a crash like the cycle, but the same local-only state on the same
+wire, so they are skipped by the same list.
+
 Object.all_objects is global class state, so each test clears it either side of
 itself.
 """
@@ -103,6 +110,43 @@ class LocalBackReferenceTestCase(unittest.TestCase):
     def test_unlinked_camera_payload_omits_hands(self):
         """A user with no hands carries hands = {}; that is not sent either."""
         self.assertNotIn("hands", json.loads(make_camera().json()))
+
+    def test_camera_payload_omits_hand_callbacks(self):
+        """The two unset callback slots are local state; they are not sent.
+
+        Unset they published as null, which is wire noise rather than a crash,
+        but it is the same local-only state as hands and sits in the same list.
+        """
+        payload = json.loads(make_camera().json())
+
+        self.assertNotIn("hand_found_callback", payload)
+        self.assertNotIn("hand_remove_callback", payload)
+
+    def test_camera_payload_omits_registered_hand_callbacks(self):
+        """A registered callback is the case that published {}, not null.
+
+        BaseObjectJSONEncoder.default falls through to vars() on a function, and
+        a plain function's __dict__ is empty, so a registered handler used to go
+        out as {}. Skipping the keys covers both states.
+        """
+        camera = make_camera()
+
+        def on_hand_found(hand):
+            pass
+
+        def on_hand_remove(hand):
+            pass
+
+        camera.hand_found_callback = on_hand_found
+        camera.hand_remove_callback = on_hand_remove
+
+        payload = json.loads(camera.json())
+
+        self.assertNotIn("hand_found_callback", payload)
+        self.assertNotIn("hand_remove_callback", payload)
+        # json() must not disturb the live handlers the program registered.
+        self.assertIs(camera.hand_found_callback, on_hand_found)
+        self.assertIs(camera.hand_remove_callback, on_hand_remove)
 
     def test_dep_still_identifies_the_user(self):
         """The server pairs a hand with its user through data.dep, not camera."""

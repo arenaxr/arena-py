@@ -153,12 +153,40 @@ class Object(BaseObject):
         if "ttl" in kwargs:
             self.ttl = kwargs.pop("ttl")
 
-        if "private" in kwargs:
+        private_given = "private" in kwargs
+        if private_given:
             self.private = kwargs.pop("private")
 
         if "private_userid" in kwargs:
-            self._private_userid = kwargs.pop("private_userid")
-            self.private = True
+            # Track the value, not the key's presence. __init__ only marks an object
+            # private when private_userid is truthy, so update_object(obj,
+            # private_userid=None) - the way an object is returned to public - has to
+            # undo that marking instead of asserting it. Asserting it published
+            # "private": true on the public topic, and left the private_objects entry
+            # in place: Object.remove() can no longer find that entry, because the
+            # object no longer names its former recipient, so the strong reference the
+            # entry holds survived delete_object(), and delete_user_objects() for the
+            # former recipient went on to drop a now-public object from all_objects.
+            private_userid = kwargs.pop("private_userid")
+            previous_userid = getattr(self, "_private_userid", None)
+            if previous_userid and previous_userid != private_userid:
+                Object.private_objects.get(previous_userid, {}).pop(self.object_id, None)
+            self._private_userid = private_userid  # None is public
+            if private_userid:
+                self.private = True # private objects are always private interaction
+                # Index only a recipient the scene already knows about. add_private()
+                # raises for an unknown user, which is what construction wants, but
+                # would be a new way for an update to fail; an unknown user has no
+                # index that could fall out of date anyway.
+                if private_userid in Object.private_objects:
+                    Object.add_private(self)
+            elif not private_given:
+                # Drop the flag rather than storing False: an object created public
+                # carries no "private" key at all, and add_object()/update_object()
+                # read the flag as getattr(obj, "private", True), so storing False
+                # would also stop setting program_id. An explicit private= in the
+                # same call wins, matching __init__.
+                self.__dict__.pop("private", None)
 
         data = self.data
         Data.update_data(data, kwargs)

@@ -1,0 +1,49 @@
+[
+    {
+        "type": "output",
+        "timestamp": 1734394000.0,
+        "topic": "realm/s/public/example/o/pyClient-000000/promptA",
+        "payload": {
+            "object_id": "promptA",
+            "action": "create",
+            "type": "object",
+            "data": {
+                "object_type": "arenaui-prompt",
+                "title": "Prompt A",
+                "buttons": [
+                    "OK"
+                ]
+            }
+        }
+    },
+    {
+        "type": "input",
+        "timestamp": 1734394010.0,
+        "topic": "realm/s/public/example/u/clicker_web/camera_clicker_clicker",
+        "payload": {
+            "object_id": "camera_clicker_clicker",
+            "action": "clientEvent",
+            "type": "buttonClick",
+            "data": {
+                "target": "promptA",
+                "buttonName": "OK",
+                "buttonIndex": 0,
+                "targetPosition": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                }
+            },
+            "timestamp": "2025-12-16T22:11:11.001Z"
+        }
+    },
+    {
+        "type": "output",
+        "timestamp": 1734394011.0,
+        "topic": "realm/s/public/example/o/pyClient-000000/promptA",
+        "payload": {
+            "object_id": "promptA",
+            "action": "delete"
+        }
+    }
+]

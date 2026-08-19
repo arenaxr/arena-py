@@ -17,7 +17,8 @@ def make_ui_prompt():
         if evt.type == "buttonClick":
             if evt.data.buttonName == "OK":
                 print("OK clicked!")
-                scene.delete_object(prompt)
+                # evt.object is the prompt this event fired on
+                scene.delete_object(evt.object)
 
     prompt = ArenauiPrompt(
         object_id="promptA",

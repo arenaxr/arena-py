@@ -247,12 +247,34 @@ class Scene(ArenaMQTT):
                 continue
 
             # extract payload
+            # Seeded before the try because the except below interpolates
+            # payload_str: if the decode is what raised, the assignment inside
+            # the try never happened and the except raised UnboundLocalError
+            # out of process_message, ending the task that drains msg_queue --
+            # the failure the guards below exist to close, past all of them.
+            # Latent, not reachable from a broker: paho always delivers bytes
+            # and bytes.decode(..., "ignore") cannot raise, so only a test
+            # double or a future transport gets there. The raw payload is also
+            # the only useful thing to report when the decode is what failed.
+            payload_str = msg.payload
             try:
                 payload_str = msg.payload.decode("utf-8", "ignore")
                 payload = json.loads(payload_str)
             except Exception as e:
                 print(f"[WARNING] Malformed payload: {payload_str}. {e}.")
                 self.telemetry.add_event(f"Malformed payload: {payload_str}. {e}.")
+                continue
+
+            # A scene message is a JSON object. json.loads also accepts a bare
+            # array, number, string, boolean or null, and every line below reads
+            # payload as a mapping -- starting with the topic assignment, which
+            # sits outside every try, so a non-object payload raised TypeError
+            # there and ended the task that drains msg_queue for the rest of the
+            # session. Report it the way an unparseable payload is reported and
+            # move on to the next message.
+            if not isinstance(payload, dict):
+                print(f"[WARNING] Ignoring non-object payload: {payload_str}.")
+                self.telemetry.add_event(f"Ignoring non-object payload: {payload_str}.")
                 continue
 
             if self.debug:
@@ -279,8 +301,22 @@ class Scene(ArenaMQTT):
                     # private subscription covers our own private chat topic, so a
                     # handler that replies to the sender would loop forever.
                     if object_id != self.userid and self.on_chat_callback:
-                        chatmsg = Chat(**payload)
-                        self.callback_wrapper(self.on_chat_callback, chatmsg, msg)
+                        # Guarded like the object path below: this dispatch sits outside
+                        # that path's try, so an exception here would leave
+                        # process_message and end the task that drains msg_queue,
+                        # silently stopping all message handling for the rest of the
+                        # session. A handler that raises is a user bug; losing the
+                        # receive loop over it is not a proportionate consequence.
+                        # Nested inside the self-chat filter rather than around it:
+                        # none of object_id, self.userid or on_chat_callback can
+                        # raise, so the filter needs no guard and keeping it outside
+                        # means a reflected self-chat is never reported as a
+                        # dispatch error.
+                        try:
+                            chatmsg = Chat(**payload)
+                            self.callback_wrapper(self.on_chat_callback, chatmsg, msg)
+                        except Exception:
+                            self._report_dispatch_error(payload)
                     continue
                 # Object updates only in these scene msg types
                 if scene_msgtype not in [SCENE_MSGTYPES.PRESENCE, SCENE_MSGTYPES.USER, SCENE_MSGTYPES.OBJECTS, SCENE_MSGTYPES.PROGRAM]:
@@ -308,10 +344,21 @@ class Scene(ArenaMQTT):
                             # get object from target
                             if "target" in data and data["target"] in self.all_objects:
                                 obj = self.all_objects[data["target"]]
+                                # hand the resolved object to handlers, so they do
+                                # not have to repeat this lookup themselves
+                                event.object = obj
                                 if obj.evt_handler:
                                     self.callback_wrapper(obj.evt_handler, event, payload)
                                     continue
-                            span.add_event("Client event: {event}")
+                            # Interpolated, and from the identifying fields rather
+                            # than the Event itself: this string was missing its f
+                            # prefix and recorded literal braces, and a bare
+                            # {event} would dump vars(event), which for a resolved
+                            # target includes event.object -- a live scene Object
+                            # whose own repr carries the handler and task state
+                            # Object.json_preprocess exists to strip.
+                            target = event.data.target if "target" in event.data else None
+                            span.add_event(f"Client event: {event.type} on {target} from {event.object_id}")
                         elif action == "leave":
                             # special user presence message, new way to remove user
                             if object_id in self.users:
@@ -405,14 +452,22 @@ class Scene(ArenaMQTT):
 
                     span.add_event("Handle Msg Done.")
 
-                except Exception as e:
-                    self.telemetry.set_error(
-                        f"Something went wrong!\n"
-                        f"-----------------------------\n"
-                        f"Source:\n{traceback.format_exc()}\n\n"
-                        f"Exception occured when processing payload: {payload}\n"
-                        f"-----------------------------\n"
-                    )
+                except Exception:
+                    self._report_dispatch_error(payload)
+
+    def _report_dispatch_error(self, payload):
+        """Reports an exception raised while dispatching an inbound message.
+
+        Shared by the chat and object branches of process_message so both report a
+        failing handler the same way, with the payload that provoked it.
+        """
+        self.telemetry.set_error(
+            f"Something went wrong!\n"
+            f"-----------------------------\n"
+            f"Source:\n{traceback.format_exc()}\n\n"
+            f"Exception occured when processing payload: {payload}\n"
+            f"-----------------------------\n"
+        )
 
     def callback_wrapper(self, func, arg, msg):
         """Checks for number of arguments for callback."""

@@ -15,7 +15,8 @@ def random_color():
 def on_click(_scene, evt, _msg):
     if evt.type == "mousedown":
         print("Clicked! Changing color...")
-        scene.update_object(sphere, material=Material(color=random_color()))
+        # evt.object is the scene object this event fired on
+        scene.update_object(evt.object, material=Material(color=random_color()))
 
 
 sphere = Object(

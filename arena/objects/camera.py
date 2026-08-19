@@ -28,25 +28,20 @@ class Camera(Object):
         position = data.get("position", None)
         rotation = data.get("rotation", None)
 
-        if position is not None and rotation is not None:
-            super().__init__(
-                object_type=Camera.object_type,
-                object_id=object_id,
-                position=Position(**position),
-                rotation=Rotation(**rotation),
-                **kwargs
-            )
-        elif position is not None:
-            super().__init__(
-                object_type=Camera.object_type,
-                object_id=object_id,
-                position=Position(**position),
-                **kwargs
-            )
-        elif rotation is not None:
-            super().__init__(
-                object_type=Camera.object_type,
-                object_id=object_id,
-                rotation=Rotation(**rotation),
-                **kwargs
-            )
+        # Collect the pose kwargs first, then call super() exactly once. A
+        # super() call per pose combination left the "neither" case -- which is
+        # the shape an arena-user-only update takes -- with no super() call at
+        # all, and so no object_id, no data, and no entry in all_objects. With a
+        # single call site that gap cannot come back.
+        pose = {}
+        if position is not None:
+            pose["position"] = Position(**position)
+        if rotation is not None:
+            pose["rotation"] = Rotation(**rotation)
+
+        super().__init__(
+            object_type=Camera.object_type,
+            object_id=object_id,
+            **pose,
+            **kwargs
+        )

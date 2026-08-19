@@ -22,6 +22,9 @@ test clears them before and after itself to avoid leaking objects into the rest
 of the suite.
 """
 
+import asyncio
+import contextlib
+import io
 import unittest
 
 from arena.objects import Object
@@ -31,6 +34,10 @@ from arena.topics import PUBLISH_TOPICS
 SCENE = "test_scene"
 NAMESPACE = "user"
 REALM = "realm"
+
+
+class _BaseExc(BaseException):
+    """A BaseException the asyncio machinery has no special handling for."""
 
 
 def chat_topic(uuid, user_client="other_client"):
@@ -212,28 +219,137 @@ class ChatHandlerIsolationTestCase(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(harness.scene.msg_queue.qsize(), 0)
 
-    async def test_malformed_chat_payload_does_not_stop_the_loop(self):
+    async def test_chat_construction_failure_does_not_stop_the_loop(self):
         """The Chat(**payload) construction is inside the guard as well.
 
-        The payload is a remote sender's, so its shape is not something this
-        client controls; a payload that Chat cannot be built from must cost the
-        same as a handler that raises.
+        Chat is a bare BaseObject subclass, so its __init__ is
+        self.__dict__.update(kwargs) and almost any payload builds -- a payload
+        the *handler* then chokes on would be caught by the guard even with the
+        construction left outside it, and so would not pin the placement.
+
+        A JSON object carrying a "self" key is the case that does. It reaches
+        BaseObject.__init__ as a second binding for the bound-method receiver:
+
+            TypeError: BaseObject.__init__() got multiple values for argument
+            'self'
+
+        The key is legal JSON and legal for the topic's object_id check, so any
+        sender can put it on a scene chat topic. With Chat(**payload) outside
+        the try that TypeError leaves process_message and ends the task draining
+        msg_queue -- exactly the failure this branch is about -- so this test
+        fails unless the construction is guarded too.
         """
         harness = await self.make_harness()
         handled = []
         harness.scene.on_chat_callback = lambda scene, chatmsg, msg: handled.append(chatmsg.text)
 
-        # "data" is not a chat field; Chat treats it as the payload body, and a
-        # string there is not something it can build attributes from
         harness.inject_message(
             chat_topic("bad_uid"),
-            {"object_id": "bad_uid", "type": "chat", "data": "not-a-dict"},
+            {"object_id": "bad_uid", "type": "chat", "self": 1},
         )
         await harness.run_step(0.2)
         await self.inject_chat(harness, "hello")
 
         self.assertEqual(handled, ["hello"])
         self.assertEqual(harness.scene.msg_queue.qsize(), 0)
+
+    async def test_the_failing_chat_payload_is_reported(self):
+        """Surviving quietly is not enough: the failure has to be visible.
+
+        The guard is a broad `except`, and the justification for one that broad
+        is that it reports rather than swallows -- otherwise a handler bug turns
+        into messages that vanish with no trace, which is harder to diagnose
+        than the crash it replaced. So pin the report, not just the survival:
+        the payload that provoked it has to reach stderr, since without it a
+        user cannot tell which message their handler died on.
+        """
+        harness = await self.make_harness()
+
+        def on_chat(scene, chatmsg, msg):
+            raise RuntimeError("handler blew up")
+
+        harness.scene.on_chat_callback = on_chat
+
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            harness.inject_message(
+                chat_topic("ctrl_uid"),
+                {"object_id": "ctrl_uid", "type": "chat-ctrl", "text": "the-provoking-text"},
+            )
+            await harness.run_step(0.2)
+
+        reported = stderr.getvalue()
+        self.assertIn("the-provoking-text", reported)
+        self.assertIn("handler blew up", reported)
+
+    async def test_the_failing_object_payload_is_reported(self):
+        """The object branch reports identically, through the same helper.
+
+        Both branches route through _report_dispatch_error precisely so a user
+        gets the same evidence whichever dispatch failed, so pin it on both.
+        """
+        harness = await self.make_harness()
+
+        def on_msg(scene, obj, msg):
+            raise RuntimeError("object handler blew up")
+
+        harness.scene.on_msg_callback = on_msg
+
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            harness.inject_message(
+                object_topic("reported_box"),
+                {
+                    "object_id": "reported_box",
+                    "action": "create",
+                    "type": "object",
+                    "data": {"object_type": "box", "marker-of-this-payload": True},
+                },
+            )
+            await harness.run_step(0.2)
+
+        reported = stderr.getvalue()
+        self.assertIn("marker-of-this-payload", reported)
+        self.assertIn("object handler blew up", reported)
+
+    async def test_a_base_exception_is_not_swallowed_by_the_guard(self):
+        """The guard catches Exception, deliberately not BaseException.
+
+        KeyboardInterrupt and SystemExit are not handler bugs to be logged and
+        stepped over: a dispatch guard that ate a Ctrl-C would make the program
+        unstoppable from the terminal. So for a BaseException the loop is
+        *expected* to end, with no dispatch report -- which is what separates
+        the `except Exception` written here from a wider `except BaseException`
+        that would keep going and report.
+
+        The exception raised is a plain BaseException subclass rather than a real
+        KeyboardInterrupt: asyncio re-raises those two out of the event loop
+        itself, which would take the test runner down with it and prove nothing
+        about the guard.
+        """
+        harness = await self.make_harness()
+        tasks = asyncio.all_tasks()  # includes the live process_message task
+
+        def on_chat(scene, chatmsg, msg):
+            raise _BaseExc("not a handler bug")
+
+        harness.scene.on_chat_callback = on_chat
+
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            await self.inject_chat(harness, "interrupt me")
+            handled = []
+            harness.scene.on_chat_callback = lambda scene, chatmsg, msg: handled.append(chatmsg.text)
+            await self.inject_chat(harness, "never seen", uuid="later_uid")
+
+        self.assertEqual(handled, [])
+        self.assertEqual(harness.scene.msg_queue.qsize(), 1)
+        self.assertNotIn("Exception occured when processing payload", stderr.getvalue())
+        # the receive loop's task is the one that died, carrying the raised
+        # BaseException. Retrieving it also keeps asyncio from reporting it as
+        # never retrieved when the task is collected.
+        died = [t for t in tasks if t.done() and not t.cancelled()]
+        self.assertEqual([type(t.exception()) for t in died], [_BaseExc])
 
     async def test_good_chat_handler_is_unaffected(self):
         """The ordinary path is untouched: no guard, no swallowing, no change.

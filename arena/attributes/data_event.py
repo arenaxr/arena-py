@@ -13,6 +13,32 @@ class DataEvent(Attribute):
     def update_data(cls, data, new_data):
         new_data = new_data.get("data", new_data)
         for k, v in new_data.items():
+
+            # An Arena Object must never be stored in event data. Event.json()
+            # serializes every data key straight out of vars(), so a stored Object
+            # rides onto the wire carrying the private state Object.json_preprocess
+            # exists to strip, and a camera- or hand-shaped value does not even get
+            # that far: obj.camera <-> user.hands is a real cycle, so json.dumps
+            # raises "Circular reference detected" at publish time instead. Data
+            # refuses the same thing for scene data; this is the event-data half.
+            #
+            # Decided by class name over the MRO, a crude check that avoids a
+            # circular import of Arena Object. Unlike Data's first-base-only check
+            # this also catches Object itself and subclasses nested deeper than one
+            # level (Model, GLTF, Card, ButtonPanel, Prompt, ThickLine).
+            #
+            # No key is exempt: Data exempts "parent" because a scene object
+            # legitimately takes one, while event data has no parent semantics and
+            # no caller in the library passes an Object through event data - Scene's
+            # event builders all reduce an Object to its object_id first. object_id
+            # is read defensively because Camera.__init__ skips super().__init__
+            # when its data carries no pose, leaving no object_id to report.
+            if any(base.__name__ == "Object" for base in type(v).__mro__):
+                raise ValueError(
+                    f"Invalid Arena Object as attribute {k}: "
+                    f"{getattr(v, 'object_id', type(v).__name__)}"
+                )
+
             # allow user to input tuples, lists, dicts, etc for specific Attributes.
             # everything gets converted to corresponding attribute
             if (k == "originPosition" or k == "targetPosition") and not isinstance(v, Position):

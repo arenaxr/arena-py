@@ -142,6 +142,60 @@ class ArenaE2ETest:
         for task in self.scene.event_loop.tasks:
             asyncio.create_task(task)
 
+    async def start_and_wait_until_subscribed(self, max_steps=200, step=0.01):
+        """Starts the scene's tasks and waits until the harness is ready to use.
+
+        This is the entry point a test should use before inject_message() or
+        before recording a baseline publish count. The mock transport fires
+        on_connect as a task on the event loop, and Scene.on_connect is what
+        registers the subscriptions -- so between _start_tasks() and that
+        callback there is a window in which MockMQTTTransport.mock_receive()
+        matches nothing and drops the injected message without a trace. Awaiting
+        one fixed interval only bets that the window is shorter than the
+        interval; a loaded machine can lose that bet, and the test then fails on
+        a missing message that was never delivered.
+        """
+        self._start_tasks()
+        await self.wait_until_subscribed(max_steps=max_steps, step=step)
+
+    async def wait_until_subscribed(self, max_steps=200, step=0.01, settle_steps=5):
+        """Polls the loop until the scene's on_connect has registered callbacks.
+
+        A subscription only makes a topic deliverable once its callback is in
+        place: MockMQTTTransport.subscribe() files the topic with a None callback
+        and message_callback_add() fills it in, and mock_receive() only
+        dispatches to entries that have one. So the readiness test is a
+        registered callback, not merely a known topic.
+
+        Raises AssertionError rather than returning quietly if the callbacks
+        never appear. A silent timeout would hand back an unsubscribed harness
+        and reproduce exactly the dropped-message failure this is meant to rule
+        out, only now with the cause hidden again.
+        """
+        subscribed = False
+        for _ in range(max_steps):
+            if any(cb is not None for cb in self.transport.subscriptions.values()):
+                subscribed = True
+                break
+            await self.run_step(step)
+        if not subscribed:
+            raise AssertionError(
+                f"scene never registered a subscription callback after "
+                f"{max_steps} steps of {step}s; "
+                f"subscriptions={self.transport.subscriptions!r}"
+            )
+
+        # on_connect also releases every task that was waiting on the connect
+        # event -- the network-latency publisher among them -- so let those
+        # first ticks land before handing the harness back. A test that records
+        # a baseline publish count right after this call would otherwise have a
+        # startup publish drop into the middle of its own window.
+        for _ in range(settle_steps):
+            before = len(self.transport.published_messages)
+            await self.run_step(step)
+            if len(self.transport.published_messages) == before:
+                return
+
     def inject_message(self, topic, payload):
         """Injects a message as if received from MQTT."""
         # payload is a dict, we convert to bytes for mock transport
@@ -229,11 +283,7 @@ class ArenaE2ETest:
                 )
 
                 # Ensure subscriptions are active before first injection
-                if not self.transport.subscriptions:
-                    for _ in range(5):
-                        if self.transport.subscriptions:
-                            break
-                        await self.run_step(0.1)
+                await self.wait_until_subscribed()
 
                 self.inject_message(input_event["topic"], input_event["payload"])
                 await self.run_step(0.1)

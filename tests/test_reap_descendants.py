@@ -349,11 +349,8 @@ class SceneReapTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def inject_delete(self, harness, object_id):
         """Injects a server delete for object_id, as the inbound handler sees it."""
-        harness._start_tasks()
-        for _ in range(10):  # subscriptions are set up by the connect task
-            if harness.transport.subscriptions:
-                break
-            await harness.run_step(0.1)
+        # subscriptions are set up by the connect task, so wait for them
+        await harness.start_and_wait_until_subscribed()
         harness.inject_message(
             f"realm/s/user/test_scene/o/other_client/{object_id}",
             {"object_id": object_id, "action": "delete", "type": "object"},

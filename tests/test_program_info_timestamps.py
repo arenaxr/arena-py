@@ -319,11 +319,8 @@ class SceneProgramInfoTimestampTest(TimestampAssertion, unittest.IsolatedAsyncio
     async def make_connected_harness(self):
         harness = ArenaE2ETest(scene_name="test_scene", realm="realm", namespace="user")
         Object.all_objects.clear()  # drop objects loaded from mock persist
-        harness._start_tasks()
-        for _ in range(10):  # subscriptions are set up by the connect task
-            if harness.transport.subscriptions:
-                break
-            await harness.run_step(0.1)
+        # subscriptions are set up by the connect task, so wait for them
+        await harness.start_and_wait_until_subscribed()
         return harness
 
     async def test_fields_parse_after_a_real_receive_and_publish(self):

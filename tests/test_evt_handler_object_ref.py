@@ -354,18 +354,15 @@ class SceneEvtHandlerObjectRefTestCase(unittest.IsolatedAsyncioTestCase):
 
     @staticmethod
     async def make_harness():
-        """Starts the harness and lets the mock transport register subscriptions.
+        """Starts the harness and waits for the mock transport's subscriptions.
 
         MockMQTTTransport fires on_connect on the event loop, and inject_message
-        is silently dropped until the subscriptions it sets up exist.
+        is silently dropped until the subscriptions it sets up exist, so the
+        harness polls for them and fails loudly if they never arrive.
         """
         harness = ArenaE2ETest(scene_name="test_scene", realm="realm", namespace="user")
         Object.all_objects.clear()  # drop objects loaded from mock persist
-        harness._start_tasks()
-        for _ in range(10):
-            if harness.transport.subscriptions:
-                break
-            await harness.run_step(0.1)
+        await harness.start_and_wait_until_subscribed()
         return harness
 
     @staticmethod

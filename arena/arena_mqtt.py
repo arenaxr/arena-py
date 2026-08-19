@@ -381,8 +381,10 @@ class ArenaMQTT(object):
         # sender answered its own reply forever.
         #
         # That filter is confined to the chat branch: it is the only such check in
-        # the tree. The private object, user and presence paths have no equivalent,
-        # so a program that publishes privately to itself on those paths sees its own
+        # the tree. The private object, user, presence and program paths have no
+        # equivalent -- all four reach the same Scene.process_message receive
+        # function, which whitelists exactly those four scene msgtypes -- so a
+        # program that publishes privately to itself on those paths sees its own
         # message come back, and a handler that replies on one of them would need the
         # same check. Deliberately not added here -- a blanket filter on this callback
         # would also drop private messages a program legitimately sends itself.

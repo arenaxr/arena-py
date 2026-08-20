@@ -11,7 +11,7 @@
     "NPC": {
         "NAME": "ARENA Video Player",
         "GLTF_URL": "",
-        "ICON_URL": "https://arenaxr.org/store/users/johnchoi/Images/xr-logo.png"
+        "ICON_URL": "https://arenaxr.org/store/users/wiselab/Images/xr-logo.png"
     },
     "USE_DEFAULTS": {
         "ANIMATIONS": true,

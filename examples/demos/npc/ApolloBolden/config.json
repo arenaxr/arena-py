@@ -10,8 +10,8 @@
     },
     "NPC": {
         "NAME": "NPC_RobotBuddy",
-        "GLTF_URL": "https://arenaxr.org/store/users/johnchoi/Characters/RobotBuddy/RobotBuddyBlue.glb",
-        "ICON_URL": "https://arenaxr.org/store/users/johnchoi/Characters/RobotBuddy/RobotBuddyBlue.png"
+        "GLTF_URL": "https://arenaxr.org/store/users/wiselab/Characters/RobotBuddy/RobotBuddyBlue.glb",
+        "ICON_URL": "https://arenaxr.org/store/users/wiselab/Characters/RobotBuddy/RobotBuddyBlue.png"
     },
     "USE_DEFAULTS": {
         "ANIMATIONS": true,

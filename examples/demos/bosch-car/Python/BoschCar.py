@@ -6,7 +6,7 @@ import time
 
 #FILESTORE SETTINGS
 FILESTORE = "https://arenaxr.org/" #main server
-FILEPATH = "store/users/johnchoi/BoschCar_Simplified/" #Path
+FILEPATH = "store/users/wiselab/BoschCar_Simplified/" #Path
 HEADER = "BoschCar"
 
 DISTANCE = 0.2

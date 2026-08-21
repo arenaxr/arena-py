@@ -8,6 +8,75 @@ arena-py notable changes. Started 2021-02-19 (version 0.1.12).
 
 ### Features
 
+## [1.7.0](https://github.com/arenaxr/arena-py/compare/v1.6.0...v1.7.0) (2026-08-21)
+
+
+### Features
+
+* **chat:** add Scene.send_chat and cover the chat receive path ([c6be69a](https://github.com/arenaxr/arena-py/commit/c6be69ace6e063cffc093c34342d94251d62d614))
+* **chat:** add Scene.send_chat and cover the chat receive path ([fa4d0e3](https://github.com/arenaxr/arena-py/commit/fa4d0e311fcbdad621e7b8bcc906d328c8781f53)), closes [#212](https://github.com/arenaxr/arena-py/issues/212)
+* **ci:** align action commit SHAs to exact release tags for Dependabot SemVer support ([03fde52](https://github.com/arenaxr/arena-py/commit/03fde524b7022f0ca602b425b923fa18be466b7a))
+* **ci:** configure dependabot, pin workflow actions to SHAs, and add agent/contributing docs ([928b8a9](https://github.com/arenaxr/arena-py/commit/928b8a966f972f6b9cae15ee19eb6758c8ee19c6))
+* **deprecation:** warn on dict-style access to deprecated keys ([c2c9ead](https://github.com/arenaxr/arena-py/commit/c2c9ead0ecc08e602cedf29d6965231122fbf60e))
+* **deprecation:** warn on dict-style access to deprecated keys ([c7b8465](https://github.com/arenaxr/arena-py/commit/c7b8465faf186626e6399f6b0745331e4e5564be)), closes [#200](https://github.com/arenaxr/arena-py/issues/200)
+* **events:** pass the resolved scene object to evt_handler as event.object ([6cbed8e](https://github.com/arenaxr/arena-py/commit/6cbed8e99ca259222d8014043575dda06a931d01))
+* **events:** pass the resolved scene object to evt_handler as event.object ([171cf1b](https://github.com/arenaxr/arena-py/commit/171cf1b09ac0b277e96ca4f695c74aadfb48f780)), closes [#163](https://github.com/arenaxr/arena-py/issues/163)
+
+
+### Bug Fixes
+
+* **camera:** always call Object.__init__, whatever the pose ([9122af1](https://github.com/arenaxr/arena-py/commit/9122af1fcad51cfc67f8ddf8c0bbfd9a2a13866f)), closes [#254](https://github.com/arenaxr/arena-py/issues/254)
+* **camera:** keep the hand callbacks off the wire too ([3e3dbac](https://github.com/arenaxr/arena-py/commit/3e3dbac893e9e29ebafce9e838f91479fd41ffcc))
+* **chat:** stop chat self-echo from looping and validate send_chat input ([be9181a](https://github.com/arenaxr/arena-py/commit/be9181a5abed3f853b2c010180b144a11c32364b)), closes [#212](https://github.com/arenaxr/arena-py/issues/212)
+* **deprecation:** decide deprecated keys by MRO and by accessor ([f0eb781](https://github.com/arenaxr/arena-py/commit/f0eb78127a4368807e4599bb543a38f327182a70))
+* **deprecation:** reach only deprecated keys with dict-style access ([21a7a3e](https://github.com/arenaxr/arena-py/commit/21a7a3e0c580d1830e021d2c6dfd5406bbc9fd17))
+* **events:** close the two paths that put event.object on the wire ([32c4cd5](https://github.com/arenaxr/arena-py/commit/32c4cd54b7b4fa01ca08fbbc8e112ef1085c1bb0))
+* **events:** reject a sender-supplied object on inbound events ([c29f87c](https://github.com/arenaxr/arena-py/commit/c29f87c994f26bba59d5cc5dcbb173e1b4e1b1d1)), closes [#163](https://github.com/arenaxr/arena-py/issues/163)
+* **events:** reject an Arena Object stored in event data ([09bc9e7](https://github.com/arenaxr/arena-py/commit/09bc9e77735dda2eadfd47d38e7fcf8306210fa0)), closes [#249](https://github.com/arenaxr/arena-py/issues/249)
+* **examples:** guard the chat example against an explicit null, not just a missing key ([b800537](https://github.com/arenaxr/arena-py/commit/b8005377d74643f2b1a66c110d36c807bbaef7ad))
+* **examples:** guard the chat example's text read like its dn read ([1b0f5a1](https://github.com/arenaxr/arena-py/commit/1b0f5a1e6f10526963bcef0b4efccf63a51aa4df))
+* **examples:** read the chat display name only when the sender sent one ([785963a](https://github.com/arenaxr/arena-py/commit/785963a0496c9e1bd9a8f6813173f54ef837dae7))
+* keep the receive loop alive and reject inbound handler fields ([3ea7f1f](https://github.com/arenaxr/arena-py/commit/3ea7f1fb23fe4f2495124fdf72cfd9db9c0aa533))
+* make test suite pass without a broker and add CI ([c216b3c](https://github.com/arenaxr/arena-py/commit/c216b3cfbc63b90ef05830b84f8eb1e014bd000e))
+* make test suite pass without a broker and add CI ([8ee826b](https://github.com/arenaxr/arena-py/commit/8ee826bef7a85db158b2c5371fdccbcf48d22d9a))
+* **objects:** keep camera/hands back-references out of json() ([b64573a](https://github.com/arenaxr/arena-py/commit/b64573a896eb15b6383d1c739352be6f55c47072)), closes [#255](https://github.com/arenaxr/arena-py/issues/255)
+* **objects:** make dict-style writes work on an Object ([31f6f2a](https://github.com/arenaxr/arena-py/commit/31f6f2a325e7656f2a7c195d26b8e82b8d92b470)), closes [#251](https://github.com/arenaxr/arena-py/issues/251)
+* **objects:** only index scene objects when reaping descendants ([7340e5d](https://github.com/arenaxr/arena-py/commit/7340e5da5b9e6fd94847aaa62ef2b40395203cae))
+* **objects:** reap orphaned descendants when an object is deleted ([e7952ee](https://github.com/arenaxr/arena-py/commit/e7952ee34c9fcac6618201c186c88e209ef7741e))
+* **objects:** reap orphaned descendants when an object is deleted ([76114f9](https://github.com/arenaxr/arena-py/commit/76114f93c5277c528d722b4bc2d761355fdf5b7e))
+* **objects:** reject non-callable evt_handler and update_handler ([b0a8405](https://github.com/arenaxr/arena-py/commit/b0a8405fbd130165140ae42986364e64e0494a5a))
+* **objects:** return an object to public when private_userid is cleared ([0501b74](https://github.com/arenaxr/arena-py/commit/0501b7413b6f3eaf9317a79acb654e39bf4deac0)), closes [#258](https://github.com/arenaxr/arena-py/issues/258)
+* **program-info:** base the published-message rate on the published counter ([ed43392](https://github.com/arenaxr/arena-py/commit/ed4339238bc77239ff5fe9979632a47d364dbd11))
+* **program-info:** emit run-info timestamps as UTC millis with a Zulu suffix ([50ac581](https://github.com/arenaxr/arena-py/commit/50ac5819fd707d818b3f1187e6576c909b99de64))
+* **program-info:** emit run-info timestamps as UTC millis with a Zulu suffix ([5de9801](https://github.com/arenaxr/arena-py/commit/5de980161b2f76836254a95bd8416618624eabcc)), closes [#252](https://github.com/arenaxr/arena-py/issues/252)
+* reject an Arena Object in event data, and make dict-style writes work on an Object ([e3facdf](https://github.com/arenaxr/arena-py/commit/e3facdf2a52e9b01b24751d53d0c6e37958b0408))
+* repair invalid YAML in publish-to-test-pypi workflow ([0f91759](https://github.com/arenaxr/arena-py/commit/0f917591a112c5c2029056bcffd211b77c88a73f))
+* repair invalid YAML in publish-to-test-pypi workflow ([c11c44e](https://github.com/arenaxr/arena-py/commit/c11c44e4b9793cf1039b169f6bde10761917e22a))
+* **scene:** clear delta shadow state and private index on delete ([0c7faf0](https://github.com/arenaxr/arena-py/commit/0c7faf0086a260a345729278353a40c3a31fa4de))
+* **scene:** keep the receive loop alive when a chat handler raises ([bdddee8](https://github.com/arenaxr/arena-py/commit/bdddee896cf4c66470cb0bf0884443b7545c77d2)), closes [#257](https://github.com/arenaxr/arena-py/issues/257)
+* **scene:** report a payload whose decode raised instead of UnboundLocalError ([527f23f](https://github.com/arenaxr/arena-py/commit/527f23f0035d98a0823f53445d30765275c68d31))
+* **scene:** select the private topic independent of the publish-rights pre-check ([ccf30eb](https://github.com/arenaxr/arena-py/commit/ccf30eb39a7fbd3aaab4988cff5193e623a6ea24))
+* **scene:** select the private topic independent of the publish-rights pre-check ([76b85cc](https://github.com/arenaxr/arena-py/commit/76b85cc448d35d16be2076d0e34fd7e2e2cfb555)), closes [#258](https://github.com/arenaxr/arena-py/issues/258)
+* **scene:** skip an inbound payload that is not a JSON object ([6f33b8e](https://github.com/arenaxr/arena-py/commit/6f33b8ea2828d2b3cb165c8f852bcb1cfb025dfe)), closes [#257](https://github.com/arenaxr/arena-py/issues/257)
+* three small object-model and telemetry fixes ([1db4cc0](https://github.com/arenaxr/arena-py/commit/1db4cc03f26301eb45702e38921fdfcd4f79fd56))
+
+
+### Documentation
+
+* add caution against BREAKING CHANGE in commits/PRs ([337295d](https://github.com/arenaxr/arena-py/commit/337295d1e994aff733c8f54fae3558a0f0a32ee6))
+* clarify #NN notation in CONTRIBUTING.md ([456de5c](https://github.com/arenaxr/arena-py/commit/456de5ceba0f487ef90bc15006ac0a3b6eb36f87))
+* document how to run the offline test suite ([a0f33aa](https://github.com/arenaxr/arena-py/commit/a0f33aaab71e072fd44bdaa722eb6fc9c7eecad4))
+* document how to run the offline test suite ([1a402ff](https://github.com/arenaxr/arena-py/commit/1a402ffa87159fc7b2f6c8bb619f92be1ee34bef))
+* **events:** use evt.object in examples that looked their target up ([47c0717](https://github.com/arenaxr/arena-py/commit/47c071776aa2547ce36df5451a94f608b7217c63))
+* **mqtt:** add the program path to the missing-self-filter list ([07a712f](https://github.com/arenaxr/arena-py/commit/07a712fc92301326990fbbcf2b0e8d54b377bc1c))
+* **mqtt:** correct the on_message_private self-reflection comment ([83c6c7d](https://github.com/arenaxr/arena-py/commit/83c6c7d0665dd26b60687030fab053763ceb5b4d))
+* **test:** narrow the back-reference claim to plain objects ([cc59663](https://github.com/arenaxr/arena-py/commit/cc59663278211b8c415aec8a0483972abe57aefc))
+* **tests:** fix the single-test command and the harness snippet ([8f5375e](https://github.com/arenaxr/arena-py/commit/8f5375e5ffe737b1f4d12c2524881fae3c54688b))
+* **tests:** put the injection-harness rules where the docs point ([1fcc0d9](https://github.com/arenaxr/arena-py/commit/1fcc0d958e75847ea80c6416ee27128aab4fb2bf))
+* **tests:** put the injection-harness rules where the docs point ([ed11c82](https://github.com/arenaxr/arena-py/commit/ed11c8291197182619cfc4742ae3d7ff9f0026bc))
+* **tests:** quote the error the chat construction guard actually sees ([f4585c4](https://github.com/arenaxr/arena-py/commit/f4585c4ad1e4fe39aaae2df103145812d45af3bb))
+* **utils:** attribute gt-sync to the envelope timestamp, not run-info ([4d9242c](https://github.com/arenaxr/arena-py/commit/4d9242c39c30821fa40eb00281c841a10fd62284))
+
 ## [1.6.0](https://github.com/arenaxr/arena-py/compare/v1.5.0...v1.6.0) (2026-07-08)
 
 

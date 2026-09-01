@@ -13,7 +13,7 @@ jobs:
     name: Build and publish Python distribution to PyPI
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.7.0
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
     - name: Set up Python
       uses: actions/setup-python@b64ffcaf5b410884ad320a9cfac8866006a109aa # v4.8.0
       with:

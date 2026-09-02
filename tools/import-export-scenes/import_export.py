@@ -120,14 +120,14 @@ if __name__ == '__main__':
                         obj['attributes']['url'] = '/store/users/wiselab/models/factory_robot_arm/scene.gltf'
                     if obj['attributes']['url'].startswith('store/'):
                         obj['attributes']['url'] = f'/{obj["attributes"]["url"]}' # add '/' at the start of gltf models in store/
-                    if obj['attributes']['url'].startswith('https://arena-cdn.conix.io/store'):
-                        obj['attributes']['url'] = f'{obj["attributes"]["url"].replace("https://arena-cdn.conix.io/store", "/store")}'
+                    if obj['attributes']['url'].startswith('https://arenaxr.org/store'):
+                        obj['attributes']['url'] = f'{obj["attributes"]["url"].replace("https://arenaxr.org/store", "/store")}'
 
                     #if obj['attributes']['url'].startswith('https://arena.andrew.cmu.edu/store'):
                     #    obj['attributes']['url'] = f'{obj["attributes"]["url"].replace("https://arena.andrew.cmu.edu/store", "/store")}'
 
                     #   if obj['attributes']['url'].startswith('/store'):
-                    #    obj['attributes']['url'] = f'https://arena-cdn.conix.io{obj["attributes"]["url"]}'
+                    #    obj['attributes']['url'] = f'https://arenaxr.org{obj["attributes"]["url"]}'
 
                 #print('obj:', json.dumps(obj, indent=4, sort_keys=True))
 

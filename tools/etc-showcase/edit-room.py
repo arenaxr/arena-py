@@ -80,20 +80,20 @@ def edit_assets():
             update=False
             if hasattr(obj['data'], 'url'):
                 if obj['data']['url'].startswith('/store/users/'):
-                    obj['data']['url'] = f"https://arena-cdn.conix.io{obj['data']['url']}"
+                    obj['data']['url'] = f"https://arenaxr.org{obj['data']['url']}"
                     print(obj['data']['url'])
                     update=True
                 if obj['data']['url'].startswith('store/users/'):
-                    obj['data']['url'] = f"https://arena-cdn.conix.io/{obj['data']['url']}"
+                    obj['data']['url'] = f"https://arenaxr.org/{obj['data']['url']}"
                     print(obj['data']['url'])
                     update=True
             if hasattr(obj['data'], 'material'):
                 if hasattr(obj['data']['material'], 'src'):
                     if obj['data']['material']['src'].startswith('/store/users/'):
-                        obj['data']['material']['src'] = f"https://arena-cdn.conix.io{obj['data']['material']['src']}"
+                        obj['data']['material']['src'] = f"https://arenaxr.org{obj['data']['material']['src']}"
                         update=True
                     if obj['data']['material']['src'].startswith('store/users/'):
-                        obj['data']['material']['src'] = f"https://arena-cdn.conix.io/{obj['data']['material']['src']}"
+                        obj['data']['material']['src'] = f"https://arenaxr.org/{obj['data']['material']['src']}"
                         update=True
                     update=True
 

@@ -52,8 +52,8 @@ class Config:
 
         #NPC (name Alphanumeric only plus '_', no spaces!)
         self.NPC_NAME = configJson["NPC"]["NAME"]         #"NPC_RobotBuddy"
-        self.NPC_GLTF_URL = configJson["NPC"]["GLTF_URL"] #"https://arenaxr.org/store/users/johnchoi/Characters/RobotBuddy/RobotBuddyBlue.glb"
-        self.NPC_ICON_URL = configJson["NPC"]["ICON_URL"] #"https://arenaxr.org/store/users/johnchoi/Characters/RobotBuddy/RobotBuddyBlue.png"
+        self.NPC_GLTF_URL = configJson["NPC"]["GLTF_URL"] #"https://arenaxr.org/store/users/wiselab/Characters/RobotBuddy/RobotBuddyBlue.glb"
+        self.NPC_ICON_URL = configJson["NPC"]["ICON_URL"] #"https://arenaxr.org/store/users/wiselab/Characters/RobotBuddy/RobotBuddyBlue.png"
 
         #USE DEFAULT ACTIONS
         self.USE_DEFAULT_ANIMATIONS = configJson["USE_DEFAULTS"]["ANIMATIONS"] #True

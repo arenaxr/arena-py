@@ -44,7 +44,7 @@ ACTION_INTERVAL = 50
 
 #FILESTORE SETTINGS
 FILESTORE = "https://arenaxr.org/" #main server
-FILEPATH = "store/users/johnchoi/Chess/" #Path
+FILEPATH = "store/users/wiselab/Chess/" #Path
 
 class ChessPieceTeam(Enum):
     NONE = 0

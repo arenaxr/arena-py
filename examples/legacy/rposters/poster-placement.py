@@ -144,7 +144,7 @@ for poster in posterData:
 
         pimg = arena.Object(
             objName=pimgName,
-            url='https://arenaxr.org/store/users/conixadmin/posters/poster_imgs/'
+            url='https://arenaxr.org/store/users/wiselab/posters/poster_imgs/'
                 + poster['posterfile'] + ".jpg",
             objType=arena.Shape.image,
             scale=(4, 4, 4),
@@ -156,7 +156,7 @@ for poster in posterData:
 
         psclink = arena.Object(
             objName=ppdflnkName,
-            url='https://arenaxr.org/store/users/conixadmin/posters/ppdf.png',
+            url='https://arenaxr.org/store/users/wiselab/posters/ppdf.png',
             objType=arena.Shape.image,
             scale=(.5, .5, .5),
             location=(-0.3, 3.0, 2.5),
@@ -164,7 +164,7 @@ for poster in posterData:
             clickable=True,
             parent=prootName,
             persist=persist,
-            data='{"goto-url": { "dest":"popup", "on": "mousedown", "url": "https://arenaxr.org/store/users/conixadmin/posters/poster_pdfs/'+ poster['posterfile'] + '.pdf"} } ')
+            data='{"goto-url": { "dest":"popup", "on": "mousedown", "url": "https://arenaxr.org/store/users/wiselab/posters/poster_pdfs/'+ poster['posterfile'] + '.pdf"} } ')
 
         plight = arena.Object(
             objName=plightName,
@@ -191,7 +191,7 @@ for poster in posterData:
         if len(poster['video']) > 1:
             psclink = arena.Object(
                 objName=pvideolnkName,
-                url='https://arenaxr.org/store/users/conixadmin/posters/ltvideo.png',
+                url='https://arenaxr.org/store/users/wiselab/posters/ltvideo.png',
                 objType=arena.Shape.image,
                 scale=(.5, .5, .5),
                 location=(-0.3, 2.4, 2.5),
@@ -205,7 +205,7 @@ for poster in posterData:
         if len(poster['avideo']) > 1:
             psclink = arena.Object(
                 objName=pavideolnkName,
-                url='https://arenaxr.org/store/users/conixadmin/posters/lvideo.png',
+                url='https://arenaxr.org/store/users/wiselab/posters/lvideo.png',
                 objType=arena.Shape.image,
                 scale=(.5, .5, .5),
                 location=(-0.3, 1.8, 2.5),

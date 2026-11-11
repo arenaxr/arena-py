@@ -19,9 +19,9 @@ scene = Scene(host="arenaxr.org", scene="avatar")
 def user_join_callback(scene, camera, msg):
     global avatars
 
-    user_id = extract_user_id(camera.object_id)
-    if user_id and user_id not in avatars:
-        avatars[user_id] = HeadRig(scene, user_id, camera)
+    camera_id = camera.object_id
+    if camera_id not in avatars:
+        avatars[camera_id] = HeadRig(scene, camera_id, camera)
 
 
 def on_msg_callback(scene, obj, msg):

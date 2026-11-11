@@ -367,12 +367,11 @@ class Scene(ArenaMQTT):
                                 del self.users[object_id]
                             span.add_event("User left.")
                         elif action == "delete":
-                            if Camera.object_type in object_id:  # object is a camera
+                            if object_id in self.users:  # object is a user camera
                                 # old way to remove user
-                                if object_id in self.users:
-                                    if self.user_left_callback:
-                                        self.callback_wrapper(self.user_left_callback, self.users[object_id], payload)
-                                    del self.users[object_id]
+                                if self.user_left_callback:
+                                    self.callback_wrapper(self.user_left_callback, self.users[object_id], payload)
+                                del self.users[object_id]
                             elif (
                                 HandLeft.object_type in object_id or HandRight.object_type in object_id
                             ):  # object is a hand/controller

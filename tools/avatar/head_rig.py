@@ -131,7 +131,7 @@ class HeadRig(object):
                     position=self.face.trans,
                     rotation=self.face.rot,
                     scale=(1.75,1.75,1.75),
-                    parent="camera_"+self.user_id,
+                    parent=self.camera.object_id,
                     **morph
                 )
             self.scene.add_object(self.avatar)

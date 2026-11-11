@@ -7,6 +7,7 @@ import yaml
 from gstable import GoogleSheetTable
 
 from arena import *
+from arena.utils.camera import camera_username
 
 DFT_CONFIG_FILENAME = './config.yaml'
 ACTUSERS = {}  # actual users by camera id
@@ -123,8 +124,7 @@ def scene_callback(scene, obj, msg):
             # parse clicks from known badge name object ids
             if obj.object_id in config["badge_icons"]:
                 cam_id = msg["data"]["source"]
-                # strip camera_00123456789_ for username
-                username = cam_id[18:]
+                username = camera_username(cam_id)
                 if cam_id not in ACTUSERS:
                     ACTUSERS[cam_id] = {}
                 if "badges" not in ACTUSERS[cam_id]:
@@ -159,7 +159,7 @@ def scene_callback(scene, obj, msg):
 def user_left_callback(scene, obj, msg):
     global ACTUSERS
     cam_id = obj.object_id
-    username = cam_id[18:]  # strip camera_00123456789_ for username
+    username = camera_username(cam_id)
     print(f"{username} left")
     if cam_id in ACTUSERS:
         del ACTUSERS[cam_id]
@@ -168,7 +168,7 @@ def user_left_callback(scene, obj, msg):
 def user_join_callback(scene, obj, msg):
     global ACTUSERS, config, data
     cam_id = obj.object_id
-    username = cam_id[18:]  # strip camera_00123456789_ for username
+    username = camera_username(cam_id)
     print(f"{username} joined")
     # get data from google spreadsheet table
     print('Getting data...')

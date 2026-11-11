@@ -6,6 +6,7 @@ import argparse
 import yaml
 
 from arena import Image, Material, Scene
+from arena.utils.camera import camera_username
 
 DFT_CONFIG_FILENAME = "./config.yaml"
 ACTUSERS = {}  # actual users by camera id
@@ -155,7 +156,7 @@ def question_callback(_scene: Scene, evt, msg):
 def user_left_callback(_scene: Scene, obj, msg):
     global ACTUSERS
     cam_id = obj.object_id
-    username = cam_id[18:]  # strip camera_00123456789_ for username
+    username = camera_username(cam_id)
     print(f"{username} left")
     if cam_id in ACTUSERS:
         del ACTUSERS[cam_id]
@@ -164,7 +165,7 @@ def user_left_callback(_scene: Scene, obj, msg):
 def user_join_callback(_scene: Scene, obj, msg):
     global ACTUSERS, config, data
     cam_id = obj.object_id
-    username = cam_id[18:]  # strip camera_00123456789_ for username
+    username = camera_username(cam_id)
     print(f"{username} joined")
     # publish all overrides so new user will see them
     if cam_id not in ACTUSERS:
